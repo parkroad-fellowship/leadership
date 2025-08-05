@@ -54,7 +54,7 @@ class AuthService extends BaseAPIService<PRFUser> {
   Future<String> socialLogin({required SocialAuthDTO socialAuthDTO}) async {
     try {
       final response = await networkUtil.post(
-        '$endpoint/social-login',
+        '$endpoint/social-leader-login',
         body: json.encode(socialAuthDTO.toJson()),
       );
 
