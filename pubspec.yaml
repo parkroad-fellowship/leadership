@@ -49,6 +49,8 @@ dependencies:
   json_annotation: ^4.9.0
   local_auth: ^2.3.0
   logger: ^2.6.1
+  mime: ^2.0.0
+  path_provider: ^2.1.5
   permission_handler: ^12.0.1
   pretty_dio_logger: ^1.4.0
   timezone: ^0.10.1
@@ -66,6 +68,7 @@ dev_dependencies:
     sdk: flutter
   freezed: ^2.5.2
   icons_launcher: ^3.0.1
+  json_serializable: ^6.9.5
   mocktail: ^1.0.4
   very_good_analysis: ^9.0.0
 
