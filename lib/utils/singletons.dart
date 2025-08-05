@@ -1,0 +1,72 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:leadership/features/auth/cubit/google_sign_in_cubit.dart';
+import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
+import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
+import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
+import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
+import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/expense_categories_service.dart';
+import 'package:leadership/services/firebase_service.dart';
+import 'package:leadership/services/local_auth_service.dart';
+import 'package:leadership/utils/router/router.dart';
+
+final GetIt getIt = GetIt.instance;
+
+class Singletons {
+  static void setup() {
+    getIt
+      ..registerSingleton<PRFLeadershipRouter>(PRFLeadershipRouter())
+      ..registerSingleton<HiveService>(HiveService())
+      ..registerSingleton<LocalAuthService>(LocalAuthService())
+      ..registerSingleton<FirebaseService>(FirebaseServiceImpl())
+      ..registerSingleton<AuthService>(AuthService())
+      ..registerSingleton<ExpenseCategoriesService>(
+        ExpenseCategoriesService(),
+      )
+      ..registerSingleton<NotificationService>(NotificationServiceImpl())
+      ..registerSingleton<SocketService>(
+        SocketServiceImpl(),
+      )
+      ..registerSingleton<MediaService>(MediaServiceImpl());
+  }
+
+  static Future<void> setupDatabases() async {
+    await getIt<HiveService>().initBoxes();
+  }
+
+  static List<BlocProvider> registerCubits() {
+    return <BlocProvider>[
+      BlocProvider<SigninCubit>(
+        create: (context) => SigninCubit(
+          authService: getIt<AuthService>(),
+          hiveService: getIt<HiveService>(),
+          socketService: getIt<SocketService>(),
+          firebaseService: getIt<FirebaseService>(),
+        ),
+      ),
+      BlocProvider<SocialLoginCubit>(
+        create: (context) => SocialLoginCubit(
+          hiveService: getIt<HiveService>(),
+          authService: getIt<AuthService>(),
+        ),
+      ),
+      BlocProvider<GoogleSignInCubit>(
+        create: (context) => GoogleSignInCubit(
+          firebaseService: getIt<FirebaseService>(),
+        ),
+      ),
+      BlocProvider<ChangeProfilePictureCubit>(
+        create: (context) => ChangeProfilePictureCubit(
+          mediaService: getIt<MediaService>(),
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<SignOutCubit>(
+        create: (context) => SignOutCubit(
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+    ];
+  }
+}
