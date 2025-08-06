@@ -17,6 +17,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		B7564D789D070F85F0C5EC89 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 412DF86100E079D1208FFBF0 /* Pods_Runner.framework */; };
+		F4E657002E438CCE00A79387 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F4E656FF2E438C4900A79387 /* libsqlite3.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		D052C5A81ECA899F72195489 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED25342502D780A054D42D1A /* Pods-Runner.profile-development.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-development.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-development.xcconfig"; sourceTree = "<group>"; };
 		F46CB57273CB6A18ED74BC10 /* Pods-RunnerTests.release-development.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-development.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-development.xcconfig"; sourceTree = "<group>"; };
+		F4E656FF2E438C4900A79387 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4E657002E438CCE00A79387 /* libsqlite3.tbd in Frameworks */,
 				B7564D789D070F85F0C5EC89 /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,7 +134,6 @@
 				1F140C28466ACF14B99951F8 /* Pods-RunnerTests.profile-staging.xcconfig */,
 				B0D627A8F884F79E7890BCB1 /* Pods-RunnerTests.profile-development.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -186,6 +188,7 @@
 		F327E485D539232B4433E214 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F4E656FF2E438C4900A79387 /* libsqlite3.tbd */,
 				412DF86100E079D1208FFBF0 /* Pods_Runner.framework */,
 				D052C5A81ECA899F72195489 /* Pods_RunnerTests.framework */,
 			);
