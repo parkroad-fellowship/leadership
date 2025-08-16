@@ -98,7 +98,6 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
         },
       ),
       bottomNavigationBar: _buildBottomActionBar(context, l10n),
-    
     );
   }
 
@@ -571,7 +570,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
 
   Widget _buildBottomActionBar(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
-    
+
     return BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
       builder: (context, requisitionState) {
         return Container(
@@ -601,12 +600,14 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       Expanded(
                         child: requisitionState.maybeWhen(
                           loaded: (requisition) =>
-                              requisition.approvalStatus == PRFApprovalStatus.pending
+                              requisition.approvalStatus ==
+                                  PRFApprovalStatus.pending
                               ? _buildActionButton(
                                   context,
                                   icon: Icons.add,
                                   label: l10n.create,
-                                  onPressed: () => _showCreateRequisitionItemModal(context),
+                                  onPressed: () =>
+                                      _showCreateRequisitionItemModal(context),
                                   isPrimary: true,
                                 )
                               : _buildActionButton(
@@ -623,14 +624,15 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                             context,
                             icon: Icons.add,
                             label: l10n.create,
-                            onPressed: () => _showCreateRequisitionItemModal(context),
+                            onPressed: () =>
+                                _showCreateRequisitionItemModal(context),
                             isPrimary: true,
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(width: 12),
-                      
+
                       // Payment Action
                       Expanded(
                         child: requisitionState.maybeWhen(
@@ -642,7 +644,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                             label: requisition.paymentInstruction != null
                                 ? 'View Payment'
                                 : 'Payment',
-                            onPressed: () => requisition.paymentInstruction != null
+                            onPressed: () =>
+                                requisition.paymentInstruction != null
                                 ? _showPaymentInstructionDetails(
                                     context,
                                     requisition.paymentInstruction!,
@@ -654,13 +657,14 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                             context,
                             icon: Icons.payment,
                             label: 'Payment',
-                            onPressed: () => _showCreatePaymentInstructionModal(context),
+                            onPressed: () =>
+                                _showCreatePaymentInstructionModal(context),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   // Secondary Actions Row (can be expanded for more actions)
                   const SizedBox(height: 8),
                   Row(
@@ -669,21 +673,23 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       Expanded(
                         child: requisitionState.maybeWhen(
                           loaded: (requisition) =>
-                              requisition.approvalStatus == PRFApprovalStatus.pending
+                              requisition.approvalStatus ==
+                                  PRFApprovalStatus.pending
                               ? _buildActionButton(
                                   context,
                                   icon: Icons.send,
                                   label: 'Request Review',
-                                  onPressed: () => _showRequestReviewModal(context),
+                                  onPressed: () =>
+                                      _showRequestReviewModal(context),
                                   isOutlined: true,
                                 )
                               : const SizedBox.shrink(),
                           orElse: () => const SizedBox.shrink(),
                         ),
                       ),
-                      
+
                       const SizedBox(width: 12),
-                      
+
                       // More Actions Button (for future expansion)
                       Expanded(
                         child: _buildActionButton(
@@ -716,11 +722,11 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
     bool isDisabled = false,
   }) {
     final theme = Theme.of(context);
-    
+
     Color backgroundColor;
     Color foregroundColor;
     BorderSide? border;
-    
+
     if (isDisabled) {
       backgroundColor = theme.colorScheme.surfaceContainerHighest;
       foregroundColor = theme.colorScheme.onSurfaceVariant;
@@ -792,7 +798,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
 
   void _showMoreActionsBottomSheet(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -818,7 +824,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Title
               Text(
                 'More Actions',
@@ -827,7 +833,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Action Items
               BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
                 builder: (context, requisitionState) {
@@ -848,7 +854,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       //     );
                       //   },
                       // ),
-                      
+
                       // _buildBottomSheetAction(
                       //   context,
                       //   icon: Icons.share,
@@ -864,9 +870,10 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       //     );
                       //   },
                       // ),
-                      
                       requisitionState.maybeWhen(
-                        loaded: (requisition) => requisition.approvalStatus == PRFApprovalStatus.pending
+                        loaded: (requisition) =>
+                            requisition.approvalStatus ==
+                                PRFApprovalStatus.pending
                             ? _buildBottomSheetAction(
                                 context,
                                 icon: Icons.edit,
@@ -877,7 +884,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                                   // TODO: Implement edit functionality
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Edit functionality coming soon!'),
+                                      content: Text(
+                                        'Edit functionality coming soon!',
+                                      ),
                                     ),
                                   );
                                 },
@@ -885,7 +894,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                             : const SizedBox.shrink(),
                         orElse: () => const SizedBox.shrink(),
                       ),
-                      
+
                       // _buildBottomSheetAction(
                       //   context,
                       //   icon: Icons.history,
@@ -905,7 +914,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 20),
             ],
           ),
@@ -922,7 +931,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
-    
+
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),

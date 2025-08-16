@@ -15,9 +15,16 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/get_mission_expense_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
+import 'package:leadership/services/api/expense_service.dart';
+import 'package:leadership/services/api/mission_expenses_service.dart';
+import 'package:leadership/services/api/mission_service.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
@@ -44,7 +51,10 @@ class Singletons {
       ..registerSingleton<RequisitionItemService>(RequisitionItemService())
       ..registerSingleton<PaymentInstructionService>(
         PaymentInstructionService(),
-      );
+      )
+      ..registerSingleton<MissionService>(MissionService())
+      ..registerSingleton<MissionExpensesService>(MissionExpensesService())
+      ..registerSingleton<ExpenseService>(ExpenseService());
   }
 
   static Future<void> setupDatabases() async {
@@ -135,6 +145,31 @@ class Singletons {
       BlocProvider<CreatePaymentInstructionCubit>(
         create: (context) => CreatePaymentInstructionCubit(
           paymentInstructionService: getIt<PaymentInstructionService>(),
+        ),
+      ),
+      BlocProvider<GetMissionsCubit>(
+        create: (context) => GetMissionsCubit(
+          missionService: getIt<MissionService>(),
+        ),
+      ),
+      BlocProvider<GetPastMissionsCubit>(
+        create: (context) => GetPastMissionsCubit(
+          missionService: getIt<MissionService>(),
+        ),
+      ),
+      BlocProvider<GetMissionCubit>(
+        create: (context) => GetMissionCubit(
+          missionService: getIt<MissionService>(),
+        ),
+      ),
+      BlocProvider<GetMissionExpenseCubit>(
+        create: (context) => GetMissionExpenseCubit(
+          missionExpensesService: getIt<MissionExpensesService>(),
+        ),
+      ),
+      BlocProvider<GetMissionExpenseCubit>(
+        create: (context) => GetMissionExpenseCubit(
+          missionExpensesService: getIt<MissionExpensesService>(),
         ),
       ),
     ];

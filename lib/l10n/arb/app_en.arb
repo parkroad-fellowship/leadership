@@ -875,6 +875,7 @@
     "enterPurpose": "Enter purpose",
     "@enterPurpose": {},
     "requisitionDetails": "Requisition Details",
-    "@requisitionDetails": {}
-
+    "@requisitionDetails": {},
+    "viewMissions": "View Missions",
+    "@viewMissions": {}
 }

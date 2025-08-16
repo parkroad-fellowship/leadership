@@ -54,6 +54,14 @@ class _LandingPageState extends State<LandingPage> {
         ),
         700,
       ],
+      [
+        l10n.viewMissions,
+        'assets/svgs/missions.svg',
+        () => context.router.pushPath(
+          PRFLeadershipRouter.missionsRoute,
+        ),
+        700,
+      ],
     ];
 
     return AdaptiveBuilder(

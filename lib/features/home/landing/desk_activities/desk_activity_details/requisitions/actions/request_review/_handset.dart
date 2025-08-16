@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class RequestReviewViewHandset extends StatefulWidget {
-  const RequestReviewViewHandset({super.key, required this.requisitionUlid});
+  const RequestReviewViewHandset({required this.requisitionUlid, super.key});
 
-    final String requisitionUlid;
+  final String requisitionUlid;
 
   @override
-  State<RequestReviewViewHandset> createState() => _RequestReviewViewHandsetState();
+  State<RequestReviewViewHandset> createState() =>
+      _RequestReviewViewHandsetState();
 }
 
 class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {

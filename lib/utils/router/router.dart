@@ -15,6 +15,9 @@ class PRFLeadershipRouter extends RootStackRouter {
   static const String deskActivitiesRoute = '/desk-activities';
   static const String deskActivityDetailsRoute = '/desk-activities/:ulid';
 
+  static const String missionsRoute = '/missions';
+  static const String missionDetailsRoute = '/missions/:ulid';
+
   static const String requisitionRoute =
       '/desk-activities/:ulid/requisitions/:ulid';
 
@@ -64,6 +67,20 @@ class PRFLeadershipRouter extends RootStackRouter {
     CustomRoute<dynamic>(
       page: RequisitionRoute.page,
       path: requisitionRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: MissionsRoute.page,
+      path: missionsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: MissionsDetailsRoute.page,
+      path: missionDetailsRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
