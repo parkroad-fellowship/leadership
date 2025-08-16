@@ -267,7 +267,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
             onRefresh: () => context.read<GetPastEventsCubit>().getPastEvents(),
             child: PRFEmptyView(
               label: l10n.noActivities,
-              description: l10n.pleaseWaitForOS,
+              description: l10n.createActivity,
             ),
           ),
           loaded: (events) {
