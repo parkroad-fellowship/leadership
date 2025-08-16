@@ -7,6 +7,7 @@ part 'prf_requisition_dto.g.dart';
 @freezed
 class PRFRequisitionDTO with _$PRFRequisitionDTO {
   factory PRFRequisitionDTO({
+    @JsonKey(name: 'member_ulid') required String memberUlid,
     @JsonKey(name: 'accounting_event_ulid') required String accountingEventUlid,
     @JsonKey(name: 'requisition_date') required DateTime requisitionDate,
     @JsonEnum()

@@ -1,11 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/information/information.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class DeskEventDetailsPageTablet extends StatefulWidget {
   const DeskEventDetailsPageTablet({required this.event, super.key});
@@ -106,7 +108,26 @@ class _DeskEventDetailsPageTabletState extends State<DeskEventDetailsPageTablet>
       floatingActionButton: switch (_currentTab) {
         1 => FloatingActionButton.extended(
           icon: const Icon(Icons.add),
-          onPressed: () {},
+          onPressed: () {
+            if (event.accountingEvent != null) {
+              WoltModalSheet.show<void>(
+                context: context,
+                pageListBuilder: (modalSheetContext) {
+                  return [
+                    WoltModalSheetPage(
+                      child: CreateRequisitionView(
+                        accountingEvent: event.accountingEvent!,
+                      ),
+                    ),
+                  ];
+                },
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.requisitionUnavailable)),
+              );
+            }
+          },
           label: Text(l10n.createRequisition),
         ),
         _ => const SizedBox.shrink(),

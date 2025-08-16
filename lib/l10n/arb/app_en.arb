@@ -869,5 +869,9 @@
     "requisitionUnavailableDesc": "Requisitioning is only available for newer events. Please create a new event to enable requisitioning.",
     "@requisitionUnavailableDesc": {},
     "createRequisition": "Create",
-    "@createRequisition": {}
+    "@createRequisition": {},
+    "purpose": "Purpose",
+    "@purpose": {},
+    "enterPurpose": "Enter purpose",
+    "@enterPurpose": {}
 }
