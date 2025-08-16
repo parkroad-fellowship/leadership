@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/request_review/_handset.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
 
 class RequestReviewView extends StatelessWidget {
   const RequestReviewView({required this.requisitionUlid, super.key});

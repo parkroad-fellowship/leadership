@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_requisition/_handset.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/create_requisition/_handset.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 
 class CreateRequisitionView extends StatelessWidget {
