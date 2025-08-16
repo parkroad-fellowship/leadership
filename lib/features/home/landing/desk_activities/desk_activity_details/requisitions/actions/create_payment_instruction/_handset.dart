@@ -332,43 +332,42 @@ class _CreatePaymentInstructionViewHandsetState
             controller: _bankNameController,
           ),
         ),
-         _buildFormSection(
-            icon: Icons.numbers,
-            title: 'Account Number',
-            isRequired: true,
-            child: PRFNumberInput(
-              hintText: 'Account number',
-              controller: _bankAccountNumberController,
-            ),
-          ),
-        
-      _buildFormSection(
-            icon: Icons.person,
-            title: 'Account Name',
-            isRequired: true,
-            child: PRFTextInput(
-              hintText: 'Account name',
-              controller: _bankAccountNameController,
-            ),
-      ),
-        
-         _buildFormSection(
-            icon: Icons.location_on,
-            title: 'Branch',
-            child: PRFTextInput(
-              hintText: 'Branch (optional)',
-              controller: _bankBranchController,
-            ),
-          ),
         _buildFormSection(
-            icon: Icons.code,
-            title: 'SWIFT Code',
-            child: PRFTextInput(
-              hintText: 'SWIFT code (optional)',
-              controller: _bankSwiftCodeController,
-            ),
+          icon: Icons.numbers,
+          title: 'Account Number',
+          isRequired: true,
+          child: PRFNumberInput(
+            hintText: 'Account number',
+            controller: _bankAccountNumberController,
           ),
-        
+        ),
+
+        _buildFormSection(
+          icon: Icons.person,
+          title: 'Account Name',
+          isRequired: true,
+          child: PRFTextInput(
+            hintText: 'Account name',
+            controller: _bankAccountNameController,
+          ),
+        ),
+
+        _buildFormSection(
+          icon: Icons.location_on,
+          title: 'Branch',
+          child: PRFTextInput(
+            hintText: 'Branch (optional)',
+            controller: _bankBranchController,
+          ),
+        ),
+        _buildFormSection(
+          icon: Icons.code,
+          title: 'SWIFT Code',
+          child: PRFTextInput(
+            hintText: 'SWIFT code (optional)',
+            controller: _bankSwiftCodeController,
+          ),
+        ),
       ],
     );
   }
@@ -376,25 +375,24 @@ class _CreatePaymentInstructionViewHandsetState
   Widget _buildPaybillFields() {
     return Column(
       children: [
-         _buildFormSection(
-            icon: Icons.receipt,
-            title: 'Paybill Number',
-            isRequired: true,
-            child: PRFNumberInput(
-              hintText: 'Paybill number',
-              controller: _paybillNumberController,
-            ),
+        _buildFormSection(
+          icon: Icons.receipt,
+          title: 'Paybill Number',
+          isRequired: true,
+          child: PRFNumberInput(
+            hintText: 'Paybill number',
+            controller: _paybillNumberController,
           ),
-        
-         _buildFormSection(
-            icon: Icons.account_box,
-            title: 'Account Number',
-            isRequired: true,
-            child: PRFTextInput(
-              hintText: 'Account number',
-              controller: _paybillAccountNumberController,
-            ),
-          
+        ),
+
+        _buildFormSection(
+          icon: Icons.account_box,
+          title: 'Account Number',
+          isRequired: true,
+          child: PRFTextInput(
+            hintText: 'Account number',
+            controller: _paybillAccountNumberController,
+          ),
         ),
       ],
     );
@@ -732,13 +730,11 @@ class _CreatePaymentInstructionViewHandsetState
               ),
               child: Column(
                 children: [
-                  
-
                   // Dynamic fields based on payment method
                   if (selectedPaymentMethod != null)
                     _buildPaymentMethodFields(),
 
-                    // Reference (Optional)
+                  // Reference (Optional)
                   _buildFormSection(
                     icon: Icons.receipt_long_outlined,
                     title: 'Reference',

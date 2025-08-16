@@ -141,11 +141,38 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FloatingActionButton.extended(
-                    heroTag: 'requisition_item',
-                    icon: const Icon(Icons.add),
-                    onPressed: () => _showCreateRequisitionItemModal(context),
-                    label: Text(l10n.create),
+                  // Only show Add Item button if requisition is pending
+                  requisitionState.maybeWhen(
+                    loaded: (requisition) =>
+                        requisition.approvalStatus == PRFApprovalStatus.pending
+                        ? FloatingActionButton.extended(
+                            heroTag: 'requisition_item',
+                            icon: const Icon(Icons.add),
+                            onPressed: () =>
+                                _showCreateRequisitionItemModal(context),
+                            label: Text(l10n.create),
+                          )
+                        : FloatingActionButton.extended(
+                            heroTag: 'requisition_item',
+                            icon: const Icon(Icons.info_outline),
+                            onPressed: () => _showCannotAddItemDialog(
+                              context,
+                              requisition.approvalStatus,
+                            ),
+                            label: const Text('Add Item'),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                    orElse: () => FloatingActionButton.extended(
+                      heroTag: 'requisition_item',
+                      icon: const Icon(Icons.add),
+                      onPressed: () => _showCreateRequisitionItemModal(context),
+                      label: Text(l10n.create),
+                    ),
                   ),
                 ],
               );
@@ -156,38 +183,61 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
 
   Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64,
-            color: theme.colorScheme.onSurfaceVariant,
+    return BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+      builder: (context, requisitionState) {
+        final isPending = requisitionState.maybeWhen(
+          loaded: (requisition) =>
+              requisition.approvalStatus == PRFApprovalStatus.pending,
+          orElse: () => true, // Default to true if state is not loaded yet
+        );
+
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 64,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No Requisition Items',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isPending
+                    ? 'No items have been added to this requisition yet.'
+                    : 'This requisition is no longer editable.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              if (isPending)
+                ElevatedButton.icon(
+                  onPressed: () => _showCreateRequisitionItemModal(context),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Item'),
+                )
+              else
+                OutlinedButton.icon(
+                  onPressed: () {
+                    context.router.popUntilRouteWithPath(
+                      PRFLeadershipRouter.deskActivityDetailsRoute,
+                    );
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Create New Requisition'),
+                ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'No Requisition Items',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'No items have been added to this requisition yet.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => _showCreateRequisitionItemModal(context),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Item'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1280,5 +1330,83 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
       case PRFApprovalStatus.rejected:
         return 'Rejected';
     }
+  }
+
+  void _showCannotAddItemDialog(
+    BuildContext context,
+    PRFApprovalStatus status,
+  ) {
+    final theme = Theme.of(context);
+
+    String title;
+    String message;
+    IconData icon;
+    Color iconColor;
+
+    switch (status) {
+      case PRFApprovalStatus.approved:
+        title = 'Requisition Approved';
+        message =
+            'This requisition has been approved and can no longer be '
+            'modified. To add new items, please create a new requisition.';
+        icon = Icons.check_circle;
+        iconColor = Colors.green;
+      case PRFApprovalStatus.rejected:
+        title = 'Requisition Rejected';
+        message =
+            'This requisition has been rejected and can no longer be '
+            'modified. To request new items, please create a new requisition.';
+        icon = Icons.cancel;
+        iconColor = theme.colorScheme.error;
+      case PRFApprovalStatus.pending:
+        return; // Should not happen for pending status
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                icon,
+                color: iconColor,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: theme.textTheme.bodyMedium,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('OK'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // Navigate back to create a new requisition
+                context.router.popUntilRouteWithPath(
+                  PRFLeadershipRouter.deskActivityDetailsRoute,
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('New Requisition'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
