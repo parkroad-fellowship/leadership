@@ -8,5 +8,5 @@ enum PRFPaymentMethod {
   @JsonValue(3)
   paybill,
   @JsonValue(4)
-  tillNumber,
+  tillNumber;
 }

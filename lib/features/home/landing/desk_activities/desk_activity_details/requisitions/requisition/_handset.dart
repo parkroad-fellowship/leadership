@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_requisition_item/create_requisition_item.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
@@ -89,29 +90,25 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        onPressed: () =>
-            WoltModalSheet.show<void>(
-              context: context,
-              pageListBuilder: (modalSheetContext) {
-                return [
-                  WoltModalSheetPage(
-                    child: CreateRequisitionItemView(
-                      requisitionUlid: widget.requisitionUlid,
-                    ),
-                  ),
-                ];
-              },
-            ).then((_) {
-              // Refresh the list after adding an item
-              if (context.mounted) {
-                context.read<GetRequisitionItemsCubit>().getRequisitionItems(
-                  requisitionUlid: widget.requisitionUlid,
-                );
-              }
-            }),
-        label: Text(l10n.create),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'payment_instruction',
+            icon: const Icon(Icons.payment),
+            onPressed: () => _showCreatePaymentInstructionModal(context),
+            label: const Text('Payment'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            foregroundColor: Theme.of(context).colorScheme.onSecondary,
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'requisition_item',
+            icon: const Icon(Icons.add),
+            onPressed: () => _showCreateRequisitionItemModal(context),
+            label: Text(l10n.create),
+          ),
+        ],
       ),
     );
   }
@@ -144,27 +141,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () =>
-                WoltModalSheet.show<void>(
-                  context: context,
-                  pageListBuilder: (modalSheetContext) {
-                    return [
-                      WoltModalSheetPage(
-                        child: CreateRequisitionItemView(
-                          requisitionUlid: widget.requisitionUlid,
-                        ),
-                      ),
-                    ];
-                  },
-                ).then((_) {
-                  if (context.mounted) {
-                    context
-                        .read<GetRequisitionItemsCubit>()
-                        .getRequisitionItems(
-                          requisitionUlid: widget.requisitionUlid,
-                        );
-                  }
-                }),
+            onPressed: () => _showCreateRequisitionItemModal(context),
             icon: const Icon(Icons.add),
             label: const Text('Add Item'),
           ),
@@ -555,6 +532,43 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showCreateRequisitionItemModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: CreateRequisitionItemView(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the list after adding an item
+      if (context.mounted) {
+        context.read<GetRequisitionItemsCubit>().getRequisitionItems(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showCreatePaymentInstructionModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: CreatePaymentInstructionView(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
     );
   }
 }

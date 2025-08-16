@@ -14,21 +14,21 @@ class PRFPaymentInstruction with _$PRFPaymentInstruction {
     String? reference,
 
     // MPESA
-    @JsonKey(name: 'mpesa_phone_number') String? mpesaPhoneNumber,
+    @JsonKey(name: 'mpesa_phone_number') int? mpesaPhoneNumber,
 
     // Bank
     @JsonKey(name: 'bank_name') String? bankName,
-    @JsonKey(name: 'bank_account_number') String? bankAccountNumber,
+    @JsonKey(name: 'bank_account_number') int? bankAccountNumber,
     @JsonKey(name: 'bank_account_name') String? bankAccountName,
     @JsonKey(name: 'bank_branch') String? bankBranch,
     @JsonKey(name: 'bank_swift_code') String? bankSwiftCode,
 
     // Paybill
-    @JsonKey(name: 'paybill_number') String? paybillNumber,
+    @JsonKey(name: 'paybill_number') int? paybillNumber,
     @JsonKey(name: 'paybill_account_number') String? paybillAccountNumber,
 
     // Till
-    @JsonKey(name: 'till_number') String? tillNumber,
+    @JsonKey(name: 'till_number') int? tillNumber,
 
     PRFRequisition? requisition,
   }) = _PRFPaymentInstruction;
