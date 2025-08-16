@@ -9,6 +9,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_requisition_item/create_requisition_item.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/request_review/_handset.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
@@ -96,88 +97,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           );
         },
       ),
-      floatingActionButton:
-          BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
-            builder: (context, requisitionState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  requisitionState.maybeWhen(
-                    loaded: (requisition) => FloatingActionButton.extended(
-                      heroTag: 'payment_instruction',
-                      icon: Icon(
-                        requisition.paymentInstruction != null
-                            ? Icons.visibility
-                            : Icons.payment,
-                      ),
-                      onPressed: () => requisition.paymentInstruction != null
-                          ? _showPaymentInstructionDetails(
-                              context,
-                              requisition.paymentInstruction!,
-                            )
-                          : _showCreatePaymentInstructionModal(context),
-                      label: Text(
-                        requisition.paymentInstruction != null
-                            ? 'View Payment'
-                            : 'Payment',
-                      ),
-                      backgroundColor: requisition.paymentInstruction != null
-                          ? Theme.of(context).colorScheme.tertiary
-                          : Theme.of(context).colorScheme.secondary,
-                      foregroundColor: requisition.paymentInstruction != null
-                          ? Theme.of(context).colorScheme.onTertiary
-                          : Theme.of(context).colorScheme.onSecondary,
-                    ),
-                    orElse: () => FloatingActionButton.extended(
-                      heroTag: 'payment_instruction',
-                      icon: const Icon(Icons.payment),
-                      onPressed: () =>
-                          _showCreatePaymentInstructionModal(context),
-                      label: const Text('Payment'),
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
-                      foregroundColor: Theme.of(
-                        context,
-                      ).colorScheme.onSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Only show Add Item button if requisition is pending
-                  requisitionState.maybeWhen(
-                    loaded: (requisition) =>
-                        requisition.approvalStatus == PRFApprovalStatus.pending
-                        ? FloatingActionButton.extended(
-                            heroTag: 'requisition_item',
-                            icon: const Icon(Icons.add),
-                            onPressed: () =>
-                                _showCreateRequisitionItemModal(context),
-                            label: Text(l10n.create),
-                          )
-                        : FloatingActionButton.extended(
-                            heroTag: 'requisition_item',
-                            icon: const Icon(Icons.info_outline),
-                            onPressed: () => _showCannotAddItemDialog(
-                              context,
-                              requisition.approvalStatus,
-                            ),
-                            label: const Text('Add Item'),
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            foregroundColor: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                    orElse: () => FloatingActionButton.extended(
-                      heroTag: 'requisition_item',
-                      icon: const Icon(Icons.add),
-                      onPressed: () => _showCreateRequisitionItemModal(context),
-                      label: Text(l10n.create),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+      bottomNavigationBar: _buildBottomActionBar(context, l10n),
+    
     );
   }
 
@@ -223,6 +144,10 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                   onPressed: () => _showCreateRequisitionItemModal(context),
                   icon: const Icon(Icons.add),
                   label: const Text('Add Item'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                  ),
                 )
               else
                 OutlinedButton.icon(
@@ -378,9 +303,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
               ),
             ),
 
-            // Bottom spacing for FAB
+            // Bottom spacing for bottom action bar
             const SliverToBoxAdapter(
-              child: SizedBox(height: 80),
+              child: SizedBox(height: 100),
             ),
           ],
         );
@@ -641,6 +566,392 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBottomActionBar(BuildContext context, AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    
+    return BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+      builder: (context, requisitionState) {
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.shadow.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Primary Actions Row
+                  Row(
+                    children: [
+                      // Add Item Action
+                      Expanded(
+                        child: requisitionState.maybeWhen(
+                          loaded: (requisition) =>
+                              requisition.approvalStatus == PRFApprovalStatus.pending
+                              ? _buildActionButton(
+                                  context,
+                                  icon: Icons.add,
+                                  label: l10n.create,
+                                  onPressed: () => _showCreateRequisitionItemModal(context),
+                                  isPrimary: true,
+                                )
+                              : _buildActionButton(
+                                  context,
+                                  icon: Icons.info_outline,
+                                  label: 'Add Item',
+                                  onPressed: () => _showCannotAddItemDialog(
+                                    context,
+                                    requisition.approvalStatus,
+                                  ),
+                                  isDisabled: true,
+                                ),
+                          orElse: () => _buildActionButton(
+                            context,
+                            icon: Icons.add,
+                            label: l10n.create,
+                            onPressed: () => _showCreateRequisitionItemModal(context),
+                            isPrimary: true,
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(width: 12),
+                      
+                      // Payment Action
+                      Expanded(
+                        child: requisitionState.maybeWhen(
+                          loaded: (requisition) => _buildActionButton(
+                            context,
+                            icon: requisition.paymentInstruction != null
+                                ? Icons.visibility
+                                : Icons.payment,
+                            label: requisition.paymentInstruction != null
+                                ? 'View Payment'
+                                : 'Payment',
+                            onPressed: () => requisition.paymentInstruction != null
+                                ? _showPaymentInstructionDetails(
+                                    context,
+                                    requisition.paymentInstruction!,
+                                  )
+                                : _showCreatePaymentInstructionModal(context),
+                            isSecondary: requisition.paymentInstruction != null,
+                          ),
+                          orElse: () => _buildActionButton(
+                            context,
+                            icon: Icons.payment,
+                            label: 'Payment',
+                            onPressed: () => _showCreatePaymentInstructionModal(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // Secondary Actions Row (can be expanded for more actions)
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // Request Review Action (example of additional action)
+                      Expanded(
+                        child: requisitionState.maybeWhen(
+                          loaded: (requisition) =>
+                              requisition.approvalStatus == PRFApprovalStatus.pending
+                              ? _buildActionButton(
+                                  context,
+                                  icon: Icons.send,
+                                  label: 'Request Review',
+                                  onPressed: () => _showRequestReviewModal(context),
+                                  isOutlined: true,
+                                )
+                              : const SizedBox.shrink(),
+                          orElse: () => const SizedBox.shrink(),
+                        ),
+                      ),
+                      
+                      const SizedBox(width: 12),
+                      
+                      // More Actions Button (for future expansion)
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          icon: Icons.more_horiz,
+                          label: 'More',
+                          onPressed: () => _showMoreActionsBottomSheet(context),
+                          isOutlined: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    bool isPrimary = false,
+    bool isSecondary = false,
+    bool isOutlined = false,
+    bool isDisabled = false,
+  }) {
+    final theme = Theme.of(context);
+    
+    Color backgroundColor;
+    Color foregroundColor;
+    BorderSide? border;
+    
+    if (isDisabled) {
+      backgroundColor = theme.colorScheme.surfaceContainerHighest;
+      foregroundColor = theme.colorScheme.onSurfaceVariant;
+      border = null;
+    } else if (isPrimary) {
+      backgroundColor = theme.colorScheme.primary;
+      foregroundColor = theme.colorScheme.onPrimary;
+      border = null;
+    } else if (isSecondary) {
+      backgroundColor = theme.colorScheme.tertiary;
+      foregroundColor = theme.colorScheme.onTertiary;
+      border = null;
+    } else if (isOutlined) {
+      backgroundColor = Colors.transparent;
+      foregroundColor = theme.colorScheme.primary;
+      border = BorderSide(color: theme.colorScheme.outline);
+    } else {
+      backgroundColor = theme.colorScheme.secondary;
+      foregroundColor = theme.colorScheme.onSecondary;
+      border = null;
+    }
+
+    return ElevatedButton.icon(
+      onPressed: isDisabled ? null : onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(
+        label,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: isDisabled
+              ? theme.colorScheme.onSurfaceVariant
+              : foregroundColor,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        side: border,
+        elevation: isOutlined ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  void _showRequestReviewModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: RequestReviewViewHandset(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the requisition after requesting review
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showMoreActionsBottomSheet(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outline,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Title
+              Text(
+                'More Actions',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Action Items
+              BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+                builder: (context, requisitionState) {
+                  return Column(
+                    children: [
+                      // _buildBottomSheetAction(
+                      //   context,
+                      //   icon: Icons.download,
+                      //   title: 'Export PDF',
+                      //   subtitle: 'Download requisition as PDF',
+                      //   onTap: () {
+                      //     Navigator.pop(context);
+                      //     // TODO: Implement PDF export
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       const SnackBar(
+                      //         content: Text('PDF export coming soon!'),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
+                      
+                      // _buildBottomSheetAction(
+                      //   context,
+                      //   icon: Icons.share,
+                      //   title: 'Share Requisition',
+                      //   subtitle: 'Share requisition details',
+                      //   onTap: () {
+                      //     Navigator.pop(context);
+                      //     // TODO: Implement sharing
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       const SnackBar(
+                      //         content: Text('Share functionality coming soon!'),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
+                      
+                      requisitionState.maybeWhen(
+                        loaded: (requisition) => requisition.approvalStatus == PRFApprovalStatus.pending
+                            ? _buildBottomSheetAction(
+                                context,
+                                icon: Icons.edit,
+                                title: 'Edit Requisition',
+                                subtitle: 'Modify requisition details',
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  // TODO: Implement edit functionality
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Edit functionality coming soon!'),
+                                    ),
+                                  );
+                                },
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                      
+                      // _buildBottomSheetAction(
+                      //   context,
+                      //   icon: Icons.history,
+                      //   title: 'View History',
+                      //   subtitle: 'See requisition activity log',
+                      //   onTap: () {
+                      //     Navigator.pop(context);
+                      //     // TODO: Implement history view
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       const SnackBar(
+                      //         content: Text('History view coming soon!'),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
+                    ],
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomSheetAction(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: theme.colorScheme.primary,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        title,
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
     );
   }
 
