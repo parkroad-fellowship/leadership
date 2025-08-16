@@ -866,7 +866,7 @@
     "@createActivity": {},
     "requisitionUnavailable": "Requisitioning unavailable",
     "@requisitionUnavailable": {},
-    "requisitionUnavailableDesc": "Requisitioning is only available for newer events. Please create a new event to enable requisitioning.",
+    "requisitionUnavailableDesc": "Requisitioning is only available for newer entries. Please create a new entry to enable requisitioning.",
     "@requisitionUnavailableDesc": {},
     "create": "Create",
     "@create": {},

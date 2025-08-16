@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_mission.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:map_launcher/map_launcher.dart';
 
 class MissionGroundViewHandset extends StatefulWidget {
-  const MissionGroundViewHandset({required this.missionUlid, super.key});
+  const MissionGroundViewHandset({required this.mission, super.key});
 
-  final String missionUlid;
+  final PRFMission mission;
 
   @override
   State<MissionGroundViewHandset> createState() =>
@@ -21,14 +18,7 @@ class MissionGroundViewHandset extends StatefulWidget {
 
 class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
     with TimezoneMixin {
-  String get missionUlid => widget.missionUlid;
-
-  @override
-  void initState() {
-    super.initState();
-
-    context.read<GetMissionCubit>().getMission(missionUlid: missionUlid);
-  }
+  PRFMission get mission => widget.mission;
 
   @override
   Widget build(BuildContext context) {
@@ -38,33 +28,28 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: BlocBuilder<GetMissionCubit, GetMissionState>(
-          builder: (context, state) => state.maybeWhen(
-            orElse: PRFCircularProgressIndicator.new,
-            loaded: (mission) => Column(
-              children: [
-                // Hero Mission Card
-                _buildHeroCard(context, mission, l10n, theme),
-                const SizedBox(height: 24),
+        child: Column(
+          children: [
+            // Hero Mission Card
+            _buildHeroCard(context, mission, l10n, theme),
+            const SizedBox(height: 24),
 
-                // Quick Actions Row
-                _buildQuickActions(context, mission, l10n, theme),
-                const SizedBox(height: 24),
+            // Quick Actions Row
+            _buildQuickActions(context, mission, l10n, theme),
+            const SizedBox(height: 24),
 
-                // Mission Intelligence Grid
-                _buildIntelligenceGrid(context, mission, l10n, theme),
-                const SizedBox(height: 24),
+            // Mission Intelligence Grid
+            _buildIntelligenceGrid(context, mission, l10n, theme),
+            const SizedBox(height: 24),
 
-                // Contact Command Center
-                _buildContactCenter(context, mission, l10n, theme),
-                const SizedBox(height: 24),
+            // Contact Command Center
+            _buildContactCenter(context, mission, l10n, theme),
+            const SizedBox(height: 24),
 
-                // Location & Navigation Hub
-                _buildLocationHub(context, mission, l10n, theme),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+            // Location & Navigation Hub
+            _buildLocationHub(context, mission, l10n, theme),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );

@@ -112,53 +112,56 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
         );
 
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.receipt_long_outlined,
-                size: 64,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No Requisition Items',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                isPending
-                    ? 'No items have been added to this requisition yet.'
-                    : 'This requisition is no longer editable.',
-                style: theme.textTheme.bodyMedium?.copyWith(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.receipt_long_outlined,
+                  size: 64,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              if (isPending)
-                ElevatedButton.icon(
-                  onPressed: () => _showCreateRequisitionItemModal(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Item'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: theme.colorScheme.onPrimary,
+                const SizedBox(height: 16),
+                Text(
+                  'No Requisition Items',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                )
-              else
-                OutlinedButton.icon(
-                  onPressed: () {
-                    context.router.popUntilRouteWithPath(
-                      PRFLeadershipRouter.deskActivityDetailsRoute,
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Create New Requisition'),
                 ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  isPending
+                      ? 'No items have been added to this requisition yet.'
+                      : 'This requisition is no longer editable.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                if (isPending)
+                  ElevatedButton.icon(
+                    onPressed: () => _showCreateRequisitionItemModal(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Item'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                    ),
+                  )
+                else
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      context.router.popUntilRouteWithPath(
+                        PRFLeadershipRouter.deskActivityDetailsRoute,
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create New Requisition'),
+                  ),
+              ],
+            ),
           ),
         );
       },

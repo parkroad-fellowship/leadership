@@ -29,7 +29,7 @@ class GetMissionCubit extends Cubit<GetMissionState> {
           'missionType',
           'school.schoolContacts.contactType',
           'loggedInMemberMissionSubscription',
-          'weatherForecasts',
+          'accountingEvent',
         ],
       );
       emit(GetMissionState.loaded(mission: mission));

@@ -24,6 +24,7 @@ class GetMissionsCubit extends Cubit<GetMissionsState> {
           'school',
           'missionType',
           'school.schoolContacts.contactType',
+          'accountingEvent',
         ],
         filters: {'upcoming': true},
         orderBy: 'start_date',
