@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_requisition_dto.dart';
@@ -14,7 +13,7 @@ class CreateRequisitionCubit extends Cubit<CreateRequisitionState> {
   CreateRequisitionCubit({
     required RequisitionService requisitionService,
     required HiveService hiveService,
-  }) : super(CreateRequisitionState.initial()) {
+  }) : super(const CreateRequisitionState.initial()) {
     _requisitionService = requisitionService;
     _hiveService = hiveService;
   }

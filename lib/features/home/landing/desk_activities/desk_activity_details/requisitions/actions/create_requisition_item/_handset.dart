@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_item_cubit.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_item_cubit.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
@@ -180,8 +180,7 @@ class _CreateRequisitionItemViewHandsetState
                                     const PRFCircularProgressIndicator(),
                                 loading: () =>
                                     const PRFCircularProgressIndicator(),
-                                loaded: (categories) =>
-                                    _buildCategorySelector(categories),
+                                loaded: _buildCategorySelector,
                                 error: (message) => Text(
                                   'Error loading categories: $message',
                                   style: TextStyle(

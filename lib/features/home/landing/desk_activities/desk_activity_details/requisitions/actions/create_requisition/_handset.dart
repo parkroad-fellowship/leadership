@@ -6,19 +6,16 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
-import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
-import 'package:leadership/services/_index.dart';
 import 'package:leadership/shared_widgets/_index.dart';
-import 'package:leadership/utils/_index.dart';
 
 class CreateRequisitionViewHandset extends StatefulWidget {
   const CreateRequisitionViewHandset({
-    super.key,
     required this.accountingEvent,
+    super.key,
   });
 
   final PRFAccountingEvent accountingEvent;
@@ -292,7 +289,7 @@ class _CreateRequisitionViewHandsetState
 
     if (requisitionDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select requisition date')),
+        const SnackBar(content: Text('Please select requisition date')),
       );
       Gaimon.warning();
       return;

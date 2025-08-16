@@ -13,7 +13,7 @@ import 'package:leadership/utils/_index.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class RequisitionPageHandset extends StatefulWidget {
-  const RequisitionPageHandset({super.key, required this.requisitionUlid});
+  const RequisitionPageHandset({required this.requisitionUlid, super.key});
 
   final String requisitionUlid;
 
@@ -515,7 +515,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                     DateFormat.yMMMd().add_Hm().format(item.createdAt),
                     Icons.schedule,
                   ),
-                   const SizedBox(height: 32),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),

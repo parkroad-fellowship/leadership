@@ -61,7 +61,7 @@ class PRFNavBar extends StatelessWidget {
     if (!isSliver) {
       return SafeArea(child: navBar);
     }
-    
+
     return navBar;
   }
 }

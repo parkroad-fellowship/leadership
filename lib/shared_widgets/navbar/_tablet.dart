@@ -100,9 +100,7 @@ class PRFNavBarTablet extends StatelessWidget {
           // Title
           Expanded(
             child: Align(
-              alignment: centerTitle
-                  ? Alignment.center
-                  : Alignment.centerLeft,
+              alignment: centerTitle ? Alignment.center : Alignment.centerLeft,
               child: Text(
                 title,
                 style: theme.textTheme.headlineLarge?.copyWith(

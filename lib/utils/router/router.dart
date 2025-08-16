@@ -15,7 +15,8 @@ class PRFLeadershipRouter extends RootStackRouter {
   static const String deskActivitiesRoute = '/desk-activities';
   static const String deskActivityDetailsRoute = '/desk-activities/:ulid';
 
-  static const String requisitionRoute = '/desk-activities/:ulid/requisitions/:ulid';
+  static const String requisitionRoute =
+      '/desk-activities/:ulid/requisitions/:ulid';
 
   @override
   List<AutoRoute> get routes => [
