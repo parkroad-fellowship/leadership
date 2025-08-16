@@ -11,8 +11,7 @@ class MissionGroundView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdaptiveBuilder(
-      defaultBuilder: (_, _) =>
-          MissionGroundViewHandset(mission: mission),
+      defaultBuilder: (_, _) => MissionGroundViewHandset(mission: mission),
       layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
         handset: (_, _) => MissionGroundViewHandset(mission: mission),
       ),

@@ -868,7 +868,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       //     // TODO: Implement sharing
                       //     ScaffoldMessenger.of(context).showSnackBar(
                       //       const SnackBar(
-                      //         content: Text('Share functionality coming soon!'),
+                      //         content: Text('Share functionality
+                      //coming soon!'),
                       //       ),
                       //     );
                       //   },
@@ -884,7 +885,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                                 subtitle: 'Modify requisition details',
                                 onTap: () {
                                   Navigator.pop(context);
-                                  // TODO: Implement edit functionality
+                                  // TODO(miller): Implement edit functionality
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(

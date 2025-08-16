@@ -28,7 +28,7 @@ class LandingPageHandset extends StatelessWidget {
       ),
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        
+
         body: SafeArea(
           child: CustomScrollView(
             slivers: [
@@ -205,7 +205,9 @@ class LandingPageHandset extends StatelessWidget {
                         .map(
                           (action) => _buildAnimatedCard(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
                               child: HomeActionCard(
                                 title: action[0] as String,
                                 assetPath: action[1] as String,
