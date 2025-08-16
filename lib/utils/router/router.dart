@@ -11,7 +11,9 @@ class PRFLeadershipRouter extends RootStackRouter {
   // Landing
   static const String landingRoute = '/landing';
   static const String accountRoute = '/account';
-  // static const String requisitionsRoute = '/requisitions';
+
+  static const String deskEventsRoute = '/desk-events';
+  static const String deskEventDetailsRoute = '/desk-events/:ulid';
 
   @override
   List<AutoRoute> get routes => [
@@ -38,6 +40,20 @@ class PRFLeadershipRouter extends RootStackRouter {
     CustomRoute<dynamic>(
       page: AccountRoute.page,
       path: accountRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: DeskEventsRoute.page,
+      path: deskEventsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: DeskEventDetailsRoute.page,
+      path: deskEventDetailsRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),

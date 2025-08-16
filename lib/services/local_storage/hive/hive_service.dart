@@ -64,4 +64,8 @@ class HiveService {
             .toList() ??
         [];
   }
+
+  List<String> get memberRoles {
+    return _auth.roles;
+  }
 }

@@ -48,6 +48,9 @@ class AuthHiveService extends BaseHiveService {
 
   String get timezone => retrieveProfile()!.timezone;
 
+  List<String> get roles =>
+      retrieveProfile()!.roles.map((role) => role.name).toList();
+
   // Clear auth data
   void clearAuthData() {
     deleteAll([

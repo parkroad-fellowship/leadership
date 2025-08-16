@@ -578,8 +578,6 @@
     "@status": {},
     "comments": "Notes",
     "@comments": {},
-    "requisition": "make a requisition",
-    "@requisition": {},
     "considerGiving": "Consider giving",
     "@considerGiving": {},
     "amount": "Amount",
@@ -853,5 +851,11 @@
     "startGiving": "Start your giving journey today",
     "@startGiving": {},
     "tapForActions": "Press for payment actions",
-    "@tapForActions": {}
+    "@tapForActions": {},
+    "requisition": "make a requisition",
+    "@requisition": {},
+    "viewDeskEvents": "view desk events",
+    "@viewDeskEvents": {},
+    "requisitions": "Requisitions",
+    "@requisitions": {}
 }

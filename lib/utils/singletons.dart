@@ -5,7 +5,10 @@ import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
+import 'package:leadership/features/home/landing/desk_events/cubit/get_events_cubit.dart';
+import 'package:leadership/features/home/landing/desk_events/cubit/get_past_events_cubit.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/firebase_service.dart';
 import 'package:leadership/services/local_auth_service.dart';
@@ -21,13 +24,10 @@ class Singletons {
       ..registerSingleton<LocalAuthService>(LocalAuthService())
       ..registerSingleton<FirebaseService>(FirebaseServiceImpl())
       ..registerSingleton<AuthService>(AuthService())
-      ..registerSingleton<ExpenseCategoriesService>(
-        ExpenseCategoriesService(),
-      )
+      ..registerSingleton<ExpenseCategoriesService>(ExpenseCategoriesService())
+      ..registerSingleton<EventService>(EventService())
       ..registerSingleton<NotificationService>(NotificationServiceImpl())
-      ..registerSingleton<SocketService>(
-        SocketServiceImpl(),
-      )
+      ..registerSingleton<SocketService>(SocketServiceImpl())
       ..registerSingleton<MediaService>(MediaServiceImpl());
   }
 
@@ -64,6 +64,18 @@ class Singletons {
       ),
       BlocProvider<SignOutCubit>(
         create: (context) => SignOutCubit(
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<GetEventsCubit>(
+        create: (context) => GetEventsCubit(
+          eventService: getIt<EventService>(),
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<GetPastEventsCubit>(
+        create: (context) => GetPastEventsCubit(
+          eventService: getIt<EventService>(),
           hiveService: getIt<HiveService>(),
         ),
       ),
