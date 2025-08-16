@@ -215,7 +215,7 @@ class _CreateRequisitionItemViewHandsetState
                             child: PRFNumberInput(
                               hintText: 'Unit price',
                               controller: _unitPriceController,
-                              prefixText: 'KSh ',
+                              prefixText: 'KES ',
                             ),
                           ),
                         ),
@@ -262,7 +262,7 @@ class _CreateRequisitionItemViewHandsetState
                                   ),
                             ),
                             Text(
-                              'KSh $_totalPrice',
+                              'KES $_totalPrice',
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,

@@ -263,7 +263,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                         ),
                         Text(
                           NumberFormat.currency(
-                            symbol: 'KSh ',
+                            symbol: 'KES ',
                             decimalDigits: 0,
                           ).format(totalAmount),
                           style: theme.textTheme.headlineSmall?.copyWith(
@@ -371,7 +371,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       ),
                       Text(
                         NumberFormat.currency(
-                          symbol: 'KSh ',
+                          symbol: 'KES ',
                           decimalDigits: 0,
                         ).format(item.totalPrice),
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -393,7 +393,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       _buildDetailChip(
                         context,
                         'Unit: ${NumberFormat.currency(
-                          symbol: 'KSh ',
+                          symbol: 'KES ',
                           decimalDigits: 0,
                         ).format(item.unitPrice)}',
                         Icons.attach_money,
@@ -486,7 +486,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                     context,
                     'Unit Price',
                     NumberFormat.currency(
-                      symbol: 'KSh ',
+                      symbol: 'KES ',
                       decimalDigits: 0,
                     ).format(item.unitPrice),
                     Icons.attach_money,
@@ -503,7 +503,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                     context,
                     'Total Price',
                     NumberFormat.currency(
-                      symbol: 'KSh ',
+                      symbol: 'KES ',
                       decimalDigits: 0,
                     ).format(item.totalPrice),
                     Icons.calculate,
