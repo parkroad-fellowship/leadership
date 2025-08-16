@@ -103,6 +103,14 @@ class _DeskEventDetailsPageTabletState extends State<DeskEventDetailsPageTablet>
           ),
         ),
       ),
+      floatingActionButton: switch (_currentTab) {
+        1 => FloatingActionButton.extended(
+          icon: const Icon(Icons.add),
+          onPressed: () {},
+          label: Text(l10n.createRequisition),
+        ),
+        _ => const SizedBox.shrink(),
+      },
     );
   }
 }

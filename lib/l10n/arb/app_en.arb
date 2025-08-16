@@ -863,5 +863,11 @@
     "activityCreated": "Activity created successfully",
     "@activityCreated": {},
     "createActivity": "You can create a new activity",
-    "@createActivity": {}
+    "@createActivity": {},
+    "requisitionUnavailable": "Requisitioning unavailable",
+    "@requisitionUnavailable": {},
+    "requisitionUnavailableDesc": "Requisitioning is only available for newer events. Please create a new event to enable requisitioning.",
+    "@requisitionUnavailableDesc": {},
+    "createRequisition": "Create",
+    "@createRequisition": {}
 }

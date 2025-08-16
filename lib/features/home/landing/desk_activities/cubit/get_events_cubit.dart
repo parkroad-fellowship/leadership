@@ -27,6 +27,7 @@ class GetEventsCubit extends Cubit<GetEventsState> {
       final events = await _eventService.list(
         includes: [
           'posters',
+          'accountingEvent',
         ],
         orderBy: 'start_date',
         orderDirection: 'asc',

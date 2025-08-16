@@ -8,9 +8,13 @@ import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
+import 'package:leadership/services/api/requisition_item_service.dart';
+import 'package:leadership/services/api/requisition_service.dart';
 import 'package:leadership/services/firebase_service.dart';
 import 'package:leadership/services/local_auth_service.dart';
 import 'package:leadership/utils/router/router.dart';
@@ -29,7 +33,9 @@ class Singletons {
       ..registerSingleton<EventService>(EventService())
       ..registerSingleton<NotificationService>(NotificationServiceImpl())
       ..registerSingleton<SocketService>(SocketServiceImpl())
-      ..registerSingleton<MediaService>(MediaServiceImpl());
+      ..registerSingleton<MediaService>(MediaServiceImpl())
+      ..registerSingleton<RequisitionService>(RequisitionService())
+      ..registerSingleton<RequisitionItemService>(RequisitionItemService());
   }
 
   static Future<void> setupDatabases() async {
@@ -83,6 +89,16 @@ class Singletons {
       BlocProvider<AddEventCubit>(
         create: (context) => AddEventCubit(
           eventService: getIt<EventService>(),
+        ),
+      ),
+      BlocProvider<GetRequisitionsCubit>(
+        create: (context) => GetRequisitionsCubit(
+          requisitionService: getIt<RequisitionService>(),
+        ),
+      ),
+      BlocProvider<GetRequisitionItemsCubit>(
+        create: (context) => GetRequisitionItemsCubit(
+          requisitionItemService: getIt<RequisitionItemService>(),
         ),
       ),
     ];

@@ -118,7 +118,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
           controller: _tabController,
           children: [
             _buildEventsTimeline(context),
-            _buildSubscribedEventsTimeline(context),
+            _buildPastEventTimeline(context),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -230,7 +230,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
     );
   }
 
-  Widget _buildSubscribedEventsTimeline(BuildContext context) {
+  Widget _buildPastEventTimeline(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
