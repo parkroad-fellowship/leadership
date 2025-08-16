@@ -303,7 +303,7 @@
     },
     "iWantTo": "Right now, I want to",
     "@iWantTo": {},
-    "goToAMission": "View missions",
+    "goToAMission": "view missions",
     "@goToAMission": {},
     "learnSomething": "Learn something",
     "@learnSomething": {},
@@ -876,6 +876,6 @@
     "@enterPurpose": {},
     "requisitionDetails": "Requisition Details",
     "@requisitionDetails": {},
-    "viewMissions": "View Missions",
+    "viewMissions": "view Missions",
     "@viewMissions": {}
 }
