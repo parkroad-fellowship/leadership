@@ -2,9 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/desk_events/actions/create_event/create_event.dart';
-import 'package:leadership/features/home/landing/desk_events/cubit/get_events_cubit.dart';
-import 'package:leadership/features/home/landing/desk_events/cubit/get_past_events_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/actions/create_event/create_event.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/shared_widgets/_index.dart';
@@ -13,14 +13,14 @@ import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-class DeskEventsTablet extends StatefulWidget {
-  const DeskEventsTablet({super.key});
+class DeskActivitiesHandset extends StatefulWidget {
+  const DeskActivitiesHandset({super.key});
 
   @override
-  State<DeskEventsTablet> createState() => _DeskEventsTabletState();
+  State<DeskActivitiesHandset> createState() => _DeskActivitiesHandsetState();
 }
 
-class _DeskEventsTabletState extends State<DeskEventsTablet>
+class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -51,7 +51,7 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
         appBar: AppBar(
           centerTitle: true,
           title: Text(
-            l10n.events,
+            l10n.activities,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: theme.colorScheme.onSurface,
@@ -109,8 +109,8 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
             controller: _tabController,
             isScrollable: true,
             tabs: [
-              Tab(text: l10n.all),
-              Tab(text: l10n.subscribed),
+              Tab(text: l10n.upcoming),
+              Tab(text: l10n.past),
             ],
           ),
         ),
@@ -180,8 +180,8 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
           empty: () => RefreshIndicator(
             onRefresh: () => context.read<GetEventsCubit>().getUpcomingEvents(),
             child: PRFEmptyView(
-              label: l10n.noEvents,
-              description: l10n.pleaseWaitOS,
+              label: l10n.noActivities,
+              description: l10n.createActivity,
             ),
           ),
           loaded: (events) {
@@ -195,7 +195,7 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
+                  horizontal: 16,
                   vertical: 20,
                 ),
                 itemCount: sortedEvents.length,
@@ -266,7 +266,7 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
           empty: () => RefreshIndicator(
             onRefresh: () => context.read<GetPastEventsCubit>().getPastEvents(),
             child: PRFEmptyView(
-              label: l10n.noEvents,
+              label: l10n.noActivities,
               description: l10n.pleaseWaitForOS,
             ),
           ),
@@ -277,7 +277,7 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
+                  horizontal: 16,
                   vertical: 20,
                 ),
                 itemCount: events.length,
@@ -289,7 +289,6 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
                         event: event,
                         isLast: isLast,
                         index: index,
-                        isSubscribed: true,
                         onTap: () => context.router.push(
                           DeskEventDetailsRoute(event: event),
                         ),
@@ -359,27 +358,17 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
         ? theme.colorScheme.onSurfaceVariant
         : theme.colorScheme.secondary;
 
-    final statusText = isSubscribed
-        ? 'Subscribed'
-        : isOngoing
-        ? 'Active'
-        : isUpcoming
-        ? 'Upcoming'
-        : isPast
-        ? 'Completed'
-        : 'Available';
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 80,
+          width: 60,
           child: Column(
             children: [
               // Multi-day date badge
               Container(
-                width: 70,
-                height: isMultiDay ? 180 : 80,
+                width: 50,
+                height: isMultiDay ? 90 : 50,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -389,12 +378,12 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                       statusColor.withValues(alpha: 0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: statusColor.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -406,51 +395,55 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                       // Start date
                       Text(
                         startDate.day.toString(),
-                        style: theme.textTheme.titleLarge?.copyWith(
+                        style: theme.textTheme.labelLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
+                          fontSize: 14,
                         ),
                       ),
                       Text(
                         Misc.getMonthAbbreviation(startDate.month),
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
+                          fontSize: 8,
                         ),
                       ),
                       Container(
-                        width: 16,
-                        height: 2,
+                        width: 12,
+                        height: 1,
                         color: Colors.white.withValues(alpha: 0.7),
-                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        margin: const EdgeInsets.symmetric(vertical: 2),
                       ),
                       // End date
                       Text(
                         endDate.day.toString(),
-                        style: theme.textTheme.titleLarge?.copyWith(
+                        style: theme.textTheme.labelLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
+                          fontSize: 14,
                         ),
                       ),
                       Text(
                         Misc.getMonthAbbreviation(endDate.month),
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
+                          fontSize: 8,
                         ),
                       ),
                     ] else ...[
                       // Single day
                       Text(
                         startDate.day.toString(),
-                        style: theme.textTheme.headlineMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
                         Misc.getMonthAbbreviation(startDate.month),
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
                         ),
@@ -462,9 +455,9 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
               // Timeline line with flexible height
               if (!isLast)
                 Container(
-                  width: 3,
-                  height: 80,
-                  margin: const EdgeInsets.symmetric(vertical: 16),
+                  width: 2,
+                  height: 60,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -474,48 +467,48 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                         theme.colorScheme.outline.withValues(alpha: 0.2),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(1.5),
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 ),
             ],
           ),
         ),
-        const SizedBox(width: 24),
+
+        const SizedBox(width: 16),
+
         Expanded(
           child: GestureDetector(
             onTap: onTap,
             child: Container(
-              margin: EdgeInsets.only(
-                bottom: isLast ? 0 : 24,
-              ),
+              margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: statusColor.withValues(alpha: 0.2),
-                  width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
                   ),
                   BoxShadow(
                     color: statusColor.withValues(alpha: 0.05),
-                    blurRadius: 32,
-                    offset: const Offset(0, 8),
+                    blurRadius: 24,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Premium header with gradient
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -536,7 +529,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                               Expanded(
                                 child: Text(
                                   event.name,
-                                  style: theme.textTheme.titleLarge?.copyWith(
+                                  style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: theme.colorScheme.onSurface,
                                   ),
@@ -544,67 +537,36 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor,
-                                  borderRadius: BorderRadius.circular(
-                                    16,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: statusColor.withValues(alpha: 0.3),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  statusText,
-                                  style: theme.textTheme.labelMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              const SizedBox(width: 8),
                             ],
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
 
                           // Event venue with icon
                           if (event.venue != null)
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(
-                                    8,
-                                  ),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(
-                                      12,
-                                    ),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     Icons.location_on_rounded,
-                                    size: 20,
+                                    size: 16,
                                     color: theme.colorScheme.onPrimaryContainer,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     event.venue!,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface,
-                                        ),
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -617,7 +579,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
 
                     // Event details
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -635,13 +597,13 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   theme.colorScheme.onPrimaryContainer,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               Flexible(
                                 child: _buildInfoChip(
                                   context,
                                   Icons.people_rounded,
-                                  'Capacity',
-                                  '${event.capacity} attendees',
+                                  'Amount',
+                                  '${event.capacity} KES',
                                   theme.colorScheme.secondaryContainer,
                                   theme.colorScheme.onSecondaryContainer,
                                 ),
@@ -649,38 +611,88 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                             ],
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           // Date range display
-                          DateRangeView(
-                            isMultiDay: isMultiDay,
-                            startDate: startDate,
-                            timezone: timezone,
-                            endDate: endDate,
-                            event: event,
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: theme.colorScheme.outline.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today_rounded,
+                                  size: 20,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        isMultiDay
+                                            // ignore: lines_longer_than_80_chars
+                                            ? '${Misc.formatDate(startDate, timezone)} - ${Misc.formatDate(endDate, timezone)}'
+                                            : Misc.formatDate(
+                                                startDate,
+                                                timezone,
+                                              ),
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  theme.colorScheme.onSurface,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        // ignore: lines_longer_than_80_chars
+                                        '${Misc.formatTime(event.startTime, timezone)} - ${Misc.formatTime(event.endTime, timezone)} daily',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           // Description preview
                           if (event.description.isNotEmpty)
                             Text(
                               event.description.split('\n').first,
-                              style: theme.textTheme.bodyLarge?.copyWith(
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           // Action button
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
+                              horizontal: 16,
+                              vertical: 12,
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -689,9 +701,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   statusColor.withValues(alpha: 0.05),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(
-                                16,
-                              ),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: statusColor.withValues(alpha: 0.3),
                               ),
@@ -701,15 +711,15 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                               children: [
                                 Text(
                                   'View Details',
-                                  style: theme.textTheme.titleMedium?.copyWith(
+                                  style: theme.textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     color: statusColor,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 8),
                                 Icon(
                                   Icons.arrow_forward_rounded,
-                                  size: 22,
+                                  size: 18,
                                   color: statusColor,
                                 ),
                               ],
@@ -739,12 +749,12 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
+        horizontal: 12,
+        vertical: 8,
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: textColor.withValues(alpha: 0.2),
         ),
@@ -754,10 +764,10 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
         children: [
           Icon(
             icon,
-            size: 18,
+            size: 14,
             color: textColor,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,97 +775,19 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
               children: [
                 Text(
                   label,
-                  style: theme.textTheme.labelMedium?.copyWith(
+                  style: theme.textTheme.labelSmall?.copyWith(
                     color: textColor.withValues(alpha: 0.8),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   value,
-                  style: theme.textTheme.labelMedium?.copyWith(
+                  style: theme.textTheme.labelSmall?.copyWith(
                     color: textColor,
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class DateRangeView extends StatelessWidget {
-  const DateRangeView({
-    required this.isMultiDay,
-    required this.startDate,
-    required this.timezone,
-    required this.endDate,
-    required this.event,
-    super.key,
-  });
-
-  final bool isMultiDay;
-  final DateTime startDate;
-  final String timezone;
-  final DateTime endDate;
-  final PRFEvent event;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(
-        16,
-      ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(
-          16,
-        ),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(
-            alpha: 0.2,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 24,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isMultiDay
-                      ? '${Misc.formatDate(startDate, timezone)} - '
-                            '${Misc.formatDate(endDate, timezone)}'
-                      : Misc.formatDate(
-                          startDate,
-                          timezone,
-                        ),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${Misc.formatTime(event.startTime, timezone)} -'
-                  ' ${Misc.formatTime(event.endTime, timezone)} daily',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
                 ),
               ],
             ),

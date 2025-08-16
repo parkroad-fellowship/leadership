@@ -43,10 +43,10 @@ class _LandingPageState extends State<LandingPage> {
 
     final actions = [
       [
-        l10n.viewDeskEvents,
+        l10n.viewDeskActivities,
         'assets/svgs/events.svg',
         () => context.router.pushPath(
-          PRFLeadershipRouter.deskEventsRoute,
+          PRFLeadershipRouter.deskActivitiesRoute,
         ),
         700,
       ],

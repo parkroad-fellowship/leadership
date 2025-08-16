@@ -7,8 +7,8 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
-import 'package:leadership/features/home/landing/desk_events/cubit/add_event_cubit.dart';
-import 'package:leadership/features/home/landing/desk_events/cubit/get_events_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/shared_widgets/_index.dart';
@@ -107,7 +107,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      l10n.createNewEvent,
+                      l10n.createNewActivity,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             color: Theme.of(context).colorScheme.onPrimary,
@@ -116,7 +116,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l10n.createEventDescription,
+                      l10n.createActivityDescription,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(
                           context,
@@ -253,7 +253,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                       context.read<GetEventsCubit>().getUpcomingEvents();
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.eventCreated)),
+                        SnackBar(content: Text(l10n.activityCreated)),
                       );
                     },
                     error: (error) {

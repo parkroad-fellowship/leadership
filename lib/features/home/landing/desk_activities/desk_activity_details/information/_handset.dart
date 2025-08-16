@@ -6,18 +6,16 @@ import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:map_launcher/map_launcher.dart';
 
-class DeskEventDetailsViewHandset extends StatefulWidget {
-  const DeskEventDetailsViewHandset({required this.event, super.key});
+class InformationViewHandset extends StatefulWidget {
+  const InformationViewHandset({required this.event, super.key});
 
   final PRFEvent event;
 
   @override
-  State<DeskEventDetailsViewHandset> createState() =>
-      _DeskEventDetailsViewHandsetState();
+  State<InformationViewHandset> createState() => _InformationViewHandsetState();
 }
 
-class _DeskEventDetailsViewHandsetState
-    extends State<DeskEventDetailsViewHandset>
+class _InformationViewHandsetState extends State<InformationViewHandset>
     with TimezoneMixin {
   PRFEvent get event => widget.event;
 
@@ -35,21 +33,27 @@ class _DeskEventDetailsViewHandsetState
             _buildHeroCard(context, event, l10n, theme),
             const SizedBox(height: 24),
 
-            // Quick Actions Row
-            _buildQuickActions(context, event, l10n, theme),
-            const SizedBox(height: 24),
+            if (event.venue != null) ...[
+              // Quick Actions Row
+              _buildQuickActions(context, event, l10n, theme),
+              const SizedBox(height: 24),
+            ],
 
-            // Event Intelligence Grid
-            _buildIntelligenceGrid(context, event, l10n, theme),
-            const SizedBox(height: 24),
+            if (event.subscriptionsNeeded != null) ...[
+              // Event Intelligence Grid
+              _buildIntelligenceGrid(context, event, l10n, theme),
+              const SizedBox(height: 24),
+            ],
 
             // Description Section
             _buildDescriptionSection(context, event, l10n, theme),
             const SizedBox(height: 24),
 
-            // Location & Navigation Hub
-            _buildLocationHub(context, event, l10n, theme),
-            const SizedBox(height: 24),
+            if (event.latitude != null && event.longitude != null) ...[
+              // Location & Navigation Hub
+              _buildLocationHub(context, event, l10n, theme),
+              const SizedBox(height: 24),
+            ],
 
             // Weather Intelligence
             if (event.weatherForecasts.isNotEmpty)
@@ -286,7 +290,7 @@ class _DeskEventDetailsViewHandsetState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.eventIntelligence,
+              l10n.activityIntelligence,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
