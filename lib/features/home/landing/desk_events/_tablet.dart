@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/features/home/landing/desk_events/actions/create_event/create_event.dart';
 import 'package:leadership/features/home/landing/desk_events/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_events/cubit/get_past_events_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -10,6 +11,7 @@ import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class DeskEventsTablet extends StatefulWidget {
   const DeskEventsTablet({super.key});
@@ -118,6 +120,25 @@ class _DeskEventsTabletState extends State<DeskEventsTablet>
             _buildEventsTimeline(context),
             _buildSubscribedEventsTimeline(context),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => WoltModalSheet.show<void>(
+            context: context,
+            pageListBuilder: (modalSheetContext) {
+              return [
+                WoltModalSheetPage(
+                  backgroundColor: Colors.white,
+                  surfaceTintColor: Colors.white,
+                  child: SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.8,
+                    child: const CreateEventView(),
+                  ),
+                ),
+              ];
+            },
+          ),
+
+          child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
     );

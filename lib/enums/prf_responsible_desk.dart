@@ -39,6 +39,27 @@ enum PRFResponsibleDesk {
     }
   }
 
+  String get name {
+    switch (this) {
+      case PRFResponsibleDesk.chairperson:
+        return 'Chairperson';
+      case PRFResponsibleDesk.viceChairperson:
+        return 'Vice Chairperson';
+      case PRFResponsibleDesk.organisingSecretary:
+        return 'Organising Secretary';
+      case PRFResponsibleDesk.missions:
+        return 'Missions Desk';
+      case PRFResponsibleDesk.prayer:
+        return 'Prayer Desk';
+      case PRFResponsibleDesk.followUp:
+        return 'Follow-up Desk';
+      case PRFResponsibleDesk.music:
+        return 'Music Desk';
+      case PRFResponsibleDesk.treasurer:
+        return 'Treasurer';
+    }
+  }
+
   static PRFResponsibleDesk fromRole(
     String role,
   ) {

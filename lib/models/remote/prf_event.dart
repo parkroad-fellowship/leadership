@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:leadership/enums/prf_event_type.dart';
 import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/models/remote/prf_weather_forecast.dart';
 
@@ -20,6 +21,7 @@ abstract class PRFEvent with _$PRFEvent {
     double? latitude,
     double? longitude,
     @JsonKey(name: 'event_subscriptions_needed') int? subscriptionsNeeded,
+    @JsonKey(name: 'event_type') PRFEventType? eventType,
     @Default([]) List<PRFMedia> posters,
     @JsonKey(name: 'weather_forecasts')
     @Default([])

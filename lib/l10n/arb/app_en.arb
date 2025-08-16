@@ -18,7 +18,7 @@
     "@myProfile": {},
     "name": "Name",
     "@name": {},
-    "enterName": "Enter Name",
+    "enterName": "Enter name",
     "@enterName": {},
     "email": "Email",
     "@email": {},
@@ -156,6 +156,8 @@
     "@courseDetails": {},
     "description": "Description",
     "@description": {},
+    "enterDescription": "Enter description",
+    "@enterDescription": {},
     "percentage": "{progress}%",
     "@percentage": {
         "placeholders": {
@@ -857,5 +859,15 @@
     "viewDeskEvents": "view desk events",
     "@viewDeskEvents": {},
     "requisitions": "Requisitions",
-    "@requisitions": {}
+    "@requisitions": {},
+    "responsibleDesk": "Responsible Desk",
+    "@responsibleDesk": {},
+    "selectResponsibleDesk": "Select the responsible desk",
+    "@selectResponsibleDesk": {},
+    "createNewEvent": "Create New Event",
+    "@createNewEvent": {},
+    "createEventDescription": "Fill in the details below to create a new event",
+    "@createEventDescription": {},
+    "eventCreated": "Event created successfully",
+    "@eventCreated": {}
 }

@@ -5,6 +5,7 @@ import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
+import 'package:leadership/features/home/landing/desk_events/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_events/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_events/cubit/get_past_events_cubit.dart';
 import 'package:leadership/services/_index.dart';
@@ -77,6 +78,11 @@ class Singletons {
         create: (context) => GetPastEventsCubit(
           eventService: getIt<EventService>(),
           hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<AddEventCubit>(
+        create: (context) => AddEventCubit(
+          eventService: getIt<EventService>(),
         ),
       ),
     ];
