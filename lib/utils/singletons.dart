@@ -5,10 +5,12 @@ import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
+import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_item_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/services/_index.dart';
@@ -105,6 +107,17 @@ class Singletons {
       ),
       BlocProvider<GetRequisitionItemsCubit>(
         create: (context) => GetRequisitionItemsCubit(
+          requisitionItemService: getIt<RequisitionItemService>(),
+        ),
+      ),
+      BlocProvider<GetExpenseCategoriesCubit>(
+        create: (context) => GetExpenseCategoriesCubit(
+          expenseCategoriesService: getIt<ExpenseCategoriesService>(),
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<CreateRequisitionItemCubit>(
+        create: (context) => CreateRequisitionItemCubit(
           requisitionItemService: getIt<RequisitionItemService>(),
         ),
       ),

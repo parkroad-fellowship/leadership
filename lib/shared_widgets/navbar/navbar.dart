@@ -12,6 +12,70 @@ class PRFNavBar extends StatelessWidget {
     this.backIcon,
     this.backgroundColor,
     this.centerTitle = true,
+    this.isSliver = true,
+  });
+
+  final String title;
+  final VoidCallback? onBack;
+  final List<Widget>? actions;
+  final IconData? backIcon;
+  final Color? backgroundColor;
+  final bool centerTitle;
+  final bool isSliver;
+
+  @override
+  Widget build(BuildContext context) {
+    final navBar = AdaptiveBuilder(
+      defaultBuilder: (_, _) => PRFNavBarTablet(
+        title: title,
+        onBack: onBack,
+        actions: actions,
+        backIcon: backIcon,
+        backgroundColor: backgroundColor,
+        centerTitle: centerTitle,
+        isSliver: isSliver,
+      ),
+      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
+        handset: (_, _) => PRFNavBarHandset(
+          title: title,
+          onBack: onBack,
+          actions: actions,
+          backIcon: backIcon,
+          backgroundColor: backgroundColor,
+          centerTitle: centerTitle,
+          isSliver: isSliver,
+        ),
+        tablet: (_, _) => PRFNavBarTablet(
+          title: title,
+          onBack: onBack,
+          actions: actions,
+          backIcon: backIcon,
+          backgroundColor: backgroundColor,
+          centerTitle: centerTitle,
+          isSliver: isSliver,
+        ),
+      ),
+    );
+
+    // If not used as sliver, wrap in SafeArea for normal AppBar usage
+    if (!isSliver) {
+      return SafeArea(child: navBar);
+    }
+    
+    return navBar;
+  }
+}
+
+// Create a separate class for normal AppBar usage
+class PRFAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const PRFAppBar({
+    required this.title,
+    super.key,
+    this.onBack,
+    this.actions,
+    this.backIcon,
+    this.backgroundColor,
+    this.centerTitle = true,
   });
 
   final String title;
@@ -23,33 +87,17 @@ class PRFNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => PRFNavBarTablet(
-        title: title,
-        onBack: onBack,
-        actions: actions,
-        backIcon: backIcon,
-        backgroundColor: backgroundColor,
-        centerTitle: centerTitle,
-      ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => PRFNavBarHandset(
-          title: title,
-          onBack: onBack,
-          actions: actions,
-          backIcon: backIcon,
-          backgroundColor: backgroundColor,
-          centerTitle: centerTitle,
-        ),
-        tablet: (_, _) => PRFNavBarTablet(
-          title: title,
-          onBack: onBack,
-          actions: actions,
-          backIcon: backIcon,
-          backgroundColor: backgroundColor,
-          centerTitle: centerTitle,
-        ),
-      ),
+    return PRFNavBar(
+      title: title,
+      onBack: onBack,
+      actions: actions,
+      backIcon: backIcon,
+      backgroundColor: backgroundColor,
+      centerTitle: centerTitle,
+      isSliver: false,
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
 }

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared_widgets/empty_state.dart';
 import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/router/router.gr.dart';
 
 class RequisitionsViewHandset extends StatefulWidget {
   const RequisitionsViewHandset({required this.accountingEventUlid, super.key});
@@ -98,6 +100,21 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset> {
                         requisition: requisition,
                         isLast: isLast,
                         index: index,
+                        onTap: () => context.router
+                            .push(
+                              RequisitionRoute(
+                                requisitionUlid: requisition.ulid,
+                              ),
+                            )
+                            .then((_) {
+                              // ignore: use_build_context_synchronously
+                              context
+                                  .read<GetRequisitionsCubit>()
+                                  .getRequisitions(
+                                    accountingEventUlid:
+                                        widget.accountingEventUlid,
+                                  );
+                            }),
                       )
                       .animate()
                       .fadeIn(

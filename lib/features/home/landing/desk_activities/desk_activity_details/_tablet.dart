@@ -128,7 +128,7 @@ class _DeskEventDetailsPageTabletState extends State<DeskEventDetailsPageTablet>
               );
             }
           },
-          label: Text(l10n.createRequisition),
+          label: Text(l10n.create),
         ),
         _ => const SizedBox.shrink(),
       },

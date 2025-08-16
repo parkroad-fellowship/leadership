@@ -66,10 +66,8 @@ class _DeskEventDetailsPageHandsetState
                 onBack: () => context.router.popUntilRouteWithPath(
                   PRFLeadershipRouter.deskActivitiesRoute,
                 ),
-                actions: const [],
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
               SliverToBoxAdapter(
                 child: TabBar(
                   controller: _tabController,
@@ -128,7 +126,7 @@ class _DeskEventDetailsPageHandsetState
               );
             }
           },
-          label: Text(l10n.createRequisition),
+          label: Text(l10n.create),
         ),
         _ => const SizedBox.shrink(),
       },
