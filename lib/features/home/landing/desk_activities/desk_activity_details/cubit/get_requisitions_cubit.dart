@@ -28,6 +28,7 @@ class GetRequisitionsCubit extends Cubit<GetRequisitionsState> {
           'member',
           'appointedApprover',
           'approvedBy',
+          'paymentInstruction'
         ],
       );
       if (requisitions.isEmpty) {

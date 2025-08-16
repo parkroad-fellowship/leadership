@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:leadership/enums/prf_payment_method.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/requisitions/actions/create_requisition_item/create_requisition_item.dart';
 import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
 import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
@@ -26,6 +29,10 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
   @override
   void initState() {
     super.initState();
+
+    context.read<GetRequisitionCubit>().getRequisition(
+      requisitionUlid: widget.requisitionUlid,
+    );
 
     context.read<GetRequisitionItemsCubit>().getRequisitionItems(
       requisitionUlid: widget.requisitionUlid,
@@ -90,25 +97,53 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           },
         ),
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'payment_instruction',
-            icon: const Icon(Icons.payment),
-            onPressed: () => _showCreatePaymentInstructionModal(context),
-            label: const Text('Payment'),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            foregroundColor: Theme.of(context).colorScheme.onSecondary,
-          ),
-          const SizedBox(height: 12),
-          FloatingActionButton.extended(
-            heroTag: 'requisition_item',
-            icon: const Icon(Icons.add),
-            onPressed: () => _showCreateRequisitionItemModal(context),
-            label: Text(l10n.create),
-          ),
-        ],
+      floatingActionButton: BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+        builder: (context, requisitionState) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              requisitionState.maybeWhen(
+                loaded: (requisition) => FloatingActionButton.extended(
+                  heroTag: 'payment_instruction',
+                  icon: Icon(
+                    requisition.paymentInstruction != null
+                        ? Icons.visibility
+                        : Icons.payment,
+                  ),
+                  onPressed: () => requisition.paymentInstruction != null
+                      ? _showPaymentInstructionDetails(context, requisition.paymentInstruction!)
+                      : _showCreatePaymentInstructionModal(context),
+                  label: Text(
+                    requisition.paymentInstruction != null
+                        ? 'View Payment'
+                        : 'Payment',
+                  ),
+                  backgroundColor: requisition.paymentInstruction != null
+                      ? Theme.of(context).colorScheme.tertiary
+                      : Theme.of(context).colorScheme.secondary,
+                  foregroundColor: requisition.paymentInstruction != null
+                      ? Theme.of(context).colorScheme.onTertiary
+                      : Theme.of(context).colorScheme.onSecondary,
+                ),
+                orElse: () => FloatingActionButton.extended(
+                  heroTag: 'payment_instruction',
+                  icon: const Icon(Icons.payment),
+                  onPressed: () => _showCreatePaymentInstructionModal(context),
+                  label: const Text('Payment'),
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              FloatingActionButton.extended(
+                heroTag: 'requisition_item',
+                icon: const Icon(Icons.add),
+                onPressed: () => _showCreateRequisitionItemModal(context),
+                label: Text(l10n.create),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -569,6 +604,288 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
           ),
         ];
       },
+    ).then((_) {
+      // Refresh requisition after creating payment instruction
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showPaymentInstructionDetails(
+    BuildContext context,
+    PRFPaymentInstruction paymentInstruction,
+  ) {
+    final theme = Theme.of(context);
+
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            pageTitle: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.payment,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Payment Instructions',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+
+                  // Payment Method Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primary.withValues(alpha: 0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _getPaymentMethodIcon(paymentInstruction.paymentMethod),
+                          color: theme.colorScheme.onPrimary,
+                          size: 32,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _getPaymentMethodDisplayName(paymentInstruction.paymentMethod),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: theme.colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Recipient Details
+                  _buildPaymentDetailRow(
+                    context,
+                    'Recipient Name',
+                    paymentInstruction.recipientName,
+                    Icons.person_outline,
+                  ),
+
+                  if (paymentInstruction.reference != null) ...[
+                    const SizedBox(height: 12),
+                    _buildPaymentDetailRow(
+                      context,
+                      'Reference',
+                      paymentInstruction.reference!,
+                      Icons.receipt_long_outlined,
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+
+                  // Method-specific details
+                  ..._buildPaymentMethodSpecificDetails(context, paymentInstruction),
+
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ];
+      },
+    );
+  }
+
+  IconData _getPaymentMethodIcon(PRFPaymentMethod method) {
+    switch (method) {
+      case PRFPaymentMethod.mpesa:
+        return Icons.phone_android;
+      case PRFPaymentMethod.bankTransfer:
+        return Icons.account_balance;
+      case PRFPaymentMethod.paybill:
+        return Icons.receipt;
+      case PRFPaymentMethod.tillNumber:
+        return Icons.store;
+    }
+  }
+
+  String _getPaymentMethodDisplayName(PRFPaymentMethod method) {
+    switch (method) {
+      case PRFPaymentMethod.mpesa:
+        return 'M-PESA';
+      case PRFPaymentMethod.bankTransfer:
+        return 'Bank Transfer';
+      case PRFPaymentMethod.paybill:
+        return 'Paybill';
+      case PRFPaymentMethod.tillNumber:
+        return 'Till Number';
+    }
+  }
+
+  List<Widget> _buildPaymentMethodSpecificDetails(
+    BuildContext context,
+    PRFPaymentInstruction paymentInstruction,
+  ) {
+    switch (paymentInstruction.paymentMethod) {
+      case PRFPaymentMethod.mpesa:
+        return [
+          if (paymentInstruction.mpesaPhoneNumber != null)
+            _buildPaymentDetailRow(
+              context,
+              'Phone Number',
+              '+${paymentInstruction.mpesaPhoneNumber}',
+              Icons.phone,
+            ),
+        ];
+
+      case PRFPaymentMethod.bankTransfer:
+        return [
+          if (paymentInstruction.bankName != null)
+            _buildPaymentDetailRow(
+              context,
+              'Bank Name',
+              paymentInstruction.bankName!,
+              Icons.account_balance,
+            ),
+          if (paymentInstruction.bankAccountNumber != null) ...[
+            const SizedBox(height: 12),
+            _buildPaymentDetailRow(
+              context,
+              'Account Number',
+              paymentInstruction.bankAccountNumber.toString(),
+              Icons.numbers,
+            ),
+          ],
+          if (paymentInstruction.bankAccountName != null) ...[
+            const SizedBox(height: 12),
+            _buildPaymentDetailRow(
+              context,
+              'Account Name',
+              paymentInstruction.bankAccountName!,
+              Icons.person,
+            ),
+          ],
+          if (paymentInstruction.bankBranch != null) ...[
+            const SizedBox(height: 12),
+            _buildPaymentDetailRow(
+              context,
+              'Branch',
+              paymentInstruction.bankBranch!,
+              Icons.location_on,
+            ),
+          ],
+          if (paymentInstruction.bankSwiftCode != null) ...[
+            const SizedBox(height: 12),
+            _buildPaymentDetailRow(
+              context,
+              'SWIFT Code',
+              paymentInstruction.bankSwiftCode!,
+              Icons.code,
+            ),
+          ],
+        ];
+
+      case PRFPaymentMethod.paybill:
+        return [
+          if (paymentInstruction.paybillNumber != null)
+            _buildPaymentDetailRow(
+              context,
+              'Paybill Number',
+              paymentInstruction.paybillNumber.toString(),
+              Icons.receipt,
+            ),
+          if (paymentInstruction.paybillAccountNumber != null) ...[
+            const SizedBox(height: 12),
+            _buildPaymentDetailRow(
+              context,
+              'Account Number',
+              paymentInstruction.paybillAccountNumber!,
+              Icons.account_box,
+            ),
+          ],
+        ];
+
+      case PRFPaymentMethod.tillNumber:
+        return [
+          if (paymentInstruction.tillNumber != null)
+            _buildPaymentDetailRow(
+              context,
+              'Till Number',
+              paymentInstruction.tillNumber.toString(),
+              Icons.store,
+            ),
+        ];
+    }
+  }
+
+  Widget _buildPaymentDetailRow(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
