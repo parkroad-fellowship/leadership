@@ -10,7 +10,7 @@ part 'get_requisition_cubit.freezed.dart';
 class GetRequisitionCubit extends Cubit<GetRequisitionState> {
   GetRequisitionCubit({
     required RequisitionService requisitionService,
-  }) : super(GetRequisitionState.initial()) {
+  }) : super(const GetRequisitionState.initial()) {
     _requisitionService = requisitionService;
   }
 
@@ -19,7 +19,7 @@ class GetRequisitionCubit extends Cubit<GetRequisitionState> {
   Future<void> getRequisition({
     required String requisitionUlid,
   }) async {
-    emit(GetRequisitionState.loading());
+    emit(const GetRequisitionState.loading());
 
     try {
       final requisition = await _requisitionService.get(
