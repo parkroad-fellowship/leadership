@@ -7,6 +7,7 @@ import 'package:leadership/enums/prf_approval_status.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/approval_requisition/_handset.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition_item/create_requisition_item.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
@@ -830,64 +831,214 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
     final statusColor = PRFApprovalStatus.underReview.color(theme);
 
     return [
-      // Under Review Banner
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              PRFApprovalStatus.underReview.icon,
-              color: statusColor,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                l10n.requisitionUnderReviewBanner,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.w500,
-                ),
+      BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+        builder: (context, requisitionState) {
+          return requisitionState.maybeWhen(
+            loaded: (requisition) {
+              // Check if the logged-in user is the appointed approver
+              final isAppointed =
+                  loggedInMember.ulid == requisition.appointedApprover?.ulid;
+
+              if (isAppointed) {
+                // Show approval banner for the appointed approver
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.green.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.fact_check,
+                        color: Colors.green,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'This requisition is awaiting your approval.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // Show standard under review banner for non-approvers
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: statusColor.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        PRFApprovalStatus.underReview.icon,
+                        color: statusColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.requisitionUnderReviewBanner,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+            orElse: () => Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    PRFApprovalStatus.underReview.icon,
+                    color: statusColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l10n.requisitionUnderReviewBanner,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
-      // Limited Actions
-      Row(
-        children: [
-          if (paymentInstruction != null) ...[
-            Expanded(
-              child: _buildActionButton(
-                context,
-                icon: Icons.visibility,
-                label: l10n.viewPayment,
-                onPressed: () => _showPaymentInstructionDetails(
-                  context,
-                  paymentInstruction,
+      // Actions row
+      BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+        builder: (context, requisitionState) {
+          return requisitionState.maybeWhen(
+            loaded: (requisition) {
+              final isAppointed =
+                  loggedInMember.ulid == requisition.appointedApprover?.ulid;
+
+              if (isAppointed) {
+                // Show approval actions for the appointed approver
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildActionButton(
+                        context,
+                        icon: Icons.check_circle,
+                        label: 'Review & Approve',
+                        onPressed: () => _showApprovalModal(context),
+                        isPrimary: true,
+                      ),
+                    ),
+                    if (paymentInstruction != null) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          icon: Icons.visibility,
+                          label: l10n.viewPayment,
+                          onPressed: () => _showPaymentInstructionDetails(
+                            context,
+                            paymentInstruction,
+                          ),
+                          isSecondary: true,
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              } else {
+                // Show limited actions for non-approvers
+                return Row(
+                  children: [
+                    if (paymentInstruction != null) ...[
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          icon: Icons.visibility,
+                          label: l10n.viewPayment,
+                          onPressed: () => _showPaymentInstructionDetails(
+                            context,
+                            paymentInstruction,
+                          ),
+                          isSecondary: true,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: _buildActionButton(
+                        context,
+                        icon: Icons.info_outline,
+                        label: l10n.details,
+                        onPressed: () => _showMoreActionsBottomSheet(context),
+                        isOutlined: true,
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
+            orElse: () => Row(
+              children: [
+                if (paymentInstruction != null) ...[
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      icon: Icons.visibility,
+                      label: l10n.viewPayment,
+                      onPressed: () => _showPaymentInstructionDetails(
+                        context,
+                        paymentInstruction,
+                      ),
+                      isSecondary: true,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: _buildActionButton(
+                    context,
+                    icon: Icons.info_outline,
+                    label: l10n.details,
+                    onPressed: () => _showMoreActionsBottomSheet(context),
+                    isOutlined: true,
+                  ),
                 ),
-                isSecondary: true,
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: _buildActionButton(
-              context,
-              icon: Icons.info_outline,
-              label: l10n.details,
-              onPressed: () => _showMoreActionsBottomSheet(context),
-              isOutlined: true,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     ];
   }
@@ -1204,7 +1355,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
   ) {
     final l10n = context.l10n;
     final baseActions = <Widget>[
-      if (loggedInMember.ulid == requisition.member?.ulid)
+      if (loggedInMember.ulid == requisition.member?.ulid &&
+          requisition.appointedApprover != null)
         _buildBottomSheetAction(
           context,
           icon: Icons.call,
@@ -2057,6 +2209,28 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
         );
       },
     );
+  }
+
+  void _showApprovalModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: ApproveRequisitionViewHandset(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the requisition after approval/rejection
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
   }
 
   /// Make a phone call using the phone number

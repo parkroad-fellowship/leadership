@@ -33,4 +33,42 @@ class RequisitionService extends BaseAPIService<PRFRequisition> {
       rethrow;
     }
   }
+
+  Future<bool> approveRequisition({
+    required String ulid,
+    required String approverUlid,
+    String? approvalNotes,
+  }) async {
+    try {
+      await networkUtil.post(
+        '$endpoint/$ulid/approve',
+        body: {
+          'approved_by_ulid': approverUlid,
+          if (approvalNotes != null) 'approval_notes': approvalNotes,
+        },
+      );
+      return true;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> rejectRequisition({
+    required String ulid,
+    required String approverUlid,
+    required String approvalNotes,
+  }) async {
+    try {
+      await networkUtil.post(
+        '$endpoint/$ulid/reject',
+        body: {
+          'approved_by_ulid': approverUlid,
+          'approval_notes': approvalNotes,
+        },
+      );
+      return true;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
