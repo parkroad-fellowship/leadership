@@ -49,9 +49,6 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
     return Scaffold(
       appBar: PRFAppBar(
         title: l10n.requisitionDetails,
-        onBack: () => context.router.popUntilRouteWithPath(
-          PRFLeadershipRouter.deskActivityDetailsRoute,
-        ),
       ),
       body: BlocBuilder<GetRequisitionItemsCubit, GetRequisitionItemsState>(
         builder: (context, state) {
