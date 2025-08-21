@@ -690,7 +690,7 @@ class _InformationViewHandsetState extends State<InformationViewHandset>
       MapType.google,
     );
 
-    if (isGoogleMapAvailable ?? false) {
+    if (isGoogleMapAvailable) {
       await MapLauncher.showMarker(
         mapType: MapType.google,
         coords: Coords(latitude, longitude),
@@ -703,7 +703,7 @@ class _InformationViewHandsetState extends State<InformationViewHandset>
       MapType.googleGo,
     );
 
-    if (isGoogleGoMapAvailable ?? false) {
+    if (isGoogleGoMapAvailable) {
       await MapLauncher.showMarker(
         mapType: MapType.googleGo,
         coords: Coords(latitude, longitude),
@@ -714,7 +714,7 @@ class _InformationViewHandsetState extends State<InformationViewHandset>
 
     final isAppleMapAvailable = await MapLauncher.isMapAvailable(MapType.apple);
 
-    if (isAppleMapAvailable ?? false) {
+    if (isAppleMapAvailable) {
       await MapLauncher.showMarker(
         mapType: MapType.apple,
         coords: Coords(latitude, longitude),

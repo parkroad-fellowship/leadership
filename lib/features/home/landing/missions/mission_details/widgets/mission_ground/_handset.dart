@@ -794,7 +794,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
 
     for (final mapType in mapTypes) {
       final isAvailable = await MapLauncher.isMapAvailable(mapType);
-      if (isAvailable ?? false) {
+      if (isAvailable) {
         await MapLauncher.showMarker(
           mapType: mapType,
           coords: Coords(school.latitude, school.longitude),
