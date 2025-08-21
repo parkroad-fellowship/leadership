@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+  pull_request:
+    branches:
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -107,14 +111,14 @@ jobs:
           gem install bundler:2.0.2
           bundle install
 
-      - name: 🚀 Release to Google Play (Production)
+      - name: 🚀 Release to Google Play (Internal)
         env:
           SUPPLY_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           SUPPLY_JSON_KEY_DATA: ${{ secrets.PLAY_STORE_CREDENTIALS }}
         run: |
           bundle exec fastlane supply \
           --aab build/app/outputs/bundle/productionRelease/app-production-release.aab \
-          --track production
+          --track internal
 
       - name: Status
         if: failure()
@@ -122,32 +126,32 @@ jobs:
         env:
           SLACK_WEBHOOK: https://hooks.slack.com/services/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
 
-  release_app_gallery:
-    needs: build
-    runs-on: ubuntu-latest
+  # release_app_gallery:
+  #   needs: build
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: 📚 Git Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: 📚 Git Checkout
+  #       uses: actions/checkout@v4
 
-      - name: ⬇️ Download AAB artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-production-release
-          path: build/app/outputs/bundle/productionRelease/
+  #     - name: ⬇️ Download AAB artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: app-production-release
+  #         path: build/app/outputs/bundle/productionRelease/
 
-      - name: 🚀 Deploy to Huawei App Gallery
-        uses: muhamedzeema/appgallery-deply-action@main
-        with:
-          client-id: ${{secrets.HUAWEI_CLIENT_ID}}
-          client-key: ${{secrets.HUAWEI_CLIENT_KEY}}
-          app-id: ${{secrets.HUAWEI_APP_ID}}
-          file-extension: "aab"
-          file-path: build/app/outputs/bundle/productionRelease/app-production-release.aab
-          submit: false
+  #     - name: 🚀 Deploy to Huawei App Gallery
+  #       uses: muhamedzeema/appgallery-deply-action@main
+  #       with:
+  #         client-id: ${{secrets.HUAWEI_CLIENT_ID}}
+  #         client-key: ${{secrets.HUAWEI_CLIENT_KEY}}
+  #         app-id: ${{secrets.HUAWEI_APP_ID}}
+  #         file-extension: "aab"
+  #         file-path: build/app/outputs/bundle/productionRelease/app-production-release.aab
+  #         submit: false
 
-      - name: Status
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: https://hooks.slack.com/services/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
+  #     - name: Status
+  #       if: failure()
+  #       uses: rtCamp/action-slack-notify@v2
+  #       env:
+  #         SLACK_WEBHOOK: https://hooks.slack.com/services/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
