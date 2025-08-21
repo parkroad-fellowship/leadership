@@ -105,7 +105,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                           ExpensesView(missionUlid: mission.ulid),
                           if (mission.accountingEvent != null)
                             RequisitionsView(
-                              accountingEventUlid: mission.ulid,
+                              accountingEventUlid:
+                                  mission.accountingEvent!.ulid,
                             )
                           else
                             PRFEmptyView(
