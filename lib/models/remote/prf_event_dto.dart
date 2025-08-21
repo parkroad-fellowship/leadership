@@ -4,7 +4,7 @@ part 'prf_event_dto.freezed.dart';
 part 'prf_event_dto.g.dart';
 
 @freezed
-class PRFEventDTO with _$PRFEventDTO {
+abstract class PRFEventDTO with _$PRFEventDTO {
   factory PRFEventDTO({
     required String name,
     required String description,

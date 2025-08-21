@@ -6,7 +6,7 @@ part 'prf_payment_instruction.freezed.dart';
 part 'prf_payment_instruction.g.dart';
 
 @freezed
-class PRFPaymentInstruction with _$PRFPaymentInstruction {
+abstract class PRFPaymentInstruction with _$PRFPaymentInstruction {
   factory PRFPaymentInstruction(
     String ulid,
     @JsonEnum() @JsonKey(name: 'payment_method') PRFPaymentMethod paymentMethod,

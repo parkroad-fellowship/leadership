@@ -1,7 +1,8 @@
 part of 'get_approval_requisitions_cubit.dart';
 
 @freezed
-class GetApprovalRequisitionsState with _$GetApprovalRequisitionsState {
+abstract class GetApprovalRequisitionsState
+    with _$GetApprovalRequisitionsState {
   const factory GetApprovalRequisitionsState.initial() = _Initial;
   const factory GetApprovalRequisitionsState.loading() = _Loading;
   const factory GetApprovalRequisitionsState.loaded({

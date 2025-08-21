@@ -5,7 +5,7 @@ part 'prf_accounting_event.freezed.dart';
 part 'prf_accounting_event.g.dart';
 
 @freezed
-class PRFAccountingEvent with _$PRFAccountingEvent {
+abstract class PRFAccountingEvent with _$PRFAccountingEvent {
   factory PRFAccountingEvent(
     String ulid,
     String name,

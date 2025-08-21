@@ -1,7 +1,7 @@
 part of 'get_mission_expense_cubit.dart';
 
 @freezed
-class GetMissionExpenseState with _$GetMissionExpenseState {
+abstract class GetMissionExpenseState with _$GetMissionExpenseState {
   const factory GetMissionExpenseState.initial() = _Initial;
   const factory GetMissionExpenseState.loading() = _Loading;
   const factory GetMissionExpenseState.empty() = _Empty;

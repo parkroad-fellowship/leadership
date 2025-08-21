@@ -46,7 +46,7 @@ abstract class PRFMember with _$PRFMember {
 }
 
 @freezed
-class PRFMembersResponse with _$PRFMembersResponse {
+abstract class PRFMembersResponse with _$PRFMembersResponse {
   factory PRFMembersResponse(
     List<PRFMember> data,
   ) = _PRFMembersResponse;

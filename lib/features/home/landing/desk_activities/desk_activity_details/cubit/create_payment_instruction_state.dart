@@ -1,7 +1,8 @@
 part of 'create_payment_instruction_cubit.dart';
 
 @freezed
-class CreatePaymentInstructionState with _$CreatePaymentInstructionState {
+abstract class CreatePaymentInstructionState
+    with _$CreatePaymentInstructionState {
   const factory CreatePaymentInstructionState.initial() = _Initial;
   const factory CreatePaymentInstructionState.loading() = _Loading;
   const factory CreatePaymentInstructionState.loaded() = _Loaded;

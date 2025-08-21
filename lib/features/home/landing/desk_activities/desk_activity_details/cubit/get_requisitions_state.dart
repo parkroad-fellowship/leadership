@@ -1,7 +1,7 @@
 part of 'get_requisitions_cubit.dart';
 
 @freezed
-class GetRequisitionsState with _$GetRequisitionsState {
+abstract class GetRequisitionsState with _$GetRequisitionsState {
   const factory GetRequisitionsState.initial() = _Initial;
   const factory GetRequisitionsState.loading() = _Loading;
   const factory GetRequisitionsState.loaded({

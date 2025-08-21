@@ -5,7 +5,7 @@ part 'prf_payment_instruction_dto.freezed.dart';
 part 'prf_payment_instruction_dto.g.dart';
 
 @freezed
-class PRFPaymentInstructionDTO with _$PRFPaymentInstructionDTO {
+abstract class PRFPaymentInstructionDTO with _$PRFPaymentInstructionDTO {
   factory PRFPaymentInstructionDTO({
     @JsonKey(name: 'requisition_ulid') required String requisitionUlid,
     @JsonEnum()

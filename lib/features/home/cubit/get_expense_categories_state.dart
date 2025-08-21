@@ -1,7 +1,7 @@
 part of 'get_expense_categories_cubit.dart';
 
 @freezed
-class GetExpenseCategoriesState with _$GetExpenseCategoriesState {
+abstract class GetExpenseCategoriesState with _$GetExpenseCategoriesState {
   const factory GetExpenseCategoriesState.initial() = _Initial;
   const factory GetExpenseCategoriesState.loading() = _Loading;
   const factory GetExpenseCategoriesState.loaded({

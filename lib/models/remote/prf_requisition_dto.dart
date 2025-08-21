@@ -5,7 +5,7 @@ part 'prf_requisition_dto.freezed.dart';
 part 'prf_requisition_dto.g.dart';
 
 @freezed
-class PRFRequisitionDTO with _$PRFRequisitionDTO {
+abstract class PRFRequisitionDTO with _$PRFRequisitionDTO {
   factory PRFRequisitionDTO({
     @JsonKey(name: 'member_ulid') required String memberUlid,
     @JsonKey(name: 'accounting_event_ulid') required String accountingEventUlid,

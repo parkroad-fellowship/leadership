@@ -1,7 +1,7 @@
 part of 'get_mission_cubit.dart';
 
 @freezed
-class GetMissionState with _$GetMissionState {
+abstract class GetMissionState with _$GetMissionState {
   const factory GetMissionState.initial() = _Initial;
   const factory GetMissionState.loading() = _Loading;
   const factory GetMissionState.loaded({

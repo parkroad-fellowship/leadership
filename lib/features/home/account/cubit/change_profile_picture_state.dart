@@ -1,7 +1,7 @@
 part of 'change_profile_picture_cubit.dart';
 
 @freezed
-class ChangeProfilePictureState with _$ChangeProfilePictureState {
+abstract class ChangeProfilePictureState with _$ChangeProfilePictureState {
   const factory ChangeProfilePictureState.initial() = _Initial;
   const factory ChangeProfilePictureState.loading() = _Loading;
   const factory ChangeProfilePictureState.loaded() = _Loaded;

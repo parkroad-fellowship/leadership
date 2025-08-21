@@ -1,7 +1,7 @@
 part of 'get_past_events_cubit.dart';
 
 @freezed
-class GetPastEventsState with _$GetPastEventsState {
+abstract class GetPastEventsState with _$GetPastEventsState {
   const factory GetPastEventsState.initial() = _Initial;
   const factory GetPastEventsState.loading() = _Loading;
   const factory GetPastEventsState.loaded({

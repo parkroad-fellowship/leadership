@@ -1,7 +1,7 @@
 part of 'get_members_cubit.dart';
 
 @freezed
-class GetMembersState with _$GetMembersState {
+abstract class GetMembersState with _$GetMembersState {
   const factory GetMembersState.initial() = _Initial;
   const factory GetMembersState.loading() = _Loading;
   const factory GetMembersState.loaded({required List<PRFMember> members}) =

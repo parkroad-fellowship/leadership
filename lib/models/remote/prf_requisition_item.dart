@@ -6,7 +6,7 @@ part 'prf_requisition_item.freezed.dart';
 part 'prf_requisition_item.g.dart';
 
 @freezed
-class PRFRequisitionItem with _$PRFRequisitionItem {
+abstract class PRFRequisitionItem with _$PRFRequisitionItem {
   factory PRFRequisitionItem(
     String ulid,
     @JsonKey(name: 'item_name') String itemName,
@@ -24,7 +24,7 @@ class PRFRequisitionItem with _$PRFRequisitionItem {
 }
 
 @freezed
-class PRFRequisitionItemsResponse with _$PRFRequisitionItemsResponse {
+abstract class PRFRequisitionItemsResponse with _$PRFRequisitionItemsResponse {
   factory PRFRequisitionItemsResponse(
     List<PRFRequisitionItem> data,
   ) = _PRFRequisitionItemsResponse;

@@ -10,7 +10,7 @@ part 'prf_requisition.freezed.dart';
 part 'prf_requisition.g.dart';
 
 @freezed
-class PRFRequisition with _$PRFRequisition {
+abstract class PRFRequisition with _$PRFRequisition {
   factory PRFRequisition(
     String ulid,
     @JsonKey(name: 'requisition_date') DateTime requisitionDate,
@@ -44,7 +44,7 @@ class PRFRequisition with _$PRFRequisition {
 }
 
 @freezed
-class PRFRequisitionResponse with _$PRFRequisitionResponse {
+abstract class PRFRequisitionResponse with _$PRFRequisitionResponse {
   factory PRFRequisitionResponse(
     List<PRFRequisition> data,
   ) = _PRFRequisitionResponse;
