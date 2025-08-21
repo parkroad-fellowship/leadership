@@ -20,6 +20,8 @@ import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubi
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_expense_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
+import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/request_review_cubit.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/event_service.dart';
@@ -184,6 +186,18 @@ class Singletons {
       BlocProvider<RequestReviewCubit>(
         create: (context) => RequestReviewCubit(
           requisitionService: getIt<RequisitionService>(),
+        ),
+      ),
+      BlocProvider<GetApprovalRequisitionsCubit>(
+        create: (context) => GetApprovalRequisitionsCubit(
+          requisitionService: getIt<RequisitionService>(),
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<GetClosedRequisitionsCubit>(
+        create: (context) => GetClosedRequisitionsCubit(
+          requisitionService: getIt<RequisitionService>(),
+          hiveService: getIt<HiveService>(),
         ),
       ),
     ];

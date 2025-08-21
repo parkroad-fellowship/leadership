@@ -848,7 +848,7 @@
     "@tapForActions": {},
     "requisition": "make a requisition",
     "@requisition": {},
-    "viewDeskActivities": "view desk activities",
+    "viewDeskActivities": "view my desk activities",
     "@viewDeskActivities": {},
     "requisitions": "Requisitions",
     "@requisitions": {},
@@ -1041,5 +1041,17 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "closed": "Closed",
+    "@closed": {},
+    "manageRequisitions": "manage requisitions",
+    "@manageRequisitions": {},
+    "manageReqs": "Manage requisitions",
+    "@manageReqs": {},
+    "noRequisitions": "No requisitions",
+    "@noRequisitions": {},
+    "noPendingRequisitionsDesc": "You have no requisitions pending your approval",
+    "@noPendingRequisitionsDesc": {},
+    "noClosedRequisitionsDesc": "You have no requisitions that are currently closed",
+    "@noClosedRequisitionsDesc": {}
 }

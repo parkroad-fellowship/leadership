@@ -49,4 +49,17 @@ enum PRFApprovalStatus {
         return 'Rejected';
     }
   }
+
+  int get apiKey {
+    switch (this) {
+      case PRFApprovalStatus.pending:
+        return 1;
+      case PRFApprovalStatus.underReview:
+        return 2;
+      case PRFApprovalStatus.approved:
+        return 3;
+      case PRFApprovalStatus.rejected:
+        return 4;
+    }
+  }
 }

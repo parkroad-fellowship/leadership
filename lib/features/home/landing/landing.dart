@@ -62,6 +62,14 @@ class _LandingPageState extends State<LandingPage> {
         ),
         700,
       ],
+      [
+        l10n.manageRequisitions,
+        'assets/svgs/missions.svg',
+        () => context.router.pushPath(
+          PRFLeadershipRouter.requisitionApprovalsRoute,
+        ),
+        700,
+      ],
     ];
 
     return AdaptiveBuilder(
