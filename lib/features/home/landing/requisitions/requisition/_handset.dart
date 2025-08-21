@@ -273,11 +273,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               )
             else
               OutlinedButton.icon(
-                onPressed: () {
-                  context.router.popUntilRouteWithPath(
-                    PRFLeadershipRouter.deskActivityDetailsRoute,
-                  );
-                },
+                onPressed: () => context.router.pop(),
                 icon: const Icon(Icons.add),
                 label: Text(l10n.createNewRequisition),
               ),
@@ -1105,9 +1101,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               context,
               icon: Icons.add,
               label: l10n.newRequisition,
-              onPressed: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.deskActivityDetailsRoute,
-              ),
+              onPressed: () => context.router.pop(),
               isSecondary: true,
             ),
           ),
@@ -1164,9 +1158,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               context,
               icon: Icons.add,
               label: l10n.newRequisition,
-              onPressed: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.deskActivityDetailsRoute,
-              ),
+              onPressed: () => context.router.pop(),
               isPrimary: true,
             ),
           ),
