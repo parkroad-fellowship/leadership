@@ -334,8 +334,7 @@ class _RequisitionApprovalsPageHandsetState
     );
   }
 
-
- Widget _buildDraftRequisitions(BuildContext context) {
+  Widget _buildDraftRequisitions(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
 

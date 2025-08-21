@@ -25,8 +25,6 @@ class GetDraftRequisitionsCubit extends Cubit<GetDraftRequisitionsState> {
     emit(const GetDraftRequisitionsState.loading());
 
     try {
-
-
       final requisitions = await _requisitionService.list(
         includes: [
           'member',

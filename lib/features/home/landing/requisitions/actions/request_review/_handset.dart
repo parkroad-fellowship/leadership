@@ -115,48 +115,69 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
 
             const SizedBox(height: 24),
 
-            _buildFormSection(
-              icon: Icons.person_outline,
-              title: l10n.selectApprover,
-              isRequired: true,
-              child: Column(
-                children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return BlocBuilder<GetMembersCubit, GetMembersState>(
-                        builder: (context, state) {
-                          return state.maybeWhen(
-                            orElse: () => const SizedBox.shrink(),
-                            loading: () => const Center(
-                              child: LinearProgressIndicator(),
-                            ),
-                            loaded: (leaders) => LayoutBuilder(
-                              builder: (context, constraints) {
-                                return DropdownMenu<PRFMember>(
-                                  width: constraints.maxWidth,
-                                  initialSelection: selectedApprover,
-                                  hintText: l10n.selectApprover,
-                                  dropdownMenuEntries: leaders
-                                      .map(
-                                        (leader) =>
-                                            DropdownMenuEntry<PRFMember>(
-                                              value: leader,
-                                              label: leader.fullName,
-                                            ),
-                                      )
-                                      .toList(),
-                                  onSelected: (member) => setState(() {
-                                    selectedApprover = member;
-                                  }),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    },
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.shadow.withValues(alpha: 0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
+              ),
+              child: _buildFormSection(
+                icon: Icons.person_outline,
+                title: l10n.selectApprover,
+                isRequired: true,
+                child: Column(
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return BlocBuilder<GetMembersCubit, GetMembersState>(
+                          builder: (context, state) {
+                            return state.maybeWhen(
+                              orElse: () => const SizedBox.shrink(),
+                              loading: () => const Center(
+                                child: LinearProgressIndicator(),
+                              ),
+                              loaded: (leaders) => LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return DropdownMenu<PRFMember>(
+                                    width: constraints.maxWidth,
+                                    initialSelection: selectedApprover,
+                                    hintText: l10n.selectApprover,
+                                    dropdownMenuEntries: leaders
+                                        .map(
+                                          (leader) =>
+                                              DropdownMenuEntry<PRFMember>(
+                                                value: leader,
+                                                label: leader.fullName,
+                                              ),
+                                        )
+                                        .toList(),
+                                    onSelected: (member) => setState(() {
+                                      selectedApprover = member;
+                                    }),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
