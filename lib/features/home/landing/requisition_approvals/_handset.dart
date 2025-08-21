@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
@@ -30,12 +31,14 @@ class _RequisitionApprovalsPageHandsetState
 
     context.read<GetApprovalRequisitionsCubit>().getApprovalRequisitions();
 
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
         context.read<GetApprovalRequisitionsCubit>().getApprovalRequisitions();
-      } else {
+      } else if (_tabController.index == 1) {
         context.read<GetClosedRequisitionsCubit>().getClosedRequisitions();
+      } else {
+        context.read<GetDraftRequisitionsCubit>().getDraftRequisitions();
       }
     });
   }
@@ -46,7 +49,7 @@ class _RequisitionApprovalsPageHandsetState
     final theme = Theme.of(context);
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -114,6 +117,7 @@ class _RequisitionApprovalsPageHandsetState
             tabs: [
               Tab(text: l10n.pendingApproval),
               Tab(text: l10n.closed),
+              Tab(text: l10n.drafts),
             ],
           ),
         ),
@@ -123,6 +127,7 @@ class _RequisitionApprovalsPageHandsetState
           children: [
             _buildApprovalRequisitions(context),
             _buildClosedRequisitions(context),
+            _buildDraftRequisitions(context),
           ],
         ),
       ),
@@ -270,6 +275,106 @@ class _RequisitionApprovalsPageHandsetState
             child: PRFEmptyView(
               label: l10n.noRequisitions,
               description: l10n.noClosedRequisitionsDesc,
+            ),
+          ),
+
+          loaded: (requisitions) {
+            // Sort requisitions by creation date for timeline
+            final sortedRequisitions = List<PRFRequisition>.from(requisitions)
+              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+            return RefreshIndicator(
+              onRefresh: () => context
+                  .read<GetApprovalRequisitionsCubit>()
+                  .getApprovalRequisitions(),
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
+                itemCount: sortedRequisitions.length,
+                itemBuilder: (context, index) {
+                  final requisition = sortedRequisitions[index];
+                  final isLast = index == sortedRequisitions.length - 1;
+
+                  return TimelineRequisitionCard(
+                        requisition: requisition,
+                        isLast: isLast,
+                        index: index,
+                        onTap: () => context.router
+                            .push(
+                              RequisitionRoute(
+                                requisitionUlid: requisition.ulid,
+                              ),
+                            )
+                            .then((_) {
+                              // ignore: use_build_context_synchronously
+                              context
+                                  .read<GetApprovalRequisitionsCubit>()
+                                  .getApprovalRequisitions();
+                            }),
+                      )
+                      .animate()
+                      .fadeIn(
+                        delay: Duration(milliseconds: index * 100),
+                        duration: 600.ms,
+                      )
+                      .slideX(
+                        begin: 0.3,
+                        end: 0,
+                        curve: Curves.easeOutCubic,
+                      );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+ Widget _buildDraftRequisitions(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return BlocBuilder<GetDraftRequisitionsCubit, GetDraftRequisitionsState>(
+      builder: (context, state) {
+        return state.maybeWhen(
+          orElse: () => Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          error: (message) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          empty: () => RefreshIndicator(
+            onRefresh: () => context
+                .read<GetClosedRequisitionsCubit>()
+                .getClosedRequisitions(),
+            child: PRFEmptyView(
+              label: l10n.noRequisitions,
+              description: l10n.noDraftRequisitionsDesc,
             ),
           ),
 

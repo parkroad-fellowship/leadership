@@ -1044,6 +1044,8 @@
     },
     "closed": "Closed",
     "@closed": {},
+    "drafts": "Drafts",
+    "@drafts": {},
     "manageRequisitions": "manage requisitions",
     "@manageRequisitions": {},
     "manageReqs": "Manage requisitions",
@@ -1053,5 +1055,7 @@
     "noPendingRequisitionsDesc": "You have no requisitions pending your approval",
     "@noPendingRequisitionsDesc": {},
     "noClosedRequisitionsDesc": "You have no requisitions that are currently closed",
-    "@noClosedRequisitionsDesc": {}
+    "@noClosedRequisitionsDesc": {},
+    "noDraftRequisitionsDesc": "You have no requisitions that are currently in draft",
+    "@noDraftRequisitionsDesc": {}
 }
