@@ -59,7 +59,7 @@ jobs:
           echo "keyAlias=${{ secrets.RELEASE_KEYSTORE_ALIAS }}" >> android/key.properties
 
       - name: ⚙️ Build AAB
-        run: flutter build appbundle  --flavor production --target lib/main_production.dart --obfuscate --split-debug-info=debug-symbols
+        run: flutter build appbundle --flavor production --target lib/main_development.dart --obfuscate --split-debug-info=debug-symbols
 
       - name: ⚙️ Upload debug symbols to Firebase
         env:
