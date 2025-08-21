@@ -20,7 +20,7 @@ clean:
 		flutter clean && flutter pub get -v && make pods
 
 aab:
-		flutter build appbundle  --flavor production --target lib/main_production.dart --release --obfuscate --split-debug-info=debug-symbols
+		flutter build appbundle  --flavor production --target lib/main_production.dart --release --obfuscate --split-debug-info=debug-symbols -v
 
 run:
 		flutter run --release  --flavor production --target lib/main_production.dart
