@@ -1306,20 +1306,16 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _getStatusColor(requisition.approvalStatus, theme),
-            _getStatusColor(
-              requisition.approvalStatus,
-              theme,
-            ).withValues(alpha: 0.8),
+            requisition.approvalStatus.color(theme),
+            requisition.approvalStatus.color(theme).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _getStatusColor(
-              requisition.approvalStatus,
-              theme,
-            ).withValues(alpha: 0.3),
+            color: requisition.approvalStatus
+                .color(theme)
+                .withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -1338,8 +1334,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  _getStatusIcon(requisition.approvalStatus),
-                  color: _getStatusColor(requisition.approvalStatus, theme),
+                  requisition.approvalStatus.icon,
+                  color: requisition.approvalStatus.color(theme),
                   size: 24,
                 ),
               ),
@@ -1603,54 +1599,21 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            _getStatusIcon(status),
+            status.icon,
             size: 14,
-            color: _getStatusColor(status, theme),
+            color: status.color(theme),
           ),
           const SizedBox(width: 6),
           Text(
-            _getStatusDisplayName(status),
+            status.name,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: _getStatusColor(status, theme),
+              color: status.color(theme),
               fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
     );
-  }
-
-  Color _getStatusColor(PRFApprovalStatus status, ThemeData theme) {
-    switch (status) {
-      case PRFApprovalStatus.pending:
-        return theme.colorScheme.secondary;
-      case PRFApprovalStatus.approved:
-        return Colors.green;
-      case PRFApprovalStatus.rejected:
-        return theme.colorScheme.error;
-    }
-  }
-
-  IconData _getStatusIcon(PRFApprovalStatus status) {
-    switch (status) {
-      case PRFApprovalStatus.pending:
-        return Icons.hourglass_empty;
-      case PRFApprovalStatus.approved:
-        return Icons.check_circle;
-      case PRFApprovalStatus.rejected:
-        return Icons.cancel;
-    }
-  }
-
-  String _getStatusDisplayName(PRFApprovalStatus status) {
-    switch (status) {
-      case PRFApprovalStatus.pending:
-        return 'Pending';
-      case PRFApprovalStatus.approved:
-        return 'Approved';
-      case PRFApprovalStatus.rejected:
-        return 'Rejected';
-    }
   }
 
   void _showCannotAddItemDialog(
@@ -1680,6 +1643,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
         icon = Icons.cancel;
         iconColor = theme.colorScheme.error;
       case PRFApprovalStatus.pending:
+      case PRFApprovalStatus.underReview:
         return; // Should not happen for pending status
     }
 

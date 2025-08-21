@@ -16,4 +16,21 @@ class RequisitionService extends BaseAPIService<PRFRequisition> {
   ) {
     return PRFRequisitionResponse.fromJson(response).data;
   }
+
+  Future<bool> requestReview({
+    required String ulid,
+    required String approverUlid,
+  }) async {
+    try {
+      await networkUtil.post(
+        '$endpoint/$ulid/request-review',
+        body: {
+          'appointed_approver_ulid': approverUlid,
+        },
+      );
+      return true;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

@@ -877,5 +877,11 @@
     "requisitionDetails": "Requisition Details",
     "@requisitionDetails": {},
     "viewMissions": "view missions",
-    "@viewMissions": {}
+    "@viewMissions": {},
+    "requestReview": "Request Review",
+    "@requestReview": {},
+    "requestReviewDescription": "Please provide details for the review request.",
+    "@requestReviewDescription": {},
+    "selectApprover": "Select Approver",
+    "@selectApprover": {}
 }

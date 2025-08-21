@@ -6,6 +6,7 @@ import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
@@ -19,10 +20,12 @@ import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubi
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_expense_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
+import 'package:leadership/features/home/landing/requisitions/cubit/request_review_cubit.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
+import 'package:leadership/services/api/member_service.dart';
 import 'package:leadership/services/api/mission_expenses_service.dart';
 import 'package:leadership/services/api/mission_service.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
@@ -54,7 +57,8 @@ class Singletons {
       )
       ..registerSingleton<MissionService>(MissionService())
       ..registerSingleton<MissionExpensesService>(MissionExpensesService())
-      ..registerSingleton<ExpenseService>(ExpenseService());
+      ..registerSingleton<ExpenseService>(ExpenseService())
+      ..registerSingleton<MemberService>(MemberService());
   }
 
   static Future<void> setupDatabases() async {
@@ -170,6 +174,16 @@ class Singletons {
       BlocProvider<GetMissionExpenseCubit>(
         create: (context) => GetMissionExpenseCubit(
           missionExpensesService: getIt<MissionExpensesService>(),
+        ),
+      ),
+      BlocProvider<GetMembersCubit>(
+        create: (context) => GetMembersCubit(
+          memberService: getIt<MemberService>(),
+        ),
+      ),
+      BlocProvider<RequestReviewCubit>(
+        create: (context) => RequestReviewCubit(
+          requisitionService: getIt<RequisitionService>(),
         ),
       ),
     ];

@@ -150,34 +150,11 @@ class TimelineRequisitionCard extends StatelessWidget {
   final int index;
   final VoidCallback? onTap;
 
-  Color _getStatusColor(BuildContext context) {
-    final theme = Theme.of(context);
-
-    switch (requisition.approvalStatus) {
-      case PRFApprovalStatus.approved:
-        return Colors.green;
-      case PRFApprovalStatus.rejected:
-        return theme.colorScheme.error;
-      case PRFApprovalStatus.pending:
-        return theme.colorScheme.primary;
-    }
-  }
-
-  String _getStatusText() {
-    switch (requisition.approvalStatus) {
-      case PRFApprovalStatus.approved:
-        return 'Approved';
-      case PRFApprovalStatus.rejected:
-        return 'Rejected';
-      case PRFApprovalStatus.pending:
-        return 'Pending';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = _getStatusColor(context);
+    final statusColor = requisition.approvalStatus.color(theme);
     final requisitionDate = requisition.requisitionDate;
 
     return Row(
@@ -325,7 +302,7 @@ class TimelineRequisitionCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  _getStatusText(),
+                                  requisition.approvalStatus.name,
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: statusColor,
                                     fontWeight: FontWeight.w600,

@@ -27,7 +27,7 @@ class GetPastMissionsCubit extends Cubit<GetPastMissionsState> {
         ],
         filters: {'past': true},
         orderBy: 'start_date',
-        orderDirection: 'asc',
+        orderDirection: 'desc',
       );
 
       emit(GetPastMissionsState.loaded(missions: missions));
