@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:leadership/utils/router/router.dart';
 
 class PRFNavBarHandset extends StatelessWidget {
   const PRFNavBarHandset({
@@ -88,11 +87,7 @@ class PRFNavBarHandset extends StatelessWidget {
                 color: theme.colorScheme.onPrimaryContainer,
                 size: 20,
               ),
-              onPressed:
-                  onBack ??
-                  () => context.router.popUntilRouteWithPath(
-                    PRFLeadershipRouter.landingRoute,
-                  ),
+              onPressed: onBack ?? () => context.router.pop(),
             ),
           ),
           // Title
