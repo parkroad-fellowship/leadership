@@ -17,6 +17,7 @@ import 'package:leadership/models/remote/prf_requisition_item.dart';
 import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/mixins/current_member_mixin.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class RequisitionPageHandset extends StatefulWidget {
@@ -28,7 +29,8 @@ class RequisitionPageHandset extends StatefulWidget {
   State<RequisitionPageHandset> createState() => _RequisitionPageHandsetState();
 }
 
-class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
+class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
+    with CurrentMemberMixin {
   @override
   void initState() {
     super.initState();
@@ -1177,8 +1179,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                         loaded: (requisition) => Column(
                           children: _buildStatusAwareBottomSheetActions(
                             context,
-                            requisition.approvalStatus,
-                            requisition.approvalNotes,
+                            requisition,
                           ),
                         ),
                         orElse: () => Column(
@@ -1199,40 +1200,42 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
 
   List<Widget> _buildStatusAwareBottomSheetActions(
     BuildContext context,
-    PRFApprovalStatus status,
-    String? approvalNotes,
+    PRFRequisition requisition,
   ) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     final baseActions = <Widget>[
-      _buildBottomSheetAction(
-        context,
-        icon: status.icon,
-        title: l10n.requisitionStatus,
-        subtitle: l10n.currentStatus(status.name),
-        onTap: () {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(
-                    status.icon,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(l10n.currentStatus(status.name)),
-                ],
-              ),
-              backgroundColor: status.color(theme),
-            ),
-          );
-        },
-      ),
+      if (loggedInMember.ulid == requisition.member?.ulid)
+        _buildBottomSheetAction(
+          context,
+          icon: Icons.call,
+          title: l10n.callApprover,
+          subtitle: l10n.callDesc(requisition.appointedApprover!.fullName),
+          onTap: () async {
+            Navigator.pop(context);
+            if (requisition.appointedApprover?.phoneNumber == null ||
+                requisition.appointedApprover!.phoneNumber!.trim().isEmpty) {
+              await _makePhoneCall(requisition.appointedApprover!.phoneNumber);
+            }
+          },
+        ),
+
+      if (loggedInMember.ulid == requisition.appointedApprover?.ulid)
+        _buildBottomSheetAction(
+          context,
+          icon: Icons.call,
+          title: l10n.callRequisitor,
+          subtitle: l10n.callDesc(requisition.appointedApprover!.fullName),
+          onTap: () async {
+            Navigator.pop(context);
+            if (requisition.appointedApprover?.phoneNumber == null ||
+                requisition.appointedApprover!.phoneNumber!.trim().isEmpty) {
+              await _makePhoneCall(requisition.appointedApprover!.phoneNumber);
+            }
+          },
+        ),
     ];
 
-    switch (status) {
+    switch (requisition.approvalStatus) {
       case PRFApprovalStatus.pending:
         return [
           ...baseActions,
@@ -1260,18 +1263,18 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
       case PRFApprovalStatus.approved:
         return [
           ...baseActions,
-          if (approvalNotes != null)
+          if (requisition.approvalNotes != null)
             _buildBottomSheetAction(
               context,
               icon: Icons.note_alt,
               title: l10n.approvalNotes,
-              subtitle: approvalNotes,
+              subtitle: requisition.approvalNotes!,
               onTap: () {
                 Navigator.pop(context);
                 _showApprovalNotesDialog(
                   context,
                   l10n.approvalNotes,
-                  approvalNotes,
+                  requisition.approvalNotes!,
                 );
               },
             ),
@@ -1280,18 +1283,18 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
       case PRFApprovalStatus.rejected:
         return [
           ...baseActions,
-          if (approvalNotes != null)
+          if (requisition.approvalNotes != null)
             _buildBottomSheetAction(
               context,
               icon: Icons.feedback,
               title: l10n.rejectionReason,
-              subtitle: approvalNotes,
+              subtitle: requisition.approvalNotes!,
               onTap: () {
                 Navigator.pop(context);
                 _showApprovalNotesDialog(
                   context,
                   l10n.rejectionDetails,
-                  approvalNotes,
+                  requisition.approvalNotes!,
                 );
               },
             ),
@@ -1843,10 +1846,10 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
                       color: theme.colorScheme.surface.withValues(alpha: 0.8),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${requisition.member!.firstName} '
-                      '${requisition.member!.lastName}',
+                      requisition.member!.fullName,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.surface,
                         fontWeight: FontWeight.w600,
@@ -2054,5 +2057,25 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset> {
         );
       },
     );
+  }
+
+  /// Make a phone call using the phone number
+  Future<void> _makePhoneCall(String? phoneNumber) async {
+    if (phoneNumber == null || phoneNumber.trim().isEmpty) {
+      return;
+    }
+
+    final cleanPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final phoneUri = Uri(scheme: 'tel', path: cleanPhoneNumber);
+
+    final success = await Misc.openUrl(phoneUri);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Unable to make call'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }
