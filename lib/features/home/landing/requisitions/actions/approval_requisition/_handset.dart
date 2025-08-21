@@ -96,19 +96,19 @@ class _ApproveRequisitionViewHandsetState
                     const SizedBox(height: 8),
                     Text(
                       'Review Requisition',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Approve or reject this requisition request',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onPrimary
-                            .withValues(alpha: 0.9),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary.withValues(alpha: 0.9),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -156,7 +156,10 @@ class _ApproveRequisitionViewHandsetState
               // Action Buttons
               MultiBlocListener(
                 listeners: [
-                  BlocListener<ApproveRequisitionCubit, ApproveRequisitionState>(
+                  BlocListener<
+                    ApproveRequisitionCubit,
+                    ApproveRequisitionState
+                  >(
                     listener: (context, state) {
                       state.mapOrNull(
                         loading: (_) {
@@ -168,7 +171,9 @@ class _ApproveRequisitionViewHandsetState
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Requisition approved successfully'),
+                              content: Text(
+                                'Requisition approved successfully',
+                              ),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -196,7 +201,9 @@ class _ApproveRequisitionViewHandsetState
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Requisition rejected successfully'),
+                              content: Text(
+                                'Requisition rejected successfully',
+                              ),
                               backgroundColor: Colors.orange,
                             ),
                           );
@@ -304,14 +311,14 @@ class _ApproveRequisitionViewHandsetState
 
     await context.read<ApproveRequisitionCubit>().approveRequisition(
       ulid: widget.requisitionUlid,
-      approvalNotes: _notesController.text.trim().isEmpty 
-          ? null 
+      approvalNotes: _notesController.text.trim().isEmpty
+          ? null
           : _notesController.text.trim(),
     );
 
     // Refresh the requisition data
     if (mounted) {
-      context.read<GetRequisitionCubit>().getRequisition(
+      await context.read<GetRequisitionCubit>().getRequisition(
         requisitionUlid: widget.requisitionUlid,
       );
     }
@@ -319,7 +326,7 @@ class _ApproveRequisitionViewHandsetState
 
   Future<void> _rejectRequisition() async {
     final notes = _notesController.text.trim();
-    
+
     if (notes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -341,7 +348,7 @@ class _ApproveRequisitionViewHandsetState
 
     // Refresh the requisition data
     if (mounted) {
-      context.read<GetRequisitionCubit>().getRequisition(
+      await context.read<GetRequisitionCubit>().getRequisition(
         requisitionUlid: widget.requisitionUlid,
       );
     }
