@@ -163,18 +163,15 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             width: constraints.maxWidth,
                             initialSelection: selectedResponsibleDesk,
                             hintText: l10n.responsibleDesk,
-                            dropdownMenuEntries:
-                                PRFResponsibleDesk.fromRoles(
-                                      _hiveService.memberRoles,
-                                    )
-                                    .map(
-                                      (responsibleDesk) =>
-                                          DropdownMenuEntry<PRFResponsibleDesk>(
-                                            value: responsibleDesk,
-                                            label: responsibleDesk.name,
-                                          ),
-                                    )
-                                    .toList(),
+                            dropdownMenuEntries: _hiveService.responsibleDesks
+                                .map(
+                                  (responsibleDesk) =>
+                                      DropdownMenuEntry<PRFResponsibleDesk>(
+                                        value: responsibleDesk,
+                                        label: responsibleDesk.name,
+                                      ),
+                                )
+                                .toList(),
                             onSelected: (responsibleDesk) => setState(() {
                               selectedResponsibleDesk = responsibleDesk;
                             }),

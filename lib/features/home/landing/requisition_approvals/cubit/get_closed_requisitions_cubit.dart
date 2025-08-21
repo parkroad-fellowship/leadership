@@ -33,7 +33,11 @@ class GetClosedRequisitionsCubit extends Cubit<GetClosedRequisitionsState> {
         ],
         filters: {
           'appointed_approver_ulid': member.ulid,
+          'responsible_desks': _hiveService.responsibleDesks
+              .map((desk) => desk.apiKey)
+              .toList(),
           'approval_statuses': [
+            PRFApprovalStatus.pending.apiKey,
             PRFApprovalStatus.approved.apiKey,
             PRFApprovalStatus.rejected.apiKey,
           ],

@@ -1,4 +1,5 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/models/local/adapters.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/services/local_storage/hive/auth_hive_service.dart';
@@ -68,4 +69,8 @@ class HiveService {
   List<String> get memberRoles {
     return _auth.roles;
   }
+
+  List<PRFResponsibleDesk> get responsibleDesks => PRFResponsibleDesk.fromRoles(
+    _auth.roles,
+  );
 }
