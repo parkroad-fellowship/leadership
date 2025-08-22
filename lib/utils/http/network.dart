@@ -38,7 +38,7 @@ class NetworkUtil {
         headers: <String, dynamic>{
           'Accept': 'application/json',
           'X-App-Version': Misc.getFullAppVersion(),
-          'User-Agent': 'PRF-SuperApp/${Misc.getFullAppVersion()}',
+          'X-User-Agent': 'PRF-Leadership/${Misc.getFullAppVersion()}',
         },
         // Fixed timeout configuration
         connectTimeout: const Duration(seconds: 30),

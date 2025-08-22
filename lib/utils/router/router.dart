@@ -11,7 +11,17 @@ class PRFLeadershipRouter extends RootStackRouter {
   // Landing
   static const String landingRoute = '/landing';
   static const String accountRoute = '/account';
-  // static const String requisitionsRoute = '/requisitions';
+
+  static const String deskActivitiesRoute = '/desk-activities';
+  static const String deskActivityDetailsRoute = '/desk-activities/:ulid';
+
+  static const String missionsRoute = '/missions';
+  static const String missionDetailsRoute = '/missions/:ulid';
+
+  static const String requisitionRoute =
+      '/desk-activities/:ulid/requisitions/:ulid';
+
+  static const String requisitionApprovalsRoute = '/requisition-approvals';
 
   @override
   List<AutoRoute> get routes => [
@@ -38,6 +48,49 @@ class PRFLeadershipRouter extends RootStackRouter {
     CustomRoute<dynamic>(
       page: AccountRoute.page,
       path: accountRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: DeskActivitiesRoute.page,
+      path: deskActivitiesRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: DeskEventDetailsRoute.page,
+      path: deskActivityDetailsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: RequisitionRoute.page,
+      path: requisitionRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: MissionsRoute.page,
+      path: missionsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    CustomRoute<dynamic>(
+      page: MissionsDetailsRoute.page,
+      path: missionDetailsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    // Requisition Approvals
+    CustomRoute<dynamic>(
+      page: RequisitionApprovalsRoute.page,
+      path: requisitionApprovalsRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),

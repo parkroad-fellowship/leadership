@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/landing/_handset.dart';
 import 'package:leadership/features/home/landing/_tablet.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -20,6 +22,8 @@ class _LandingPageState extends State<LandingPage> {
   @override
   void initState() {
     super.initState();
+
+    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeNotifications();
@@ -43,10 +47,26 @@ class _LandingPageState extends State<LandingPage> {
 
     final actions = [
       [
-        l10n.requisition,
+        l10n.viewDeskActivities,
+        'assets/svgs/events.svg',
+        () => context.router.pushPath(
+          PRFLeadershipRouter.deskActivitiesRoute,
+        ),
+        700,
+      ],
+      [
+        l10n.viewMissions,
+        'assets/svgs/missions.svg',
+        () => context.router.pushPath(
+          PRFLeadershipRouter.missionsRoute,
+        ),
+        700,
+      ],
+      [
+        l10n.manageRequisitions,
         'assets/svgs/giving.svg',
         () => context.router.pushPath(
-          PRFLeadershipRouter.accountRoute,
+          PRFLeadershipRouter.requisitionApprovalsRoute,
         ),
         700,
       ],

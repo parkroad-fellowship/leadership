@@ -1,7 +1,7 @@
 part of 'social_login_cubit.dart';
 
 @freezed
-class SocialLoginState with _$SocialLoginState {
+abstract class SocialLoginState with _$SocialLoginState {
   const factory SocialLoginState.initial() = _Initial;
   const factory SocialLoginState.loading() = _Loading;
   const factory SocialLoginState.loaded() = _Loaded;
