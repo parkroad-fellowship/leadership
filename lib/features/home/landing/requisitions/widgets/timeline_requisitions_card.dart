@@ -227,7 +227,7 @@ class TimelineRequisitionCard extends StatelessWidget {
                                   Icons.attach_money_rounded,
                                   'Amount',
                                   Misc.formatCash(
-                                    requisition.totalAmount / 100,
+                                    requisition.totalAmount,
                                   ),
                                   theme.colorScheme.primaryContainer,
                                   theme.colorScheme.onPrimaryContainer,
