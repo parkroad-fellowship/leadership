@@ -16,6 +16,9 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/get_allocations_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_expense_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
@@ -27,6 +30,8 @@ import 'package:leadership/features/home/landing/requisitions/cubit/approve_requ
 import 'package:leadership/features/home/landing/requisitions/cubit/reject_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/request_review_cubit.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/allocation_entry_service.dart';
+import 'package:leadership/services/api/allocation_service.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
@@ -63,7 +68,9 @@ class Singletons {
       ..registerSingleton<MissionService>(MissionService())
       ..registerSingleton<MissionExpensesService>(MissionExpensesService())
       ..registerSingleton<ExpenseService>(ExpenseService())
-      ..registerSingleton<MemberService>(MemberService());
+      ..registerSingleton<MemberService>(MemberService())
+      ..registerSingleton<AllocationService>(AllocationService())
+      ..registerSingleton<AllocationEntryService>(AllocationEntryService());
   }
 
   static Future<void> setupDatabases() async {
@@ -219,6 +226,21 @@ class Singletons {
         create: (context) => RejectRequisitionCubit(
           requisitionService: getIt<RequisitionService>(),
           hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<GetAllocationsCubit>(
+        create: (context) => GetAllocationsCubit(
+          allocationService: getIt<AllocationService>(),
+        ),
+      ),
+      BlocProvider<GetAllocationEntriesCubit>(
+        create: (context) => GetAllocationEntriesCubit(
+          allocationEntryService: getIt<AllocationEntryService>(),
+        ),
+      ),
+      BlocProvider<AddAllocationEntryCubit>(
+        create: (context) => AddAllocationEntryCubit(
+          allocationEntryService: getIt<AllocationEntryService>(),
         ),
       ),
     ];
