@@ -3,13 +3,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
+import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/actions/add_expense/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/actions/add_token/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
-import 'package:leadership/features/home/landing/expenses/cubit/get_allocations_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/shared_widgets/_index.dart';
@@ -43,11 +43,10 @@ class _AccountingEventExpensesViewHandsetState
     context.read<GetAllocationEntriesCubit>().getAllocationEntries(
       accountingEventUlid: accountingEventUlid,
     );
-    context.read<GetMembersCubit>().getMembers();
-    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
-    context.read<GetAllocationsCubit>().getAllocations(
-      accountingEventUlid: accountingEventUlid,
+    context.read<GetMembersCubit>().getMembers(
+      group: PRFLeadershipGroup.executiveCommittee,
     );
+    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
   }
 
   @override
@@ -115,11 +114,11 @@ class _AccountingEventExpensesViewHandsetState
     // Calculate totals
     final totalCredits = entries
         .where((e) => e.entryType == PRFEntryType.credit)
-        .fold<double>(0, (sum, entry) => sum + (entry.amount / 100));
+        .fold<double>(0, (sum, entry) => sum + (entry.amount));
 
     final totalDebits = entries
         .where((e) => e.entryType == PRFEntryType.debit)
-        .fold<double>(0, (sum, entry) => sum + (entry.amount / 100));
+        .fold<double>(0, (sum, entry) => sum + (entry.amount));
 
     final balance = totalCredits - totalDebits;
 

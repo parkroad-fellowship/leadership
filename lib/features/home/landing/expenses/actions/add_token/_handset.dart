@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
-import 'package:leadership/features/home/landing/expenses/cubit/get_allocations_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_allocation.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
@@ -32,11 +29,9 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
   bool _isLoading = false;
   PRFChargeType _selectedChargeType = PRFChargeType.cash;
   PRFMember? _selectedMember;
-  PRFAllocation? _selectedAllocation;
 
   bool get _isFormValid {
     return _selectedMember != null &&
-        _selectedAllocation != null &&
         _amountController.text.isNotEmpty &&
         _narrationController.text.isNotEmpty &&
         _confirmationController.text.isNotEmpty;
@@ -151,7 +146,6 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                         children: [
                           _buildMemberDropdown(context, l10n),
                           const SizedBox(height: 16),
-                          _buildAllocationDropdown(context, l10n),
                         ],
                       ),
                     ).animate(delay: 100.ms).slideX(begin: -0.2).fadeIn(),
@@ -301,7 +295,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
           initial: () => const SizedBox.shrink(),
           loading: () => const PRFLinearProgressIndicator(),
           loaded: (members) => DropdownButtonFormField<PRFMember>(
-            value: _selectedMember,
+            initialValue: _selectedMember,
             decoration: InputDecoration(
               labelText: l10n.member,
               border: const OutlineInputBorder(),
@@ -319,42 +313,6 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
             },
           ),
           error: (message) => Text('Error loading members: $message'),
-        );
-      },
-    );
-  }
-
-  Widget _buildAllocationDropdown(BuildContext context, AppLocalizations l10n) {
-    return BlocBuilder<GetAllocationsCubit, GetAllocationsState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => const SizedBox.shrink(),
-          loading: () => const PRFLinearProgressIndicator(),
-          loaded: (allocations) => DropdownButtonFormField<PRFAllocation>(
-            value: _selectedAllocation,
-            decoration: InputDecoration(
-              labelText: l10n.allocation,
-              border: const OutlineInputBorder(),
-            ),
-            items: allocations.map((allocation) {
-              return DropdownMenuItem(
-                value: allocation,
-                child: Text(
-                  NumberFormat.currency(
-                    symbol: 'KES ',
-                    decimalDigits: 0,
-                  ).format(allocation.amount),
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedAllocation = value;
-              });
-            },
-          ),
-          empty: () => Text(l10n.noAllocationsFound),
-          error: (message) => Text('Error loading allocations: $message'),
         );
       },
     );
@@ -455,13 +413,11 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
   void _submitForm() {
     if (!_isFormValid) return;
 
-    final amount = (double.parse(_amountController.text) * 100).round();
+    final amount = double.parse(_amountController.text).round();
 
     context.read<AddAllocationEntryCubit>().addAllocationEntry(
       accountingEventUlid: widget.accountingEventUlid,
-      allocationUlid: _selectedAllocation!.ulid,
       expenseCategoryUlid: '', // Not needed for tokens
-      memberUlid: _selectedMember!.ulid,
       entryType: PRFEntryType.credit, // Always credit for tokens
       chargeType: _selectedChargeType,
       charge: 0, // No charge for tokens

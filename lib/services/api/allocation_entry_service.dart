@@ -16,6 +16,4 @@ class AllocationEntryService extends BaseAPIService<PRFAllocationEntry> {
   ) {
     return PRFAllocationEntriesResponse.fromJson(response).data;
   }
-
-  
 }

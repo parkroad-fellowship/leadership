@@ -48,7 +48,6 @@ class MediaServiceImpl implements MediaService {
         url.write('members');
       case PRFMediaModel.allocationEntryReceipts:
         url.write('allocation-entries');
-
     }
 
     url.write('/${imageDTO.modelUlid}/media');

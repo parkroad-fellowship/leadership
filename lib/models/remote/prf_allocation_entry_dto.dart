@@ -9,7 +9,6 @@ part 'prf_allocation_entry_dto.g.dart';
 abstract class PRFAllocationEntryDTO with _$PRFAllocationEntryDTO {
   factory PRFAllocationEntryDTO({
     @JsonKey(name: 'accounting_event_ulid') required String accountingEventUlid,
-    @JsonKey(name: 'allocation_ulid') required String allocationUlid,
     @JsonKey(name: 'expense_category_ulid') required String expenseCategoryUlid,
     @JsonKey(name: 'member_ulid') required String memberUlid,
     @JsonEnum() @JsonKey(name: 'entry_type') required PRFEntryType entryType,

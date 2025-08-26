@@ -20,7 +20,6 @@ class AddEventCubit extends Cubit<AddEventState> {
 
   Future<void> addEvent({
     required String name,
-    required String description,
     required DateTime startTime,
     required DateTime endTime,
     required PRFResponsibleDesk responsibleDesk,
@@ -31,7 +30,7 @@ class AddEventCubit extends Cubit<AddEventState> {
       await _eventService.create(
         data: PRFEventDTO(
           name: name,
-          description: description,
+          description: 'Leadership Event: $name',
           startDate: startTime.toIso8601String().split('T')[0],
           startTime: startTime.toIso8601String().split('T')[1],
           endDate: endTime.toIso8601String().split('T')[0],

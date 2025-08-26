@@ -23,7 +23,7 @@ class GetAllocationEntriesCubit extends Cubit<GetAllocationEntriesState> {
     try {
       final entries = await _allocationEntryService.list(
         includes: [
-          'allocation',
+          'requisition',
           'expenseCategory',
           'member',
           'accountingEvent',
@@ -32,7 +32,7 @@ class GetAllocationEntriesCubit extends Cubit<GetAllocationEntriesState> {
           'accounting_event_ulid': accountingEventUlid,
         },
         orderBy: 'created_at',
-        orderDirection: 'desc',
+        orderDirection: 'asc',
       );
 
       if (entries.isEmpty) {

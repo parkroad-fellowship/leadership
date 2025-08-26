@@ -23,7 +23,6 @@ class CreateEventViewHandset extends StatefulWidget {
 
 class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
   final _startDateController = TextEditingController();
   final _endDateController = TextEditingController();
   HiveService get _hiveService => getIt<HiveService>();
@@ -39,7 +38,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   bool get _isFormValid {
     return selectedResponsibleDesk != null &&
         _nameController.text.isNotEmpty &&
-        _descriptionController.text.isNotEmpty &&
         startsAt != null &&
         endsAt != null;
   }
@@ -49,7 +47,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     super.initState();
     // Add listeners to update form validity
     _nameController.addListener(() => setState(() {}));
-    _descriptionController.addListener(() => setState(() {}));
   }
 
   @override
@@ -191,16 +188,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     ).animate(delay: 600.ms).slideX(begin: -0.2).fadeIn(),
 
                     _buildFormSection(
-                      icon: Icons.notes_outlined,
-                      title: l10n.description,
-                      isRequired: true,
-                      child: PRFTextAreaInput(
-                        hintText: l10n.description,
-                        controller: _descriptionController,
-                      ),
-                    ).animate(delay: 600.ms).slideX(begin: -0.2).fadeIn(),
-
-                    _buildFormSection(
                       icon: Icons.schedule_outlined,
                       title: l10n.startTime,
                       isRequired: true,
@@ -331,14 +318,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
       return;
     }
 
-    if (_descriptionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.enterDescription)),
-      );
-      Gaimon.warning();
-      return;
-    }
-
     if (startsAt == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.addStartEnd)),
@@ -365,7 +344,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
 
     await context.read<AddEventCubit>().addEvent(
       name: _nameController.text.trim(),
-      description: _descriptionController.text.trim(),
       startTime: startsAt!,
       endTime: endsAt!,
       responsibleDesk: selectedResponsibleDesk!,

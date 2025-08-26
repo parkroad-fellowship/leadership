@@ -32,7 +32,6 @@ class SelectMediaCubit extends Cubit<SelectMediaState> {
       mediaType: mediaType,
     );
 
-
     final items = [...previousMedia, ...media];
 
     if (items.isEmpty) {
@@ -41,7 +40,7 @@ class SelectMediaCubit extends Cubit<SelectMediaState> {
 
     emit(SelectMediaState.loaded(media: items));
   }
-  
+
   void clearMedia() {
     emit(const SelectMediaState.loaded(media: []));
   }
