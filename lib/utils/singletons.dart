@@ -7,6 +7,8 @@ import 'package:leadership/features/home/account/cubit/change_profile_picture_cu
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/cubit/select_media_cubit.dart';
+import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
@@ -241,6 +243,16 @@ class Singletons {
       BlocProvider<AddAllocationEntryCubit>(
         create: (context) => AddAllocationEntryCubit(
           allocationEntryService: getIt<AllocationEntryService>(),
+        ),
+      ),
+      BlocProvider<SelectMediaCubit>(
+        create: (context) => SelectMediaCubit(
+          mediaService: getIt<MediaService>(),
+        ),
+      ),
+      BlocProvider<UploadMediaCubit>(
+        create: (context) => UploadMediaCubit(
+          mediaService: getIt<MediaService>(),
         ),
       ),
     ];

@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/actions/add_expense/_handset.dart';
+import 'package:leadership/features/home/landing/expenses/actions/add_token/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocations_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_allocation.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
-import 'package:leadership/models/remote/prf_expense_category.dart';
-import 'package:leadership/models/remote/prf_member.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class AccountingEventExpensesViewHandset extends StatefulWidget {
@@ -31,6 +30,7 @@ class AccountingEventExpensesViewHandset extends StatefulWidget {
 
 class _AccountingEventExpensesViewHandsetState
     extends State<AccountingEventExpensesViewHandset> {
+  bool _showBreakdown = false;
   String get accountingEventUlid => widget.accountingEventUlid;
 
   @override
@@ -43,8 +43,8 @@ class _AccountingEventExpensesViewHandsetState
     context.read<GetAllocationEntriesCubit>().getAllocationEntries(
       accountingEventUlid: accountingEventUlid,
     );
-    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
     context.read<GetMembersCubit>().getMembers();
+    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
     context.read<GetAllocationsCubit>().getAllocations(
       accountingEventUlid: accountingEventUlid,
     );
@@ -52,89 +52,470 @@ class _AccountingEventExpensesViewHandsetState
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: BlocListener<AddAllocationEntryCubit, AddAllocationEntryState>(
-        listener: (context, state) {
-          state.when(
-            initial: () {},
-            loading: () {},
-            success: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.expenseAddedSuccessfully),
-                  backgroundColor: theme.colorScheme.primary,
-                ),
-              );
-              _loadData();
-              context.read<AddAllocationEntryCubit>().resetState();
-            },
-            error: (message) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(message),
-                  backgroundColor: theme.colorScheme.error,
-                ),
-              );
-            },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AddAllocationEntryCubit, AddAllocationEntryState>(
+          listener: (context, state) {
+            state.when(
+              initial: () {},
+              loading: () {},
+              success: () {
+                _loadData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Entry added successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                // Close any open modal
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              },
+              error: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+      child: BlocBuilder<GetAllocationEntriesCubit, GetAllocationEntriesState>(
+        builder: (context, state) {
+          return state.when(
+            initial: () => const PRFLinearProgressIndicator(),
+            loading: () => const PRFLinearProgressIndicator(),
+            loaded: (entries) => _buildLoadedView(context, entries),
+            empty: () => const PRFEmptyView(
+              label: 'No Expenses Yet',
+              description: 'Start by adding your first expense or token',
+              icon: Icons.receipt_long_outlined,
+            ),
+            error: (message) => PRFEmptyView(
+              label: 'Error',
+              description: message,
+              icon: Icons.error_outline,
+              actionLabel: 'Retry',
+              onActionPressed: _loadData,
+            ),
           );
         },
-        child: Column(
-          children: [
-            Expanded(
-              child:
-                  BlocBuilder<
-                    GetAllocationEntriesCubit,
-                    GetAllocationEntriesState
-                  >(
-                    builder: (context, state) {
-                      return state.when(
-                        initial: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                        loaded: (entries) =>
-                            _buildExpensesList(context, entries),
-                        empty: () => _buildEmptyState(context, l10n),
-                        error: (message) => _buildErrorState(context, message),
-                      );
-                    },
-                  ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddExpenseModal(context),
-        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildExpensesList(
+  Widget _buildLoadedView(
     BuildContext context,
     List<PRFAllocationEntry> entries,
   ) {
-    return RefreshIndicator(
-      onRefresh: () async => _loadData(),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: entries.length,
-        itemBuilder: (context, index) {
-          final entry = entries[index];
-          return _buildExpenseCard(context, entry)
-              .animate()
-              .fadeIn(
-                duration: 300.ms,
-                delay: (index * 50).ms,
-              )
-              .slideX(begin: 0.2, end: 0);
-        },
+    // Calculate totals
+    final totalCredits = entries
+        .where((e) => e.entryType == PRFEntryType.credit)
+        .fold<double>(0, (sum, entry) => sum + (entry.amount / 100));
+
+    final totalDebits = entries
+        .where((e) => e.entryType == PRFEntryType.debit)
+        .fold<double>(0, (sum, entry) => sum + (entry.amount / 100));
+
+    final balance = totalCredits - totalDebits;
+
+    return CustomScrollView(
+      slivers: [
+        // Financial Overview Header
+        SliverToBoxAdapter(
+          child: _buildFinancialOverview(
+            context,
+            totalCredits,
+            totalDebits,
+            balance,
+            entries.length,
+          ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+        ),
+
+        // Quick Actions
+        SliverToBoxAdapter(
+          child: _buildQuickActions(
+            context,
+            entries,
+          ).animate(delay: 200.ms).slideY(begin: 0.3).fadeIn(),
+        ),
+
+        // Breakdown Toggle
+        SliverToBoxAdapter(
+          child: _buildBreakdownToggle(
+            context,
+            entries,
+          ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
+        ),
+
+        // Expenses List (if breakdown is shown)
+        if (_showBreakdown && entries.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final entry = entries[index];
+                  return _buildExpenseCard(context, entry)
+                      .animate()
+                      .fadeIn(
+                        duration: 300.ms,
+                        delay: (index * 50).ms,
+                      )
+                      .slideX(begin: 0.2, end: 0);
+                },
+                childCount: entries.length,
+              ),
+            ),
+          ),
+
+        // Empty state when breakdown is shown but no entries
+        if (_showBreakdown && entries.isEmpty)
+          SliverToBoxAdapter(
+            child: const PRFEmptyView(
+              label: 'No Expenses Yet',
+              description: 'Start by adding your first expense or token',
+              icon: Icons.receipt_long_outlined,
+            ).animate().fadeIn(duration: 600.ms),
+          ),
+
+        // Bottom spacing
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 100),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFinancialOverview(
+    BuildContext context,
+    double totalCredits,
+    double totalDebits,
+    double balance,
+    int entryCount,
+  ) {
+    final theme = Theme.of(context);
+    final spentPercentage = totalCredits > 0 ? (totalDebits / totalCredits) : 0;
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.account_balance_wallet,
+                color: theme.colorScheme.onPrimary,
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Financial Overview',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '$entryCount entries total',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary.withValues(
+                          alpha: 0.9,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildBalanceCard(
+                  context,
+                  'Credits',
+                  totalCredits,
+                  Icons.add_circle,
+                  theme.colorScheme.onPrimary.withValues(alpha: 0.1),
+                  theme.colorScheme.onPrimary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildBalanceCard(
+                  context,
+                  'Debits',
+                  totalDebits,
+                  Icons.remove_circle,
+                  theme.colorScheme.onPrimary.withValues(alpha: 0.1),
+                  theme.colorScheme.onPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Balance',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      NumberFormat.currency(
+                        symbol: 'KES ',
+                        decimalDigits: 0,
+                      ).format(balance),
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                if (totalCredits > 0) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Spent',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.8,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${(spentPercentage * 100).toStringAsFixed(1)}%',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.8,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBalanceCard(
+    BuildContext context,
+    String title,
+    double amount,
+    IconData icon,
+    Color backgroundColor,
+    Color textColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: textColor, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: textColor.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            NumberFormat.currency(
+              symbol: 'KES ',
+              decimalDigits: 0,
+            ).format(amount),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(
+    BuildContext context,
+    List<PRFAllocationEntry> entries,
+  ) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildActionButton(
+              context: context,
+              label: 'Add Expense',
+              icon: Icons.receipt_long,
+              onTap: () => _showAddExpenseModal(context),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildActionButton(
+              context: context,
+              label: 'Add Token',
+              icon: Icons.toll,
+              onTap: () => _showAddTokenModal(context, entries),
+              backgroundColor: theme.colorScheme.tertiary,
+              foregroundColor: theme.colorScheme.onTertiary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+    required Color backgroundColor,
+    required Color foregroundColor,
+  }) {
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: foregroundColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBreakdownToggle(
+    BuildContext context,
+    List<PRFAllocationEntry> entries,
+  ) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Material(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        elevation: 1,
+        child: InkWell(
+          onTap: () => setState(() => _showBreakdown = !_showBreakdown),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.list_alt,
+                  color: theme.colorScheme.onSurface,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Transaction Breakdown',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        _showBreakdown
+                            ? 'Tap to hide details'
+                            : 'Tap to view ${entries.length} transactions',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                AnimatedRotation(
+                  duration: const Duration(milliseconds: 200),
+                  turns: _showBreakdown ? 0.5 : 0,
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -231,131 +612,9 @@ class _AccountingEventExpensesViewHandsetState
                   ),
                 ),
               ],
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _buildInfoChip(
-                    context,
-                    isCredit ? l10n.credit : l10n.debit,
-                    isCredit ? Icons.trending_up : Icons.trending_down,
-                    isCredit
-                        ? theme.colorScheme.primaryContainer
-                        : theme.colorScheme.errorContainer,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildInfoChip(
-                    context,
-                    entry.chargeType.name,
-                    Icons.payment,
-                    theme.colorScheme.secondaryContainer,
-                  ),
-                ],
-              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color backgroundColor,
-  ) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.noExpensesYet,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.tapTheButtonBelowToAddAnExpense,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, String message) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: theme.colorScheme.error,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Error',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.error,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
-        ],
       ),
     );
   }
@@ -374,619 +633,47 @@ class _AccountingEventExpensesViewHandsetState
       hasTopBarLayer: true,
       topBarTitle: Text(context.l10n.addExpense),
       isTopBarLayerAlwaysVisible: true,
-      child: _AddExpenseForm(
-        accountingEventUlid: accountingEventUlid,
-        onSuccess: () => Navigator.of(context).pop(),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: AddExpenseViewHandset(
+          accountingEventUlid: accountingEventUlid,
+        ),
       ),
     );
+  }
+
+  void _showAddTokenModal(
+    BuildContext context,
+    List<PRFAllocationEntry> entries,
+  ) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            hasTopBarLayer: true,
+            topBarTitle: const Text('Add Token'),
+            isTopBarLayerAlwaysVisible: true,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: AddTokenViewHandset(
+                accountingEventUlid: accountingEventUlid,
+              ),
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      if (context.mounted) {
+        _loadData();
+      }
+    });
   }
 
   void _showExpenseDetails(BuildContext context, PRFAllocationEntry entry) {
-    WoltModalSheet.show<void>(
-      context: context,
-      pageListBuilder: (context) => [
-        _buildExpenseDetailsModalPage(context, entry),
-      ],
-    );
-  }
-
-  WoltModalSheetPage _buildExpenseDetailsModalPage(
-    BuildContext context,
-    PRFAllocationEntry entry,
-  ) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final isCredit = entry.entryType == PRFEntryType.credit;
-
-    return WoltModalSheetPage(
-      hasTopBarLayer: true,
-      topBarTitle: Text(l10n.expenseDetails),
-      isTopBarLayerAlwaysVisible: true,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow(
-              context,
-              l10n.category,
-              entry.expenseCategory?.name ?? l10n.unknownCategory,
-              Icons.category,
-            ),
-            _buildDetailRow(
-              context,
-              l10n.member,
-              entry.member?.fullName ?? l10n.unknownMember,
-              Icons.person,
-            ),
-            _buildDetailRow(
-              context,
-              l10n.type,
-              isCredit ? l10n.credit : l10n.debit,
-              isCredit ? Icons.trending_up : Icons.trending_down,
-              valueColor: isCredit
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.error,
-            ),
-            _buildDetailRow(
-              context,
-              l10n.paymentMethod,
-              entry.chargeType.name,
-              Icons.payment,
-            ),
-            _buildAmountRow(
-              context,
-              l10n.amount,
-              entry.amount,
-              isTotal: true,
-            ),
-            _buildAmountRow(
-              context,
-              l10n.unitCost,
-              entry.unitCost,
-            ),
-            _buildAmountRow(
-              context,
-              l10n.quantity,
-              entry.quantity,
-              isQuantity: true,
-            ),
-            _buildAmountRow(
-              context,
-              l10n.charge,
-              entry.charge,
-            ),
-            if (entry.narration.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                l10n.description,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                entry.narration,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-            if (entry.confirmationMessage.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                l10n.confirmationMessage,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                entry.confirmationMessage,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-            const SizedBox(height: 16),
-            _buildDetailRow(
-              context,
-              l10n.dateCreated,
-              DateFormat('MMMM dd, yyyy - HH:mm').format(entry.createdAt),
-              Icons.calendar_today,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon, {
-    Color? valueColor,
-  }) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
-                Text(
-                  value,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: valueColor ?? theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmountRow(
-    BuildContext context,
-    String label,
-    int amount, {
-    bool isQuantity = false,
-    bool isTotal = false,
-  }) {
-    final theme = Theme.of(context);
-    final formattedAmount = isQuantity
-        ? amount.toString()
-        : NumberFormat.currency(
-            symbol: 'KES ',
-            decimalDigits: 0,
-          ).format(amount);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(
-            isQuantity ? Icons.numbers : Icons.attach_money,
-            size: 20,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
-                Text(
-                  formattedAmount,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AddExpenseForm extends StatefulWidget {
-  const _AddExpenseForm({
-    required this.accountingEventUlid,
-    required this.onSuccess,
-  });
-
-  final String accountingEventUlid;
-  final VoidCallback onSuccess;
-
-  @override
-  State<_AddExpenseForm> createState() => _AddExpenseFormState();
-}
-
-class _AddExpenseFormState extends State<_AddExpenseForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _narrationController = TextEditingController();
-  final _confirmationController = TextEditingController();
-  final _unitCostController = TextEditingController();
-  final _quantityController = TextEditingController();
-  final _chargeController = TextEditingController();
-
-  PRFEntryType _selectedEntryType = PRFEntryType.debit;
-  PRFChargeType _selectedChargeType = PRFChargeType.cash;
-  PRFExpenseCategory? _selectedCategory;
-  PRFMember? _selectedMember;
-  PRFAllocation? _selectedAllocation;
-
-  @override
-  void dispose() {
-    _narrationController.dispose();
-    _confirmationController.dispose();
-    _unitCostController.dispose();
-    _quantityController.dispose();
-    _chargeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return BlocListener<AddAllocationEntryCubit, AddAllocationEntryState>(
-      listener: (context, state) {
-        state.when(
-          initial: () {},
-          loading: () {},
-          success: () => widget.onSuccess(),
-          error: (message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
-          },
-        );
-      },
-      child: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildEntryTypeSelector(context, l10n),
-              const SizedBox(height: 16),
-              _buildCategoryDropdown(context, l10n),
-              const SizedBox(height: 16),
-              _buildMemberDropdown(context, l10n),
-              const SizedBox(height: 16),
-              _buildAllocationDropdown(context, l10n),
-              const SizedBox(height: 16),
-              _buildChargeTypeDropdown(context, l10n),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _unitCostController,
-                      label: l10n.unitCost,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.pleaseEnterUnitCost;
-                        }
-                        if (double.tryParse(value) == null) {
-                          return l10n.pleaseEnterValidAmount;
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _quantityController,
-                      label: l10n.quantity,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.pleaseEnterQuantity;
-                        }
-                        if (int.tryParse(value) == null) {
-                          return l10n.pleaseEnterValidQuantity;
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _chargeController,
-                label: l10n.charge,
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return l10n.pleaseEnterCharge;
-                  }
-                  if (double.tryParse(value) == null) {
-                    return l10n.pleaseEnterValidAmount;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _narrationController,
-                label: l10n.description,
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return l10n.pleaseEnterDescription;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _confirmationController,
-                label: l10n.confirmationMessage,
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return l10n.pleaseEnterConfirmationMessage;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              BlocBuilder<AddAllocationEntryCubit, AddAllocationEntryState>(
-                builder: (context, state) {
-                  return ElevatedButton(
-                    onPressed: state.maybeWhen(
-                      loading: () => null,
-                      orElse: () => _submitForm,
-                    ),
-                    child: state.maybeWhen(
-                      loading: () => const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      orElse: () => Text(l10n.addExpense),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEntryTypeSelector(BuildContext context, AppLocalizations l10n) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.type,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: RadioListTile<PRFEntryType>(
-                title: Text(l10n.credit),
-                value: PRFEntryType.credit,
-                groupValue: _selectedEntryType,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedEntryType = value!;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: RadioListTile<PRFEntryType>(
-                title: Text(l10n.debit),
-                value: PRFEntryType.debit,
-                groupValue: _selectedEntryType,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedEntryType = value!;
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryDropdown(BuildContext context, AppLocalizations l10n) {
-    return BlocBuilder<GetExpenseCategoriesCubit, GetExpenseCategoriesState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => const SizedBox.shrink(),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          loaded: (categories) => DropdownButtonFormField<PRFExpenseCategory>(
-            initialValue: _selectedCategory,
-            decoration: InputDecoration(
-              labelText: l10n.category,
-              border: const OutlineInputBorder(),
-            ),
-            items: categories.map((category) {
-              return DropdownMenuItem(
-                value: category,
-                child: Text(category.name),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedCategory = value;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return l10n.pleaseSelectCategory;
-              }
-              return null;
-            },
-          ),
-          error: (message) => Text('Error loading categories: $message'),
-        );
-      },
-    );
-  }
-
-  Widget _buildMemberDropdown(BuildContext context, AppLocalizations l10n) {
-    return BlocBuilder<GetMembersCubit, GetMembersState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => const SizedBox.shrink(),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          loaded: (members) => DropdownButtonFormField<PRFMember>(
-            initialValue: _selectedMember,
-            decoration: InputDecoration(
-              labelText: l10n.member,
-              border: const OutlineInputBorder(),
-            ),
-            items: members.map((member) {
-              return DropdownMenuItem(
-                value: member,
-                child: Text(member.fullName),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedMember = value;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return l10n.pleaseSelectMember;
-              }
-              return null;
-            },
-          ),
-          error: (message) => Text('Error loading members: $message'),
-        );
-      },
-    );
-  }
-
-  Widget _buildAllocationDropdown(BuildContext context, AppLocalizations l10n) {
-    return BlocBuilder<GetAllocationsCubit, GetAllocationsState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => const SizedBox.shrink(),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          loaded: (allocations) => DropdownButtonFormField<PRFAllocation>(
-            initialValue: _selectedAllocation,
-            decoration: InputDecoration(
-              labelText: l10n.allocation,
-              border: const OutlineInputBorder(),
-            ),
-            items: allocations.map((allocation) {
-              return DropdownMenuItem(
-                value: allocation,
-                child: Text(
-                  NumberFormat.currency(
-                    symbol: 'KES ',
-                    decimalDigits: 0,
-                  ).format(allocation.amount),
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedAllocation = value;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return l10n.pleaseSelectAllocation;
-              }
-              return null;
-            },
-          ),
-          empty: () => Text(l10n.noAllocationsFound),
-          error: (message) => Text('Error loading allocations: $message'),
-        );
-      },
-    );
-  }
-
-  Widget _buildChargeTypeDropdown(BuildContext context, AppLocalizations l10n) {
-    return DropdownButtonFormField<PRFChargeType>(
-      initialValue: _selectedChargeType,
-      decoration: InputDecoration(
-        labelText: l10n.paymentMethod,
-        border: const OutlineInputBorder(),
-      ),
-      items: PRFChargeType.values.map((chargeType) {
-        return DropdownMenuItem(
-          value: chargeType,
-          child: Text(chargeType.name),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedChargeType = value!;
-        });
-      },
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      validator: validator,
-    );
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final unitCost = (double.parse(_unitCostController.text) * 100).round();
-      final quantity = int.parse(_quantityController.text);
-      final charge = (double.parse(_chargeController.text) * 100).round();
-
-      context.read<AddAllocationEntryCubit>().addAllocationEntry(
-        accountingEventUlid: widget.accountingEventUlid,
-        allocationUlid: _selectedAllocation!.ulid,
-        expenseCategoryUlid: _selectedCategory!.ulid,
-        memberUlid: _selectedMember!.ulid,
-        entryType: _selectedEntryType,
-        chargeType: _selectedChargeType,
-        charge: charge,
-        unitCost: unitCost,
-        quantity: quantity,
-        narration: _narrationController.text,
-        confirmationMessage: _confirmationController.text,
-      );
-    }
+    // Implementation would go here for showing detailed view
+    // This is a placeholder for the expense details modal
   }
 }

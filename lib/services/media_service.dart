@@ -44,17 +44,11 @@ class MediaServiceImpl implements MediaService {
     Logger().d(imageDTO);
 
     switch (imageDTO.model) {
-      case PRFMediaModel.missionPhotos:
-      case PRFMediaModel.missionFitChecks:
-        url.write('missions');
-      case PRFMediaModel.missionSessionAudios:
-        url.write('mission-sessions');
-      case PRFMediaModel.eventPhotos:
-        url.write('events');
       case PRFMediaModel.memberProfilePictures:
         url.write('members');
-      case PRFMediaModel.expenses:
-        url.write('expenses');
+      case PRFMediaModel.allocationEntryReceipts:
+        url.write('allocation-entries');
+
     }
 
     url.write('/${imageDTO.modelUlid}/media');

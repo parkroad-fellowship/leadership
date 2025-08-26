@@ -4,6 +4,7 @@ import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_allocation.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
+import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 
 part 'prf_allocation_entry.freezed.dart';
@@ -27,6 +28,7 @@ abstract class PRFAllocationEntry with _$PRFAllocationEntry {
     PRFAllocation? allocation,
     @JsonKey(name: 'expense_category') PRFExpenseCategory? expenseCategory,
     PRFMember? member,
+    @Default([]) List<PRFMedia> receipts,
   }) = _PRFAllocationEntry;
 
   factory PRFAllocationEntry.fromJson(Map<String, dynamic> json) =>
