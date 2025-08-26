@@ -20,6 +20,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/send_financial_report_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_expense_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
@@ -31,6 +32,7 @@ import 'package:leadership/features/home/landing/requisitions/cubit/approve_requ
 import 'package:leadership/features/home/landing/requisitions/cubit/reject_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/request_review_cubit.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/accounting_event_service.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
@@ -69,6 +71,7 @@ class Singletons {
       ..registerSingleton<MissionExpensesService>(MissionExpensesService())
       ..registerSingleton<ExpenseService>(ExpenseService())
       ..registerSingleton<MemberService>(MemberService())
+      ..registerSingleton<AccountingEventService>(AccountingEventService())
       ..registerSingleton<AllocationEntryService>(AllocationEntryService());
   }
 
@@ -246,6 +249,11 @@ class Singletons {
       BlocProvider<UploadMediaCubit>(
         create: (context) => UploadMediaCubit(
           mediaService: getIt<MediaService>(),
+        ),
+      ),
+      BlocProvider<SendFinancialReportCubit>(
+        create: (context) => SendFinancialReportCubit(
+          accountingEventService: getIt<AccountingEventService>(),
         ),
       ),
     ];

@@ -7,7 +7,7 @@ import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/actions/add_expense/_handset.dart';
-import 'package:leadership/features/home/landing/expenses/actions/add_token/_handset.dart';
+import 'package:leadership/features/home/landing/expenses/actions/send_financial_report/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -407,9 +407,9 @@ class _AccountingEventExpensesViewHandsetState
           Expanded(
             child: _buildActionButton(
               context: context,
-              label: 'Add Token',
-              icon: Icons.toll,
-              onTap: () => _showAddTokenModal(context, entries),
+              label: 'Email Report',
+              icon: Icons.email_outlined,
+              onTap: () => _showSendReportModal(context, entries),
               backgroundColor: theme.colorScheme.tertiary,
               foregroundColor: theme.colorScheme.onTertiary,
             ),
@@ -641,7 +641,7 @@ class _AccountingEventExpensesViewHandsetState
     );
   }
 
-  void _showAddTokenModal(
+  void _showSendReportModal(
     BuildContext context,
     List<PRFAllocationEntry> entries,
   ) {
@@ -653,11 +653,11 @@ class _AccountingEventExpensesViewHandsetState
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.white,
             hasTopBarLayer: true,
-            topBarTitle: const Text('Add Token'),
+            topBarTitle: const Text('Send Financial Report'),
             isTopBarLayerAlwaysVisible: true,
             child: SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
-              child: AddTokenViewHandset(
+              child: SendFinancialReportViewHandset(
                 accountingEventUlid: accountingEventUlid,
               ),
             ),
