@@ -30,7 +30,7 @@ class AccountingEventExpensesViewHandset extends StatefulWidget {
 
 class _AccountingEventExpensesViewHandsetState
     extends State<AccountingEventExpensesViewHandset> {
-  bool _showBreakdown = false;
+  bool _showBreakdown = true;
   String get accountingEventUlid => widget.accountingEventUlid;
 
   @override
