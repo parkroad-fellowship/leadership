@@ -31,8 +31,6 @@ class GetAllocationEntriesCubit extends Cubit<GetAllocationEntriesState> {
         filters: {
           'accounting_event_ulid': accountingEventUlid,
         },
-        orderBy: 'created_at',
-        orderDirection: 'asc',
       );
 
       if (entries.isEmpty) {
