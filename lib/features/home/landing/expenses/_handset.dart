@@ -172,10 +172,6 @@ class _AccountingEventExpensesViewHandsetState
                     backgroundColor: Colors.green,
                   ),
                 );
-                // Close any open modal
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
               },
               error: (message) {
                 ScaffoldMessenger.of(context).showSnackBar(
