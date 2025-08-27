@@ -204,7 +204,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                         _isLoading = true;
                       });
                     },
-                    success: () {
+                    loaded: () {
                       setState(() {
                         _isLoading = false;
                       });
@@ -425,6 +425,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
       quantity: 1, // Always 1 for tokens
       narration: _narrationController.text,
       confirmationMessage: _confirmationController.text,
+      receiptDTOs: [],
     );
   }
 

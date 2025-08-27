@@ -12,6 +12,7 @@ import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_e
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
+import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
@@ -26,6 +27,111 @@ class AccountingEventExpensesViewHandset extends StatefulWidget {
   @override
   State<AccountingEventExpensesViewHandset> createState() =>
       _AccountingEventExpensesViewHandsetState();
+}
+
+class _ReceiptPreviewPage extends StatefulWidget {
+  const _ReceiptPreviewPage({
+    required this.receipts,
+    required this.initialIndex,
+  });
+
+  final List<PRFMedia> receipts;
+  final int initialIndex;
+
+  @override
+  State<_ReceiptPreviewPage> createState() => _ReceiptPreviewPageState();
+}
+
+class _ReceiptPreviewPageState extends State<_ReceiptPreviewPage> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(
+          'Receipt ${_currentIndex + 1} of ${widget.receipts.length}',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        itemCount: widget.receipts.length,
+        itemBuilder: (context, index) {
+          final receipt = widget.receipts[index];
+          return InteractiveViewer(
+            child: Center(
+              child: Image.network(
+                receipt.temporaryURL,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return ColoredBox(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.image_not_supported,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.4,
+                          ),
+                          size: 64,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Failed to load image',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.6,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _AccountingEventExpensesViewHandsetState
@@ -58,7 +164,7 @@ class _AccountingEventExpensesViewHandsetState
             state.when(
               initial: () {},
               loading: () {},
-              success: () {
+              loaded: () {
                 _loadData();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -86,8 +192,14 @@ class _AccountingEventExpensesViewHandsetState
       child: BlocBuilder<GetAllocationEntriesCubit, GetAllocationEntriesState>(
         builder: (context, state) {
           return state.when(
-            initial: () => const PRFLinearProgressIndicator(),
-            loading: () => const PRFLinearProgressIndicator(),
+            initial: () => const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: PRFLinearProgressIndicator(),
+            ),
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: PRFLinearProgressIndicator(),
+            ),
             loaded: (entries) => _buildLoadedView(context, entries),
             empty: () => const PRFEmptyView(
               label: 'No Expenses Yet',
@@ -611,8 +723,120 @@ class _AccountingEventExpensesViewHandsetState
                   ),
                 ),
               ],
+              if (entry.receipts.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _buildReceiptAttachments(context, entry.receipts),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptAttachments(
+    BuildContext context,
+    List<PRFMedia> receipts,
+  ) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.attach_file,
+              size: 16,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${receipts.length} receipt${receipts.length == 1 ? '' : 's'}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 60,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: receipts.length,
+            itemBuilder: (context, index) {
+              final receipt = receipts[index];
+              return GestureDetector(
+                onTap: () => _showReceiptPreview(context, receipts, index),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      receipt.temporaryURL,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return ColoredBox(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.4,
+                            ),
+                            size: 20,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return ColoredBox(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: Center(
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showReceiptPreview(
+    BuildContext context,
+    List<PRFMedia> receipts,
+    int initialIndex,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute<dynamic>(
+        builder: (context) => _ReceiptPreviewPage(
+          receipts: receipts,
+          initialIndex: initialIndex,
         ),
       ),
     );

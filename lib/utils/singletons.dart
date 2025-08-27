@@ -239,6 +239,7 @@ class Singletons {
         create: (context) => AddAllocationEntryCubit(
           allocationEntryService: getIt<AllocationEntryService>(),
           hiveService: getIt<HiveService>(),
+          mediaService: getIt<MediaService>(),
         ),
       ),
       BlocProvider<SelectMediaCubit>(

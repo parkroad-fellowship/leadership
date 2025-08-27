@@ -1,13 +1,20 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
+import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/cubit/select_media_cubit.dart';
+import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
+import 'package:leadership/models/remote/prf_media_dto.dart';
 import 'package:leadership/shared_widgets/_index.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 class AddExpenseViewHandset extends StatefulWidget {
   const AddExpenseViewHandset({
@@ -36,6 +43,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
   @override
   void initState() {
     super.initState();
+    context.read<SelectMediaCubit>().clearMedia();
     _unitCostController.addListener(_calculateTotal);
     _quantityController.addListener(_calculateTotal);
     _chargeController.addListener(_calculateTotal);
@@ -55,12 +63,20 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
   }
 
   bool get _isFormValid {
+    final selectMediaState = context.read<SelectMediaCubit>().state;
+    final hasValidReceipts = selectMediaState.when(
+      initial: () => false,
+      empty: () => false,
+      loaded: (media) => media.isNotEmpty,
+    );
+
     return _selectedCategory != null &&
         _unitCostController.text.isNotEmpty &&
         _quantityController.text.isNotEmpty &&
         _chargeController.text.isNotEmpty &&
         _narrationController.text.isNotEmpty &&
-        _confirmationController.text.isNotEmpty;
+        _confirmationController.text.isNotEmpty &&
+        hasValidReceipts;
   }
 
   @override
@@ -250,6 +266,12 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                     ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
 
                     _buildFormSection(
+                      icon: Icons.attach_file,
+                      title: 'Receipt Attachment',
+                      child: _buildReceiptAttachmentSection(),
+                    ).animate(delay: 350.ms).slideX(begin: -0.2).fadeIn(),
+
+                    _buildFormSection(
                       icon: Icons.description,
                       title: l10n.description,
                       isRequired: true,
@@ -284,7 +306,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                         _isLoading = true;
                       });
                     },
-                    success: () {
+                    loaded: () {
                       setState(() {
                         _isLoading = false;
                       });
@@ -554,12 +576,280 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
     }
   }
 
+  Widget _buildReceiptAttachmentSection() {
+    return BlocBuilder<SelectMediaCubit, SelectMediaState>(
+      builder: (context, selectState) {
+        return BlocBuilder<UploadMediaCubit, UploadMediaState>(
+          builder: (context, uploadState) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Media selection buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMediaButton(
+                        icon: Icons.camera_alt,
+                        label: 'Camera',
+                        onTap: () => _selectMediaFromCamera(context),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMediaButton(
+                        icon: Icons.photo_library,
+                        label: 'Gallery',
+                        onTap: () => _selectMediaFromGallery(context),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Selected media preview
+                selectState.when(
+                  initial: () => const SizedBox.shrink(),
+                  empty: () => const SizedBox.shrink(),
+                  loaded: (media) => media.isNotEmpty
+                      ? _buildMediaPreview(media.first)
+                      : const SizedBox.shrink(),
+                ),
+
+                // Upload progress
+                uploadState.when(
+                  initial: () => const SizedBox.shrink(),
+                  loading: () => Column(
+                    children: [
+                      const SizedBox(height: 8),
+                      const LinearProgressIndicator(),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Uploading receipt...',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                  loaded: () => Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Receipt uploaded successfully',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  error: (message) => Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Upload failed: $message',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMediaButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMediaPreview(PRFMediaDTO mediaFile) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(mediaFile.path),
+                    fit: BoxFit.cover,
+                    width: 60,
+                    height: 60,
+                  ),
+                ),
+                Positioned(
+                  top: 2,
+                  right: 2,
+                  child: GestureDetector(
+                    onTap: () => context.read<SelectMediaCubit>().clearMedia(),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.error,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        color: Theme.of(context).colorScheme.onError,
+                        size: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Receipt Image',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Ready to upload',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              // Upload the selected media
+              context.read<UploadMediaCubit>().uploadMedia(
+                imageDTOs: [mediaFile],
+              );
+            },
+            icon: Icon(
+              Icons.cloud_upload,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            tooltip: 'Upload',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _selectMediaFromCamera(BuildContext context) {
+    context.read<SelectMediaCubit>().selectMedia(
+      context: context,
+      modelUlid: widget.accountingEventUlid,
+      model: PRFMediaModel.allocationEntryReceipts,
+      mediaType: RequestType.image,
+    );
+  }
+
+  void _selectMediaFromGallery(BuildContext context) {
+    context.read<SelectMediaCubit>().selectMedia(
+      context: context,
+      modelUlid: widget.accountingEventUlid,
+      model: PRFMediaModel.allocationEntryReceipts,
+      mediaType: RequestType.image,
+    );
+  }
+
   void _submitForm() {
     if (!_isFormValid) return;
 
     final unitCost = double.parse(_unitCostController.text).round();
     final quantity = int.parse(_quantityController.text);
     final charge = double.parse(_chargeController.text).round();
+
+    // Get uploaded media from SelectMediaCubit
+    final uploadMediaState = context.read<SelectMediaCubit>().state;
+    final uploadedMedia = uploadMediaState.when(
+      initial: () => <PRFMediaDTO>[],
+      loaded: (mediaItems) => mediaItems,
+      empty: () => <PRFMediaDTO>[],
+    );
 
     context.read<AddAllocationEntryCubit>().addAllocationEntry(
       accountingEventUlid: widget.accountingEventUlid,
@@ -571,6 +861,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
       quantity: quantity,
       narration: _narrationController.text,
       confirmationMessage: _confirmationController.text,
+      receiptDTOs: uploadedMedia,
     );
   }
 

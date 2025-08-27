@@ -4,8 +4,10 @@ import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_allocation_entry_dto.dart';
+import 'package:leadership/models/remote/prf_media_dto.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
+import 'package:logger/logger.dart';
 
 part 'add_allocation_entry_state.dart';
 part 'add_allocation_entry_cubit.freezed.dart';
@@ -14,13 +16,16 @@ class AddAllocationEntryCubit extends Cubit<AddAllocationEntryState> {
   AddAllocationEntryCubit({
     required AllocationEntryService allocationEntryService,
     required HiveService hiveService,
+    required MediaService mediaService,
   }) : super(const AddAllocationEntryState.initial()) {
     _allocationEntryService = allocationEntryService;
     _hiveService = hiveService;
+    _mediaService = mediaService;
   }
 
   late AllocationEntryService _allocationEntryService;
   late HiveService _hiveService;
+  late MediaService _mediaService;
 
   Future<void> addAllocationEntry({
     required String accountingEventUlid,
@@ -32,12 +37,13 @@ class AddAllocationEntryCubit extends Cubit<AddAllocationEntryState> {
     required int quantity,
     required String narration,
     required String confirmationMessage,
+    required List<PRFMediaDTO> receiptDTOs,
   }) async {
     emit(const AddAllocationEntryState.loading());
 
     try {
       final member = _hiveService.retrieveMember()!;
-      await _allocationEntryService.create(
+      final allocationEntry = await _allocationEntryService.create(
         data: PRFAllocationEntryDTO(
           accountingEventUlid: accountingEventUlid,
           expenseCategoryUlid: expenseCategoryUlid,
@@ -52,7 +58,16 @@ class AddAllocationEntryCubit extends Cubit<AddAllocationEntryState> {
         ).toJson(),
       );
 
-      emit(const AddAllocationEntryState.success());
+      Logger().d(receiptDTOs);
+      for (final receiptDTO in receiptDTOs) {
+        await _mediaService.uploadFile(
+          imageDTO: receiptDTO.copyWith(
+            modelUlid: allocationEntry.ulid,
+          ),
+        );
+      }
+
+      emit(const AddAllocationEntryState.loaded());
     } on Failure catch (f) {
       emit(AddAllocationEntryState.error(f.message));
     } catch (e) {
