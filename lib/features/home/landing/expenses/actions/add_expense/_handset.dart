@@ -63,20 +63,12 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
   }
 
   bool get _isFormValid {
-    final selectMediaState = context.read<SelectMediaCubit>().state;
-    final hasValidReceipts = selectMediaState.when(
-      initial: () => false,
-      empty: () => false,
-      loaded: (media) => media.isNotEmpty,
-    );
-
     return _selectedCategory != null &&
         _unitCostController.text.isNotEmpty &&
         _quantityController.text.isNotEmpty &&
         _chargeController.text.isNotEmpty &&
         _narrationController.text.isNotEmpty &&
-        _confirmationController.text.isNotEmpty &&
-        hasValidReceipts;
+        _confirmationController.text.isNotEmpty;
   }
 
   @override
