@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: "adopt"
@@ -91,7 +91,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: ⬇️ Download AAB artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: app-production-release
           path: build/app/outputs/bundle/productionRelease/
@@ -131,7 +131,7 @@ jobs:
   #       uses: actions/checkout@v5
 
   #     - name: ⬇️ Download AAB artifact
-  #       uses: actions/download-artifact@v4
+  #       uses: actions/download-artifact@v5
   #       with:
   #         name: app-production-release
   #         path: build/app/outputs/bundle/productionRelease/

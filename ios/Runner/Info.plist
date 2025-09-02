@@ -46,6 +46,8 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>$(FLAVOR_APP_NAME) requires access to your photos and videos to enable you to set your profile picture and upload photos from events and missions you attend.</string>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
@@ -77,5 +79,9 @@
 				</array>
 			</dict>
 		</array>
+		<key>NSCameraUsageDescription</key>
+		<string>$(FLAVOR_APP_NAME) needs to access the camera to take photos of receipts and other documentation.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>$(FLAVOR_APP_NAME) needs to access the camera to take photos of receipts and other documentation.</string>
 	</dict>
 </plist>

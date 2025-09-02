@@ -289,10 +289,6 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
     List<PRFRequisitionItem> items,
   ) {
     final theme = Theme.of(context);
-    final totalAmount = items.fold<int>(
-      0,
-      (sum, item) => sum + item.totalPrice,
-    );
 
     return BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
       builder: (context, requisitionState) {
@@ -305,100 +301,6 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                     _buildRequisitionDetailsCard(context, requisition),
                 orElse: () => const SizedBox.shrink(),
               ),
-            ),
-
-            // Summary header
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      theme.colorScheme.primary,
-                      theme.colorScheme.primary.withValues(alpha: 0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.receipt_long,
-                          color: theme.colorScheme.onPrimary,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          l10n.itemsSummary,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: theme.colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.totalItems,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onPrimary.withValues(
-                                  alpha: 0.8,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '${items.length}',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: theme.colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              l10n.totalAmount,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onPrimary.withValues(
-                                  alpha: 0.8,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              NumberFormat.currency(
-                                symbol: 'KES ',
-                                decimalDigits: 0,
-                              ).format(totalAmount),
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: theme.colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
             ),
 
             // Items list

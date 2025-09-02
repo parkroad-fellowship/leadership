@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/shared_widgets/input/phone/_handset.dart';
-import 'package:leadership/shared_widgets/input/phone/_tablet.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 
 class PRFPhoneInput extends StatelessWidget {
   const PRFPhoneInput({
@@ -10,40 +10,21 @@ class PRFPhoneInput extends StatelessWidget {
     super.key,
     this.enabled = true,
     this.onChanged,
-    this.maxLength,
   });
 
   final String hintText;
-  final TextEditingController controller;
+  final PhoneController controller;
   final bool enabled;
-  final ValueChanged<String>? onChanged;
-  final int? maxLength;
+  final ValueChanged<PhoneNumber>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveBuilder(
-      defaultBuilder: (_, _) => PRFPhoneInputTablet(
+      defaultBuilder: (_, _) => PRFPhoneInputHandset(
         hintText: hintText,
         controller: controller,
         enabled: enabled,
         onChanged: onChanged,
-        maxLength: maxLength,
-      ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => PRFPhoneInputHandset(
-          hintText: hintText,
-          controller: controller,
-          enabled: enabled,
-          onChanged: onChanged,
-          maxLength: maxLength,
-        ),
-        tablet: (_, _) => PRFPhoneInputTablet(
-          hintText: hintText,
-          controller: controller,
-          enabled: enabled,
-          onChanged: onChanged,
-          maxLength: maxLength,
-        ),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 
 class PRFPhoneInputHandset extends StatelessWidget {
   const PRFPhoneInputHandset({
@@ -8,28 +8,29 @@ class PRFPhoneInputHandset extends StatelessWidget {
     super.key,
     this.enabled = true,
     this.onChanged,
-    this.maxLength,
   });
 
   final String hintText;
-  final TextEditingController controller;
+  final PhoneController controller;
   final bool enabled;
-  final ValueChanged<String>? onChanged;
-  final int? maxLength;
+  final ValueChanged<PhoneNumber>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return TextFormField(
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
-      ],
-      keyboardType: TextInputType.phone,
+    return PhoneFormField(
+      onChanged: onChanged,
       controller: controller,
       enabled: enabled,
-      onChanged: onChanged,
+      countrySelectorNavigator:
+          const CountrySelectorNavigator.draggableBottomSheet(
+            countries: [IsoCode.KE],
+          ),
+      validator: PhoneValidator.compose([
+        PhoneValidator.required(context),
+        PhoneValidator.validMobile(context),
+      ]),
       style: theme.textTheme.bodyMedium?.copyWith(
         color: theme.colorScheme.onSurface,
       ),

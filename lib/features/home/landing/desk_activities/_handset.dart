@@ -345,7 +345,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
     final isPast = endDate.isBefore(now.subtract(const Duration(days: 1)));
     final isOngoing = startDate.isBefore(now) && endDate.isAfter(now);
     final isMultiDay = !_isSameDay(startDate, endDate);
-    final duration = endDate.difference(startDate).inDays + 1;
 
     // Premium status color system
     final statusColor = isSubscribed
@@ -584,35 +583,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Duration and capacity info chips
-                          Row(
-                            children: [
-                              Flexible(
-                                child: _buildInfoChip(
-                                  context,
-                                  Icons.schedule_rounded,
-                                  'Duration',
-                                  isMultiDay ? '$duration days' : 'Single day',
-                                  theme.colorScheme.primaryContainer,
-                                  theme.colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: _buildInfoChip(
-                                  context,
-                                  Icons.people_rounded,
-                                  'Amount',
-                                  '${event.capacity} KES',
-                                  theme.colorScheme.secondaryContainer,
-                                  theme.colorScheme.onSecondaryContainer,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
                           // Date range display
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -735,65 +705,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildInfoChip(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-    Color backgroundColor,
-    Color textColor,
-  ) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: textColor.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: textColor,
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: textColor.withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_payment_instruction_cubit.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/shared_widgets/input/phone/phone.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 
 class CreatePaymentInstructionViewHandset extends StatefulWidget {
   const CreatePaymentInstructionViewHandset({
@@ -26,7 +27,9 @@ class _CreatePaymentInstructionViewHandsetState
   final _referenceController = TextEditingController();
 
   // MPESA fields
-  final _mpesaPhoneController = TextEditingController();
+  final _mpesaPhoneController = PhoneController(
+    initialValue: const PhoneNumber(isoCode: IsoCode.KE, nsn: ''),
+  );
 
   // Bank fields
   final _bankNameController = TextEditingController();
@@ -57,7 +60,7 @@ class _CreatePaymentInstructionViewHandsetState
 
     switch (selectedPaymentMethod!) {
       case PRFPaymentMethod.mpesa:
-        return _mpesaPhoneController.text.isNotEmpty;
+        return _mpesaPhoneController.value.nsn.isNotEmpty;
       case PRFPaymentMethod.bankTransfer:
         return _bankNameController.text.isNotEmpty &&
             _bankAccountNumberController.text.isNotEmpty &&
@@ -313,7 +316,6 @@ class _CreatePaymentInstructionViewHandsetState
           child: PRFPhoneInput(
             hintText: 'Enter phone number (e.g., 254712345678)',
             controller: _mpesaPhoneController,
-            maxLength: 12,
           ),
         ),
       ],
@@ -427,7 +429,7 @@ class _CreatePaymentInstructionViewHandsetState
               ? null
               : _referenceController.text.trim(),
           mpesaPhoneNumber: selectedPaymentMethod == PRFPaymentMethod.mpesa
-              ? _mpesaPhoneController.text.trim()
+              ? _mpesaPhoneController.value.international
               : null,
           bankName: selectedPaymentMethod == PRFPaymentMethod.bankTransfer
               ? _bankNameController.text.trim()
@@ -802,7 +804,7 @@ class _CreatePaymentInstructionViewHandsetState
                         builder: (context, state) {
                           return PRFPrimaryButton(
                             onPressed: _submitForm,
-                            title: 'Create Instructions',
+                            title: 'Create Instruction',
                             disabled: !_isFormValid,
                             isLoading: _isLoading,
                           );
