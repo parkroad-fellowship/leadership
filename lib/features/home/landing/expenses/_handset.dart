@@ -307,172 +307,301 @@ class _AccountingEventExpensesViewHandsetState
   ) {
     final theme = Theme.of(context);
     final spentPercentage = totalCredits > 0 ? (totalDebits / totalCredits) : 0;
+    final isPositiveBalance = balance >= 0;
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.account_balance_wallet,
-                color: theme.colorScheme.onPrimary,
-                size: 32,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Financial Overview',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '$entryCount entries total',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onPrimary.withValues(
-                          alpha: 0.9,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildBalanceCard(
-                  context,
-                  'Credits',
-                  totalCredits,
-                  Icons.add_circle,
-                  theme.colorScheme.onPrimary.withValues(alpha: 0.1),
-                  theme.colorScheme.onPrimary,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildBalanceCard(
-                  context,
-                  'Debits',
-                  totalDebits,
-                  Icons.remove_circle,
-                  theme.colorScheme.onPrimary.withValues(alpha: 0.1),
-                  theme.colorScheme.onPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          // Main Balance Card with Enhanced Visual Hierarchy
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.primary.withValues(alpha: 0.85),
+                  theme.colorScheme.secondary.withValues(alpha: 0.9),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 2,
+                ),
+              ],
             ),
             child: Column(
               children: [
+                // Header with Icon and Title
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Balance',
-                      style: theme.textTheme.titleMedium?.copyWith(
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onPrimary.withValues(
+                          alpha: 0.15,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        Icons.account_balance_wallet_outlined,
                         color: theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.w600,
+                        size: 28,
                       ),
                     ),
-                    Text(
-                      NumberFormat.currency(
-                        symbol: 'KES ',
-                        decimalDigits: 0,
-                      ).format(balance),
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Financial Overview',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: theme.colorScheme.onPrimary,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$entryCount transaction${entryCount == 1 ? '' : 's'}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onPrimary.withValues(
+                                alpha: 0.85,
+                              ),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                if (totalCredits > 0) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const SizedBox(height: 24),
+
+                // Current Balance - Prominent Display
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onPrimary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Column(
                     children: [
                       Text(
-                        'Spent',
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        'Current Balance',
+                        style: theme.textTheme.bodyLarge?.copyWith(
                           color: theme.colorScheme.onPrimary.withValues(
-                            alpha: 0.8,
+                            alpha: 0.9,
                           ),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      Text(
-                        '${(spentPercentage * 100).toStringAsFixed(1)}%',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onPrimary.withValues(
-                            alpha: 0.8,
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            NumberFormat.currency(
+                              symbol: 'KES ',
+                              decimalDigits: 0,
+                            ).format(balance.abs()),
+                            style: theme.textTheme.displaySmall?.copyWith(
+                              color: theme.colorScheme.onPrimary,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          if (!isPositiveBalance)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.error.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'DEFICIT',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.onPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      if (totalCredits > 0) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onPrimary.withValues(
+                              alpha: 0.2,
+                            ),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: spentPercentage
+                                .clamp(0.0, 1.0)
+                                .toDouble(),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: spentPercentage > 0.8
+                                    ? theme.colorScheme.error
+                                    : theme.colorScheme.onPrimary,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Spent',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.8,
+                                ),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              '${(spentPercentage * 100).toStringAsFixed(1)}%',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.8,
+                                ),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
-                ],
+                ),
               ],
             ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Credits and Debits Cards - Side by Side
+          Row(
+            children: [
+              Expanded(
+                child: _buildEnhancedBalanceCard(
+                  context,
+                  'Allocation',
+                  totalCredits,
+                  Icons.trending_up_rounded,
+                  theme.colorScheme.primaryContainer,
+                  theme.colorScheme.onPrimaryContainer,
+                  theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildEnhancedBalanceCard(
+                  context,
+                  'Expenses',
+                  totalDebits,
+                  Icons.trending_down_rounded,
+                  theme.colorScheme.errorContainer,
+                  theme.colorScheme.onErrorContainer,
+                  theme.colorScheme.error,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBalanceCard(
+  Widget _buildEnhancedBalanceCard(
     BuildContext context,
     String title,
     double amount,
     IconData icon,
     Color backgroundColor,
     Color textColor,
+    Color accentColor,
   ) {
+    final theme = Theme.of(context);
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: accentColor.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: textColor, size: 24),
-          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: accentColor,
+                  size: 20,
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                Icons.more_horiz,
+                color: textColor.withValues(alpha: 0.5),
+                size: 16,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           Text(
             title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: theme.textTheme.bodyMedium?.copyWith(
               color: textColor.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
             ),
           ),
           const SizedBox(height: 4),
@@ -481,9 +610,10 @@ class _AccountingEventExpensesViewHandsetState
               symbol: 'KES ',
               decimalDigits: 0,
             ).format(amount),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleLarge?.copyWith(
               color: textColor,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
             ),
           ),
         ],
@@ -499,62 +629,178 @@ class _AccountingEventExpensesViewHandsetState
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _buildActionButton(
-              context: context,
-              label: 'Add Expense',
-              icon: Icons.receipt_long,
-              onTap: () => _showAddExpenseModal(context),
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: theme.colorScheme.onPrimary,
-            ),
+          // Primary Actions Row
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildEnhancedActionButton(
+                  context: context,
+                  label: 'Add Expense',
+                  subtitle: 'Quick entry',
+                  icon: Icons.add_circle_outline,
+                  onTap: () => _showAddExpenseModal(context),
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  isPrimary: true,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildEnhancedActionButton(
+                  context: context,
+                  label: 'Report',
+                  subtitle: 'Email',
+                  icon: Icons.email_outlined,
+                  onTap: () => _showSendReportModal(context, entries),
+                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                  foregroundColor: theme.colorScheme.onSurface,
+                  isPrimary: false,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildActionButton(
-              context: context,
-              label: 'Email Report',
-              icon: Icons.email_outlined,
-              onTap: () => _showSendReportModal(context, entries),
-              backgroundColor: theme.colorScheme.tertiary,
-              foregroundColor: theme.colorScheme.onTertiary,
-            ),
+          const SizedBox(height: 12),
+
+          // Secondary Actions Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildSecondaryActionButton(
+                  context: context,
+                  label: 'Scan Receipt',
+                  icon: Icons.camera_alt_outlined,
+                  onTap: () =>
+                      _showAddExpenseModal(context), // TODO: Direct to camera
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildSecondaryActionButton(
+                  context: context,
+                  label: 'Categories',
+                  icon: Icons.category_outlined,
+                  onTap: () {}, // TODO: Show categories
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildSecondaryActionButton(
+                  context: context,
+                  label: 'Analytics',
+                  icon: Icons.analytics_outlined,
+                  onTap: () {}, // TODO: Show analytics
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildEnhancedActionButton({
     required BuildContext context,
     required String label,
+    required String subtitle,
     required IconData icon,
     required VoidCallback onTap,
     required Color backgroundColor,
     required Color foregroundColor,
+    required bool isPrimary,
   }) {
+    final theme = Theme.of(context);
+
     return Material(
       color: backgroundColor,
+      borderRadius: BorderRadius.circular(20),
+      elevation: isPrimary ? 4 : 2,
+      shadowColor: backgroundColor.withValues(alpha: 0.3),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: foregroundColor.withValues(
+                    alpha: isPrimary ? 0.15 : 0.1,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  icon,
+                  color: foregroundColor,
+                  size: isPrimary ? 28 : 24,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: foregroundColor.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryActionButton({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
-      elevation: 2,
+      elevation: 1,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: foregroundColor, size: 20),
-              const SizedBox(width: 8),
+              Icon(
+                icon,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                size: 20,
+              ),
+              const SizedBox(height: 6),
               Text(
                 label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: foregroundColor,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w600,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -631,195 +877,475 @@ class _AccountingEventExpensesViewHandsetState
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final isCredit = entry.entryType == PRFEntryType.credit;
+    final hasReceipts = entry.receipts.isNotEmpty;
+    final missingReceipt = !isCredit && !hasReceipts;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      child: InkWell(
-        onTap: () => _showExpenseDetails(context, entry),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isCredit
-                          ? theme.colorScheme.primaryContainer
-                          : theme.colorScheme.errorContainer,
-                      shape: BoxShape.circle,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showExpenseDetails(context, entry),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Main Content Row
+                Row(
+                  children: [
+                    // Category Icon with Enhanced Design
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isCredit
+                            ? theme.colorScheme.primaryContainer
+                            : theme.colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isCredit
+                              ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                              : theme.colorScheme.error.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Icon(
+                        isCredit
+                            ? Icons.trending_up_rounded
+                            : Icons.trending_down_rounded,
+                        color: isCredit
+                            ? theme.colorScheme.onPrimaryContainer
+                            : theme.colorScheme.onErrorContainer,
+                        size: 24,
+                      ),
                     ),
-                    child: Icon(
-                      isCredit ? Icons.add : Icons.remove,
-                      color: isCredit
-                          ? theme.colorScheme.onPrimaryContainer
-                          : theme.colorScheme.onErrorContainer,
-                      size: 20,
+                    const SizedBox(width: 16),
+
+                    // Content Column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  entry.expenseCategory?.name ??
+                                      l10n.unknownCategory,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (missingReceipt)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.errorContainer,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.receipt_outlined,
+                                        size: 12,
+                                        color:
+                                            theme.colorScheme.onErrorContainer,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Missing',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onErrorContainer,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.person_outline,
+                                size: 14,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  entry.member?.fullName ?? l10n.unknownMember,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.7),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                    // Amount and Date Column
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          entry.expenseCategory?.name ?? l10n.unknownCategory,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                          NumberFormat.currency(
+                            symbol: 'KES ',
+                            decimalDigits: 0,
+                          ).format(entry.amount),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: isCredit
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.error,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                        Text(
-                          entry.member?.fullName ?? l10n.unknownMember,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.7,
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.schedule,
+                              size: 12,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            Text(
+                              DateFormat('MMM dd').format(entry.createdAt),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        NumberFormat.currency(
-                          symbol: 'KES ',
-                          decimalDigits: 0,
-                        ).format(entry.amount),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isCredit
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.error,
+                  ],
+                ),
+
+                // Narration if present
+                if (entry.narration.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      entry.narration,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.8,
                         ),
+                        fontStyle: FontStyle.italic,
                       ),
-                      Text(
-                        DateFormat('MMM dd, yyyy').format(entry.createdAt),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.6,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
-              ),
-              if (entry.narration.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  entry.narration,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                  ),
-                ),
+
+                // Receipt Attachments or Missing Receipt Action
+                if (hasReceipts) ...[
+                  const SizedBox(height: 16),
+                  _buildEnhancedReceiptAttachments(context, entry.receipts),
+                ] else if (missingReceipt) ...[
+                  const SizedBox(height: 16),
+                  _buildMissingReceiptAction(context, entry),
+                ],
               ],
-              if (entry.receipts.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                _buildReceiptAttachments(context, entry.receipts),
-              ],
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildReceiptAttachments(
+  Widget _buildEnhancedReceiptAttachments(
     BuildContext context,
     List<PRFMedia> receipts,
   ) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.attach_file,
-              size: 16,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '${receipts.length} receipt${receipts.length == 1 ? '' : 's'}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
         ),
-        const SizedBox(height: 4),
-        SizedBox(
-          height: 60,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: receipts.length,
-            itemBuilder: (context, index) {
-              final receipt = receipts[index];
-              return GestureDetector(
-                onTap: () => _showReceiptPreview(context, receipts, index),
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      receipt.temporaryURL,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return ColoredBox(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.4,
-                            ),
-                            size: 20,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.receipt_long,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${receipts.length} Receipt${receipts.length == 1 ? '' : 's'}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Tap to view',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: receipts.length,
+              itemBuilder: (context, index) {
+                final receipt = receipts[index];
+                return GestureDetector(
+                  onTap: () => _showReceiptPreview(context, receipts, index),
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
                           ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return ColoredBox(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          child: Center(
-                            child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                    : null,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            receipt.temporaryURL,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return ColoredBox(
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  size: 24,
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return ColoredBox(
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: theme.colorScheme.primary,
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                              null
+                                          ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          // Overlay for better tap indication
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.1),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMissingReceiptAction(
+    BuildContext context,
+    PRFAllocationEntry entry,
+  ) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.error.withValues(alpha: 0.3),
         ),
-      ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.error.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.receipt_outlined,
+              size: 20,
+              color: theme.colorScheme.error,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Receipt Missing',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  'Attach receipt for this expense',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: theme.colorScheme.error,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: () {
+                // TODO: Implement receipt attachment
+                _showAddExpenseModal(context);
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 16,
+                      color: theme.colorScheme.onError,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Attach',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onError,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

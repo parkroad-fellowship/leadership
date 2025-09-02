@@ -27,7 +27,7 @@ class GetAllocationEntriesCubit extends Cubit<GetAllocationEntriesState> {
           'expenseCategory',
           'member',
           'accountingEvent',
-          'receipts'
+          'receipts',
         ],
         filters: {
           'accounting_event_ulid': accountingEventUlid,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,12 @@ abstract class MediaService {
 
   Future<void> initDownloader();
   Future<void> downloadFile(String downloadURL);
+  Future<PRFMediaDTO?> captureFromCamera(
+    BuildContext context, {
+    required String modelUlid,
+    required PRFMediaModel model,
+    required RequestType mediaType,
+  });
 }
 
 class MediaServiceImpl implements MediaService {
@@ -216,6 +223,80 @@ class MediaServiceImpl implements MediaService {
     } catch (e) {
       Logger().e(e.toString());
       rethrow;
+    }
+  }
+
+  @override
+  Future<PRFMediaDTO?> captureFromCamera(
+    BuildContext context, {
+    required String modelUlid,
+    required PRFMediaModel model,
+    required RequestType mediaType,
+  }) async {
+    try {
+      // Request camera permission
+      final cameraStatus = await Permission.camera.request();
+      if (!cameraStatus.isGranted) {
+        throw Failure(message: 'Camera permission denied');
+      }
+
+      // Get available cameras
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) {
+        throw Failure(message: 'No cameras available');
+      }
+
+      // Initialize camera controller
+      final controller = CameraController(
+        cameras.first,
+        ResolutionPreset.high,
+        enableAudio: mediaType == RequestType.video,
+      );
+
+      await controller.initialize();
+
+      try {
+        late XFile capturedFile;
+
+        if (mediaType == RequestType.video) {
+          // Start video recording
+          await controller.startVideoRecording();
+
+          capturedFile = await controller.stopVideoRecording();
+        } else {
+          // Capture image
+          capturedFile = await controller.takePicture();
+        }
+
+        // Create app directory for storing captured media
+        final appDir = await path_provider.getApplicationDocumentsDirectory();
+        final mediaDir = Directory('${appDir.path}/captured_media');
+        await mediaDir.create(recursive: true);
+
+        // Generate unique filename
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final extension = mediaType == RequestType.video ? 'mp4' : 'jpg';
+        final fileName = 'captured_$timestamp.$extension';
+        final newPath = '${mediaDir.path}/$fileName';
+
+        // Move captured file to app directory
+        final savedFile = await File(capturedFile.path).copy(newPath);
+
+        return PRFMediaDTO(
+          path: savedFile.path,
+          model: model,
+          modelUlid: modelUlid,
+          name: fileName,
+        );
+      } finally {
+        await controller.dispose();
+      }
+    } catch (e) {
+      Logger().e('Error capturing from camera: $e');
+      if (e is Failure) {
+        rethrow;
+      }
+      throw Failure(message: 'Failed to capture from camera: $e');
     }
   }
 }
