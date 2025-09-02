@@ -92,289 +92,369 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: Column(
-        children: [
-          // Header with improved styling
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.05),
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: 0.03),
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceContainerLowest,
+          ],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+
+              // Enhanced Header Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withValues(alpha: 0.85),
+                      theme.colorScheme.primaryContainer,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                      spreadRadius: 2,
+                    ),
+                    BoxShadow(
+                      color: theme.colorScheme.shadow.withValues(alpha: 0.1),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+                child: Column(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        color: theme.colorScheme.onPrimary.withValues(
+                          alpha: 0.15,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
                         Icons.edit_outlined,
-                        color: theme.colorScheme.primary,
-                        size: 24,
+                        size: 32,
+                        color: theme.colorScheme.onPrimary,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Edit Expense',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.onSurface,
+                    const SizedBox(height: 16),
+                    Text(
+                      'Edit Expense',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Update expense details and receipts',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary.withValues(
+                          alpha: 0.9,
+                        ),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (_totalAmount > 0) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.2,
+                          ),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: theme.colorScheme.onPrimary.withValues(
+                              alpha: 0.3,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Update expense details and receipts',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.7,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.account_balance_wallet_rounded,
+                              size: 18,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Total: KES ${_totalAmount.toStringAsFixed(2)}',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                    ],
+                  ],
+                ),
+              ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+
+              const SizedBox(height: 24),
+
+              // Enhanced Form Cards
+              _buildEnhancedFormCard(
+                icon: Icons.category_rounded,
+                title: l10n.expenseDetails,
+                isRequired: true,
+                delay: 100,
+                child: _buildExpenseCategoryDropdown(context, l10n),
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildEnhancedFormCard(
+                icon: Icons.receipt_long_outlined,
+                title: 'Receipt Upload',
+                delay: 200,
+                child: _buildReceiptUploadSection(context, l10n),
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildEnhancedFormCard(
+                icon: Icons.payments_rounded,
+                title: l10n.amountDetails,
+                isRequired: true,
+                delay: 300,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildEnhancedNumberField(
+                            controller: _unitCostController,
+                            label: l10n.unitCost,
+                            hint: 'Enter unit cost',
+                            prefix: 'KES ',
+                            icon: Icons.monetization_on_rounded,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildEnhancedNumberField(
+                            controller: _quantityController,
+                            label: l10n.quantity,
+                            hint: 'Enter quantity',
+                            prefix: 'Qty ',
+                            icon: Icons.inventory_rounded,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    _buildEnhancedNumberField(
+                      controller: _chargeController,
+                      label: l10n.charge,
+                      hint: 'Enter additional charges',
+                      prefix: 'KES ',
+                      icon: Icons.add_circle_outline_rounded,
+                      fullWidth: true,
                     ),
                   ],
                 ),
-              ],
-            ),
-          ).animate().slideY(begin: -0.2).fadeIn(),
-
-          // Form Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Expense Category
-                  _buildExpenseCategoryDropdown(
-                    context,
-                    l10n,
-                  ).animate(delay: 100.ms).slideX(begin: -0.2).fadeIn(),
-
-                  const SizedBox(height: 24),
-
-                  // Receipt Upload Section
-                  _buildReceiptUploadSection(
-                    context,
-                    l10n,
-                  ).animate(delay: 200.ms).slideX(begin: 0.2).fadeIn(),
-
-                  const SizedBox(height: 24),
-
-                  // Amount Details Section
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.shadow.withValues(
-                            alpha: 0.05,
-                          ),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.calculate_outlined,
-                              color: theme.colorScheme.primary,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Amount Details',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildEnhancedNumberField(
-                                controller: _unitCostController,
-                                label: l10n.unitCost,
-                                hint: 'Enter unit cost',
-                                prefix: 'KES ',
-                                icon: Icons.monetization_on_rounded,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildEnhancedNumberField(
-                                controller: _quantityController,
-                                label: l10n.quantity,
-                                hint: 'Enter quantity',
-                                prefix: 'Qty ',
-                                icon: Icons.inventory_rounded,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        _buildEnhancedNumberField(
-                          controller: _chargeController,
-                          label: l10n.charge,
-                          hint: 'Enter additional charges',
-                          prefix: 'KES ',
-                          icon: Icons.add_circle_outline_rounded,
-                          fullWidth: true,
-                        ),
-                        if (_totalAmount > 0) ...[
-                          const SizedBox(height: 20),
-                          _buildTotalAmountDisplay(context),
-                        ],
-                      ],
-                    ),
-                  ).animate(delay: 300.ms).slideY(begin: 0.2).fadeIn(),
-
-                  const SizedBox(height: 24),
-
-                  // Payment Method
-                  _buildPaymentMethodSection(
-                    context,
-                    l10n,
-                  ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
-
-                  const SizedBox(height: 24),
-
-                  // Description Section
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.shadow.withValues(
-                            alpha: 0.05,
-                          ),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.description_outlined,
-                              color: theme.colorScheme.primary,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Description & Details',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        _buildEnhancedTextArea(
-                          controller: _narrationController,
-                          label: l10n.narration,
-                          hint: 'Describe what this expense was for',
-                          icon: Icons.notes_rounded,
-                          maxLines: 4,
-                        ),
-                        const SizedBox(height: 20),
-                        _buildEnhancedTextArea(
-                          controller: _confirmationController,
-                          label: l10n.confirmationMessage,
-                          hint: 'Add any confirmation or reference details',
-                          icon: Icons.verified_rounded,
-                        ),
-                      ],
-                    ),
-                  ).animate(delay: 500.ms).slideY(begin: 0.2).fadeIn(),
-
-                  const SizedBox(height: 24),
-
-                  // Submit Button
-                  BlocConsumer<
-                        EditAllocationEntryCubit,
-                        EditAllocationEntryState
-                      >(
-                        listener: (context, state) {
-                          state.when(
-                            initial: () {},
-                            loading: () {
-                              setState(() {
-                                _isLoading = true;
-                              });
-                            },
-                            loaded: () {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                              Navigator.of(context).pop();
-                            },
-                            error: (message) {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(message)),
-                              );
-                            },
-                          );
-                        },
-                        builder: (context, state) {
-                          return PRFPrimaryButton(
-                            onPressed: _submitForm,
-                            title: 'Update Expense',
-                            disabled: !_isFormValid,
-                            isLoading: _isLoading,
-                          );
-                        },
-                      )
-                      .animate(delay: 600.ms)
-                      .slideY(begin: 0.3)
-                      .fadeIn(),
-                ],
               ),
-            ),
+
+              const SizedBox(height: 16),
+
+              _buildEnhancedFormCard(
+                icon: Icons.payment_outlined,
+                title: l10n.paymentMethod,
+                delay: 400,
+                child: _buildPaymentMethodSection(context, l10n),
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildEnhancedFormCard(
+                icon: Icons.description_outlined,
+                title: 'Description & Details',
+                isRequired: true,
+                delay: 500,
+                child: Column(
+                  children: [
+                    _buildEnhancedTextArea(
+                      controller: _narrationController,
+                      label: l10n.narration,
+                      hint: 'Describe what this expense was for',
+                      icon: Icons.notes_rounded,
+                      maxLines: 4,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildEnhancedTextArea(
+                      controller: _confirmationController,
+                      label: l10n.confirmationMessage,
+                      hint: 'Add any confirmation or reference details',
+                      icon: Icons.verified_rounded,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Submit Button
+              BlocConsumer<EditAllocationEntryCubit, EditAllocationEntryState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                    },
+                    loaded: () {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                    error: (message) {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(message)),
+                      );
+                    },
+                  );
+                },
+                builder: (context, state) {
+                  return PRFPrimaryButton(
+                    onPressed: _submitForm,
+                    title: 'Update Expense',
+                    disabled: !_isFormValid,
+                    isLoading: _isLoading,
+                  );
+                },
+              ).animate(delay: 600.ms).slideY(begin: 0.3).fadeIn(),
+
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedFormCard({
+    required IconData icon,
+    required String title,
+    required Widget child,
+    bool isRequired = false,
+    int delay = 0,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: 0.05),
+            blurRadius: 40,
+            offset: const Offset(0, 16),
+            spreadRadius: -8,
           ),
         ],
       ),
-    );
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+              if (isRequired)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Required',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          child,
+        ],
+      ),
+    ).animate(delay: Duration(milliseconds: delay)).slideY(begin: 0.3).fadeIn();
   }
 
   Widget _buildExpenseCategoryDropdown(
@@ -388,107 +468,65 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
         return state.when(
           initial: () => const PRFLinearProgressIndicator(),
           loading: () => const PRFLinearProgressIndicator(),
-          loaded: (categories) => Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.2),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+          loaded: (categories) => DropdownButtonFormField<PRFExpenseCategory>(
+            initialValue: _selectedCategory,
+            decoration: InputDecoration(
+              hintText: 'Select expense category',
+              hintStyle: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(
+                  alpha: 0.5,
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.category_outlined,
-                        color: theme.colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.expenseCategory,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
+              ),
+              prefixIcon: Icon(
+                Icons.category_rounded,
+                color: theme.colorScheme.primary.withValues(alpha: 0.7),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(
+                    alpha: 0.3,
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<PRFExpenseCategory>(
-                    initialValue: _selectedCategory,
-                    decoration: InputDecoration(
-                      hintText: 'Select expense category',
-                      hintStyle: TextStyle(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.5,
-                        ),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.category_rounded,
-                        color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: theme.colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                    items: categories.map((category) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: Text(
-                          category.name,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (category) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withValues(
+                    alpha: 0.3,
                   ),
-                ],
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+              filled: true,
+              fillColor: theme.colorScheme.surface,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
               ),
             ),
+            items: categories.map((category) {
+              return DropdownMenuItem(
+                value: category,
+                child: Text(
+                  category.name,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (category) {
+              setState(() {
+                _selectedCategory = category;
+              });
+            },
           ),
           error: (message) => PRFEmptyView(
             label: 'Error',
@@ -506,71 +544,97 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
   ) {
     final theme = Theme.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return BlocBuilder<SelectMediaCubit, SelectMediaState>(
+      builder: (context, state) {
+        return state.when(
+          initial: () => _buildUploadPrompt(context),
+          loading: () => const PRFLinearProgressIndicator(),
+          loaded: (mediaItems) => _buildMediaPreview(context, mediaItems),
+          error: (message) => Column(
+            children: [
+              _buildUploadPrompt(context),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                style: TextStyle(
+                  color: theme.colorScheme.error,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.receipt_long_outlined,
-                  color: theme.colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Receipt Upload',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            BlocBuilder<SelectMediaCubit, SelectMediaState>(
-              builder: (context, state) {
-                return state.when(
-                  initial: () => _buildUploadPrompt(context),
-                  loading: () => const PRFLinearProgressIndicator(),
-                  loaded: (mediaItems) =>
-                      _buildMediaPreview(context, mediaItems),
-                  error: (message) => Column(
-                    children: [
-                      _buildUploadPrompt(context),
-                      const SizedBox(height: 8),
-                      Text(
-                        message,
-                        style: TextStyle(
-                          color: theme.colorScheme.error,
-                          fontSize: 12,
+          empty: () => _buildUploadPrompt(context),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaymentMethodSection(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    final theme = Theme.of(context);
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: PRFChargeType.values.map((chargeType) {
+        final isSelected = _selectedChargeType == chargeType;
+        return Material(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          elevation: isSelected ? 2 : 0,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _selectedChargeType = chargeType;
+              });
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outline.withValues(
+                          alpha: 0.3,
                         ),
-                      ),
-                    ],
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _getChargeTypeIcon(chargeType),
+                    size: 16,
+                    color: isSelected
+                        ? Colors.white
+                        : theme.colorScheme.onSurface,
                   ),
-                  empty: () => _buildUploadPrompt(context),
-                );
-              },
+                  const SizedBox(width: 8),
+                  Text(
+                    chargeType.name,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -709,116 +773,7 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
     );
   }
 
-  Widget _buildPaymentMethodSection(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final theme = Theme.of(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.payment_outlined,
-                  color: theme.colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.paymentMethod,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: PRFChargeType.values.map((chargeType) {
-                final isSelected = _selectedChargeType == chargeType;
-                return Material(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  elevation: isSelected ? 2 : 0,
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedChargeType = chargeType;
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outline.withValues(
-                                  alpha: 0.3,
-                                ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getChargeTypeIcon(chargeType),
-                            size: 16,
-                            color: isSelected
-                                ? Colors.white
-                                : theme.colorScheme.onSurface,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _getChargeTypeLabel(chargeType),
-                            style: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  
 
   Widget _buildEnhancedNumberField({
     required TextEditingController controller,
@@ -955,55 +910,6 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
     );
   }
 
-  Widget _buildTotalAmountDisplay(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Total Amount',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'KES ${_totalAmount.toStringAsFixed(0)}',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getChargeTypeLabel(PRFChargeType chargeType) {
-    switch (chargeType) {
-      case PRFChargeType.cash:
-        return 'Cash';
-      case PRFChargeType.mpesaDefault:
-        return 'M-Pesa';
-      case PRFChargeType.mpesaOtherRegisteredUser:
-        return 'M-Pesa Other User';
-      case PRFChargeType.mpesaAgentWithdrawal:
-        return 'M-Pesa Agent';
-      case PRFChargeType.mpesaATMWithdrawal:
-        return 'M-Pesa ATM';
-    }
-  }
 
   IconData _getChargeTypeIcon(PRFChargeType chargeType) {
     switch (chargeType) {
