@@ -7,8 +7,10 @@ import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/actions/add_expense/_handset.dart';
+import 'package:leadership/features/home/landing/expenses/actions/edit_expense/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/actions/send_financial_report/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/edit_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
@@ -169,6 +171,31 @@ class _AccountingEventExpensesViewHandsetState
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Entry added successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              error: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        BlocListener<EditAllocationEntryCubit, EditAllocationEntryState>(
+          listener: (context, state) {
+            state.when(
+              initial: () {},
+              loading: () {},
+              loaded: () {
+                _loadData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Expense updated successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -1309,7 +1336,30 @@ class _AccountingEventExpensesViewHandsetState
   }
 
   void _showExpenseDetails(BuildContext context, PRFAllocationEntry entry) {
-    // Implementation would go here for showing detailed view
-    // This is a placeholder for the expense details modal
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (context) => [
+        _buildExpenseDetailsModalPage(context, entry),
+      ],
+    );
+  }
+
+  WoltModalSheetPage _buildExpenseDetailsModalPage(
+    BuildContext context,
+    PRFAllocationEntry entry,
+  ) {
+    return WoltModalSheetPage(
+      hasTopBarLayer: true,
+      topBarTitle: Text(
+        'Edit ${entry.entryType == PRFEntryType.credit ? 'Token' : 'Expense'}',
+      ),
+      isTopBarLayerAlwaysVisible: true,
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: EditExpenseViewHandset(
+          allocationEntry: entry,
+        ),
+      ),
+    );
   }
 }
