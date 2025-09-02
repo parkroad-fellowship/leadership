@@ -773,8 +773,6 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
     );
   }
 
-  
-
   Widget _buildEnhancedNumberField({
     required TextEditingController controller,
     required String label,
@@ -909,7 +907,6 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
       ],
     );
   }
-
 
   IconData _getChargeTypeIcon(PRFChargeType chargeType) {
     switch (chargeType) {

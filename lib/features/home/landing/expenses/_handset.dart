@@ -10,6 +10,7 @@ import 'package:leadership/features/home/landing/expenses/actions/add_expense/_h
 import 'package:leadership/features/home/landing/expenses/actions/edit_expense/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/actions/send_financial_report/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/delete_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/edit_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -196,6 +197,31 @@ class _AccountingEventExpensesViewHandsetState
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Expense updated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              error: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        BlocListener<DeleteAllocationEntryCubit, DeleteAllocationEntryState>(
+          listener: (context, state) {
+            state.when(
+              initial: () {},
+              loading: () {},
+              loaded: () {
+                _loadData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Expense deleted successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -979,6 +1005,36 @@ class _AccountingEventExpensesViewHandsetState
                         ),
                       ],
                     ),
+
+                    // Delete Button for Debit Entries Only
+                    if (!isCredit) ...[
+                      const SizedBox(width: 12),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _showDeleteConfirmation(context, entry),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.errorContainer
+                                  .withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: theme.colorScheme.error.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: theme.colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
 
@@ -1359,6 +1415,182 @@ class _AccountingEventExpensesViewHandsetState
         child: EditExpenseViewHandset(
           allocationEntry: entry,
         ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(
+    BuildContext context,
+    PRFAllocationEntry entry,
+  ) {
+    final theme = Theme.of(context);
+
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: theme.colorScheme.error,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Delete Expense',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to delete this expense?',
+                style: theme.textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.errorContainer.withValues(
+                    alpha: 0.3,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.colorScheme.error.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.expenseCategory?.name ?? 'Unknown Category',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      NumberFormat.currency(
+                        symbol: 'KES ',
+                        decimalDigits: 0,
+                      ).format(entry.amount),
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                    if (entry.narration.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        entry.narration,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.7,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'This action cannot be undone.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+            BlocConsumer<
+              DeleteAllocationEntryCubit,
+              DeleteAllocationEntryState
+            >(
+              listener: (context, state) {
+                state.when(
+                  initial: () {},
+                  loading: () {},
+                  loaded: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  error: (message) {
+                    Navigator.of(dialogContext).pop();
+                  },
+                );
+              },
+              builder: (context, state) {
+                return state.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  initial: () => _buildDeleteButton(theme, context, entry),
+                  loaded: () => _buildDeleteButton(theme, context, entry),
+                  error: (message) => _buildDeleteButton(theme, context, entry),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDeleteButton(
+    ThemeData theme,
+    BuildContext context,
+    PRFAllocationEntry entry,
+  ) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        context.read<DeleteAllocationEntryCubit>().deleteAllocationEntry(
+          allocationEntryUlid: entry.ulid,
+        );
+      },
+      icon: const Icon(Icons.delete_outline, size: 18),
+      label: const Text('Delete'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: theme.colorScheme.error,
+        foregroundColor: theme.colorScheme.onError,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
   }

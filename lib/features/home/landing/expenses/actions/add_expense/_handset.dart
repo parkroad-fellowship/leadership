@@ -1140,7 +1140,6 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
     );
   }
 
-
   void _selectMediaFromCamera(BuildContext context) {
     context.read<SelectMediaCubit>().captureFromCamera(
       context: context,

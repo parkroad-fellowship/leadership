@@ -19,6 +19,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
+import 'package:leadership/features/home/landing/expenses/cubit/delete_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/edit_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/send_financial_report_cubit.dart';
@@ -248,6 +249,11 @@ class Singletons {
           allocationEntryService: getIt<AllocationEntryService>(),
           hiveService: getIt<HiveService>(),
           mediaService: getIt<MediaService>(),
+        ),
+      ),
+      BlocProvider<DeleteAllocationEntryCubit>(
+        create: (context) => DeleteAllocationEntryCubit(
+          allocationEntryService: getIt<AllocationEntryService>(),
         ),
       ),
       BlocProvider<SelectMediaCubit>(
