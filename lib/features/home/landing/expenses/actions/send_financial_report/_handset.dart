@@ -99,7 +99,6 @@ class SendFinancialReportViewHandset extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   _buildReportItem(context, '• Complete expense breakdown'),
-                  _buildReportItem(context, '• Income and token summary'),
                   _buildReportItem(
                     context,
                     '• Current balance and allocations',

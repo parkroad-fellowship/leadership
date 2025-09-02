@@ -370,7 +370,8 @@ class _AccountingEventExpensesViewHandsetState
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '$entryCount transaction${entryCount == 1 ? '' : 's'}',
+                            '$entryCount '
+                            'transaction${entryCount == 1 ? '' : 's'}',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onPrimary.withValues(
                                 alpha: 0.85,
@@ -663,39 +664,6 @@ class _AccountingEventExpensesViewHandsetState
             ],
           ),
           const SizedBox(height: 12),
-
-          // Secondary Actions Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  context: context,
-                  label: 'Scan Receipt',
-                  icon: Icons.camera_alt_outlined,
-                  onTap: () =>
-                      _showAddExpenseModal(context), // TODO: Direct to camera
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  context: context,
-                  label: 'Categories',
-                  icon: Icons.category_outlined,
-                  onTap: () {}, // TODO: Show categories
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  context: context,
-                  label: 'Analytics',
-                  icon: Icons.analytics_outlined,
-                  onTap: () {}, // TODO: Show analytics
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -758,49 +726,6 @@ class _AccountingEventExpensesViewHandsetState
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondaryActionButton({
-    required BuildContext context,
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-
-    return Material(
-      color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 1,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                size: 20,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -954,39 +879,6 @@ class _AccountingEventExpensesViewHandsetState
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (missingReceipt)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.errorContainer,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.receipt_outlined,
-                                        size: 12,
-                                        color:
-                                            theme.colorScheme.onErrorContainer,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Missing',
-                                        style: theme.textTheme.labelSmall
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onErrorContainer,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -1314,7 +1206,6 @@ class _AccountingEventExpensesViewHandsetState
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
               onTap: () {
-                // TODO: Implement receipt attachment
                 _showAddExpenseModal(context);
               },
               borderRadius: BorderRadius.circular(12),
