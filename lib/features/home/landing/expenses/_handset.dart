@@ -1392,11 +1392,6 @@ class _AccountingEventExpensesViewHandsetState
       pageListBuilder: (modalSheetContext) {
         return [
           WoltModalSheetPage(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            hasTopBarLayer: true,
-            topBarTitle: const Text('Send Financial Report'),
-            isTopBarLayerAlwaysVisible: true,
             child: SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
               child: SendFinancialReportViewHandset(
