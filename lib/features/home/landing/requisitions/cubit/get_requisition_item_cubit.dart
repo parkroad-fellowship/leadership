@@ -24,10 +24,7 @@ class GetRequisitionItemCubit extends Cubit<GetRequisitionItemState> {
     try {
       final requisitionItem = await _requisitionItemService.get(
         ulid: requisitionItemUlid,
-        includes: [
-          'expenseCategory',
-          'requisition'
-        ],
+        includes: ['expenseCategory', 'requisition'],
       );
       emit(GetRequisitionItemState.loaded(requisitionItem: requisitionItem));
     } on Failure catch (f) {

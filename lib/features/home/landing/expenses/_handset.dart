@@ -1349,11 +1349,8 @@ class _AccountingEventExpensesViewHandsetState
 
   WoltModalSheetPage _buildAddExpenseModalPage(BuildContext context) {
     return WoltModalSheetPage(
-      hasTopBarLayer: true,
-      topBarTitle: Text(context.l10n.addExpense),
-      isTopBarLayerAlwaysVisible: true,
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.8,
+        height: MediaQuery.sizeOf(context).height * 0.8,
         child: AddExpenseViewHandset(
           accountingEventUlid: accountingEventUlid,
         ),
