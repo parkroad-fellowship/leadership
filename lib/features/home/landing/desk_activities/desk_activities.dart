@@ -2,7 +2,6 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/features/home/landing/desk_activities/_handset.dart';
-import 'package:leadership/features/home/landing/desk_activities/_tablet.dart';
 
 @RoutePage()
 class DeskActivitiesPage extends StatelessWidget {
@@ -11,11 +10,7 @@ class DeskActivitiesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdaptiveBuilder(
-      defaultBuilder: (_, _) => const DeskActivitiesTablet(),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => const DeskActivitiesHandset(),
-        tablet: (_, _) => const DeskActivitiesTablet(),
-      ),
+      defaultBuilder: (_, _) => const DeskActivitiesHandset(),
     );
   }
 }

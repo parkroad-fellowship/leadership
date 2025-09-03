@@ -23,7 +23,6 @@ class GetAllocationEntriesCubit extends Cubit<GetAllocationEntriesState> {
     try {
       final entries = await _allocationEntryService.list(
         includes: [
-          'requisition',
           'expenseCategory',
           'member',
           'accountingEvent',

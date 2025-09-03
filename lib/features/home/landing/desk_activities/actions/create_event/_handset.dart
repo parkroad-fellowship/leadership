@@ -22,7 +22,8 @@ class CreateEventViewHandset extends StatefulWidget {
 }
 
 class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
-  final _nameController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _purposeController = TextEditingController();
   final _startDateController = TextEditingController();
   final _endDateController = TextEditingController();
   HiveService get _hiveService => getIt<HiveService>();
@@ -37,7 +38,8 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   // Add form validity check
   bool get _isFormValid {
     return selectedResponsibleDesk != null &&
-        _nameController.text.isNotEmpty &&
+        _titleController.text.isNotEmpty &&
+        _purposeController.text.isNotEmpty &&
         startsAt != null &&
         endsAt != null;
   }
@@ -46,7 +48,8 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   void initState() {
     super.initState();
     // Add listeners to update form validity
-    _nameController.addListener(() => setState(() {}));
+    _titleController.addListener(() => setState(() {}));
+    _purposeController.addListener(() => setState(() {}));
   }
 
   @override
@@ -179,11 +182,21 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
 
                     _buildFormSection(
                       icon: Icons.badge_outlined,
-                      title: l10n.name,
+                      title: l10n.title,
                       isRequired: true,
                       child: PRFTextInput(
                         hintText: l10n.name,
-                        controller: _nameController,
+                        controller: _titleController,
+                      ),
+                    ).animate(delay: 600.ms).slideX(begin: -0.2).fadeIn(),
+
+                    _buildFormSection(
+                      icon: Icons.badge_outlined,
+                      title: l10n.purpose,
+                      isRequired: true,
+                      child: PRFTextAreaInput(
+                        hintText: l10n.purpose,
+                        controller: _purposeController,
                       ),
                     ).animate(delay: 600.ms).slideX(begin: -0.2).fadeIn(),
 
@@ -310,9 +323,17 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   Future<void> _submitForm() async {
     final l10n = context.l10n;
 
-    if (_nameController.text.trim().isEmpty) {
+    if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.enterName)),
+        SnackBar(content: Text(l10n.enterTitle)),
+      );
+      Gaimon.warning();
+      return;
+    }
+
+    if (_purposeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.enterPurpose)),
       );
       Gaimon.warning();
       return;
@@ -343,7 +364,8 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     }
 
     await context.read<AddEventCubit>().addEvent(
-      name: _nameController.text.trim(),
+      name: _titleController.text.trim(),
+      remarks: _purposeController.text.trim(),
       startTime: startsAt!,
       endTime: endsAt!,
       responsibleDesk: selectedResponsibleDesk!,

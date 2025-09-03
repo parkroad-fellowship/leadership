@@ -1111,5 +1111,11 @@
     "noMembersFound": "No members found",
     "@noMembersFound": {},
     "noAllocationsFound": "No allocations found",
-    "@noAllocationsFound": {}
+    "@noAllocationsFound": {},
+    "enterTitle": "Enter title",
+    "@enterTitle": {},
+    "requisitionUpdated": "Requisition updated successfully",
+    "@requisitionUpdated": {},
+    "createRequisition": "Create Requisition",
+    "@createRequisition": {}
 }

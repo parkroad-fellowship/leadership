@@ -86,8 +86,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                     isScrollable: true,
                     tabs: [
                       Tab(text: l10n.missionGround),
-                      Tab(text: l10n.expenses),
                       Tab(text: l10n.requisitions),
+                      Tab(text: l10n.expenses),
                     ],
                   ),
                 ),
@@ -102,17 +102,17 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                         controller: _tabController,
                         children: [
                           MissionGroundView(mission: mission),
-                          ExpensesView(missionUlid: mission.ulid),
+
                           if (mission.accountingEvent != null)
                             RequisitionsView(
-                              accountingEventUlid:
-                                  mission.accountingEvent!.ulid,
+                              accountingEvent: mission.accountingEvent!,
                             )
                           else
                             PRFEmptyView(
                               label: l10n.requisitionUnavailable,
                               description: l10n.requisitionUnavailableDesc,
                             ),
+                          ExpensesView(missionUlid: mission.ulid),
                         ],
                       ),
                       loading: () => const Center(

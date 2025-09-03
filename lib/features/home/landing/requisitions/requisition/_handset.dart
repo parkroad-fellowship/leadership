@@ -10,6 +10,8 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/requisitions/actions/approval_requisition/_handset.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition_item/create_requisition_item.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition/_handset.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition_item/edit_requisition_item.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
@@ -100,11 +102,25 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                 orElse: () => const Center(
                   child: PRFCircularProgressIndicator(),
                 ),
-                loaded: (requisitionItems) => _buildRequisitionItemsList(
-                  context,
-                  l10n,
-                  requisitionItems,
-                ),
+                loaded: (requisitionItems) =>
+                    BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+                      builder: (context, requisitionState) {
+                        return requisitionState.maybeWhen(
+                          loaded: (requisition) => _buildRequisitionItemsList(
+                            context,
+                            l10n,
+                            requisitionItems,
+                            requisition,
+                          ),
+                          orElse: () => _buildRequisitionItemsList(
+                            context,
+                            l10n,
+                            requisitionItems,
+                            null,
+                          ),
+                        );
+                      },
+                    ),
                 empty: () => _buildEmptyState(context, l10n),
                 error: (message) => Center(
                   child: Column(
@@ -287,6 +303,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
     BuildContext context,
     AppLocalizations l10n,
     List<PRFRequisitionItem> items,
+    PRFRequisition? requisition,
   ) {
     final theme = Theme.of(context);
 
@@ -315,6 +332,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                       theme,
                       item,
                       index,
+                      requisition,
                     );
                   },
                   childCount: items.length,
@@ -337,8 +355,11 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
     ThemeData theme,
     PRFRequisitionItem item,
     int index,
+    PRFRequisition? requisition,
   ) {
     final l10n = context.l10n;
+    final isEditable = requisition?.approvalStatus == PRFApprovalStatus.pending;
+
     return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
@@ -356,7 +377,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
             ],
           ),
           child: InkWell(
-            onTap: () => _showItemDetails(context, item),
+            onTap: () => isEditable
+                ? _showEditRequisitionItemModal(context, item)
+                : _showItemDetails(context, item),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -1292,11 +1315,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
             subtitle: l10n.modifyRequisitionDetails,
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.editFunctionalityComingSoon),
-                ),
-              );
+              _showEditRequisitionModal(context);
             },
           ),
         ];
@@ -1418,6 +1437,34 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
       },
     ).then((_) {
       // Refresh the list after adding an item
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+        context.read<GetRequisitionItemsCubit>().getRequisitionItems(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showEditRequisitionItemModal(
+    BuildContext context,
+    PRFRequisitionItem item,
+  ) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: EditRequisitionItemView(
+              requisitionItemUlid: item.ulid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the list after editing an item
       if (context.mounted) {
         context.read<GetRequisitionCubit>().getRequisition(
           requisitionUlid: widget.requisitionUlid,
@@ -2119,6 +2166,28 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
       },
     ).then((_) {
       // Refresh the requisition after approval/rejection
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showEditRequisitionModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: EditRequisitionViewHandset(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the requisition after editing
       if (context.mounted) {
         context.read<GetRequisitionCubit>().getRequisition(
           requisitionUlid: widget.requisitionUlid,

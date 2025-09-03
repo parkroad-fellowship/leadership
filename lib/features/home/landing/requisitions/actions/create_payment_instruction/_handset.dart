@@ -804,7 +804,7 @@ class _CreatePaymentInstructionViewHandsetState
                         builder: (context, state) {
                           return PRFPrimaryButton(
                             onPressed: _submitForm,
-                            title: 'Create Instruction',
+                            title: 'Create instruction',
                             disabled: !_isFormValid,
                             isLoading: _isLoading,
                           );

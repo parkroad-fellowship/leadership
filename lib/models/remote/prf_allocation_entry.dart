@@ -5,7 +5,6 @@ import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/models/remote/prf_requisition.dart';
 
 part 'prf_allocation_entry.freezed.dart';
 part 'prf_allocation_entry.g.dart';
@@ -25,7 +24,6 @@ abstract class PRFAllocationEntry with _$PRFAllocationEntry {
     @JsonKey(name: 'charge_type') PRFChargeType? chargeType,
     @JsonKey(name: 'confirmation_message') String? confirmationMessage,
     @JsonKey(name: 'accounting_event') PRFAccountingEvent? accountingEvent,
-    PRFRequisition? requisition,
     @JsonKey(name: 'expense_category') PRFExpenseCategory? expenseCategory,
     PRFMember? member,
     @Default([]) List<PRFMedia> receipts,

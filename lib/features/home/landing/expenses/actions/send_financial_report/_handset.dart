@@ -58,8 +58,8 @@ class SendFinancialReportViewHandset extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'This will email a detailed financial report to all executive '
-              'committee members.',
+              'This will email a detailed financial report to all relevant '
+              'parties.',
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               ),
@@ -163,7 +163,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
         title: const Text('Confirm Send Report'),
         content: const Text(
           'Are you sure you want to send the financial report? '
-          'This will email the report to all executive committee members.',
+          'This will email the report to all relevant members.',
         ),
         actions: [
           TextButton(
