@@ -1401,14 +1401,9 @@ class _AccountingEventExpensesViewHandsetState
     BuildContext context,
     PRFAllocationEntry entry,
   ) {
-    return WoltModalSheetPage(
-      hasTopBarLayer: true,
-      topBarTitle: Text(
-        'Edit ${entry.entryType == PRFEntryType.credit ? 'Token' : 'Expense'}',
-      ),
-      isTopBarLayerAlwaysVisible: true,
+     return WoltModalSheetPage(
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.8,
+        height: MediaQuery.sizeOf(context).height * 0.8,
         child: EditExpenseViewHandset(
           allocationEntry: entry,
         ),
