@@ -128,6 +128,8 @@ class Singletons {
       BlocProvider<AddEventCubit>(
         create: (context) => AddEventCubit(
           eventService: getIt<EventService>(),
+          requisitionService: getIt<RequisitionService>(),
+          hiveService: getIt<HiveService>(),
         ),
       ),
       BlocProvider<GetRequisitionsCubit>(
