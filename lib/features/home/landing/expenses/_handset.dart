@@ -1281,7 +1281,7 @@ class _AccountingEventExpensesViewHandsetState
                           mediaType: RequestType.image,
                         );
 
-                        // Get the selected media from the SelectMediaCubit state
+                        // Get the selected media from the cubit state
                         // ignore: use_build_context_synchronously
                         context.read<SelectMediaCubit>().state.maybeWhen(
                           orElse: () {},
