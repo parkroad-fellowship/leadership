@@ -4,8 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
+import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/cubit/select_media_cubit.dart';
+import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/actions/add_expense/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/actions/edit_expense/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/actions/send_financial_report/_handset.dart';
@@ -17,6 +20,7 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/shared_widgets/_index.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class AccountingEventExpensesViewHandset extends StatefulWidget {
@@ -230,6 +234,30 @@ class _AccountingEventExpensesViewHandsetState
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(message),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        BlocListener<UploadMediaCubit, UploadMediaState>(
+          listener: (context, state) {
+            state.maybeWhen(
+              orElse: () {},
+              loaded: () {
+                _loadData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Receipt uploaded successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              error: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to upload receipt: $message'),
                     backgroundColor: Theme.of(context).colorScheme.error,
                   ),
                 );
@@ -884,128 +912,92 @@ class _AccountingEventExpensesViewHandsetState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Main Content Row
+                // Header Row with Category and Amount
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Category Icon with Enhanced Design
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: isCredit
-                            ? theme.colorScheme.primaryContainer
-                            : theme.colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isCredit
-                              ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                              : theme.colorScheme.error.withValues(alpha: 0.3),
-                        ),
+                            ? theme.colorScheme.primaryContainer.withValues(
+                                alpha: 0.3,
+                              )
+                            : theme.colorScheme.errorContainer.withValues(
+                                alpha: 0.3,
+                              ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
-                        isCredit
-                            ? Icons.trending_up_rounded
-                            : Icons.trending_down_rounded,
+                        isCredit ? Icons.trending_up : Icons.trending_down,
+                        size: 16,
                         color: isCredit
-                            ? theme.colorScheme.onPrimaryContainer
-                            : theme.colorScheme.onErrorContainer,
-                        size: 24,
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.error,
                       ),
                     ),
-                    const SizedBox(width: 16),
-
-                    // Content Column
+                    const SizedBox(width: 12),
                     Expanded(
+                      flex: 3,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  entry.expenseCategory?.name ??
-                                      l10n.unknownCategory,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.2,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                          Text(
+                            entry.expenseCategory?.name ?? l10n.unknownCategory,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (entry.member?.fullName != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              entry.member!.fullName,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
-                            ],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            NumberFormat.currency(
+                              symbol: 'KES ',
+                              decimalDigits: 0,
+                            ).format(entry.amount),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isCredit
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.error,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.person_outline,
-                                size: 14,
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  entry.member?.fullName ?? l10n.unknownMember,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.7),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            DateFormat('MMM dd, yyyy').format(entry.createdAt),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
                           ),
                         ],
                       ),
                     ),
-
-                    // Amount and Date Column
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          NumberFormat.currency(
-                            symbol: 'KES ',
-                            decimalDigits: 0,
-                          ).format(entry.amount),
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: isCredit
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.error,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.schedule,
-                              size: 12,
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              DateFormat('MMM dd').format(entry.createdAt),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
-                                ),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
                     // Delete Button for Debit Entries Only
                     if (!isCredit) ...[
                       const SizedBox(width: 12),
@@ -1038,35 +1030,24 @@ class _AccountingEventExpensesViewHandsetState
                   ],
                 ),
 
-                // Narration if present
+                // Description Row (if exists)
                 if (entry.narration.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest
-                          .withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 8),
+                  Text(
+                    entry.narration,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
-                    child: Text(
-                      entry.narration,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.8,
-                        ),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
 
-                // Receipt Attachments or Missing Receipt Action
+                const SizedBox(height: 12),
+
                 if (hasReceipts) ...[
-                  const SizedBox(height: 16),
-                  _buildEnhancedReceiptAttachments(context, entry.receipts),
+                  _buildReceiptAttachments(context, entry.receipts),
                 ] else if (missingReceipt) ...[
-                  const SizedBox(height: 16),
                   _buildMissingReceiptAction(context, entry),
                 ],
               ],
@@ -1077,7 +1058,7 @@ class _AccountingEventExpensesViewHandsetState
     );
   }
 
-  Widget _buildEnhancedReceiptAttachments(
+  Widget _buildReceiptAttachments(
     BuildContext context,
     List<PRFMedia> receipts,
   ) {
@@ -1284,39 +1265,83 @@ class _AccountingEventExpensesViewHandsetState
               ],
             ),
           ),
-          Material(
-            color: theme.colorScheme.error,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              onTap: () {
-                _showAddExpenseModal(context);
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 16,
-                      color: theme.colorScheme.onError,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Attach',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onError,
-                        fontWeight: FontWeight.w600,
+          BlocBuilder<UploadMediaCubit, UploadMediaState>(
+            builder: (context, uploadState) {
+              return uploadState.maybeWhen(
+                orElse: () => Material(
+                  color: theme.colorScheme.error,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: () async {
+                      try {
+                        await context.read<SelectMediaCubit>().selectMedia(
+                          context: context,
+                          modelUlid: entry.ulid,
+                          model: PRFMediaModel.allocationEntryReceipts,
+                          mediaType: RequestType.image,
+                        );
+
+                        // Get the selected media from the SelectMediaCubit state
+                        // ignore: use_build_context_synchronously
+                        context.read<SelectMediaCubit>().state.maybeWhen(
+                          orElse: () {},
+                          loaded: (imageDTOs) {
+                            if (imageDTOs.isNotEmpty && context.mounted) {
+                              context.read<UploadMediaCubit>().uploadMedia(
+                                imageDTOs: imageDTOs,
+                              );
+                            }
+                          },
+                        );
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to select media: $e'),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 16,
+                            color: theme.colorScheme.onError,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Attach',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onError,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+                loading: () => SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: PRFCircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -1401,7 +1426,7 @@ class _AccountingEventExpensesViewHandsetState
     BuildContext context,
     PRFAllocationEntry entry,
   ) {
-     return WoltModalSheetPage(
+    return WoltModalSheetPage(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: EditExpenseViewHandset(
