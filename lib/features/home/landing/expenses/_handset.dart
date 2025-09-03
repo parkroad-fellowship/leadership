@@ -280,7 +280,7 @@ class _AccountingEventExpensesViewHandsetState
             loaded: (entries) => _buildLoadedView(context, entries),
             empty: () => const PRFEmptyView(
               label: 'No Expenses Yet',
-              description: 'Start by adding your first expense or token',
+              description: 'Start by adding your first expense',
               icon: Icons.receipt_long_outlined,
             ),
             error: (message) => PRFEmptyView(
@@ -366,7 +366,7 @@ class _AccountingEventExpensesViewHandsetState
           SliverToBoxAdapter(
             child: const PRFEmptyView(
               label: 'No Expenses Yet',
-              description: 'Start by adding your first expense or token',
+              description: 'Start by adding your first expense',
               icon: Icons.receipt_long_outlined,
             ).animate().fadeIn(duration: 600.ms),
           ),

@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/information/information.dart';
 import 'package:leadership/features/home/landing/expenses/accounting_event_expenses.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/features/home/landing/requisitions/requisitions.dart';
@@ -27,7 +26,7 @@ class _DeskEventDetailsPageHandsetState
     with SingleTickerProviderStateMixin {
   PRFEvent get event => widget.event;
 
-  int tabCount = 3;
+  int tabCount = 2;
 
   late TabController _tabController;
   int _currentTab = 0;
@@ -78,7 +77,6 @@ class _DeskEventDetailsPageHandsetState
                   }),
                   isScrollable: true,
                   tabs: [
-                    Tab(text: l10n.info),
                     Tab(text: l10n.requisitions),
                     Tab(text: l10n.expenses),
                   ],
@@ -88,10 +86,10 @@ class _DeskEventDetailsPageHandsetState
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    InformationView(event: event),
                     if (event.accountingEvent != null)
                       RequisitionsView(
-                        accountingEventUlid: event.accountingEvent!.ulid,
+                        event: event,
+                        accountingEvent: event.accountingEvent!,
                       )
                     else
                       PRFEmptyView(
@@ -115,7 +113,7 @@ class _DeskEventDetailsPageHandsetState
         ),
       ),
       floatingActionButton: switch (_currentTab) {
-        1 => FloatingActionButton.extended(
+        0 => FloatingActionButton.extended(
           icon: const Icon(Icons.add),
           onPressed: () {
             if (event.accountingEvent != null) {
@@ -137,7 +135,7 @@ class _DeskEventDetailsPageHandsetState
               );
             }
           },
-          label: Text(l10n.create),
+          label: Text(l10n.createRequisition),
         ),
         _ => const SizedBox.shrink(),
       },

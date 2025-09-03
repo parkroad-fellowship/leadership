@@ -1115,5 +1115,7 @@
     "enterTitle": "Enter title",
     "@enterTitle": {},
     "requisitionUpdated": "Requisition updated successfully",
-    "@requisitionUpdated": {}
+    "@requisitionUpdated": {},
+    "createRequisition": "Create Requisition",
+    "@createRequisition": {}
 }
