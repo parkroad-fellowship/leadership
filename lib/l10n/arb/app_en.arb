@@ -1113,5 +1113,7 @@
     "noAllocationsFound": "No allocations found",
     "@noAllocationsFound": {},
     "enterTitle": "Enter title",
-    "@enterTitle": {}
+    "@enterTitle": {},
+    "requisitionUpdated": "Requisition updated successfully",
+    "@requisitionUpdated": {}
 }

@@ -10,6 +10,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/requisitions/actions/approval_requisition/_handset.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition_item/create_requisition_item.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition/_handset.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
@@ -1292,11 +1293,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
             subtitle: l10n.modifyRequisitionDetails,
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.editFunctionalityComingSoon),
-                ),
-              );
+              _showEditRequisitionModal(context);
             },
           ),
         ];
@@ -2119,6 +2116,28 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
       },
     ).then((_) {
       // Refresh the requisition after approval/rejection
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showEditRequisitionModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: EditRequisitionViewHandset(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the requisition after editing
       if (context.mounted) {
         context.read<GetRequisitionCubit>().getRequisition(
           requisitionUlid: widget.requisitionUlid,

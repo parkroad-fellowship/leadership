@@ -29,6 +29,7 @@ class GetRequisitionCubit extends Cubit<GetRequisitionState> {
           'appointedApprover',
           'approvedBy',
           'paymentInstruction',
+          'accountingEvent',
         ],
       );
       emit(GetRequisitionState.loaded(requisition: requisition));
