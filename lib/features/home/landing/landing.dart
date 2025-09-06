@@ -72,6 +72,15 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.requisitionApprovalsRoute,
         ),
         700,
+        !Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
+      ],
+      [
+        l10n.viewCommitteeActivities,
+        'assets/svgs/events.svg',
+        () => context.router.pushPath(
+          PRFLeadershipRouter.deskActivitiesRoute,
+        ),
+        700,
         Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
       ],
     ];

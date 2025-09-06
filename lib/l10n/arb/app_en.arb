@@ -1119,5 +1119,7 @@
     "requisitionUpdated": "Requisition updated successfully",
     "@requisitionUpdated": {},
     "createRequisition": "Create Requisition",
-    "@createRequisition": {}
+    "@createRequisition": {},
+    "viewCommitteeActivities": "view my committee activities",
+    "@viewCommitteeActivities": {}
 }
