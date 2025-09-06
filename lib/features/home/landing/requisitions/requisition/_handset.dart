@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_approval_status.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
+import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/approval_requisition/_handset.dart';
@@ -247,9 +248,12 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
             const SizedBox(height: 24),
             if (isEditable)
               ElevatedButton.icon(
-                onPressed: () => _showCreateRequisitionItemModal(context),
+                onPressed: Misc.userCan(PRFPermissions.createRequisitionItem)
+                    ? () => _showCreateRequisitionItemModal(context)
+                    : null,
                 icon: const Icon(Icons.add),
                 label: Text(l10n.addItem),
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   foregroundColor: theme.colorScheme.onPrimary,
@@ -694,6 +698,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               label: l10n.create,
               onPressed: () => _showCreateRequisitionItemModal(context),
               isPrimary: true,
+              isDisabled: !Misc.userCan(PRFPermissions.createRequisitionItem),
             ),
           ),
           const SizedBox(width: 12),
@@ -711,6 +716,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                   ? _showPaymentInstructionDetails(context, paymentInstruction)
                   : _showCreatePaymentInstructionModal(context),
               isSecondary: paymentInstruction != null,
+              isDisabled: !Misc.userCan(
+                PRFPermissions.createPaymentInstruction,
+              ),
             ),
           ),
         ],
@@ -726,6 +734,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               label: l10n.requestReview,
               onPressed: () => _showRequestReviewModal(context),
               isOutlined: true,
+              isDisabled: !Misc.userCan(PRFPermissions.createRequisition),
             ),
           ),
           const SizedBox(width: 12),
@@ -736,6 +745,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               label: l10n.more,
               onPressed: () => _showMoreActionsBottomSheet(context),
               isOutlined: true,
+              isDisabled: !Misc.userCan(PRFPermissions.createRequisition),
             ),
           ),
         ],
@@ -1116,6 +1126,7 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
               label: l10n.create,
               onPressed: () => _showCreateRequisitionItemModal(context),
               isPrimary: true,
+              isDisabled: !Misc.userCan(PRFPermissions.createRequisitionItem),
             ),
           ),
           const SizedBox(width: 12),
