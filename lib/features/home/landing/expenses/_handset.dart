@@ -157,7 +157,7 @@ class _AccountingEventExpensesViewHandsetState
       accountingEventUlid: accountingEventUlid,
     );
     context.read<GetMembersCubit>().getMembers(
-      group: PRFLeadershipGroup.executiveCommittee,
+      groups: [PRFLeadershipGroup.executiveCommittee],
     );
     context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
   }

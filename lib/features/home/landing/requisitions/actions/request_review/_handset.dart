@@ -29,7 +29,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
   @override
   void initState() {
     context.read<GetMembersCubit>().getMembers(
-      group: PRFLeadershipGroup.executiveCommittee,
+      groups: [PRFLeadershipGroup.executiveCommittee],
     );
     super.initState();
   }

@@ -18,13 +18,16 @@ class GetMembersCubit extends Cubit<GetMembersState> {
   late MemberService _memberService;
 
   Future<void> getMembers({
-    PRFLeadershipGroup? group,
+    List<PRFLeadershipGroup>? groups,
   }) async {
     emit(const GetMembersState.loading());
     try {
       final members = await _memberService.list(
         filters: {
-          if (group != null) group.apiKey: true,
+          if (groups != null)
+            ...groups
+                .map((group) => {group.apiKey: true})
+                .reduce((a, b) => {...a, ...b}),
         },
       );
       emit(GetMembersState.loaded(members: members));
