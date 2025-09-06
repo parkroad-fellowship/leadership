@@ -202,6 +202,7 @@ class LandingPageHandset extends StatelessWidget {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     actions
+                        .where((action) => action[4] as bool)
                         .map(
                           (action) => _buildAnimatedCard(
                             child: Padding(

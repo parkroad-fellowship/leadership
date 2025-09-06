@@ -206,6 +206,7 @@ class LandingPageTablet extends StatelessWidget {
                   ),
                   delegate: SliverChildListDelegate(
                     actions
+                        .where((action) => action[4] as bool)
                         .map(
                           (action) => _buildTabletActionCard(
                             title: action[0] as String,

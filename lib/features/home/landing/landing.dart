@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/landing/_handset.dart';
 import 'package:leadership/features/home/landing/_tablet.dart';
@@ -53,6 +54,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.deskActivitiesRoute,
         ),
         700,
+        !Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
       ],
       [
         l10n.viewMissions,
@@ -61,6 +63,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.missionsRoute,
         ),
         700,
+        !Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
       ],
       [
         l10n.manageRequisitions,
@@ -69,6 +72,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.requisitionApprovalsRoute,
         ),
         700,
+        Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
       ],
     ];
 
