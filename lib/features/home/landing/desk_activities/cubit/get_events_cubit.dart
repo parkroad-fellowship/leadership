@@ -29,8 +29,6 @@ class GetEventsCubit extends Cubit<GetEventsState> {
           'posters',
           'accountingEvent',
         ],
-        orderBy: 'start_date',
-        orderDirection: 'asc',
         filters: {
           'responsible_desks': PRFResponsibleDesk.apiKeys(
             PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
