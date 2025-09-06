@@ -12,8 +12,8 @@ abstract class PRFRequisitionDTO with _$PRFRequisitionDTO {
     @JsonKey(name: 'requisition_date') required DateTime requisitionDate,
     @JsonEnum()
     @JsonKey(name: 'responsible_desk')
-    required PRFResponsibleDesk responsibleDesk, 
-    required String remarks
+    required PRFResponsibleDesk responsibleDesk,
+    required String remarks,
   }) = _PRFRequisitionDTO;
 
   factory PRFRequisitionDTO.fromJson(Map<String, dynamic> json) =>

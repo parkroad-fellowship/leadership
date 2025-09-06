@@ -17,7 +17,7 @@ enum PRFLeadershipGroup {
       PRFResponsibleDesk.viceChairperson => [],
       PRFResponsibleDesk.organisingSecretary => [],
       PRFResponsibleDesk.missions => [
-        campCommittee, // TODO(miller): Remove this when missions desk is created
+        campCommittee, // TODO(miller): Remove this
       ],
       PRFResponsibleDesk.prayer => [],
       PRFResponsibleDesk.followUp => [

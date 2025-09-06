@@ -49,7 +49,7 @@ class AddEventCubit extends Cubit<AddEventState> {
           endTime: endTime.toIso8601String().split('T')[1],
           responsibleDesk: responsibleDesk.apiKey,
           eventType: PRFEventType.leadership.apiKey,
-          participantMemberUlids : participants.map((e) => e.ulid).toList(),
+          participantMemberUlids: participants.map((e) => e.ulid).toList(),
         ).toJson(),
         includes: ['accountingEvent', 'participants'],
       );
