@@ -633,7 +633,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     await DatePicker.showDateTimePicker(
       context,
       minTime: DateTime.now().subtract(const Duration(days: 7)),
-      maxTime: DateTime.now().add(const Duration(days: 30)),
+      maxTime: DateTime.now().add(const Duration(days: 30 * 12)),
       theme: picker.DatePickerTheme(
         itemStyle: Theme.of(context).textTheme.headlineSmall!,
         doneStyle: Theme.of(context).textTheme.headlineSmall!,

@@ -51,7 +51,7 @@ class AddEventCubit extends Cubit<AddEventState> {
           eventType: PRFEventType.leadership.apiKey,
           participantMemberUlids : participants.map((e) => e.ulid).toList(),
         ).toJson(),
-        includes: ['accountingEvent'],
+        includes: ['accountingEvent', 'participants'],
       );
 
       // Create the default requisition so that it's a one-step process
