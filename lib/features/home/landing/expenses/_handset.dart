@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/enums/prf_media_model.dart';
+import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
@@ -20,6 +21,7 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/shared_widgets/_index.dart';
+import 'package:leadership/utils/misc.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
@@ -157,7 +159,7 @@ class _AccountingEventExpensesViewHandsetState
       accountingEventUlid: accountingEventUlid,
     );
     context.read<GetMembersCubit>().getMembers(
-      group: PRFLeadershipGroup.executiveCommittee,
+      groups: [PRFLeadershipGroup.executiveCommittee],
     );
     context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
   }
@@ -1589,11 +1591,13 @@ class _AccountingEventExpensesViewHandsetState
     PRFAllocationEntry entry,
   ) {
     return ElevatedButton.icon(
-      onPressed: () {
-        context.read<DeleteAllocationEntryCubit>().deleteAllocationEntry(
-          allocationEntryUlid: entry.ulid,
-        );
-      },
+      onPressed: Misc.userCan(PRFPermissions.deleteAllocationEntry)
+          ? () {
+              context.read<DeleteAllocationEntryCubit>().deleteAllocationEntry(
+                allocationEntryUlid: entry.ulid,
+              );
+            }
+          : null,
       icon: const Icon(Icons.delete_outline, size: 18),
       label: const Text('Delete'),
       style: ElevatedButton.styleFrom(

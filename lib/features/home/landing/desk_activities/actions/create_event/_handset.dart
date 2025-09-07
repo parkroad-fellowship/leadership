@@ -6,10 +6,13 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
+import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
+import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
@@ -31,6 +34,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   bool _isLoading = false;
 
   PRFResponsibleDesk? selectedResponsibleDesk;
+  List<PRFMember> selectedParticipants = [];
 
   DateTime? startsAt;
   DateTime? endsAt;
@@ -41,12 +45,14 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
         _titleController.text.isNotEmpty &&
         _purposeController.text.isNotEmpty &&
         startsAt != null &&
-        endsAt != null;
+        endsAt != null &&
+        selectedParticipants.isNotEmpty;
   }
 
   @override
   void initState() {
     super.initState();
+
     // Add listeners to update form validity
     _titleController.addListener(() => setState(() {}));
     _purposeController.addListener(() => setState(() {}));
@@ -172,9 +178,66 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                       ),
                                 )
                                 .toList(),
-                            onSelected: (responsibleDesk) => setState(() {
-                              selectedResponsibleDesk = responsibleDesk;
-                            }),
+                            onSelected: (responsibleDesk) {
+                              setState(() {
+                                selectedResponsibleDesk = responsibleDesk;
+                              });
+
+                              // Fetch members for the selected responsible desk
+                              context.read<GetMembersCubit>().getMembers(
+                                groups: PRFLeadershipGroup.fromResponsibleDesk(
+                                  responsibleDesk!,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
+
+                    _buildFormSection(
+                      icon: Icons.group_outlined,
+                      title: l10n.participants,
+                      child: BlocBuilder<GetMembersCubit, GetMembersState>(
+                        builder: (context, state) {
+                          return state.maybeWhen(
+                            loaded: _buildParticipantsMultiSelect,
+                            loading: () => Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.2),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            orElse: () => Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.2),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'No members available',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                      ),
+                                ),
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -320,6 +383,177 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     );
   }
 
+  Widget _buildParticipantsMultiSelect(List<PRFMember> members) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Selected participants chips
+        if (selectedParticipants.isNotEmpty) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: selectedParticipants.map((member) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      member.fullName,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedParticipants.removeWhere(
+                            (p) => p.ulid == member.ulid,
+                          );
+                        });
+                      },
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Members selection area
+        Container(
+          constraints: const BoxConstraints(
+            maxHeight: 200,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.2),
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: members.isEmpty
+              ? SizedBox(
+                  height: 60,
+                  child: Center(
+                    child: Text(
+                      'No members available',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: members.length,
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                  ),
+                  itemBuilder: (context, index) {
+                    final member = members[index];
+                    final isSelected = selectedParticipants.any(
+                      (p) => p.ulid == member.ulid,
+                    );
+
+                    return ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: isSelected
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceContainerHighest,
+                        child: isSelected
+                            ? Icon(
+                                Icons.check,
+                                size: 16,
+                                color: theme.colorScheme.onPrimary,
+                              )
+                            : Text(
+                                member.firstName.isNotEmpty
+                                    ? member.firstName[0].toUpperCase()
+                                    : 'M',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                      title: Text(
+                        member.fullName,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      subtitle: member.email.isNotEmpty
+                          ? Text(
+                              member.email,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            selectedParticipants.removeWhere(
+                              (p) => p.ulid == member.ulid,
+                            );
+                          } else {
+                            selectedParticipants.add(member);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
+        ),
+
+        // Summary text
+        const SizedBox(height: 8),
+        Text(
+          selectedParticipants.isEmpty
+              ? 'Select participants from the list above'
+              : '${selectedParticipants.length} '
+                    'participant${selectedParticipants.length == 1 ? '' : 's'} '
+                    'selected',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _submitForm() async {
     final l10n = context.l10n;
 
@@ -369,6 +603,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
       startTime: startsAt!,
       endTime: endsAt!,
       responsibleDesk: selectedResponsibleDesk!,
+      participants: selectedParticipants,
     );
   }
 
@@ -398,7 +633,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     await DatePicker.showDateTimePicker(
       context,
       minTime: DateTime.now().subtract(const Duration(days: 7)),
-      maxTime: DateTime.now().add(const Duration(days: 30)),
+      maxTime: DateTime.now().add(const Duration(days: 30 * 12)),
       theme: picker.DatePickerTheme(
         itemStyle: Theme.of(context).textTheme.headlineSmall!,
         doneStyle: Theme.of(context).textTheme.headlineSmall!,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart'
     show BuildContext, MediaQuery, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/slugify.dart' as slugify;
@@ -216,7 +217,7 @@ class Misc {
     }
   }
 
-  static bool userCan(String permission) {
+  static bool userCan(PRFPermissions permission) {
     try {
       final user = getIt<HiveService>().auth.retrieveProfile();
       if (user == null) return false;
@@ -224,10 +225,10 @@ class Misc {
       // Cache user permissions for better performance
       final userPermissions = user.roles
           .expand((role) => role.permissions)
-          .map((permission) => permission.name)
+          .map((p) => p.name)
           .toSet();
 
-      return userPermissions.contains(permission);
+      return userPermissions.contains(permission.name);
     } catch (e) {
       return false; // Deny access on error
     }

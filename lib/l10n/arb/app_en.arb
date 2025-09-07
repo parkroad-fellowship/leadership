@@ -856,6 +856,8 @@
     "@responsibleDesk": {},
     "selectResponsibleDesk": "Select the responsible desk",
     "@selectResponsibleDesk": {},
+    "participants": "Committee Participants",
+    "@participants": {},
     "createNewActivity": "Create New Activity",
     "@createNewActivity": {},
     "createActivityDescription": "Fill in the details below to create a new activity",
@@ -1117,5 +1119,7 @@
     "requisitionUpdated": "Requisition updated successfully",
     "@requisitionUpdated": {},
     "createRequisition": "Create Requisition",
-    "@createRequisition": {}
+    "@createRequisition": {},
+    "viewCommitteeActivities": "view my committee activities",
+    "@viewCommitteeActivities": {}
 }

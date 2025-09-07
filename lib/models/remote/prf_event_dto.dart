@@ -14,6 +14,9 @@ abstract class PRFEventDTO with _$PRFEventDTO {
     @JsonKey(name: 'end_time') required String endTime,
     @JsonKey(name: 'responsible_desk') required int responsibleDesk,
     @JsonKey(name: 'event_type') required int eventType,
+    @Default([])
+    @JsonKey(name: 'participant_member_ulids')
+    List<String> participantMemberUlids,
   }) = _PRFEventDTO;
 
   factory PRFEventDTO.fromJson(Map<String, dynamic> json) =>

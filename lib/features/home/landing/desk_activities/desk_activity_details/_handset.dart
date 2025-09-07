@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/expenses/accounting_event_expenses.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/features/home/landing/requisitions/requisitions.dart';
@@ -113,30 +114,33 @@ class _DeskEventDetailsPageHandsetState
         ),
       ),
       floatingActionButton: switch (_currentTab) {
-        0 => FloatingActionButton.extended(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            if (event.accountingEvent != null) {
-              WoltModalSheet.show<void>(
-                context: context,
-                pageListBuilder: (modalSheetContext) {
-                  return [
-                    WoltModalSheetPage(
-                      child: CreateRequisitionView(
-                        accountingEvent: event.accountingEvent!,
-                      ),
-                    ),
-                  ];
-                },
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.requisitionUnavailable)),
-              );
-            }
-          },
-          label: Text(l10n.createRequisition),
-        ),
+        0 =>
+          Misc.userCan(PRFPermissions.createRequisition)
+              ? FloatingActionButton.extended(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    if (event.accountingEvent != null) {
+                      WoltModalSheet.show<void>(
+                        context: context,
+                        pageListBuilder: (modalSheetContext) {
+                          return [
+                            WoltModalSheetPage(
+                              child: CreateRequisitionView(
+                                accountingEvent: event.accountingEvent!,
+                              ),
+                            ),
+                          ];
+                        },
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.requisitionUnavailable)),
+                      );
+                    }
+                  },
+                  label: Text(l10n.createRequisition),
+                )
+              : null,
         _ => const SizedBox.shrink(),
       },
     );

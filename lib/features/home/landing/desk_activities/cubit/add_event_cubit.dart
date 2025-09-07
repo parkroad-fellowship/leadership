@@ -4,6 +4,7 @@ import 'package:leadership/enums/prf_event_type.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_event_dto.dart';
+import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/models/remote/prf_requisition_dto.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
@@ -33,6 +34,7 @@ class AddEventCubit extends Cubit<AddEventState> {
     required DateTime endTime,
     required PRFResponsibleDesk responsibleDesk,
     required String remarks,
+    required List<PRFMember> participants,
   }) async {
     emit(const AddEventState.loading());
 
@@ -47,8 +49,9 @@ class AddEventCubit extends Cubit<AddEventState> {
           endTime: endTime.toIso8601String().split('T')[1],
           responsibleDesk: responsibleDesk.apiKey,
           eventType: PRFEventType.leadership.apiKey,
+          participantMemberUlids: participants.map((e) => e.ulid).toList(),
         ).toJson(),
-        includes: ['accountingEvent'],
+        includes: ['accountingEvent', 'participants'],
       );
 
       // Create the default requisition so that it's a one-step process
