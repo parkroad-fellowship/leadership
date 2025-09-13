@@ -20,6 +20,7 @@ class CreateRequisitionItemCubit extends Cubit<CreateRequisitionItemState> {
     required String requisitionUlid,
     required String expenseCategoryUlid,
     required String itemName,
+    required String narration,
     required int unitPrice,
     required int quantity,
   }) async {
@@ -31,6 +32,7 @@ class CreateRequisitionItemCubit extends Cubit<CreateRequisitionItemState> {
           requisitionUlid: requisitionUlid,
           expenseCategoryUlid: expenseCategoryUlid,
           itemName: itemName,
+          narration: narration,
           unitPrice: unitPrice,
           quantity: quantity,
         ).toJson(),

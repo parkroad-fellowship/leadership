@@ -25,6 +25,7 @@ class EditRequisitionItemViewHandset extends StatefulWidget {
 class _EditRequisitionItemViewHandsetState
     extends State<EditRequisitionItemViewHandset> {
   final _itemNameController = TextEditingController();
+  final _narrationController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _quantityController = TextEditingController();
 
@@ -53,6 +54,7 @@ class _EditRequisitionItemViewHandsetState
     _unitPriceController.addListener(_calculateTotal);
     _quantityController.addListener(_calculateTotal);
     _itemNameController.addListener(() => setState(() {}));
+    _narrationController.addListener(() => setState(() {}));
   }
 
   void _populateForm(PRFRequisitionItem requisitionItem) {
@@ -60,6 +62,7 @@ class _EditRequisitionItemViewHandsetState
       currentRequisitionItem = requisitionItem;
       selectedExpenseCategory = requisitionItem.expenseCategory;
       _itemNameController.text = requisitionItem.itemName;
+      _narrationController.text = requisitionItem.narration ?? '';
       _unitPriceController.text = requisitionItem.unitPrice.toString();
       _quantityController.text = requisitionItem.quantity.toString();
     });
@@ -77,6 +80,7 @@ class _EditRequisitionItemViewHandsetState
   @override
   void dispose() {
     _itemNameController.dispose();
+    _narrationController.dispose();
     _unitPriceController.dispose();
     _quantityController.dispose();
     super.dispose();
@@ -323,6 +327,17 @@ class _EditRequisitionItemViewHandsetState
                     ],
                   ),
                 ).animate(delay: 600.ms).slideY(begin: 0.2).fadeIn(),
+
+              const SizedBox(height: 16),
+              // Narration
+              _buildFormSection(
+                icon: Icons.note_outlined,
+                title: 'Narration',
+                child: PRFTextAreaInput(
+                  hintText: 'Enter narration (optional)',
+                  controller: _narrationController,
+                ),
+              ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
             ],
           ),
         ),
@@ -475,6 +490,7 @@ class _EditRequisitionItemViewHandsetState
       requisitionItemUlid: widget.requisitionItemUlid,
       expenseCategoryUlid: selectedExpenseCategory!.ulid,
       itemName: _itemNameController.text.trim(),
+      narration: _narrationController.text.trim(),
       unitPrice: unitPrice,
       quantity: quantity,
     );
