@@ -11,6 +11,7 @@ abstract class PRFRequisitionItemDTO with _$PRFRequisitionItemDTO {
     @JsonKey(name: 'item_name') required String itemName,
     @JsonKey(name: 'unit_price') required int unitPrice,
     required int quantity,
+    @JsonKey(includeIfNull: false) String? narration,
   }) = _PRFRequisitionItemDTO;
 
   factory PRFRequisitionItemDTO.fromJson(Map<String, dynamic> json) =>

@@ -15,6 +15,7 @@ abstract class PRFRequisitionItem with _$PRFRequisitionItem {
     @JsonKey(name: 'total_price') int totalPrice,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt, {
+    String? narration,
     PRFRequisition? requisition,
     @JsonKey(name: 'expense_category') PRFExpenseCategory? expenseCategory,
   }) = _PRFRequisitionItem;
