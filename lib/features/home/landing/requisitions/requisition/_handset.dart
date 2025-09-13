@@ -440,6 +440,14 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                     ],
                   ),
                   const SizedBox(height: 12),
+                  if (item.narration != null)
+                    Text(
+                      item.narration!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  if (item.narration != null) const SizedBox(height: 12),
                   Row(
                     children: [
                       _buildDetailChip(
