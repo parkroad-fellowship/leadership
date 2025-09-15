@@ -71,7 +71,7 @@ dev_dependencies:
   flutter_native_splash: ^2.4.6
   flutter_test:
     sdk: flutter
-  freezed: ^3.2.0
+  freezed: ^3.2.3
   icons_launcher: ^3.0.2
   json_serializable: ^6.11.1
   mocktail: ^1.0.4
