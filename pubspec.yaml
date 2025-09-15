@@ -16,7 +16,7 @@ dependencies:
   collection: ^1.19.1
   crypto: ^3.0.6
   dart_pusher_channels: ^1.2.3
-  device_info_plus: ^11.5.0
+  device_info_plus: ^12.1.0
   dio: ^5.9.0
   extended_image: ^10.0.1
   file_picker: ^10.3.2
