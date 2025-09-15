@@ -1265,10 +1265,10 @@ packages:
     dependency: "direct main"
     description:
       name: phone_form_field
-      sha256: "79da2519750975c89cf3b8b41628c3835c246f650bd26b65b359f16203fdef6f"
+      sha256: "88bfc290c9f02faccaeb7556b3c17b2551dfdbc762f89fc46d5c4f1fde2750b2"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.10"
+    version: "10.0.11+13"
   phone_numbers_parser:
     dependency: transitive
     description:
