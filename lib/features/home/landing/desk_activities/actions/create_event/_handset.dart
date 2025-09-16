@@ -45,8 +45,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
         _titleController.text.isNotEmpty &&
         _purposeController.text.isNotEmpty &&
         startsAt != null &&
-        endsAt != null &&
-        selectedParticipants.isNotEmpty;
+        endsAt != null;
   }
 
   @override
