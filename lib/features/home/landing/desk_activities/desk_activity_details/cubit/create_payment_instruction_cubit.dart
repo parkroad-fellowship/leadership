@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
+import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_payment_instruction_dto.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
 
@@ -61,6 +62,8 @@ class CreatePaymentInstructionCubit
       await _paymentInstructionService.create(data: dto.toJson());
 
       emit(const CreatePaymentInstructionState.loaded());
+    } on Failure catch(f) {
+      emit(CreatePaymentInstructionState.error(f.message));
     } catch (e) {
       emit(CreatePaymentInstructionState.error(e.toString()));
     }
