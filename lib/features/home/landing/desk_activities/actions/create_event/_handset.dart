@@ -203,6 +203,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                       child: PRFTextInput(
                         hintText: l10n.name,
                         controller: _titleController,
+                        textCapitalization: TextCapitalization.words,
                       ),
                     ).animate(delay: 600.ms).slideX(begin: -0.2).fadeIn(),
 
