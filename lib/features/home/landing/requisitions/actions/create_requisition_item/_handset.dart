@@ -281,7 +281,7 @@ class _CreateRequisitionItemViewHandsetState
                     // Narration
                     _buildFormSection(
                       icon: Icons.note_outlined,
-                      title: 'Narration',
+                      title: 'Narration/Justification',
                       child: PRFTextAreaInput(
                         hintText: 'Enter narration (optional)',
                         controller: _narrationController,
