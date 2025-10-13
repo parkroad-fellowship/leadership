@@ -10,12 +10,14 @@ class PRFTextInput extends StatelessWidget {
     super.key,
     this.enabled = true,
     this.onChanged,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final String hintText;
   final TextEditingController controller;
   final bool enabled;
   final ValueChanged<String>? onChanged;
+  final TextCapitalization textCapitalization;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +27,7 @@ class PRFTextInput extends StatelessWidget {
         controller: controller,
         enabled: enabled,
         onChanged: onChanged,
+        textCapitalization: textCapitalization,
       ),
       layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
         handset: (_, _) => PRFTextInputHandset(
@@ -32,12 +35,14 @@ class PRFTextInput extends StatelessWidget {
           controller: controller,
           enabled: enabled,
           onChanged: onChanged,
+          textCapitalization: textCapitalization,
         ),
         tablet: (_, _) => PRFTextInputTablet(
           hintText: hintText,
           controller: controller,
           enabled: enabled,
           onChanged: onChanged,
+          textCapitalization: textCapitalization,
         ),
       ),
     );

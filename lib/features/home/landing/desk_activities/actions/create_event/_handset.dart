@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/router/router.gr.dart';
 
 class CreateEventViewHandset extends StatefulWidget {
   const CreateEventViewHandset({super.key});
@@ -195,54 +197,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
 
                     _buildFormSection(
-                      icon: Icons.group_outlined,
-                      title: l10n.participants,
-                      child: BlocBuilder<GetMembersCubit, GetMembersState>(
-                        builder: (context, state) {
-                          return state.maybeWhen(
-                            loaded: _buildParticipantsMultiSelect,
-                            loading: () => Container(
-                              height: 60,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outline.withValues(alpha: 0.2),
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                            orElse: () => Container(
-                              height: 60,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outline.withValues(alpha: 0.2),
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'No members available',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                      ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
-
-                    _buildFormSection(
                       icon: Icons.badge_outlined,
                       title: l10n.title,
                       isRequired: true,
@@ -289,6 +243,54 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                         ),
                       ),
                     ).animate(delay: 500.ms).slideX(begin: -0.2).fadeIn(),
+
+                    _buildFormSection(
+                      icon: Icons.group_outlined,
+                      title: l10n.participants,
+                      child: BlocBuilder<GetMembersCubit, GetMembersState>(
+                        builder: (context, state) {
+                          return state.maybeWhen(
+                            loaded: _buildParticipantsMultiSelect,
+                            loading: () => Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.2),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            orElse: () => Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.2),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'No members available',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
                   ],
                 ),
               ),
@@ -304,13 +306,20 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                         _isLoading = true;
                       });
                     },
-                    loaded: (_) {
+                    loaded: (data) {
                       setState(() {
                         _isLoading = false;
                       });
                       Gaimon.success();
                       context.read<GetEventsCubit>().getUpcomingEvents();
+
                       Navigator.of(context).pop();
+                      context.router.push(
+                        RequisitionRoute(
+                          requisitionUlid: data.requisition.ulid,
+                        ),
+                      );
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(l10n.activityCreated)),
                       );

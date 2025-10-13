@@ -14,10 +14,6 @@ class RequisitionPage extends StatelessWidget {
     return AdaptiveBuilder(
       defaultBuilder: (_, _) =>
           RequisitionPageHandset(requisitionUlid: requisitionUlid),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) =>
-            RequisitionPageHandset(requisitionUlid: requisitionUlid),
-      ),
     );
   }
 }

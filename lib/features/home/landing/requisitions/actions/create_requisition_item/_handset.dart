@@ -203,6 +203,7 @@ class _CreateRequisitionItemViewHandsetState
                       child: PRFTextInput(
                         hintText: 'Enter item name',
                         controller: _itemNameController,
+                        textCapitalization: TextCapitalization.words,
                       ),
                     ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
 
@@ -280,7 +281,7 @@ class _CreateRequisitionItemViewHandsetState
                     // Narration
                     _buildFormSection(
                       icon: Icons.note_outlined,
-                      title: 'Narration',
+                      title: 'Narration/Justification',
                       child: PRFTextAreaInput(
                         hintText: 'Enter narration (optional)',
                         controller: _narrationController,
