@@ -3,10 +3,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_media.dart';
@@ -31,9 +29,6 @@ abstract class MediaService {
     required String modelUlid,
     required PRFMediaModel model,
   });
-
-  Future<void> initDownloader();
-  Future<void> downloadFile(String downloadURL);
   Future<PRFMediaDTO?> captureFromCamera(
     BuildContext context, {
     required String modelUlid,
@@ -186,43 +181,6 @@ class MediaServiceImpl implements MediaService {
       rethrow;
     } finally {
       await FilePicker.platform.clearTemporaryFiles();
-    }
-  }
-
-  @override
-  Future<void> initDownloader() async {
-    await FlutterDownloader.initialize(debug: kDebugMode);
-    await FlutterDownloader.registerCallback(callback);
-  }
-
-  static void callback(String id, int status, int progress) {
-    Logger().d('$id: $status ($progress)');
-  }
-
-  @override
-  Future<void> downloadFile(String downloadURL) async {
-    try {
-      await Permission.storage.request();
-      late String appDocDir;
-      if (Platform.isAndroid) {
-        appDocDir = (await path_provider.getExternalStorageDirectory())!.path;
-      } else {
-        appDocDir = (await path_provider.getApplicationDocumentsDirectory())
-            .absolute
-            .path;
-      }
-
-      await FlutterDownloader.enqueue(
-        url: downloadURL,
-        fileName: Misc.getFileName(downloadURL),
-        savedDir: appDocDir,
-        saveInPublicStorage: true,
-      );
-    } on SocketException {
-      throw Failure(message: 'Check network connection!');
-    } catch (e) {
-      Logger().e(e.toString());
-      rethrow;
     }
   }
 

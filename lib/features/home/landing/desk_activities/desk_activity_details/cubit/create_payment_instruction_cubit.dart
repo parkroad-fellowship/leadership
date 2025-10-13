@@ -62,7 +62,7 @@ class CreatePaymentInstructionCubit
       await _paymentInstructionService.create(data: dto.toJson());
 
       emit(const CreatePaymentInstructionState.loaded());
-    } on Failure catch(f) {
+    } on Failure catch (f) {
       emit(CreatePaymentInstructionState.error(f.message));
     } catch (e) {
       emit(CreatePaymentInstructionState.error(e.toString()));

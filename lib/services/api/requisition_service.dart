@@ -44,7 +44,7 @@ class RequisitionService extends BaseAPIService<PRFRequisition> {
         '$endpoint/$ulid/approve',
         body: {
           'approved_by_ulid': approverUlid,
-          if (approvalNotes != null) 'approval_notes': approvalNotes,
+          'approval_notes': ?approvalNotes,
         },
       );
       return true;

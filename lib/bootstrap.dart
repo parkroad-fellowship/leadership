@@ -103,8 +103,6 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       }
     }
 
-    await getIt<MediaService>().initDownloader();
-
     runApp(await builder());
   } catch (error, stackTrace) {
     log(error.toString(), stackTrace: stackTrace);
