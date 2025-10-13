@@ -203,6 +203,7 @@ class _CreateRequisitionItemViewHandsetState
                       child: PRFTextInput(
                         hintText: 'Enter item name',
                         controller: _itemNameController,
+                        textCapitalization: TextCapitalization.words,
                       ),
                     ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
 

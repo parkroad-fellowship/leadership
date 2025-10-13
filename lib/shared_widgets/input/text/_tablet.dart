@@ -7,12 +7,14 @@ class PRFTextInputTablet extends StatelessWidget {
     super.key,
     this.enabled = true,
     this.onChanged,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final String hintText;
   final TextEditingController controller;
   final bool enabled;
   final ValueChanged<String>? onChanged;
+  final TextCapitalization textCapitalization;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +22,7 @@ class PRFTextInputTablet extends StatelessWidget {
 
     return TextFormField(
       keyboardType: TextInputType.text,
+      textCapitalization: textCapitalization,
       controller: controller,
       enabled: enabled,
       onChanged: onChanged,
