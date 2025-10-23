@@ -1,6 +1,6 @@
 name: leadership
 description: A Very Good Project created by Very Good CLI.
-version: 1.13.00+11300
+version: 1.13.01+11301
 publish_to: none
 
 environment:
@@ -20,10 +20,10 @@ dependencies:
   dio: ^5.9.0
   extended_image: ^10.0.1
   file_picker: ^10.3.3
-  firebase_analytics: ^12.0.2
-  firebase_auth: ^6.1.0
+  firebase_analytics: ^12.0.3
+  firebase_auth: ^6.1.1
   firebase_core: ^4.1.1
-  firebase_crashlytics: ^5.0.2
+  firebase_crashlytics: ^5.0.3
   firebase_messaging: ^16.0.2
   firebase_remote_config: ^6.0.2
   flutter:
@@ -71,7 +71,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   freezed: ^3.2.3
-  icons_launcher: ^3.0.2
+  icons_launcher: ^3.0.3
   json_serializable: ^6.11.1
   mocktail: ^1.0.4
   very_good_analysis: ^10.0.0
