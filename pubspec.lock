@@ -1257,10 +1257,10 @@ packages:
     dependency: "direct main"
     description:
       name: phone_form_field
-      sha256: "88bfc290c9f02faccaeb7556b3c17b2551dfdbc762f89fc46d5c4f1fde2750b2"
+      sha256: b0a472fada98f5fcc75fc23021d04144b066a8064be957929b9fb3a25bbabe1b
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.11+13"
+    version: "10.0.12"
   phone_numbers_parser:
     dependency: transitive
     description:
