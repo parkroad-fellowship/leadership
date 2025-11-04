@@ -49,7 +49,6 @@ import 'package:leadership/services/api/payment_instruction_service.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
 import 'package:leadership/services/firebase_service.dart';
-import 'package:leadership/services/local_auth_service.dart';
 import 'package:leadership/utils/router/router.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -59,7 +58,6 @@ class Singletons {
     getIt
       ..registerSingleton<PRFLeadershipRouter>(PRFLeadershipRouter())
       ..registerSingleton<HiveService>(HiveService())
-      ..registerSingleton<LocalAuthService>(LocalAuthService())
       ..registerSingleton<FirebaseService>(FirebaseServiceImpl())
       ..registerSingleton<AuthService>(AuthService())
       ..registerSingleton<ExpenseCategoriesService>(ExpenseCategoriesService())
