@@ -39,10 +39,10 @@ dependencies:
   full_screen_image: ^2.0.0
   gaimon: ^1.4.1
   get_it: ^9.0.5
-  google_fonts: ^6.3.1
-  google_sign_in: ^6.3.0
-  google_sign_in_ios: ^5.9.0
-  google_sign_in_web: ^0.12.4+4
+  google_fonts: ^6.3.2
+  google_sign_in: ^7.2.0 
+  google_sign_in_ios: ^6.2.3
+  google_sign_in_web: ^1.1.0
   hive_ce: ^2.12.0
   hive_ce_flutter: ^2.3.2
   http: ^1.5.0

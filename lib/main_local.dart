@@ -10,13 +10,13 @@ Future<void> main() async {
 
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
-      hiveBox: 'dev-prf-leadership-${Misc.getSluggedAppVersion()}',
-      baseDomain: 'prf-sockets.test',
-      urlScheme: 'http',
-      socketDomain: 'prf-sockets.test',
+      hiveBox: 'prf-leadership-${Misc.getSluggedAppVersion()}',
+      baseDomain: 'api.parkroadfellowship.org',
+      urlScheme: 'https',
+      socketDomain: 'ws.parkroadfellowship.org',
       socketKey: 'yvnlkaqadqiadutrs9sa',
-      socketScheme: 'ws',
-      socketPort: 9000,
+      socketScheme: 'wss',
+      socketPort: 443,
       azureConnString:
           'DefaultEndpointsProtocol=https;AccountName=prfcorestorage;AccountKey=oizfzMYG6gsjQWTfix8V/50Jh40qCg93DzNiFok/DxJjDOhffzM0TA4TNOV4TYqU1QONfaQOrrs7+ASteXMXPA==;EndpointSuffix=core.windows.net',
     ),
