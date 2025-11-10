@@ -34,7 +34,7 @@ dependencies:
   flutter_datetime_picker_plus: ^2.2.0
   flutter_localizations:
     sdk: flutter
-  flutter_svg: ^2.2.1
+  flutter_svg: ^2.2.2
   freezed_annotation: ^3.1.0
   full_screen_image: ^2.0.0
   gaimon: ^1.4.1
