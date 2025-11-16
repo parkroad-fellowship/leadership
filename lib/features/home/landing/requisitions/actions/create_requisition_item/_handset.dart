@@ -445,6 +445,18 @@ class _CreateRequisitionItemViewHandsetState
       return;
     }
 
+    if (_narrationController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please provide a narration/justification for this item',
+          ),
+        ),
+      );
+      Gaimon.warning();
+      return;
+    }
+
     await context.read<CreateRequisitionItemCubit>().createRequisitionItem(
       requisitionUlid: widget.requisitionUlid,
       expenseCategoryUlid: selectedExpenseCategory!.ulid,
