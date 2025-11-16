@@ -216,6 +216,11 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
         title = l10n.requisitionRejected;
         subtitle = l10n.requisitionRejectedDesc;
         iconColor = status.color(theme);
+      case PRFApprovalStatus.recalled:
+        emptyStateIcon = Icons.undo_outlined;
+        title = l10n.requisitionRecalled;
+        subtitle = l10n.requisitionRecalledDesc;
+        iconColor = status.color(theme);
     }
 
     return Center(
@@ -686,6 +691,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
         return _buildApprovedActions(context, l10n, paymentInstruction);
       case PRFApprovalStatus.rejected:
         return _buildRejectedActions(context, l10n);
+      case PRFApprovalStatus.recalled:
+        return [];
     }
   }
 
@@ -1343,6 +1350,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
         return [
           ...baseActions,
         ];
+
+      case PRFApprovalStatus.recalled:
+        return [];
 
       case PRFApprovalStatus.approved:
         return [

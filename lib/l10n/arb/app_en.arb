@@ -1121,5 +1121,9 @@
     "createRequisition": "Create Requisition",
     "@createRequisition": {},
     "viewCommitteeActivities": "view my committee activities",
-    "@viewCommitteeActivities": {}
+    "@viewCommitteeActivities": {},
+    "requisitionRecalled": "Requisition recalled successfully",
+    "@requisitionRecalled": {},
+    "requisitionRecalledDesc": "This requisition has been recalled. You can edit and resubmit it for approval.",
+    "@requisitionRecalledDesc": {}
 }
