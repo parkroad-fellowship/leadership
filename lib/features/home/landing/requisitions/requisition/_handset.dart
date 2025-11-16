@@ -13,6 +13,7 @@ import 'package:leadership/features/home/landing/requisitions/actions/create_pay
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition_item/create_requisition_item.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition/_handset.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition_item/edit_requisition_item.dart';
+import 'package:leadership/features/home/landing/requisitions/actions/recall_requisition/recall_requisition.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
@@ -925,32 +926,51 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                 );
               } else {
                 // Show limited actions for non-approvers
-                return Row(
+                return Column(
                   children: [
-                    if (paymentInstruction != null) ...[
-                      Expanded(
+                    Row(
+                      children: [
+                        if (paymentInstruction != null) ...[
+                          Expanded(
+                            child: _buildActionButton(
+                              context,
+                              icon: Icons.visibility,
+                              label: l10n.viewPayment,
+                              onPressed: () => _showPaymentInstructionDetails(
+                                context,
+                                paymentInstruction,
+                              ),
+                              isSecondary: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: _buildActionButton(
+                            context,
+                            icon: Icons.info_outline,
+                            label: l10n.details,
+                            onPressed: () =>
+                                _showMoreActionsBottomSheet(context),
+                            isOutlined: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Show recall button for requisitors
+                    if (loggedInMember.ulid == requisition.member?.ulid) ...[
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
                         child: _buildActionButton(
                           context,
-                          icon: Icons.visibility,
-                          label: l10n.viewPayment,
-                          onPressed: () => _showPaymentInstructionDetails(
-                            context,
-                            paymentInstruction,
-                          ),
-                          isSecondary: true,
+                          icon: Icons.undo,
+                          label: 'Recall',
+                          onPressed: () => _showRecallRequisitionModal(context),
+                          isOutlined: true,
                         ),
                       ),
-                      const SizedBox(width: 12),
                     ],
-                    Expanded(
-                      child: _buildActionButton(
-                        context,
-                        icon: Icons.info_outline,
-                        label: l10n.details,
-                        onPressed: () => _showMoreActionsBottomSheet(context),
-                        isOutlined: true,
-                      ),
-                    ),
                   ],
                 );
               }
@@ -1029,33 +1049,87 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
         ),
       ),
       // Approved Actions
-      Row(
-        children: [
-          if (paymentInstruction != null) ...[
-            Expanded(
-              child: _buildActionButton(
-                context,
-                icon: Icons.payment,
-                label: l10n.paymentDetails,
-                onPressed: () => _showPaymentInstructionDetails(
-                  context,
-                  paymentInstruction,
+      BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+        builder: (context, requisitionState) {
+          return requisitionState.maybeWhen(
+            loaded: (requisition) {
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      if (paymentInstruction != null) ...[
+                        Expanded(
+                          child: _buildActionButton(
+                            context,
+                            icon: Icons.payment,
+                            label: l10n.paymentDetails,
+                            onPressed: () => _showPaymentInstructionDetails(
+                              context,
+                              paymentInstruction,
+                            ),
+                            isPrimary: true,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          icon: Icons.add,
+                          label: l10n.newRequisition,
+                          onPressed: () => context.router.pop(),
+                          isSecondary: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Show recall button for requisitors
+                  if (loggedInMember.ulid == requisition.member?.ulid) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: _buildActionButton(
+                        context,
+                        icon: Icons.undo,
+                        label: 'Recall',
+                        onPressed: () => _showRecallRequisitionModal(context),
+                        isOutlined: true,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+            orElse: () => Row(
+              children: [
+                if (paymentInstruction != null) ...[
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      icon: Icons.payment,
+                      label: l10n.paymentDetails,
+                      onPressed: () => _showPaymentInstructionDetails(
+                        context,
+                        paymentInstruction,
+                      ),
+                      isPrimary: true,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: _buildActionButton(
+                    context,
+                    icon: Icons.add,
+                    label: l10n.newRequisition,
+                    onPressed: () => context.router.pop(),
+                    isSecondary: true,
+                  ),
                 ),
-                isPrimary: true,
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: _buildActionButton(
-              context,
-              icon: Icons.add,
-              label: l10n.newRequisition,
-              onPressed: () => context.router.pop(),
-              isSecondary: true,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     ];
   }
@@ -1349,6 +1423,17 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
       case PRFApprovalStatus.underReview:
         return [
           ...baseActions,
+          if (loggedInMember.ulid == requisition.member?.ulid)
+            _buildBottomSheetAction(
+              context,
+              icon: Icons.undo,
+              title: 'Recall',
+              subtitle: 'Withdraw this requisition from review',
+              onTap: () {
+                Navigator.pop(context);
+                _showRecallRequisitionModal(context);
+              },
+            ),
         ];
 
       case PRFApprovalStatus.recalled:
@@ -2217,6 +2302,28 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
       },
     ).then((_) {
       // Refresh the requisition after editing
+      if (context.mounted) {
+        context.read<GetRequisitionCubit>().getRequisition(
+          requisitionUlid: widget.requisitionUlid,
+        );
+      }
+    });
+  }
+
+  void _showRecallRequisitionModal(BuildContext context) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: RecallRequisitionView(
+              requisitionUlid: widget.requisitionUlid,
+            ),
+          ),
+        ];
+      },
+    ).then((_) {
+      // Refresh the requisition after recalling
       if (context.mounted) {
         context.read<GetRequisitionCubit>().getRequisition(
           requisitionUlid: widget.requisitionUlid,

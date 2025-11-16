@@ -1125,5 +1125,11 @@
     "requisitionRecalled": "Requisition recalled successfully",
     "@requisitionRecalled": {},
     "requisitionRecalledDesc": "This requisition has been recalled. You can edit and resubmit it for approval.",
-    "@requisitionRecalledDesc": {}
+    "@requisitionRecalledDesc": {},
+    "recallRequisition": "Recall Requisition",
+    "@recallRequisition": {},
+    "recallRequisitionDesc": "Withdraw this requisition from review",
+    "@recallRequisitionDesc": {},
+    "confirmRecallRequisition": "Are you sure you want to recall this requisition? This will withdraw it from the approval process.",
+    "@confirmRecallRequisition": {}
 }

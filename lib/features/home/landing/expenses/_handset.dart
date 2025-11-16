@@ -1094,7 +1094,8 @@ class _AccountingEventExpensesViewHandsetState
               ),
               const SizedBox(width: 8),
               Text(
-                '${receipts.length} Attachment${receipts.length == 1 ? '' : 's'}',
+                '${receipts.length} '
+                'Attachment${receipts.length == 1 ? '' : 's'}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
@@ -1118,7 +1119,9 @@ class _AccountingEventExpensesViewHandsetState
               itemCount: receipts.length,
               itemBuilder: (context, index) {
                 final receipt = receipts[index];
-                final isPdf = receipt.temporaryURL.toLowerCase().endsWith('.pdf');
+                final isPdf = receipt.temporaryURL.toLowerCase().endsWith(
+                  '.pdf',
+                );
 
                 return GestureDetector(
                   onTap: isPdf
@@ -1147,8 +1150,9 @@ class _AccountingEventExpensesViewHandsetState
                     child: isPdf
                         ? Container(
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.tertiary
-                                  .withValues(alpha: 0.2),
+                              color: theme.colorScheme.tertiary.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Column(
@@ -1183,38 +1187,41 @@ class _AccountingEventExpensesViewHandsetState
                                   errorBuilder: (context, error, stackTrace) {
                                     return ColoredBox(
                                       color: theme
-                                          .colorScheme.surfaceContainerHighest,
+                                          .colorScheme
+                                          .surfaceContainerHighest,
                                       child: Icon(
                                         Icons.image_not_supported,
                                         color: theme.colorScheme.onSurface
                                             .withValues(
-                                          alpha: 0.4,
-                                        ),
+                                              alpha: 0.4,
+                                            ),
                                         size: 24,
                                       ),
                                     );
                                   },
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
+                                  // ignore: lines_longer_than_80_chars
+                                  loadingBuilder: (context, child, loadingProgress) {
                                     if (loadingProgress == null) return child;
                                     return ColoredBox(
                                       color: theme
-                                          .colorScheme.surfaceContainerHighest,
+                                          .colorScheme
+                                          .surfaceContainerHighest,
                                       child: Center(
                                         child: SizedBox(
                                           width: 20,
                                           height: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color:
-                                                theme.colorScheme.primary,
-                                            value: loadingProgress
+                                            color: theme.colorScheme.primary,
+                                            value:
+                                                loadingProgress
                                                         .expectedTotalBytes !=
                                                     null
                                                 ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
+                                                          // ignore: lines_longer_than_80_chars
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
                                                 : null,
                                           ),
                                         ),
@@ -1226,8 +1233,7 @@ class _AccountingEventExpensesViewHandsetState
                                 Positioned.fill(
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(14),
                                       gradient: LinearGradient(
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
@@ -1382,17 +1388,20 @@ class _AccountingEventExpensesViewHandsetState
                       child: InkWell(
                         onTap: () async {
                           try {
-                            await context.read<SelectMediaCubit>().selectDocuments(
-                              modelUlid: entry.ulid,
-                              model: PRFMediaModel.allocationEntryReceipts,
-                            );
+                            await context
+                                .read<SelectMediaCubit>()
+                                .selectDocuments(
+                                  modelUlid: entry.ulid,
+                                  model: PRFMediaModel.allocationEntryReceipts,
+                                );
 
                             // Get the selected documents from the cubit state
                             // ignore: use_build_context_synchronously
                             context.read<SelectMediaCubit>().state.maybeWhen(
                               orElse: () {},
                               loaded: (documentDTOs) {
-                                if (documentDTOs.isNotEmpty && context.mounted) {
+                                if (documentDTOs.isNotEmpty &&
+                                    context.mounted) {
                                   context.read<UploadMediaCubit>().uploadMedia(
                                     imageDTOs: documentDTOs,
                                   );
@@ -1465,7 +1474,7 @@ class _AccountingEventExpensesViewHandsetState
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
-    // TODO: Implement PDF viewer using a package like pdfx or syncfusion_flutter_pdfviewer
+    // TODO(miller): Implement PDF viewer using a package like pdfx
   }
 
   void _showReceiptPreview(
