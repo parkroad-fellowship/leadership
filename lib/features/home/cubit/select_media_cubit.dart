@@ -26,20 +26,28 @@ class SelectMediaCubit extends Cubit<SelectMediaState> {
     required RequestType mediaType,
     List<PRFMediaDTO> previousMedia = const [],
   }) async {
-    final media = await _mediaService.getAssets(
-      context,
-      modelUlid: modelUlid,
-      model: model,
-      mediaType: mediaType,
-    );
+    try {
+      emit(const SelectMediaState.loading());
 
-    final items = [...previousMedia, ...media];
+      final media = await _mediaService.getAssets(
+        context,
+        modelUlid: modelUlid,
+        model: model,
+        mediaType: mediaType,
+      );
 
-    if (items.isEmpty) {
-      emit(const SelectMediaState.empty());
+      final items = [...previousMedia, ...media];
+
+      if (items.isEmpty) {
+        emit(const SelectMediaState.empty());
+      } else {
+        emit(SelectMediaState.loaded(media: items));
+      }
+    } on Failure catch (f) {
+      emit(SelectMediaState.error(f.message));
+    } catch (e) {
+      emit(SelectMediaState.error(e.toString()));
     }
-
-    emit(SelectMediaState.loaded(media: items));
   }
 
   Future<void> captureFromCamera({
@@ -65,6 +73,33 @@ class SelectMediaCubit extends Cubit<SelectMediaState> {
       } else {
         // User cancelled or no media captured
         emit(SelectMediaState.loaded(media: previousMedia));
+      }
+    } on Failure catch (f) {
+      emit(SelectMediaState.error(f.message));
+    } catch (e) {
+      emit(SelectMediaState.error(e.toString()));
+    }
+  }
+
+  Future<void> selectDocuments({
+    required String modelUlid,
+    required PRFMediaModel model,
+    List<PRFMediaDTO> previousMedia = const [],
+  }) async {
+    try {
+      emit(const SelectMediaState.loading());
+
+      final media = await _mediaService.getDocuments(
+        modelUlid: modelUlid,
+        model: model,
+      );
+
+      final items = [...previousMedia, ...media];
+
+      if (items.isEmpty) {
+        emit(const SelectMediaState.empty());
+      } else {
+        emit(SelectMediaState.loaded(media: items));
       }
     } on Failure catch (f) {
       emit(SelectMediaState.error(f.message));
