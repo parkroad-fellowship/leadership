@@ -29,6 +29,10 @@ abstract class MediaService {
     required String modelUlid,
     required PRFMediaModel model,
   });
+  Future<List<PRFMediaDTO>> getDocuments({
+    required String modelUlid,
+    required PRFMediaModel model,
+  });
   Future<PRFMediaDTO?> captureFromCamera(
     BuildContext context, {
     required String modelUlid,
@@ -63,7 +67,8 @@ class MediaServiceImpl implements MediaService {
       await azureStorage.putBlob(
         'prf-media-upload/${Misc.getFileName(imageDTO.path)}',
         bodyBytes: File(imageDTO.path).readAsBytesSync(),
-        contentType: mime.lookupMimeType(imageDTO.path) ?? 'image/jpeg',
+        contentType:
+            mime.lookupMimeType(imageDTO.path) ?? 'application/octet-stream',
       );
 
       // Upload the reference to our server
@@ -104,23 +109,26 @@ class MediaServiceImpl implements MediaService {
 
       final uploadAssets = <PRFMediaDTO>[];
 
-      if (assets != null) {
+      if (assets != null && assets.isNotEmpty) {
         for (final asset in assets) {
-          final filePath = (await asset.file)!.path;
-          uploadAssets.add(
-            PRFMediaDTO(
-              path: filePath,
-              model: model,
-              modelUlid: modelUlid,
-              name: Misc.getFileName(filePath),
-            ),
-          );
+          final filePath = (await asset.file)?.path;
+          if (filePath != null) {
+            uploadAssets.add(
+              PRFMediaDTO(
+                path: filePath,
+                model: model,
+                modelUlid: modelUlid,
+                name: Misc.getFileName(filePath),
+              ),
+            );
+          }
         }
       }
 
       return uploadAssets;
-    } catch (_) {
-      rethrow;
+    } catch (e) {
+      Logger().e('Error selecting assets: $e');
+      throw Failure(message: 'Failed to select media: $e');
     }
   }
 
@@ -181,6 +189,53 @@ class MediaServiceImpl implements MediaService {
       rethrow;
     } finally {
       await FilePicker.platform.clearTemporaryFiles();
+    }
+  }
+
+  @override
+  Future<List<PRFMediaDTO>> getDocuments({
+    required String modelUlid,
+    required PRFMediaModel model,
+  }) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.paths.isNotEmpty) {
+        final filePaths = result.paths;
+        final uploadAssets = <PRFMediaDTO>[];
+        final appDir = await path_provider.getApplicationDocumentsDirectory();
+
+        for (final filePath in filePaths) {
+          if (filePath != null) {
+            final file = File(filePath);
+            final fileName = Misc.getFileName(filePath);
+            final mediaUploadsDir = '${appDir.path}/media_uploads';
+            await Directory(mediaUploadsDir).create(recursive: true);
+            final newPath = '$mediaUploadsDir/$fileName';
+
+            await file.copy(newPath);
+
+            uploadAssets.add(
+              PRFMediaDTO(
+                path: newPath,
+                model: model,
+                modelUlid: modelUlid,
+                name: fileName,
+              ),
+            );
+          }
+        }
+        return uploadAssets;
+      }
+
+      return [];
+    } catch (e) {
+      Logger().e('Error selecting documents: $e');
+      throw Failure(message: 'Failed to select PDF files: $e');
     }
   }
 

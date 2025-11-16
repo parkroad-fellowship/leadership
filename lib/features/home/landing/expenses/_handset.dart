@@ -1094,7 +1094,8 @@ class _AccountingEventExpensesViewHandsetState
               ),
               const SizedBox(width: 8),
               Text(
-                '${receipts.length} Receipt${receipts.length == 1 ? '' : 's'}',
+                '${receipts.length} '
+                'Attachment${receipts.length == 1 ? '' : 's'}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
@@ -1118,8 +1119,14 @@ class _AccountingEventExpensesViewHandsetState
               itemCount: receipts.length,
               itemBuilder: (context, index) {
                 final receipt = receipts[index];
+                final isPdf = receipt.temporaryURL.toLowerCase().endsWith(
+                  '.pdf',
+                );
+
                 return GestureDetector(
-                  onTap: () => _showReceiptPreview(context, receipts, index),
+                  onTap: isPdf
+                      ? () => _openPdfDocument(context, receipt.temporaryURL)
+                      : () => _showReceiptPreview(context, receipts, index),
                   child: Container(
                     width: 70,
                     height: 70,
@@ -1140,73 +1147,107 @@ class _AccountingEventExpensesViewHandsetState
                         ),
                       ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: Stack(
-                        children: [
-                          Image.network(
-                            receipt.temporaryURL,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            errorBuilder: (context, error, stackTrace) {
-                              return ColoredBox(
-                                color:
-                                    theme.colorScheme.surfaceContainerHighest,
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  size: 24,
+                    child: isPdf
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.tertiary.withValues(
+                                alpha: 0.2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.file_present,
+                                  size: 28,
+                                  color: theme.colorScheme.tertiary,
                                 ),
-                              );
-                            },
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return ColoredBox(
-                                color:
-                                    theme.colorScheme.surfaceContainerHighest,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: theme.colorScheme.primary,
-                                      value:
-                                          loadingProgress.expectedTotalBytes !=
-                                              null
-                                          ? loadingProgress
-                                                    .cumulativeBytesLoaded /
+                                const SizedBox(height: 2),
+                                Text(
+                                  'PDF',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Stack(
+                              children: [
+                                Image.network(
+                                  receipt.temporaryURL,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return ColoredBox(
+                                      color: theme
+                                          .colorScheme
+                                          .surfaceContainerHighest,
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(
+                                              alpha: 0.4,
+                                            ),
+                                        size: 24,
+                                      ),
+                                    );
+                                  },
+                                  // ignore: lines_longer_than_80_chars
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return ColoredBox(
+                                      color: theme
+                                          .colorScheme
+                                          .surfaceContainerHighest,
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: theme.colorScheme.primary,
+                                            value:
                                                 loadingProgress
-                                                    .expectedTotalBytes!
-                                          : null,
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          // ignore: lines_longer_than_80_chars
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                // Overlay for better tap indication
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(14),
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.black.withValues(alpha: 0.1),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                          // Overlay for better tap indication
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withValues(alpha: 0.1),
-                                  ],
-                                ),
-                              ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
                   ),
                 );
               },
@@ -1259,7 +1300,7 @@ class _AccountingEventExpensesViewHandsetState
                   ),
                 ),
                 Text(
-                  'Attach receipt for this expense',
+                  'Attach receipt or documentation',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
@@ -1270,70 +1311,144 @@ class _AccountingEventExpensesViewHandsetState
           BlocBuilder<UploadMediaCubit, UploadMediaState>(
             builder: (context, uploadState) {
               return uploadState.maybeWhen(
-                orElse: () => Material(
-                  color: theme.colorScheme.error,
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    onTap: () async {
-                      try {
-                        await context.read<SelectMediaCubit>().selectMedia(
-                          context: context,
-                          modelUlid: entry.ulid,
-                          model: PRFMediaModel.allocationEntryReceipts,
-                          mediaType: RequestType.image,
-                        );
+                orElse: () => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Attach Image Button
+                    Material(
+                      color: theme.colorScheme.error,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: () async {
+                          try {
+                            await context.read<SelectMediaCubit>().selectMedia(
+                              context: context,
+                              modelUlid: entry.ulid,
+                              model: PRFMediaModel.allocationEntryReceipts,
+                              mediaType: RequestType.image,
+                            );
 
-                        // Get the selected media from the cubit state
-                        // ignore: use_build_context_synchronously
-                        context.read<SelectMediaCubit>().state.maybeWhen(
-                          orElse: () {},
-                          loaded: (imageDTOs) {
-                            if (imageDTOs.isNotEmpty && context.mounted) {
-                              context.read<UploadMediaCubit>().uploadMedia(
-                                imageDTOs: imageDTOs,
+                            // Get the selected media from the cubit state
+                            // ignore: use_build_context_synchronously
+                            context.read<SelectMediaCubit>().state.maybeWhen(
+                              orElse: () {},
+                              loaded: (imageDTOs) {
+                                if (imageDTOs.isNotEmpty && context.mounted) {
+                                  context.read<UploadMediaCubit>().uploadMedia(
+                                    imageDTOs: imageDTOs,
+                                  );
+                                }
+                              },
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to select image: $e'),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.error,
+                                ),
                               );
                             }
-                          },
-                        );
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Failed to select media: $e'),
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.error,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.add_photo_alternate_outlined,
-                            size: 16,
-                            color: theme.colorScheme.onError,
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Attach',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onError,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.image_outlined,
+                                size: 16,
+                                color: theme.colorScheme.onError,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Image',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onError,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    // Attach PDF Button
+                    Material(
+                      color: theme.colorScheme.tertiary,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: () async {
+                          try {
+                            await context
+                                .read<SelectMediaCubit>()
+                                .selectDocuments(
+                                  modelUlid: entry.ulid,
+                                  model: PRFMediaModel.allocationEntryReceipts,
+                                );
+
+                            // Get the selected documents from the cubit state
+                            // ignore: use_build_context_synchronously
+                            context.read<SelectMediaCubit>().state.maybeWhen(
+                              orElse: () {},
+                              loaded: (documentDTOs) {
+                                if (documentDTOs.isNotEmpty &&
+                                    context.mounted) {
+                                  context.read<UploadMediaCubit>().uploadMedia(
+                                    imageDTOs: documentDTOs,
+                                  );
+                                }
+                              },
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to select PDF: $e'),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.error,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.file_present_outlined,
+                                size: 16,
+                                color: theme.colorScheme.onTertiary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'PDF',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onTertiary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 loading: () => SizedBox(
                   width: 16,
@@ -1348,6 +1463,18 @@ class _AccountingEventExpensesViewHandsetState
         ],
       ),
     );
+  }
+
+  void _openPdfDocument(BuildContext context, String pdfUrl) {
+    // Open PDF in browser or PDF viewer
+    // For now, show a snackbar indicating PDF support
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Opening PDF document...'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+    );
+    // TODO(miller): Implement PDF viewer using a package like pdfx
   }
 
   void _showReceiptPreview(
