@@ -54,7 +54,7 @@ dependencies:
   mime: ^2.0.0
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
-  phone_form_field: ^10.0.13
+  phone_form_field: ^10.0.14
   pretty_dio_logger: ^1.4.0
   timezone: ^0.10.1
   upgrader: ^12.3.0
