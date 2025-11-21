@@ -54,7 +54,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.deskActivitiesRoute,
         ),
         700,
-        !Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
+        Misc.userCan(PRFPermissions.createEvent),
       ],
       [
         l10n.viewMissions,
@@ -63,7 +63,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.missionsRoute,
         ),
         700,
-        !Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
+        Misc.userCan(PRFPermissions.createEvent),
       ],
       [
         l10n.manageRequisitions,
@@ -72,7 +72,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.requisitionApprovalsRoute,
         ),
         700,
-        !Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
+        Misc.userCan(PRFPermissions.createEvent),
       ],
       [
         l10n.viewCommitteeActivities,
