@@ -23,9 +23,9 @@ dependencies:
   firebase_analytics: ^12.0.4
   firebase_auth: ^6.1.2
   firebase_core: ^4.2.1
-  firebase_crashlytics: ^5.0.4
+  firebase_crashlytics: ^5.0.5
   firebase_messaging: ^16.0.4
-  firebase_remote_config: ^6.1.1
+  firebase_remote_config: ^6.1.2
   flutter:
     sdk: flutter
   flutter_adaptive_ui: ^0.8.0+1
@@ -41,7 +41,7 @@ dependencies:
   get_it: ^9.0.5
   google_fonts: ^6.3.2
   google_sign_in: ^7.2.0 
-  google_sign_in_ios: ^6.2.3
+  google_sign_in_ios: ^6.2.4
   google_sign_in_web: ^1.1.0
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
@@ -54,7 +54,7 @@ dependencies:
   mime: ^2.0.0
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
-  phone_form_field: ^10.0.13
+  phone_form_field: ^10.0.14
   pretty_dio_logger: ^1.4.0
   timezone: ^0.10.1
   upgrader: ^12.3.0

@@ -76,12 +76,6 @@ jobs:
         id: save_aab_path
         run: echo "aab_path=build/app/outputs/bundle/productionRelease/app-production-release.aab" >> $GITHUB_OUTPUT
 
-      - name: Status
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: https://hooks.slack.com/services/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
-
   release_google_play:
     needs: build
     runs-on: ubuntu-latest
@@ -116,12 +110,6 @@ jobs:
           --aab build/app/outputs/bundle/productionRelease/app-production-release.aab \
           --track production
 
-      - name: Status
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: https://hooks.slack.com/services/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
-
   # release_app_gallery:
   #   needs: build
   #   runs-on: ubuntu-latest
@@ -145,9 +133,3 @@ jobs:
   #         file-extension: "aab"
   #         file-path: build/app/outputs/bundle/productionRelease/app-production-release.aab
   #         submit: false
-
-  #     - name: Status
-  #       if: failure()
-  #       uses: rtCamp/action-slack-notify@v2
-  #       env:
-  #         SLACK_WEBHOOK: https://hooks.slack.com/services/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
