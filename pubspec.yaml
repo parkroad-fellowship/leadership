@@ -1,6 +1,6 @@
 name: leadership
 description: A Very Good Project created by Very Good CLI.
-version: 1.14.01+11401
+version: 1.14.02+11402
 publish_to: none
 
 environment:

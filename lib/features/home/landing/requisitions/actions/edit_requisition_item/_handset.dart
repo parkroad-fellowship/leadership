@@ -334,8 +334,9 @@ class _EditRequisitionItemViewHandsetState
               _buildFormSection(
                 icon: Icons.note_outlined,
                 title: 'Narration/Justification',
+                isRequired: true,
                 child: PRFTextAreaInput(
-                  hintText: 'Enter narration (optional)',
+                  hintText: 'Enter narration',
                   controller: _narrationController,
                 ),
               ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
