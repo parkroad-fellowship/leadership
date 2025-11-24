@@ -7,7 +7,7 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
-  auto_route: ^10.2.2
+  auto_route: ^10.2.3
   awesome_notifications: ^0.10.1
   awesome_notifications_core: ^0.10.1
   bloc: ^9.1.0
