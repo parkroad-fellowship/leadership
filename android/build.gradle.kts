@@ -25,7 +25,7 @@ subprojects {
         }
     }
     plugins.withId("com.android.application") {
-        configure<com.android.build.gradle.AppExtension> {
+        configure<com.android.build.api.dsl.ApplicationExtension> {
             compileSdk = 36
         }
     }
