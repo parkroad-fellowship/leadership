@@ -24,7 +24,7 @@ class GetRequisitionItemsCubit extends Cubit<GetRequisitionItemsState> {
         filters: {
           'requisition_ulid': requisitionUlid,
         },
-        limit: 200
+        limit: 200,
       );
       if (requisitionItems.isEmpty) {
         emit(const GetRequisitionItemsState.empty());
