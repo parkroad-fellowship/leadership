@@ -12,6 +12,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     outputs:
       aab_path: ${{ steps.save_aab_path.outputs.aab_path }}
 
