@@ -51,7 +51,7 @@ class MediaServiceImpl implements MediaService {
   Future<PermissionStatus> _requestStoragePermission() async {
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      
+
       // Android 13+ (API 33+)
       if (androidInfo.version.sdkInt >= 33) {
         // Request all media permissions
@@ -60,7 +60,7 @@ class MediaServiceImpl implements MediaService {
           Permission.videos,
           Permission.audio,
         ].request();
-        
+
         // Return granted if any permission is granted
         if (statuses.values.any((status) => status.isGranted)) {
           return PermissionStatus.granted;
