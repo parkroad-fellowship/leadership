@@ -3,9 +3,26 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Force namespace on all plugins
+    subprojects {
+        afterEvaluate {
+            if (hasProperty("android")) {
+                extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
+                    if (namespace == null) {
+                        namespace = project.group.toString()
+                    }
+                }
+            }
+        }
+    }
 }
 
-val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
+val newBuildDir: Directory =
+    rootProject.layout.buildDirectory
+        .dir("../../build")
+        .get()
+
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
@@ -17,16 +34,33 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Force compileSdkVersion and targetSdkVersion for all Android library/app projects
 subprojects {
-    // Force all Android subprojects to use compileSdk 36
-    plugins.withId("com.android.library") {
-        configure<com.android.build.gradle.LibraryExtension> {
-            compileSdk = 36
+    // helper to configure Android DSL safely
+    fun configureAndroid(p: Project) {
+        if (p.plugins.hasPlugin("com.android.library") || p.plugins.hasPlugin("com.android.application")) {
+            try {
+                p.extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
+                    // Support both older and newer AGP DSLs by attempting both properties.
+                    compileSdkVersion(36)
+
+                    // also set targetSdk / targetSdkVersion where available
+                    defaultConfig.targetSdk = 36
+                }
+            } catch (e: Exception) {
+                // fail-safe: some subprojects may not expose android DSL in time — ignore
+                logger.debug("Could not force compileSdk/targetSdk for project ${p.name}: ${e.message}")
+            }
         }
     }
-    plugins.withId("com.android.application") {
-        configure<com.android.build.api.dsl.ApplicationExtension> {
-            compileSdk = 36
+
+    // Check if project is already evaluated; if so, configure immediately
+    // Otherwise, schedule for afterEvaluate
+    if (state.executed) {
+        configureAndroid(this)
+    } else {
+        afterEvaluate {
+            configureAndroid(this)
         }
     }
 }
