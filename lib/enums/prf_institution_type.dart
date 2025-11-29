@@ -12,7 +12,8 @@ enum PRFInstitutionType {
   @JsonValue(5)
   community,
   @JsonValue(6)
-  juniorSecondarySchool;
+  juniorSecondarySchool
+  ;
 
   String get label {
     switch (this) {

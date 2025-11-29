@@ -14,7 +14,8 @@ enum PRFMissionStatus {
   @JsonValue(6)
   fullySubscribed,
   @JsonValue(7)
-  postponed;
+  postponed
+  ;
 
   String get name {
     switch (this) {

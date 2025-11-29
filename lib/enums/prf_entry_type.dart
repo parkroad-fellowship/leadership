@@ -4,7 +4,8 @@ enum PRFEntryType {
   @JsonValue(1)
   credit,
   @JsonValue(2)
-  debit;
+  debit
+  ;
 
   int get apiKey {
     return switch (this) {

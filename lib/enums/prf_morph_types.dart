@@ -10,7 +10,8 @@ enum PRFMorphType {
   @JsonValue(4)
   event,
   @JsonValue(5)
-  mission;
+  mission
+  ;
 
   int get apiKey {
     switch (this) {

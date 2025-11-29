@@ -2,7 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFEvent {
   @JsonValue(1)
-  defaultEvent;
+  defaultEvent
+  ;
 
   String get name {
     switch (this) {
@@ -21,7 +22,8 @@ enum PRFEvent {
 
 enum PRFPresenceEvent {
   @JsonValue(5)
-  defaultPresenceEvent;
+  defaultPresenceEvent
+  ;
 
   String get name {
     switch (this) {

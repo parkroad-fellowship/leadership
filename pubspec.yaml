@@ -1,10 +1,11 @@
 name: leadership
 description: A Very Good Project created by Very Good CLI.
-version: 1.14.04+11404
+version: 1.14.05+11405
 publish_to: none
 
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.10.0
+  flutter: ^3.38.3
 
 dependencies:
   auto_route: ^10.2.3

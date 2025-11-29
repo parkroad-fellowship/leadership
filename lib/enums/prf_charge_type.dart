@@ -10,7 +10,8 @@ enum PRFChargeType {
   @JsonValue(4)
   mpesaATMWithdrawal,
   @JsonValue(5)
-  cash;
+  cash
+  ;
 
   String get name {
     switch (this) {

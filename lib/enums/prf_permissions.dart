@@ -4,7 +4,8 @@ enum PRFPermissions {
   createRequisition,
   createRequisitionItem,
   createPaymentInstruction,
-  deleteAllocationEntry;
+  deleteAllocationEntry
+  ;
 
   String get name {
     switch (this) {

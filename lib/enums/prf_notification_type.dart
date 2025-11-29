@@ -1,5 +1,6 @@
 enum PRFNotificationType {
-  defaultPrompt;
+  defaultPrompt
+  ;
 
   static PRFNotificationType fromType(String type) {
     switch (type) {

@@ -1,6 +1,7 @@
 enum PRFMediaModel {
   memberProfilePictures,
-  allocationEntryReceipts;
+  allocationEntryReceipts
+  ;
 
   String get collection {
     switch (this) {

@@ -16,7 +16,8 @@ enum PRFResponsibleDesk {
   @JsonValue(7)
   music,
   @JsonValue(8)
-  treasurer;
+  treasurer
+  ;
 
   int get apiKey {
     switch (this) {

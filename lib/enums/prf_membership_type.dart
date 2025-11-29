@@ -1,7 +1,8 @@
 enum PrfMembershipType {
   friend,
   yearlyMember,
-  lifetimeMember;
+  lifetimeMember
+  ;
 
   String get name {
     switch (this) {

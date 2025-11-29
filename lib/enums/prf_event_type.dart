@@ -4,7 +4,8 @@ enum PRFEventType {
   @JsonValue(1)
   member,
   @JsonValue(2)
-  leadership;
+  leadership
+  ;
 
   int get apiKey {
     switch (this) {

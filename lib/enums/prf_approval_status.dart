@@ -11,7 +11,8 @@ enum PRFApprovalStatus {
   @JsonValue(4)
   rejected,
   @JsonValue(5)
-  recalled;
+  recalled
+  ;
 
   Color color(ThemeData theme) {
     switch (this) {
