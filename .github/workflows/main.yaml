@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: production-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,6 +29,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 3
+          cache: true
 
       - name: 📦 Install Dependencies
         run: flutter packages get
@@ -33,12 +38,20 @@ jobs:
         run: dart format --set-exit-if-changed lib test
 
       - name: ⚙️ Code Generation
-        run: |
-          dart run build_runner build --delete-conflicting-outputs
-          flutter pub get
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: 🕵️ Analyse
         run: flutter analyze lib
+
+      - name: 📦 Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
       - name: ⚙️ Download Android keystore
         id: android_keystore
@@ -93,13 +106,11 @@ jobs:
       - name: ⚙️ Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.0"
+          ruby-version: "3.3"
           bundler-cache: true
 
       - name: ⚙️ Download bundle dependencies
-        run: |
-          gem install bundler:2.0.2
-          bundle install
+        run: bundle install
 
       - name: 🚀 Release to Google Play (Production)
         env:
