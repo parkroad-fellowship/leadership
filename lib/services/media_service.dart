@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,6 +44,36 @@ abstract class MediaService {
 
 class MediaServiceImpl implements MediaService {
   final _networkUtil = NetworkUtil();
+
+  /// Request storage permission based on Android version
+  /// For Android 13+: Request specific media permissions
+  /// For Android 12 and below: Request READ_EXTERNAL_STORAGE
+  Future<PermissionStatus> _requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      
+      // Android 13+ (API 33+)
+      if (androidInfo.version.sdkInt >= 33) {
+        // Request all media permissions
+        final statuses = await [
+          Permission.photos,
+          Permission.videos,
+          Permission.audio,
+        ].request();
+        
+        // Return granted if any permission is granted
+        if (statuses.values.any((status) => status.isGranted)) {
+          return PermissionStatus.granted;
+        }
+        return PermissionStatus.denied;
+      } else {
+        // Android 12 and below
+        return Permission.storage.request();
+      }
+    }
+    // For iOS, return granted (handled by Info.plist)
+    return PermissionStatus.granted;
+  }
 
   @override
   Future<PRFMedia?> uploadFile({required PRFMediaDTO imageDTO}) async {
@@ -138,6 +169,12 @@ class MediaServiceImpl implements MediaService {
     required PRFMediaModel model,
   }) async {
     try {
+      // Request appropriate storage permission based on Android version
+      final status = await _requestStoragePermission();
+      if (!status.isGranted) {
+        throw Failure(message: 'Storage permission denied');
+      }
+
       final result = await FilePicker.platform
           .pickFiles(
             allowMultiple: true,
@@ -198,6 +235,12 @@ class MediaServiceImpl implements MediaService {
     required PRFMediaModel model,
   }) async {
     try {
+      // Request appropriate storage permission based on Android version
+      final status = await _requestStoragePermission();
+      if (!status.isGranted) {
+        throw Failure(message: 'Storage permission denied');
+      }
+
       final result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
         type: FileType.custom,
