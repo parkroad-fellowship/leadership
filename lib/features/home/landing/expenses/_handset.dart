@@ -21,6 +21,7 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/shared_widgets/_index.dart';
+import 'package:leadership/shared_widgets/pdf_viewer.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -1466,15 +1467,14 @@ class _AccountingEventExpensesViewHandsetState
   }
 
   void _openPdfDocument(BuildContext context, String pdfUrl) {
-    // Open PDF in browser or PDF viewer
-    // For now, show a snackbar indicating PDF support
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening PDF document...'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+    Navigator.of(context).push(
+      MaterialPageRoute<dynamic>(
+        builder: (context) => PDFViewerPage(
+          pdfUrl: pdfUrl,
+          title: 'Receipt PDF',
+        ),
       ),
     );
-    // TODO(miller): Implement PDF viewer using a package like pdfx
   }
 
   void _showReceiptPreview(
