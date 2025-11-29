@@ -11,21 +11,24 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
-    
-    // Force all Android subprojects to use compileSdk 36
-    pluginManager.withPlugin("com.android.library") {
-        extensions.configure<com.android.build.gradle.LibraryExtension> {
-            compileSdk = 36
-        }
-    }
-    pluginManager.withPlugin("com.android.application") {
-        extensions.configure<com.android.build.gradle.AppExtension> {
-            compileSdk = 36
-        }
-    }
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
+}
+
+subprojects {
+    // Force all Android subprojects to use compileSdk 36
+    plugins.withId("com.android.library") {
+        configure<com.android.build.gradle.LibraryExtension> {
+            compileSdk = 36
+        }
+    }
+    plugins.withId("com.android.application") {
+        configure<com.android.build.gradle.AppExtension> {
+            compileSdk = 36
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {
