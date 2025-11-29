@@ -54,18 +54,11 @@ class MediaServiceImpl implements MediaService {
 
       // Android 13+ (API 33+)
       if (androidInfo.version.sdkInt >= 33) {
-        // Request all media permissions
-        final statuses = await [
-          Permission.photos,
-          Permission.videos,
-          Permission.audio,
-        ].request();
-
-        // Return granted if any permission is granted
-        if (statuses.values.any((status) => status.isGranted)) {
-          return PermissionStatus.granted;
-        }
-        return PermissionStatus.denied;
+        // For Android 13+, request only images access when needed.
+        // PDFs are accessed via SAF (ACTION_OPEN_DOCUMENT) and generally
+        // do not require storage permission.
+        final status = await Permission.photos.request();
+        return status;
       } else {
         // Android 12 and below
         return Permission.storage.request();
@@ -235,10 +228,16 @@ class MediaServiceImpl implements MediaService {
     required PRFMediaModel model,
   }) async {
     try {
-      // Request appropriate storage permission based on Android version
-      final status = await _requestStoragePermission();
-      if (!status.isGranted) {
-        throw Failure(message: 'Storage permission denied');
+      // On Android 13+ (API 33+), SAF does not require storage permission.
+      // On Android 12 and below, request storage permission.
+      if (Platform.isAndroid) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        if (androidInfo.version.sdkInt <= 32) {
+          final status = await _requestStoragePermission();
+          if (!status.isGranted) {
+            throw Failure(message: 'Storage permission denied');
+          }
+        }
       }
 
       final result = await FilePicker.platform.pickFiles(
