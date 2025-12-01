@@ -71,6 +71,14 @@ jobs:
       - name: ⚙️ Build AAB
         run: flutter build appbundle --flavor production --target lib/main_production.dart --obfuscate --split-debug-info=debug-symbols
 
+      - name: 📦 Upload debug symbols artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: debug-symbols
+          path: debug-symbols/
+          retention-days: 1
+        continue-on-error: true
+
       - name: 📦 Upload AAB artifact
         uses: actions/upload-artifact@v5
         with:
