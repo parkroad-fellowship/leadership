@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/enums/prf_membership_type.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
@@ -15,7 +16,6 @@ import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 class AccountPageHandset extends StatelessWidget {
   const AccountPageHandset({super.key});
@@ -674,7 +674,7 @@ class ChangeProfilePictureButton extends StatelessWidget {
                   context: context,
                   modelUlid: member.ulid,
                   model: PRFMediaModel.memberProfilePictures,
-                  mediaType: RequestType.image,
+                  mediaType: MediaType.image,
                 ),
             child: Container(
               padding: const EdgeInsets.all(8),

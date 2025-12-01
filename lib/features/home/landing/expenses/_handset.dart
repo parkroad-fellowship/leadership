@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/enums/prf_media_model.dart';
@@ -23,7 +24,6 @@ import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/shared_widgets/pdf_viewer.dart';
 import 'package:leadership/utils/misc.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class AccountingEventExpensesViewHandset extends StatefulWidget {
@@ -1322,12 +1322,14 @@ class _AccountingEventExpensesViewHandsetState
                       child: InkWell(
                         onTap: () async {
                           try {
-                            await context.read<SelectMediaCubit>().selectMedia(
-                              context: context,
-                              modelUlid: entry.ulid,
-                              model: PRFMediaModel.allocationEntryReceipts,
-                              mediaType: RequestType.image,
-                            );
+                            await context
+                                .read<SelectMediaCubit>()
+                                .selectMediaWithSource(
+                                  context: context,
+                                  modelUlid: entry.ulid,
+                                  model: PRFMediaModel.allocationEntryReceipts,
+                                  mediaType: MediaType.image,
+                                );
 
                             // Get the selected media from the cubit state
                             // ignore: use_build_context_synchronously
@@ -1493,6 +1495,7 @@ class _AccountingEventExpensesViewHandsetState
   }
 
   void _showAddExpenseModal(BuildContext context) {
+    context.read<SelectMediaCubit>().clearMedia();
     WoltModalSheet.show<void>(
       context: context,
       pageListBuilder: (context) => [
