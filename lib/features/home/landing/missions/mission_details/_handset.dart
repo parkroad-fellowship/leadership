@@ -152,7 +152,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         builder: (context, state) {
           return state.maybeWhen(
             loaded: (mission) => switch (_currentTab) {
-              2 => FloatingActionButton.extended(
+              1 => FloatingActionButton.extended(
                 icon: const Icon(Icons.add),
                 onPressed: () {
                   if (mission.accountingEvent != null) {
@@ -174,7 +174,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                     );
                   }
                 },
-                label: Text(l10n.create),
+                label: Text(l10n.createRequisition),
               ),
               _ => const SizedBox.shrink(),
             },
