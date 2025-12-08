@@ -69,10 +69,10 @@ packages:
     dependency: "direct dev"
     description:
       name: auto_route_generator
-      sha256: dd823698100c8d6c2658847ca866ceac895d58d302edebe7bd62387c1712d6ce
+      sha256: a84dcd972e3e38c8925cca2669faa8112a79db9b5d726e0fb8d4ea15ced095fb
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.0"
+    version: "10.3.1"
   awesome_notifications:
     dependency: "direct main"
     description:
@@ -1828,4 +1828,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.10.0 <4.0.0"
-  flutter: ">=3.38.3 <4.0.0"
+  flutter: ">=3.38.3"
