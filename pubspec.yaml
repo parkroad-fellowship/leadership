@@ -8,7 +8,7 @@ environment:
   flutter: ^3.38.3
 
 dependencies:
-  auto_route: ^10.2.3
+  auto_route: ^11.0.0
   awesome_notifications: ^0.10.1
   awesome_notifications_core: ^0.10.1
   bloc: ^9.1.0
