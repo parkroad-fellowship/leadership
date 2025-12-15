@@ -72,7 +72,7 @@ jobs:
         run: flutter build appbundle --flavor production --target lib/main_production.dart --obfuscate --split-debug-info=debug-symbols
 
       - name: 📦 Upload debug symbols artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: debug-symbols
           path: debug-symbols/
@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
 
       - name: 📦 Upload AAB artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: app-production-release
           path: build/app/outputs/bundle/productionRelease/app-production-release.aab
