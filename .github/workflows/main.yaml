@@ -100,7 +100,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: ⬇️ Download debug symbols artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: debug-symbols
           path: debug-symbols/
@@ -183,7 +183,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: ⬇️ Download AAB artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: app-production-release
           path: build/app/outputs/bundle/productionRelease/
