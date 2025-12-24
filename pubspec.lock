@@ -61,10 +61,10 @@ packages:
     dependency: "direct main"
     description:
       name: auto_route
-      sha256: e2861f76fc710c12b2909f9a03e338e92926b221a5170312db97965ace252d07
+      sha256: e9acfeb3df33d188fce4ad0239ef4238f333b7aa4d95ec52af3c2b9360dcd969
       url: "https://pub.dev"
     source: hosted
-    version: "11.0.0"
+    version: "11.1.0"
   auto_route_generator:
     dependency: "direct dev"
     description:
@@ -397,10 +397,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "7872545770c277236fd32b022767576c562ba28366204ff1a5628853cf8f2200"
+      sha256: d974b6ba2606371ac71dd94254beefb6fa81185bde0b59bdc1df09885da85fde
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.7"
+    version: "10.3.8"
   file_selector_linux:
     dependency: transitive
     description:
@@ -801,10 +801,10 @@ packages:
     dependency: "direct main"
     description:
       name: hive_ce
-      sha256: "81d39a03c4c0ba5938260a8c3547d2e71af59defecea21793d57fc3551f0d230"
+      sha256: "412c638aeac0f003bba664884e3048b9547e541aaca13f10cc639da788184bed"
       url: "https://pub.dev"
     source: hosted
-    version: "2.15.1"
+    version: "2.16.0"
   hive_ce_flutter:
     dependency: "direct main"
     description:
@@ -1265,10 +1265,10 @@ packages:
     dependency: "direct main"
     description:
       name: phone_form_field
-      sha256: c4adcf1f5f1927ac190524522cd97fb166f01fdcff9eec0eac2b452e66f96ca2
+      sha256: cfa05f6fe91bf3ce1dc32746799581e4de35e8b2036efef283f9bc9fd88ffb57
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.15"
+    version: "10.0.16"
   phone_numbers_parser:
     dependency: transitive
     description:
