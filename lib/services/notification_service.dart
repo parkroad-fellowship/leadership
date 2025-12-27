@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:leadership/enums/prf_notification_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:logger/logger.dart';
@@ -157,27 +158,19 @@ class NotificationServiceImpl implements NotificationService {
           title: Text(l10n.getNotified),
           content: Text(l10n.allowNotifications),
           actions: [
-            TextButton(
+            PRFSecondaryButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                l10n.deny,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
+              title: l10n.deny,
+              disabled: false,
             ),
-            TextButton(
+            const SizedBox(height: 16),
+            PRFPrimaryButton(
               onPressed: () {
                 userAuthorized = true;
                 Navigator.of(context).pop();
               },
-              child: Text(
-                l10n.allow,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              title: l10n.allow,
+              disabled: false,
             ),
           ],
         );

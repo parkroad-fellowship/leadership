@@ -4,7 +4,9 @@ import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:leadership/enums/prf_supported_platform.dart';
 import 'package:leadership/models/remote/failure.dart';
+import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
 
@@ -123,19 +125,37 @@ class FirebaseMessagingServiceImpl implements FirebaseMessagingService {
       final platform = await Misc.getCurrentPlatform();
       Logger().i('Platform: $platform');
 
-      if (platform == 'ios') {
-        final settings = await _firebaseMessaging.requestPermission();
-        Logger().i(
-          'Notification permission status: ${settings.authorizationStatus}',
-        );
-        final authorized =
-            settings.authorizationStatus == AuthorizationStatus.authorized ||
-            settings.authorizationStatus == AuthorizationStatus.provisional;
-        if (!authorized) {
-          throw Exception('Notification permissions not granted');
-        }
+      final hive = getIt<HiveService>().settings;
+      final notificationsEnabled = hive.areNotificationsEnabled();
+      final hasBeenRequested = hive.hasPermissionBeenRequested();
 
-        // Retry APNS token up to 3 times with delay
+      if (!notificationsEnabled || !hasBeenRequested) {
+        Logger().i(
+          'Notifications not enabled/requested; skipping iOS permission prompt',
+        );
+        return '';
+      }
+
+      final currentSettings = await _firebaseMessaging
+          .getNotificationSettings();
+      final authorized =
+          currentSettings.authorizationStatus ==
+              AuthorizationStatus.authorized ||
+          currentSettings.authorizationStatus ==
+              AuthorizationStatus.provisional;
+      Logger().i(
+        'Notification permission status:'
+        ' ${currentSettings.authorizationStatus}',
+      );
+
+      if (!authorized) {
+        Logger().w(
+          'Notification permissions not granted; returning empty token',
+        );
+        return '';
+      }
+
+      if (platform == PRFSupportedPlatform.ios) {
         String? apnsToken;
         for (var i = 0; i < 3; i++) {
           apnsToken = await _firebaseMessaging.getAPNSToken();

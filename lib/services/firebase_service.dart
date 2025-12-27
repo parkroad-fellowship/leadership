@@ -87,7 +87,7 @@ class FirebaseServiceImpl implements FirebaseService {
       (config) =>
           config.isInReview &&
           config.appVersion == currentVersion &&
-          (config.appStore == currentPlatform),
+          (config.appStore == currentPlatform.name),
     );
   }
 }

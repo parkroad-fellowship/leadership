@@ -7,6 +7,7 @@ import 'package:flutter/material.dart'
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_permissions.dart';
+import 'package:leadership/enums/prf_supported_platform.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/slugify.dart' as slugify;
@@ -468,14 +469,16 @@ class Misc {
     }
   }
 
-  static Future<String> getCurrentPlatform() async {
+  static Future<PRFSupportedPlatform> getCurrentPlatform() async {
     if (Platform.isIOS) {
-      return 'ios';
+      return PRFSupportedPlatform.ios;
     } else if (Platform.isAndroid) {
       // Check if this is a Huawei device without Google Play Services
-      return await _isHuaweiDevice() ? 'huawei' : 'android';
+      return await _isHuaweiDevice()
+          ? PRFSupportedPlatform.huawei
+          : PRFSupportedPlatform.android;
     }
-    return 'unknown';
+    return PRFSupportedPlatform.unknown;
   }
 
   static Future<bool> _isHuaweiDevice() async {
