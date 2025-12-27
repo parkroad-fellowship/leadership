@@ -31,6 +31,7 @@ import 'package:leadership/features/home/landing/requisition_approvals/cubit/get
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/approve_requisition_cubit.dart';
+import 'package:leadership/features/home/landing/requisitions/cubit/delete_requisition_item_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/get_requisition_item_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/recall_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/requisitions/cubit/reject_requisition_cubit.dart';
@@ -175,6 +176,11 @@ class Singletons {
       ),
       BlocProvider<UpdateRequisitionItemCubit>(
         create: (context) => UpdateRequisitionItemCubit(
+          requisitionItemService: getIt<RequisitionItemService>(),
+        ),
+      ),
+      BlocProvider<DeleteRequisitionItemCubit>(
+        create: (context) => DeleteRequisitionItemCubit(
           requisitionItemService: getIt<RequisitionItemService>(),
         ),
       ),
