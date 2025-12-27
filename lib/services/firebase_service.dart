@@ -26,36 +26,24 @@ class FirebaseServiceImpl implements FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  bool _isGoogleSignInInitialized = false;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['profile', 'email']);
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   @override
   Future<SocialAuthDTO> signInWithGoogle() async {
     try {
-      await _ensureGoogleSignInInitialized();
-
-      final googleSignInAccount = await _googleSignIn.authenticate(
-        scopeHint: ['email', 'profile'],
-      );
-
       // Clear any existing session
       await _auth.signOut();
       await _googleSignIn.signOut();
 
-      final googleSignInAuthentication = googleSignInAccount.authentication;
-
-      // Get authorization for Firebase scopes if needed
-      final authClient = _googleSignIn.authorizationClient;
-      final authorization = await authClient.authorizeScopes([
-        'email',
-        'profile',
-      ]);
+      final googleSignInAccount = await _googleSignIn.signIn();
+      final googleSignInAuthentication =
+          await googleSignInAccount?.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleSignInAuthentication.idToken,
-        accessToken: authorization.accessToken,
+        idToken: googleSignInAuthentication?.idToken,
+        accessToken: googleSignInAuthentication?.accessToken,
       );
 
       final authResult = await _auth.signInWithCredential(credential);
@@ -68,7 +56,7 @@ class FirebaseServiceImpl implements FirebaseService {
         return Future.value(
           SocialAuthDTO(
             provider: 'google',
-            accessToken: authorization.accessToken,
+            accessToken: googleSignInAuthentication?.accessToken ?? '',
           ),
         );
       } else {
@@ -197,21 +185,6 @@ class FirebaseServiceImpl implements FirebaseService {
     } catch (error) {
       Logger().e('Error retrieving FCM token: $error');
       throw Failure(message: error.toString());
-    }
-  }
-
-  Future<void> _ensureGoogleSignInInitialized() async {
-    if (!_isGoogleSignInInitialized) {
-      await _initializeGoogleSignIn();
-    }
-  }
-
-  Future<void> _initializeGoogleSignIn() async {
-    try {
-      await _googleSignIn.initialize();
-      _isGoogleSignInInitialized = true;
-    } catch (e) {
-      Logger().e('Failed to initialize Google Sign-In:', error: e);
     }
   }
 }

@@ -5,7 +5,7 @@ publish_to: none
 
 environment:
   sdk: ^3.10.0
-  flutter: ^3.38.3
+  flutter: ^3.38.5
 
 dependencies:
   auto_route: ^11.1.0
@@ -40,9 +40,9 @@ dependencies:
   gaimon: ^1.4.1
   get_it: ^9.2.0
   google_fonts: ^6.3.3
-  google_sign_in: ^7.2.0
-  google_sign_in_ios: ^6.2.4
-  google_sign_in_web: ^1.1.0
+  google_sign_in: ^6.3.0
+  google_sign_in_ios: ^5.9.0
+  google_sign_in_web: ^0.12.4+4
   hive_ce: ^2.16.0
   hive_ce_flutter: ^2.3.3
   http: ^1.6.0

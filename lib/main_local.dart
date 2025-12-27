@@ -11,9 +11,9 @@ Future<void> main() async {
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
       hiveBox: 'prf-leadership-${Misc.getSluggedAppVersion()}',
-      baseDomain: 'api.parkroadfellowship.org',
+      baseDomain: 'mn4ojdrc1w.sharedwithexpose.com',
       urlScheme: 'https',
-      socketDomain: 'ws.parkroadfellowship.org',
+      socketDomain: 'mn4ojdrc1w.sharedwithexpose.com',
       socketKey: 'yvnlkaqadqiadutrs9sa',
       socketScheme: 'wss',
       socketPort: 443,
