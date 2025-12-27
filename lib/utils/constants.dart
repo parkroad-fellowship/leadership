@@ -1,5 +1,8 @@
+import 'package:leadership/enums/prf_environment.dart';
+
 class PRFLeadershipValues {
   PRFLeadershipValues({
+    required this.environment,
     required this.urlScheme,
     required this.baseDomain,
     required this.hiveBox,
@@ -10,6 +13,7 @@ class PRFLeadershipValues {
     required this.azureConnString,
   });
 
+  final PRFEnvironment environment;
   final String urlScheme;
   final String baseDomain;
   final String hiveBox;

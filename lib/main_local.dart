@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/app/app.dart';
 import 'package:leadership/bootstrap.dart';
+import 'package:leadership/enums/prf_environment.dart';
 import 'package:leadership/utils/_index.dart';
 
 Future<void> main() async {
@@ -10,10 +11,11 @@ Future<void> main() async {
 
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
+      environment: PRFEnvironment.local,
       hiveBox: 'prf-leadership-${Misc.getSluggedAppVersion()}',
-      baseDomain: 'api.parkroadfellowship.org',
+      baseDomain: 'dev.api.parkroadfellowship.org',
       urlScheme: 'https',
-      socketDomain: 'ws.parkroadfellowship.org',
+      socketDomain: 'dev.ws.parkroadfellowship.org',
       socketKey: 'yvnlkaqadqiadutrs9sa',
       socketScheme: 'wss',
       socketPort: 443,

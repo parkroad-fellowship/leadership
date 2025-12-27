@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:leadership/enums/prf_notification_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/router/router.gr.dart';
 import 'package:logger/logger.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -15,34 +17,41 @@ abstract class NotificationService {
   void createNotification({required NotificationContent content});
 
   Future<void> scheduleGivingNotification();
+
   @pragma('vm:entry-point')
   static Future<void> onNotificationCreatedMethod(
     ReceivedNotification receivedNotification,
   ) async {
-    // Logger().d(receivedNotification);
+    // Just log - notification is already created, don't create another one
+    Logger().d('Notification created: ${receivedNotification.title}');
   }
 
   @pragma('vm:entry-point')
   static Future<void> onNotificationDisplayedMethod(
     ReceivedNotification receivedNotification,
   ) async {
-    // Logger().d(receivedNotification);
+    // Just log - notification is already displayed, don't create another one
+    Logger().d('Notification displayed: ${receivedNotification.title}');
   }
 
   @pragma('vm:entry-point')
   static Future<void> onDismissActionReceivedMethod(
     ReceivedAction receivedAction,
   ) async {
-    // Logger().d(receivedAction);
+    // User dismissed the notification - just log, don't navigate
+    Logger().d('Notification dismissed: ${receivedAction.title}');
   }
 
   @pragma('vm:entry-point')
   static Future<void> onActionReceivedMethod(
     ReceivedAction receivedAction,
   ) async {
-    Logger().f(receivedAction);
+    // User tapped the notification - handle the action
+    Logger().f('Notification tapped: ${receivedAction.title}');
+    await _act(receivedAction.payload);
+  }
 
-    final payload = receivedAction.payload;
+  static Future<void> _act(Map<String, String?>? payload) async {
     final context = getIt<PRFLeadershipRouter>().navigatorKey.currentContext;
 
     if (payload == null) {
@@ -59,12 +68,31 @@ abstract class NotificationService {
       return;
     }
 
-    if (payload != null) {
-      switch (PRFNotificationType.fromType(payload['type']!)) {
-        case PRFNotificationType.defaultPrompt:
-          Logger().i('Default prompt received');
-          return;
-      }
+    if (payload != null) {}
+
+    switch (PRFNotificationType.fromType(payload!['type']!)) {
+      case PRFNotificationType.defaultPrompt:
+        Logger().i('Default prompt received');
+        await getIt<PRFLeadershipRouter>().pushAll([]);
+        return;
+      case PRFNotificationType.newRequisition:
+      case PRFNotificationType.requisitionApproved:
+      case PRFNotificationType.requisitionRecalled:
+      case PRFNotificationType.requisitionRejected:
+      case PRFNotificationType.requisitionReviewRequested:
+        Logger().i('New requisition notification received');
+        final requisitionUlid = payload['requisition_ulid'];
+        if (requisitionUlid != null) {
+          await getIt<PRFLeadershipRouter>().replaceAll([
+            const LandingRoute(),
+            RequisitionRoute(
+              requisitionUlid: requisitionUlid,
+            ),
+          ]);
+        } else {
+          Logger().w('No requisition_ulid in notification payload');
+        }
+        return;
     }
   }
 }
@@ -75,23 +103,15 @@ class NotificationServiceImpl implements NotificationService {
     final notificationsEnabled = getIt<HiveService>().settings
         .areNotificationsEnabled();
     if (!notificationsEnabled) return;
+
+    // Initialize AwesomeNotifications
     await AwesomeNotifications().initialize(
       null,
       [
         NotificationChannel(
-          channelKey: 'basic_channel',
-          channelName: 'Basic notifications',
-          channelDescription: 'Notification channel for basic tests',
-        ),
-        NotificationChannel(
-          channelKey: 'prayer_prompts',
-          channelName: 'Prayer Prompts',
-          channelDescription: 'Notify members to pray',
-        ),
-        NotificationChannel(
-          channelKey: 'giving_prompts',
-          channelName: 'Giving Prompts',
-          channelDescription: 'Notify members to give towards the fellowship',
+          channelKey: 'requisitions',
+          channelName: 'Requisitions',
+          channelDescription: 'Notify about new requisitions',
         ),
       ],
       // Channel groups are only visual and are not required
@@ -113,6 +133,8 @@ class NotificationServiceImpl implements NotificationService {
       onDismissActionReceivedMethod:
           NotificationService.onDismissActionReceivedMethod,
     );
+
+    Logger().i('AwesomeNotifications initialized');
   }
 
   @override
@@ -136,27 +158,19 @@ class NotificationServiceImpl implements NotificationService {
           title: Text(l10n.getNotified),
           content: Text(l10n.allowNotifications),
           actions: [
-            TextButton(
+            PRFSecondaryButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                l10n.deny,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
+              title: l10n.deny,
+              disabled: false,
             ),
-            TextButton(
+            const SizedBox(height: 16),
+            PRFPrimaryButton(
               onPressed: () {
                 userAuthorized = true;
                 Navigator.of(context).pop();
               },
-              child: Text(
-                l10n.allow,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              title: l10n.allow,
+              disabled: false,
             ),
           ],
         );

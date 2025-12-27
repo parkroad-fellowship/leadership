@@ -35,8 +35,7 @@ class _LandingPageState extends State<LandingPage> {
     try {
       await getIt<NotificationService>().requestPermissions();
       await getIt<NotificationService>().init();
-
-      await getIt<NotificationService>().scheduleGivingNotification();
+      await getIt<FirebaseMessagingService>().init();
     } catch (e) {
       Logger().e('NotificationService init error: $e');
     }

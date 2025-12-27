@@ -15,6 +15,7 @@ import 'package:leadership/features/home/landing/requisitions/actions/edit_requi
 import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition_item/edit_requisition_item.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/recall_requisition/recall_requisition.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
+import 'package:leadership/features/home/landing/requisitions/cubit/delete_requisition_item_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
@@ -369,145 +370,489 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
   ) {
     final l10n = context.l10n;
     final isEditable = requisition?.approvalStatus == PRFApprovalStatus.pending;
+    final isDeletable =
+        isEditable && Misc.userCan(PRFPermissions.deleteRequisitionItem);
 
-    return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.2),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.shadow.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+    return BlocListener<DeleteRequisitionItemCubit, DeleteRequisitionItemState>(
+          listener: (context, state) {
+            state.maybeWhen(
+              loaded: () {
+                // Refresh the lists after deletion
+                context.read<GetRequisitionCubit>().getRequisition(
+                  requisitionUlid: widget.requisitionUlid,
+                );
+                context.read<GetRequisitionItemsCubit>().getRequisitionItems(
+                  requisitionUlid: widget.requisitionUlid,
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Item deleted successfully'),
+                    backgroundColor: Colors.green,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              error: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: theme.colorScheme.error,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              },
+              orElse: () {},
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.colorScheme.primary.withValues(alpha: 0.12),
+                    theme.colorScheme.primary.withValues(alpha: 0.04),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: InkWell(
-            onTap: () => isEditable
-                ? _showEditRequisitionItemModal(context, item)
-                : _showItemDetails(context, item),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.1,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
+              child: Container(
+                margin: const EdgeInsets.all(1.2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Main content
+                    InkWell(
+                      onTap: isEditable
+                          ? () => _showEditRequisitionItemModal(context, item)
+                          : () => _showItemDetails(context, item),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          16,
+                          18,
+                          isDeletable ? 56 : 16,
+                          18,
                         ),
-                        child: Icon(
-                          Icons.inventory_2_outlined,
-                          size: 20,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              item.itemName,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                            // Header with icon, name, category, and price
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Icon badge
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.12,
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 22,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Name and category
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.itemName,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 0.1,
+                                            ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          if (item.expenseCategory != null)
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: theme
+                                                    .colorScheme
+                                                    .secondary
+                                                    .withValues(alpha: 0.12),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                item.expenseCategory!.name,
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .secondary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                              ),
+                                            ),
+                                          if (item.expenseCategory != null)
+                                            const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: theme
+                                                  .colorScheme
+                                                  .surfaceContainerHighest
+                                                  .withValues(alpha: 0.6),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.event_note,
+                                                  size: 14,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  DateFormat.MMMd().format(
+                                                    item.createdAt,
+                                                  ),
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelSmall
+                                                      ?.copyWith(
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onSurfaceVariant,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                // Total price
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        NumberFormat.currency(
+                                          symbol: 'KES ',
+                                          decimalDigits: 0,
+                                        ).format(item.totalPrice),
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: theme.colorScheme.primary,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Total',
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            if (item.expenseCategory != null)
-                              Text(
-                                item.expenseCategory!.name,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
+
+                            // Narration if available
+                            if (item.narration != null) ...[
+                              const SizedBox(height: 14),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: theme
+                                      .colorScheme
+                                      .surfaceContainerHighest
+                                      .withValues(alpha: 0.35),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: theme.colorScheme.outline.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.notes,
+                                      size: 16,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        item.narration!,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                            ],
+
+                            // Details chips
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                _buildDetailChip(
+                                  context,
+                                  '${item.quantity}',
+                                  Icons.numbers,
+                                  'Qty',
+                                ),
+                                const SizedBox(width: 10),
+                                _buildDetailChip(
+                                  context,
+                                  NumberFormat.currency(
+                                    symbol: 'KES ',
+                                    decimalDigits: 0,
+                                  ).format(item.unitPrice),
+                                  Icons.attach_money,
+                                  'Unit',
+                                ),
+                                const SizedBox(width: 10),
+                                _buildDetailChip(
+                                  context,
+                                  DateFormat.yMMMd().format(item.createdAt),
+                                  Icons.calendar_today,
+                                  'Date',
+                                ),
+                              ],
+                            ),
+
+                            if (isEditable) ...[
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.edit_note,
+                                    size: 16,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Tap to edit item',
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: theme.colorScheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                      Text(
-                        NumberFormat.currency(
-                          symbol: 'KES ',
-                          decimalDigits: 0,
-                        ).format(item.totalPrice),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (item.narration != null)
-                    Text(
-                      item.narration!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
                     ),
-                  if (item.narration != null) const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _buildDetailChip(
-                        context,
-                        l10n.qtyLabel(item.quantity.toString()),
-                        Icons.numbers,
+
+                    // Delete button (floating action on the card)
+                    if (isDeletable)
+                      Positioned(
+                        right: 10,
+                        top: 10,
+                        child:
+                            BlocBuilder<
+                              DeleteRequisitionItemCubit,
+                              DeleteRequisitionItemState
+                            >(
+                              builder: (context, state) {
+                                final isLoading = state.maybeWhen(
+                                  orElse: () => false,
+                                  loading: (loadingIndex) =>
+                                      loadingIndex == index,
+                                );
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: Tooltip(
+                                    message: 'Delete Item',
+                                    child: InkWell(
+                                      onTap: isLoading
+                                          ? null
+                                          : () => _showDeleteConfirmationDialog(
+                                              context,
+                                              item,
+                                              theme,
+                                              l10n,
+                                              index,
+                                            ),
+                                      borderRadius: BorderRadius.circular(22),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.error
+                                              .withValues(
+                                                alpha: 0.12,
+                                              ),
+                                          borderRadius: BorderRadius.circular(
+                                            22,
+                                          ),
+                                          border: Border.all(
+                                            color: theme.colorScheme.error
+                                                .withValues(
+                                                  alpha: 0.3,
+                                                ),
+                                          ),
+                                        ),
+                                        child: isLoading
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                    // ignore: lines_longer_than_80_chars
+                                                    PRFCircularProgressIndicator(),
+                                              )
+                                            : Icon(
+                                                Icons.delete_outline,
+                                                size: 18,
+                                                color: theme.colorScheme.error,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                       ),
-                      const SizedBox(width: 8),
-                      _buildDetailChip(
-                        context,
-                        l10n.unitLabel(
-                          NumberFormat.currency(
-                            symbol: 'KES ',
-                            decimalDigits: 0,
-                          ).format(item.unitPrice),
-                        ),
-                        Icons.attach_money,
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         )
         .animate(delay: Duration(milliseconds: index * 100))
-        .slideY(begin: 0.3)
-        .fadeIn(duration: 400.ms);
+        .slideY(begin: 0.25)
+        .fadeIn(duration: 380.ms);
   }
 
-  Widget _buildDetailChip(BuildContext context, String text, IconData icon) {
+  Widget _buildDetailChip(
+    BuildContext context,
+    String value,
+    IconData icon,
+    String label,
+  ) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: theme.colorScheme.onSurfaceVariant,
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.35,
           ),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 14,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -597,6 +942,178 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
           ),
         ];
       },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(
+    BuildContext context,
+    PRFRequisitionItem item,
+    ThemeData theme,
+    AppLocalizations l10n,
+    int index,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: theme.colorScheme.error,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Delete Item',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to delete this item?',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.itemName,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${NumberFormat.currency(
+                        symbol: 'KES ',
+                        decimalDigits: 0,
+                      ).format(item.totalPrice)} • Qty: ${item.quantity}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'This action cannot be undone.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+            BlocConsumer<
+              DeleteRequisitionItemCubit,
+              DeleteRequisitionItemState
+            >(
+              listener: (listenerContext, state) {
+                state.maybeWhen(
+                  loaded: () {
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                  },
+                  error: (message) {
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                  },
+                  orElse: () {},
+                );
+              },
+              builder: (consumerContext, state) {
+                return state.maybeWhen(
+                  loading: (_) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                  orElse: () =>
+                      _buildDeleteActionButton(context, theme, item, index),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDeleteActionButton(
+    BuildContext context,
+    ThemeData theme,
+    PRFRequisitionItem item,
+    int index,
+  ) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        context.read<DeleteRequisitionItemCubit>().deleteRequisitionItem(
+          requisitionItemUlid: item.ulid,
+          index: index,
+        );
+      },
+      icon: const Icon(Icons.delete_outline, size: 18),
+      label: const Text('Delete'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: theme.colorScheme.error,
+        foregroundColor: theme.colorScheme.onError,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
     );
   }
 
