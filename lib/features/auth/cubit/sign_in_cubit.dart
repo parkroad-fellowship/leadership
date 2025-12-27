@@ -4,7 +4,6 @@ import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/socket_config.dart';
 import 'package:leadership/services/_index.dart';
-import 'package:leadership/services/firebase_service.dart';
 import 'package:logger/logger.dart';
 
 part 'sign_in_state.dart';
@@ -15,17 +14,17 @@ class SigninCubit extends Cubit<SignInState> {
     required AuthService authService,
     required HiveService hiveService,
     required SocketService socketService,
-    required FirebaseService firebaseService,
+    required FirebaseMessagingService firebaseMessagingService,
   }) : super(const SignInState.initial()) {
     _authService = authService;
     _hiveService = hiveService;
     _socketService = socketService;
-    _firebaseService = firebaseService;
+    _firebaseMessagingService = firebaseMessagingService;
   }
   late HiveService _hiveService;
   late AuthService _authService;
   late SocketService _socketService;
-  late FirebaseService _firebaseService;
+  late FirebaseMessagingService _firebaseMessagingService;
 
   Future<void> signIn({required String email, required String password}) async {
     emit(const SignInState.loading());
@@ -55,7 +54,7 @@ class SigninCubit extends Cubit<SignInState> {
       emit(const SignInState.error('An unknown error occurred'));
     }
 
-    final fcmToken = await _firebaseService.retrieveFCMToken();
+    final fcmToken = await _firebaseMessagingService.retrieveFCMToken();
     if (fcmToken.isNotEmpty) {
       await _authService.updateProfile(
         updateDTO: UserUpdateDTO(

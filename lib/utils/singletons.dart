@@ -61,6 +61,9 @@ class Singletons {
       ..registerSingleton<PRFLeadershipRouter>(PRFLeadershipRouter())
       ..registerSingleton<HiveService>(HiveService())
       ..registerSingleton<FirebaseService>(FirebaseServiceImpl())
+      ..registerSingleton<FirebaseMessagingService>(
+        FirebaseMessagingServiceImpl(),
+      )
       ..registerSingleton<AuthService>(AuthService())
       ..registerSingleton<ExpenseCategoriesService>(ExpenseCategoriesService())
       ..registerSingleton<EventService>(EventService())
@@ -91,7 +94,7 @@ class Singletons {
           authService: getIt<AuthService>(),
           hiveService: getIt<HiveService>(),
           socketService: getIt<SocketService>(),
-          firebaseService: getIt<FirebaseService>(),
+          firebaseMessagingService: getIt<FirebaseMessagingService>(),
         ),
       ),
       BlocProvider<SocialLoginCubit>(

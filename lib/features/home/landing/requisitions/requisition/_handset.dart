@@ -460,8 +460,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.12),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.12,
+                                    ),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Icon(
@@ -474,7 +475,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                 // Name and category
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.itemName,
@@ -491,21 +493,31 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                         children: [
                                           if (item.expenseCategory != null)
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                                vertical: 4,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: theme.colorScheme.secondary
+                                                color: theme
+                                                    .colorScheme
+                                                    .secondary
                                                     .withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(10),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                               child: Text(
                                                 item.expenseCategory!.name,
-                                                style: theme.textTheme.labelSmall?.copyWith(
-                                                  color: theme.colorScheme.secondary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .secondary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
                                               ),
                                             ),
                                           if (item.expenseCategory != null)
@@ -516,9 +528,12 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                               vertical: 4,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: theme.colorScheme.surfaceVariant
+                                              color: theme
+                                                  .colorScheme
+                                                  .surfaceContainerHighest
                                                   .withValues(alpha: 0.6),
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
@@ -526,15 +541,25 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                                 Icon(
                                                   Icons.event_note,
                                                   size: 14,
-                                                  color: theme.colorScheme.onSurfaceVariant,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
                                                 ),
                                                 const SizedBox(width: 4),
                                                 Text(
-                                                  DateFormat.MMMd().format(item.createdAt),
-                                                  style: theme.textTheme.labelSmall?.copyWith(
-                                                    color: theme.colorScheme.onSurfaceVariant,
-                                                    fontWeight: FontWeight.w600,
+                                                  DateFormat.MMMd().format(
+                                                    item.createdAt,
                                                   ),
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelSmall
+                                                      ?.copyWith(
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onSurfaceVariant,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                 ),
                                               ],
                                             ),
@@ -564,18 +589,22 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                           symbol: 'KES ',
                                           decimalDigits: 0,
                                         ).format(item.totalPrice),
-                                        style: theme.textTheme.labelLarge?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: theme.colorScheme.primary,
-                                        ),
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: theme.colorScheme.primary,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       'Total',
-                                      style: theme.textTheme.labelSmall?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                      ),
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -589,12 +618,15 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.surfaceVariant
+                                  color: theme
+                                      .colorScheme
+                                      .surfaceContainerHighest
                                       .withValues(alpha: 0.35),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: theme.colorScheme.outline
-                                        .withValues(alpha: 0.15),
+                                    color: theme.colorScheme.outline.withValues(
+                                      alpha: 0.15,
+                                    ),
                                   ),
                                 ),
                                 child: Row(
@@ -609,10 +641,13 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                     Expanded(
                                       child: Text(
                                         item.narration!,
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: theme.colorScheme.onSurfaceVariant,
-                                          fontStyle: FontStyle.italic,
-                                        ),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                              fontStyle: FontStyle.italic,
+                                            ),
                                         maxLines: 3,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -664,10 +699,11 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                   const SizedBox(width: 6),
                                   Text(
                                     'Tap to edit item',
-                                    style: theme.textTheme.labelMedium?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: theme.colorScheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -690,7 +726,8 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                               builder: (context, state) {
                                 final isLoading = state.maybeWhen(
                                   orElse: () => false,
-                                  loading: (loadingIndex) => loadingIndex == index,
+                                  loading: (loadingIndex) =>
+                                      loadingIndex == index,
                                 );
                                 return Material(
                                   color: Colors.transparent,
@@ -700,37 +737,37 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
                                       onTap: isLoading
                                           ? null
                                           : () => _showDeleteConfirmationDialog(
-                                                context,
-                                                item,
-                                                theme,
-                                                l10n,
-                                                index,
-                                              ),
+                                              context,
+                                              item,
+                                              theme,
+                                              l10n,
+                                              index,
+                                            ),
                                       borderRadius: BorderRadius.circular(22),
                                       child: Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.error.withValues(
-                                            alpha: 0.12,
+                                          color: theme.colorScheme.error
+                                              .withValues(
+                                                alpha: 0.12,
+                                              ),
+                                          borderRadius: BorderRadius.circular(
+                                            22,
                                           ),
-                                          borderRadius: BorderRadius.circular(22),
                                           border: Border.all(
-                                            color: theme.colorScheme.error.withValues(
-                                              alpha: 0.3,
-                                            ),
+                                            color: theme.colorScheme.error
+                                                .withValues(
+                                                  alpha: 0.3,
+                                                ),
                                           ),
                                         ),
                                         child: isLoading
-                                            ? SizedBox(
+                                            ? const SizedBox(
                                                 width: 18,
                                                 height: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<Color>(
-                                                        theme.colorScheme.error,
-                                                      ),
-                                                ),
+                                                child:
+                                                    // ignore: lines_longer_than_80_chars
+                                                    PRFCircularProgressIndicator(),
                                               )
                                             : Icon(
                                                 Icons.delete_outline,
@@ -750,9 +787,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
             ),
           ),
         )
-            .animate(delay: Duration(milliseconds: index * 100))
-            .slideY(begin: 0.25)
-            .fadeIn(duration: 380.ms);
+        .animate(delay: Duration(milliseconds: index * 100))
+        .slideY(begin: 0.25)
+        .fadeIn(duration: 380.ms);
   }
 
   Widget _buildDetailChip(
@@ -766,7 +803,9 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceVariant.withValues(alpha: 0.35),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.35,
+          ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: theme.colorScheme.outline.withValues(alpha: 0.12),
@@ -776,7 +815,6 @@ class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(6),

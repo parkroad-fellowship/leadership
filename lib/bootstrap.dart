@@ -90,7 +90,8 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       }
 
       try {
-        final fcmToken = await getIt<FirebaseService>().retrieveFCMToken();
+        final fcmToken = await getIt<FirebaseMessagingService>()
+            .retrieveFCMToken();
         if (fcmToken.isNotEmpty) {
           await getIt<AuthService>().updateProfile(
             updateDTO: UserUpdateDTO(
