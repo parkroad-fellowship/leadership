@@ -1,4 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:leadership/enums/prf_notification_type.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -7,7 +8,6 @@ import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:logger/logger.dart';
-import 'package:timezone/timezone.dart' as tz;
 
 abstract class NotificationService {
   Future<void> init();
@@ -15,8 +15,6 @@ abstract class NotificationService {
   Future<void> requestPermissions();
 
   void createNotification({required NotificationContent content});
-
-  Future<void> scheduleGivingNotification();
 
   @pragma('vm:entry-point')
   static Future<void> onNotificationCreatedMethod(
@@ -121,7 +119,7 @@ class NotificationServiceImpl implements NotificationService {
           channelGroupName: 'Basic group',
         ),
       ],
-      debug: true,
+      debug: kDebugMode,
     );
 
     await AwesomeNotifications().setListeners(
@@ -195,33 +193,4 @@ class NotificationServiceImpl implements NotificationService {
     if (!notificationsEnabled) return;
     AwesomeNotifications().createNotification(content: content);
   }
-
-  @override
-  Future<void> scheduleGivingNotification() async {
-    final notificationsEnabled = getIt<HiveService>().settings
-        .areNotificationsEnabled();
-    if (!notificationsEnabled) return;
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        autoDismissible: false,
-        id: 111001,
-        channelKey: 'giving_prompts',
-        title: 'PRF: Support',
-        body: 'Consider supporting the fellowship with your giving',
-        payload: {'type': 'giving_prompt'},
-      ),
-      // Show this notification every Fridy at 1250 Hours
-      schedule: NotificationCalendar(
-        weekday: 5,
-        hour: 12,
-        minute: 50,
-        second: 0,
-        repeats: true,
-        allowWhileIdle: true,
-        timeZone: _timezone,
-      ),
-    );
-  }
-
-  String get _timezone => tz.local.name;
 }
