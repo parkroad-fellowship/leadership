@@ -1016,7 +1016,7 @@ class _AccountingEventExpensesViewHandsetState
               itemCount: receipts.length,
               itemBuilder: (context, index) {
                 final receipt = receipts[index];
-                final isPdf = receipt.temporaryURL.toLowerCase().endsWith(
+                final isPdf = receipt.temporaryURL.toLowerCase().contains(
                   '.pdf',
                 );
 
