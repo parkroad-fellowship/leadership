@@ -21,6 +21,7 @@ class CreateContactCubit extends Cubit<CreateContactState> {
     required String phone,
     String? email,
     String? contactTypeUlid,
+    required String schoolUlid,
   }) async {
     emit(const CreateContactState.loading());
     try {
@@ -28,6 +29,7 @@ class CreateContactCubit extends Cubit<CreateContactState> {
         data: {
           'name': name,
           'phone': phone,
+          'school_ulid': schoolUlid,
           if (email != null && email.isNotEmpty) 'email': email,
           if (contactTypeUlid != null && contactTypeUlid.isNotEmpty)
             'contact_type_ulid': contactTypeUlid,
