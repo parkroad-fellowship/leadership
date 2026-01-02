@@ -13,6 +13,7 @@ import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/actions/add_expense/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/actions/edit_expense/_handset.dart';
+import 'package:leadership/features/home/landing/expenses/actions/send_financial_report/_handset.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/delete_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/edit_allocation_entry_cubit.dart';
@@ -35,11 +36,13 @@ import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class ExpensesViewHandset extends StatefulWidget {
   const ExpensesViewHandset({
+    required this.showFinancialReport,
     required this.accountingEventUlid,
     super.key,
   });
 
   final String accountingEventUlid;
+  final bool showFinancialReport;
 
   @override
   State<ExpensesViewHandset> createState() => _ExpensesViewHandsetState();
@@ -2269,8 +2272,39 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               );
             },
           ),
+          if (widget.showFinancialReport)
+            IconButton.filled(
+              onPressed: () => _showSendReportModal(context),
+              icon: const Icon(
+                Icons.email,
+                color: Colors.white,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: theme.colorScheme.secondaryContainer,
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  void _showSendReportModal(
+    BuildContext context,
+  ) {
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: SendFinancialReportViewHandset(
+                accountingEventUlid: accountingEventUlid,
+              ),
+            ),
+          ),
+        ];
+      },
     );
   }
 }

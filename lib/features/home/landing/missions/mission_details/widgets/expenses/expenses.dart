@@ -3,18 +3,27 @@ import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/features/home/landing/missions/mission_details/widgets/expenses/_handset.dart';
 
 class ExpensesView extends StatelessWidget {
-  const ExpensesView({required this.accountingEventUlid, super.key});
+  const ExpensesView({
+    required this.accountingEventUlid,
+    this.showFinancialReport = false,
+    super.key,
+  });
 
   final String accountingEventUlid;
+  final bool showFinancialReport;
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveBuilder(
-      defaultBuilder: (_, _) =>
-          ExpensesViewHandset(accountingEventUlid: accountingEventUlid),
+      defaultBuilder: (_, _) => ExpensesViewHandset(
+        accountingEventUlid: accountingEventUlid,
+        showFinancialReport: showFinancialReport,
+      ),
       layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) =>
-            ExpensesViewHandset(accountingEventUlid: accountingEventUlid),
+        handset: (_, _) => ExpensesViewHandset(
+          accountingEventUlid: accountingEventUlid,
+          showFinancialReport: showFinancialReport,
+        ),
       ),
     );
   }

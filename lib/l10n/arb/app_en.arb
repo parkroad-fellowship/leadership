@@ -816,7 +816,7 @@
     "@accountNumber": {},
     "refundText": "Send the remaining balance and token to the above M-Pesa details to complete the refund process.",
     "@refundText": {},
-    "financialOverview": "Mission Financial Overview",
+    "financialOverview": "Financial Overview",
     "@financialOverview": {},
     "transactionCost": "Transaction Cost",
     "@transactionCost": {},
