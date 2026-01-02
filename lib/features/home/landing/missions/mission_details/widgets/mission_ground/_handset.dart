@@ -443,7 +443,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                 ],
               ),
               const SizedBox(height: 16),
-              ...mission.school!.contacts!.map(
+              ...mission.school!.contacts.map(
                 (contact) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Container(

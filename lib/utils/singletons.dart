@@ -24,9 +24,21 @@ import 'package:leadership/features/home/landing/missions/cubit/get_past_mission
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/create_contact_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/create_contact_type_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/create_school_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/delete_contact_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/delete_contact_type_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/delete_school_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/get_contact_types_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/get_schools_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/update_contact_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/update_contact_type_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/update_school_cubit.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/accounting_event_service.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
+import 'package:leadership/services/api/contact_type_service.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
@@ -36,6 +48,8 @@ import 'package:leadership/services/api/payment_instruction_service.dart';
 import 'package:leadership/services/api/refund_service.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
+import 'package:leadership/services/api/school_contact_service.dart';
+import 'package:leadership/services/api/school_service.dart';
 import 'package:leadership/services/firebase_service.dart';
 import 'package:leadership/shared_views/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/add_mission_refund_cubit.dart';
@@ -81,7 +95,10 @@ class Singletons {
       ..registerSingleton<MemberService>(MemberService())
       ..registerSingleton<AccountingEventService>(AccountingEventService())
       ..registerSingleton<AllocationEntryService>(AllocationEntryService())
-      ..registerSingleton<RefundService>(RefundService());
+      ..registerSingleton<RefundService>(RefundService())
+      ..registerSingleton<SchoolService>(SchoolService())
+      ..registerSingleton<SchoolContactService>(SchoolContactService())
+      ..registerSingleton<ContactTypeService>(ContactTypeService());
   }
 
   static Future<void> setupDatabases() async {
@@ -305,6 +322,61 @@ class Singletons {
       BlocProvider<SendFinancialReportCubit>(
         create: (context) => SendFinancialReportCubit(
           accountingEventService: getIt<AccountingEventService>(),
+        ),
+      ),
+      BlocProvider<GetSchoolsCubit>(
+        create: (context) => GetSchoolsCubit(
+          schoolService: getIt<SchoolService>(),
+        ),
+      ),
+      BlocProvider<CreateSchoolCubit>(
+        create: (context) => CreateSchoolCubit(
+          schoolService: getIt<SchoolService>(),
+        ),
+      ),
+      BlocProvider<UpdateSchoolCubit>(
+        create: (context) => UpdateSchoolCubit(
+          schoolService: getIt<SchoolService>(),
+        ),
+      ),
+      BlocProvider<DeleteSchoolCubit>(
+        create: (context) => DeleteSchoolCubit(
+          schoolService: getIt<SchoolService>(),
+        ),
+      ),
+      BlocProvider<GetContactTypesCubit>(
+        create: (context) => GetContactTypesCubit(
+          contactTypeService: getIt<ContactTypeService>(),
+        ),
+      ),
+      BlocProvider<CreateContactCubit>(
+        create: (context) => CreateContactCubit(
+          schoolContactService: getIt<SchoolContactService>(),
+        ),
+      ),
+      BlocProvider<UpdateContactCubit>(
+        create: (context) => UpdateContactCubit(
+          schoolContactService: getIt<SchoolContactService>(),
+        ),
+      ),
+      BlocProvider<DeleteContactCubit>(
+        create: (context) => DeleteContactCubit(
+          schoolContactService: getIt<SchoolContactService>(),
+        ),
+      ),
+      BlocProvider<CreateContactTypeCubit>(
+        create: (context) => CreateContactTypeCubit(
+          contactTypeService: getIt<ContactTypeService>(),
+        ),
+      ),
+      BlocProvider<UpdateContactTypeCubit>(
+        create: (context) => UpdateContactTypeCubit(
+          contactTypeService: getIt<ContactTypeService>(),
+        ),
+      ),
+      BlocProvider<DeleteContactTypeCubit>(
+        create: (context) => DeleteContactTypeCubit(
+          contactTypeService: getIt<ContactTypeService>(),
         ),
       ),
     ];

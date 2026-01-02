@@ -23,6 +23,8 @@ class PRFLeadershipRouter extends RootStackRouter {
 
   static const String requisitionApprovalsRoute = '/requisition-approvals';
 
+  static const String schools = '/schools';
+
   @override
   List<AutoRoute> get routes => [
     // Auth
@@ -91,6 +93,14 @@ class PRFLeadershipRouter extends RootStackRouter {
     CustomRoute<dynamic>(
       page: RequisitionApprovalsRoute.page,
       path: requisitionApprovalsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    // Schools
+    CustomRoute<dynamic>(
+      page: SchoolsRoute.page,
+      path: schools,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),

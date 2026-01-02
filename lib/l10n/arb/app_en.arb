@@ -1131,5 +1131,7 @@
     "recallRequisitionDesc": "Withdraw this requisition from review",
     "@recallRequisitionDesc": {},
     "confirmRecallRequisition": "Are you sure you want to recall this requisition? This will withdraw it from the approval process.",
-    "@confirmRecallRequisition": {}
+    "@confirmRecallRequisition": {},
+    "manageSchools": "manage schools",
+    "@manageSchools": {}
 }
