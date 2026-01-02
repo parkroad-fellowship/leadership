@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
-import 'package:leadership/features/home/landing/missions/mission_details/widgets/expenses/_handset.dart';
+import 'package:leadership/shared_views/expenses/_handset.dart';
 
 class ExpensesView extends StatelessWidget {
   const ExpensesView({

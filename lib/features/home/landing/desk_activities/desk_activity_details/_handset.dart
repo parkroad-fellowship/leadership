@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:leadership/enums/prf_permissions.dart';
-import 'package:leadership/features/home/landing/missions/mission_details/widgets/expenses/expenses.dart';
+import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/features/home/landing/requisitions/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/features/home/landing/requisitions/requisitions.dart';
 import 'package:leadership/l10n/l10n.dart';

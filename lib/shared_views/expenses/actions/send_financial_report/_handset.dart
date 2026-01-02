@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/expenses/cubit/send_financial_report_cubit.dart';
+import 'package:leadership/shared_views/expenses/cubit/send_financial_report_cubit.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
 class SendFinancialReportViewHandset extends StatelessWidget {
