@@ -67,7 +67,7 @@ class PRFLeadershipRouter extends RootStackRouter {
     ),
 
     CustomRoute<dynamic>(
-      page: RequisitionRoute.page,
+      page: RequisitionDetailsRoute.page,
       path: requisitionRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,

@@ -3,10 +3,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/cubit/get_requisition_item_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/cubit/update_requisition_item_cubit.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/cubit/get_requisition_item_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/update_requisition_item_cubit.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
 class EditRequisitionItemViewHandset extends StatefulWidget {

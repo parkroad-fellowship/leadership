@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/create_requisition_item/_handset.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/approval_requisition/_handset.dart';
 
-class CreateRequisitionItemView extends StatelessWidget {
-  const CreateRequisitionItemView({required this.requisitionUlid, super.key});
+class ApproveRequisitionView extends StatelessWidget {
+  const ApproveRequisitionView({
+    required this.requisitionUlid,
+    super.key,
+  });
 
   final String requisitionUlid;
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveBuilder(
-      defaultBuilder: (_, _) => CreateRequisitionItemViewHandset(
+      defaultBuilder: (_, _) => ApproveRequisitionViewHandset(
         requisitionUlid: requisitionUlid,
       ),
       layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => CreateRequisitionItemViewHandset(
+        handset: (_, _) => ApproveRequisitionViewHandset(
           requisitionUlid: requisitionUlid,
         ),
       ),

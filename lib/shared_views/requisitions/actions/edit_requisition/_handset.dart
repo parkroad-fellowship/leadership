@@ -7,9 +7,9 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/cubit/update_requisition_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/cubit/update_requisition_cubit.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
 class EditRequisitionViewHandset extends StatefulWidget {

@@ -5,9 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/router/router.gr.dart';
@@ -205,7 +205,7 @@ class _RequisitionApprovalsPageHandsetState
                         index: index,
                         onTap: () => context.router
                             .push(
-                              RequisitionRoute(
+                              RequisitionDetailsRoute(
                                 requisitionUlid: requisition.ulid,
                               ),
                             )
@@ -304,7 +304,7 @@ class _RequisitionApprovalsPageHandsetState
                         index: index,
                         onTap: () => context.router
                             .push(
-                              RequisitionRoute(
+                              RequisitionDetailsRoute(
                                 requisitionUlid: requisition.ulid,
                               ),
                             )
@@ -403,7 +403,7 @@ class _RequisitionApprovalsPageHandsetState
                         index: index,
                         onTap: () => context.router
                             .push(
-                              RequisitionRoute(
+                              RequisitionDetailsRoute(
                                 requisitionUlid: requisition.ulid,
                               ),
                             )

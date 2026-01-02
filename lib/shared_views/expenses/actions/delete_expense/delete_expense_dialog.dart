@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
-import 'package:leadership/shared_views/expenses/cubit/delete_allocation_entry_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
+import 'package:leadership/shared_views/expenses/cubit/delete_allocation_entry_cubit.dart';
 
 class DeleteExpenseDialog extends StatelessWidget {
   const DeleteExpenseDialog({

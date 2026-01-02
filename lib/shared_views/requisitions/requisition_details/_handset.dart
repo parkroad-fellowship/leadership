@@ -8,34 +8,39 @@ import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/approval_requisition/_handset.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/create_payment_instruction/create_payment_instruction.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/create_requisition_item/create_requisition_item.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition/_handset.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/edit_requisition_item/edit_requisition_item.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/recall_requisition/recall_requisition.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/request_review/_handset.dart';
-import 'package:leadership/features/home/landing/requisitions/cubit/delete_requisition_item_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/cubit/delete_requisition_item_cubit.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/approval_requisition/_handset.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_payment_instruction/create_payment_instruction.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition_item/create_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/edit_requisition/_handset.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/edit_requisition_item/edit_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/recall_requisition/recall_requisition.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/request_review/_handset.dart';
 import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/current_member_mixin.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-class RequisitionPageHandset extends StatefulWidget {
-  const RequisitionPageHandset({required this.requisitionUlid, super.key});
+class RequisitionDetailsPageHandset extends StatefulWidget {
+  const RequisitionDetailsPageHandset({
+    required this.requisitionUlid,
+    super.key,
+  });
 
   final String requisitionUlid;
 
   @override
-  State<RequisitionPageHandset> createState() => _RequisitionPageHandsetState();
+  State<RequisitionDetailsPageHandset> createState() =>
+      _RequisitionDetailsPageHandsetState();
 }
 
-class _RequisitionPageHandsetState extends State<RequisitionPageHandset>
+class _RequisitionDetailsPageHandsetState
+    extends State<RequisitionDetailsPageHandset>
     with CurrentMemberMixin {
   @override
   void initState() {

@@ -5,9 +5,9 @@ import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/cubit/request_review_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
+import 'package:leadership/shared_views/requisitions/cubit/request_review_cubit.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
 class RequestReviewViewHandset extends StatefulWidget {

@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
-import 'package:leadership/features/home/landing/requisitions/actions/recall_requisition/_handset.dart';
+import 'package:leadership/shared_views/requisitions/requisition_details/actions/request_review/_handset.dart';
 
-class RecallRequisitionView extends StatelessWidget {
-  const RecallRequisitionView({
-    required this.requisitionUlid,
-    super.key,
-  });
+class RequestReviewView extends StatelessWidget {
+  const RequestReviewView({required this.requisitionUlid, super.key});
 
   final String requisitionUlid;
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveBuilder(
-      defaultBuilder: (_, _) => RecallRequisitionViewHandset(
+      defaultBuilder: (_, _) => RequestReviewViewHandset(
         requisitionUlid: requisitionUlid,
       ),
       layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => RecallRequisitionViewHandset(
+        handset: (_, _) => RequestReviewViewHandset(
           requisitionUlid: requisitionUlid,
         ),
       ),

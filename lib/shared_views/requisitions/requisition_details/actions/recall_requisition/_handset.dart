@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/cubit/recall_requisition_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/recall_requisition_cubit.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 
 class RecallRequisitionViewHandset extends StatefulWidget {

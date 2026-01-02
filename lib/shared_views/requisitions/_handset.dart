@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/shared_widgets/empty_state.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
@@ -138,7 +138,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                                 index: index,
                                 onTap: () => context.router
                                     .push(
-                                      RequisitionRoute(
+                                      RequisitionDetailsRoute(
                                         requisitionUlid: requisition.ulid,
                                       ),
                                     )
