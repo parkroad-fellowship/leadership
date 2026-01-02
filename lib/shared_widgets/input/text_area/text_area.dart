@@ -11,6 +11,7 @@ class PRFTextAreaInput extends StatelessWidget {
     this.enabled = true,
     this.maxLines = 5,
     this.minLines = 3,
+    this.textInputAction = TextInputAction.newline,
   });
 
   final String hintText;
@@ -18,6 +19,7 @@ class PRFTextAreaInput extends StatelessWidget {
   final bool enabled;
   final int minLines;
   final int maxLines;
+  final TextInputAction textInputAction;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +30,7 @@ class PRFTextAreaInput extends StatelessWidget {
         maxLines: maxLines,
         minLines: minLines,
         enabled: enabled,
+        textInputAction: textInputAction,
       ),
       layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
         handset: (_, _) => PRFTextAreaInputHandset(
@@ -36,6 +39,7 @@ class PRFTextAreaInput extends StatelessWidget {
           maxLines: maxLines,
           minLines: minLines,
           enabled: enabled,
+          textInputAction: textInputAction,
         ),
         tablet: (_, _) => PRFTextAreaInputTablet(
           hintText: hintText,
@@ -43,6 +47,7 @@ class PRFTextAreaInput extends StatelessWidget {
           maxLines: maxLines,
           minLines: minLines,
           enabled: enabled,
+          textInputAction: textInputAction,
         ),
       ),
     );

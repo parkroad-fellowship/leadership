@@ -8,6 +8,7 @@ class PRFTextAreaInputHandset extends StatelessWidget {
     this.enabled = true,
     this.maxLines = 5,
     this.minLines = 3,
+    this.textInputAction = TextInputAction.newline,
   });
 
   final String hintText;
@@ -15,6 +16,7 @@ class PRFTextAreaInputHandset extends StatelessWidget {
   final bool enabled;
   final int minLines;
   final int maxLines;
+  final TextInputAction textInputAction;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +24,7 @@ class PRFTextAreaInputHandset extends StatelessWidget {
 
     return TextFormField(
       textCapitalization: TextCapitalization.sentences,
+      textInputAction: textInputAction,
       controller: controller,
       enabled: enabled,
       minLines: minLines,

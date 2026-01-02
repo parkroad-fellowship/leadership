@@ -15,3 +15,13 @@ abstract class PRFContactType with _$PRFContactType {
   factory PRFContactType.fromJson(Map<String, dynamic> json) =>
       _$PRFContactTypeFromJson(json);
 }
+
+@freezed
+abstract class PRFContactTypeResponse with _$PRFContactTypeResponse {
+  factory PRFContactTypeResponse(
+    List<PRFContactType> data,
+  ) = _PRFContactTypeResponse;
+
+  factory PRFContactTypeResponse.fromJson(Map<String, dynamic> json) =>
+      _$PRFContactTypeResponseFromJson(json);
+}

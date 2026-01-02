@@ -816,7 +816,7 @@
     "@accountNumber": {},
     "refundText": "Send the remaining balance and token to the above M-Pesa details to complete the refund process.",
     "@refundText": {},
-    "financialOverview": "Mission Financial Overview",
+    "financialOverview": "Financial Overview",
     "@financialOverview": {},
     "transactionCost": "Transaction Cost",
     "@transactionCost": {},
@@ -1131,5 +1131,7 @@
     "recallRequisitionDesc": "Withdraw this requisition from review",
     "@recallRequisitionDesc": {},
     "confirmRecallRequisition": "Are you sure you want to recall this requisition? This will withdraw it from the approval process.",
-    "@confirmRecallRequisition": {}
+    "@confirmRecallRequisition": {},
+    "manageSchools": "manage schools",
+    "@manageSchools": {}
 }

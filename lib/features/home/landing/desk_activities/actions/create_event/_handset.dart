@@ -316,7 +316,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
 
                       Navigator.of(context).pop();
                       context.router.push(
-                        RequisitionRoute(
+                        RequisitionDetailsRoute(
                           requisitionUlid: data.requisition.ulid,
                         ),
                       );

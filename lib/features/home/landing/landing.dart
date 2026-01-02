@@ -82,6 +82,15 @@ class _LandingPageState extends State<LandingPage> {
         700,
         Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
       ],
+      [
+        l10n.manageSchools,
+        'assets/svgs/schools.svg',
+        () => context.router.pushPath(
+          PRFLeadershipRouter.schools,
+        ),
+        700,
+        Misc.userCan(PRFPermissions.viewAnySchools),
+      ],
     ];
 
     return AdaptiveBuilder(

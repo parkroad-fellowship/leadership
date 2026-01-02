@@ -5,7 +5,8 @@ enum PRFPermissions {
   createRequisitionItem,
   createPaymentInstruction,
   deleteAllocationEntry,
-  deleteRequisitionItem
+  deleteRequisitionItem,
+  viewAnySchools
   ;
 
   String get name {
@@ -24,6 +25,8 @@ enum PRFPermissions {
         return 'delete allocation entry';
       case PRFPermissions.deleteRequisitionItem:
         return 'delete requisition item';
+      case PRFPermissions.viewAnySchools:
+        return 'viewAny school';
     }
   }
 }

@@ -83,7 +83,7 @@ abstract class NotificationService {
         if (requisitionUlid != null) {
           await getIt<PRFLeadershipRouter>().replaceAll([
             const LandingRoute(),
-            RequisitionRoute(
+            RequisitionDetailsRoute(
               requisitionUlid: requisitionUlid,
             ),
           ]);

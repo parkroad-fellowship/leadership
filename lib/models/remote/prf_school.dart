@@ -22,9 +22,18 @@ abstract class PRFSchool with _$PRFSchool {
     @Default('N/A') String directions,
     @Default('N/A') String distance,
     @Default('N/A') @JsonKey(name: 'static_duration') String staticDuration,
-    @JsonKey(name: 'school_contacts') List<PRFContact>? contacts,
+    @Default([]) @JsonKey(name: 'school_contacts') List<PRFContact> contacts,
   }) = _PRFSchool;
 
   factory PRFSchool.fromJson(Map<String, dynamic> json) =>
       _$PRFSchoolFromJson(json);
+}
+
+@freezed
+abstract class PRFSchoolResponse with _$PRFSchoolResponse {
+  factory PRFSchoolResponse(
+    List<PRFSchool> data,
+  ) = _PRFSchoolResponse;
+  factory PRFSchoolResponse.fromJson(Map<String, dynamic> json) =>
+      _$PRFSchoolResponseFromJson(json);
 }
