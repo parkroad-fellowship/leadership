@@ -112,7 +112,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                               label: l10n.requisitionUnavailable,
                               description: l10n.requisitionUnavailableDesc,
                             ),
-                          ExpensesView(missionUlid: mission.ulid),
+                          ExpensesView(
+                            accountingEventUlid: mission.accountingEvent!.ulid,
+                          ),
                         ],
                       ),
                       loading: () => const Center(

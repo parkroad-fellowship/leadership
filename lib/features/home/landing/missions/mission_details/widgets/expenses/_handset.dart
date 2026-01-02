@@ -19,7 +19,6 @@ import 'package:leadership/features/home/landing/expenses/cubit/edit_allocation_
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/widgets/reciept_preview.dart';
 import 'package:leadership/features/home/landing/missions/cubit/delete_receipt_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/features/home/landing/missions/mission_details/add_refund/_handset.dart';
 import 'package:leadership/features/home/landing/missions/mission_details/add_token/_handset.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -36,11 +35,11 @@ import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class ExpensesViewHandset extends StatefulWidget {
   const ExpensesViewHandset({
-    required this.missionUlid,
+    required this.accountingEventUlid,
     super.key,
   });
 
-  final String missionUlid;
+  final String accountingEventUlid;
 
   @override
   State<ExpensesViewHandset> createState() => _ExpensesViewHandsetState();
@@ -49,9 +48,7 @@ class ExpensesViewHandset extends StatefulWidget {
 class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     with TimezoneMixin {
   bool _showBreakdown = true;
-  String get missionUlid => widget.missionUlid;
-
-  String? accountingEventUlid;
+  String get accountingEventUlid => widget.accountingEventUlid;
 
   @override
   void initState() {
@@ -61,6 +58,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
 
   void _loadData() {
     context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
+    context.read<GetAllocationEntriesCubit>().getAllocationEntries(
+      accountingEventUlid: accountingEventUlid,
+    );
   }
 
   @override
@@ -69,27 +69,6 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
 
     return MultiBlocListener(
       listeners: [
-        BlocListener<GetMissionCubit, GetMissionState>(
-          listener: (context, state) {
-            state.maybeWhen(
-              orElse: () {},
-              loaded: (mission) {
-                accountingEventUlid = mission.accountingEvent!.ulid;
-                context.read<GetAllocationEntriesCubit>().getAllocationEntries(
-                  accountingEventUlid: mission.accountingEvent!.ulid,
-                );
-              },
-              error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to load mission: $message'),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-            );
-          },
-        ),
         BlocListener<AddAllocationEntryCubit, AddAllocationEntryState>(
           listener: (context, state) {
             state.when(
@@ -858,9 +837,6 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           loading: (mediaUuid) {},
           loaded: (mediaUuid) {
             _loadData();
-            context.read<GetAllocationEntriesCubit>().getAllocationEntries(
-                  accountingEventUlid: accountingEventUlid!,
-                );
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Receipt deleted successfully'),
@@ -1505,11 +1481,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     return WoltModalSheetPage(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
-        child: accountingEventUlid != null
-            ? AddExpenseViewHandset(
-                accountingEventUlid: accountingEventUlid!,
-              )
-            : const SizedBox.shrink(),
+        child: AddExpenseViewHandset(accountingEventUlid: accountingEventUlid),
       ),
     );
   }
