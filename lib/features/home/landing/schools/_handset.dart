@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/schools/actions/contacts/add_contact/_handset.dart';
 import 'package:leadership/features/home/landing/schools/actions/contact_types/add_contact_type/_handset.dart';
 import 'package:leadership/features/home/landing/schools/actions/contact_types/delete_contact_type/_handset.dart';
 import 'package:leadership/features/home/landing/schools/actions/contact_types/edit_contact_type/_handset.dart';
+import 'package:leadership/features/home/landing/schools/actions/contacts/add_contact/_handset.dart';
+import 'package:leadership/features/home/landing/schools/actions/contacts/edit_contact/_handset.dart';
 import 'package:leadership/features/home/landing/schools/actions/schools/add_school/_handset.dart';
 import 'package:leadership/features/home/landing/schools/actions/schools/delete_school/_handset.dart';
 import 'package:leadership/features/home/landing/schools/actions/schools/edit_school/_handset.dart';
 import 'package:leadership/features/home/landing/schools/cubit/create_contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/create_contact_type_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/delete_contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/get_contact_types_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/get_contacts_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/get_schools_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/update_contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/update_contact_type_cubit.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
@@ -1087,6 +1091,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
 
   void _showSchoolDetails(BuildContext context, PRFSchool school) {
     final theme = Theme.of(context);
+    _refreshContacts(school.ulid);
     WoltModalSheet.show<void>(
       context: context,
       pageListBuilder: (context) => [
@@ -1157,7 +1162,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     );
 
     if (contactTypes.isEmpty) {
-      _showSnackBar('Contact types are still loading. Please retry in a moment.');
+      _showSnackBar(
+        'Contact types are still loading. Please retry in a moment.',
+      );
       context.read<GetContactTypesCubit>().getContactTypes();
       return;
     }
@@ -1201,138 +1208,174 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     ThemeData theme,
     PRFSchool school,
   ) {
-    final contacts = school.contacts;
+    return BlocBuilder<GetContactsCubit, GetContactsState>(
+      builder: (context, state) {
+        final contacts = state.maybeWhen(
+          loaded: (contacts) => contacts,
+          orElse: () => school.contacts,
+        );
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.1),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        return Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.primary.withValues(alpha: 0.12),
-                    theme.colorScheme.primary.withValues(alpha: 0.06),
-                  ],
-                ),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withValues(
-                          alpha: 0.15,
-                        ),
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.contacts,
-                      color: theme.colorScheme.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Contacts',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${contacts.length} linked to this school',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: () => _showAddContactModal(context, school),
-                    icon: const Icon(Icons.add_circle_outline, size: 18),
-                    label: const Text('Add Contact'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: theme.colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      backgroundColor: Colors.white,
-                    ),
-                  ),
-                ],
+          shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.1),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: contacts.isEmpty
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'No contacts added yet',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Add at least one contact so teams can reach the right person fast.',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: PRFPrimaryButton(
-                            onPressed: () => _showAddContactModal(context, school),
-                            title: 'Add Contact',
-                            disabled: false,
-                          ),
-                        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.12),
+                        theme.colorScheme.primary.withValues(alpha: 0.06),
                       ],
-                    )
-                  : Column(
-                      children: contacts
-                          .map((contact) => _buildContactCard(theme, contact))
-                          .toList(),
                     ),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.15,
+                            ),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.contacts,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Contacts',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${contacts.length} linked to this school',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _refreshContacts(school.ulid),
+                        icon: Icon(
+                          Icons.refresh,
+                          color: theme.colorScheme.primary,
+                        ),
+                        tooltip: 'Refresh contacts',
+                      ),
+                      const SizedBox(width: 4),
+                      TextButton.icon(
+                        onPressed: () => _showAddContactModal(context, school),
+                        icon: const Icon(Icons.add_circle_outline, size: 18),
+                        label: const Text('Add Contact'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: theme.colorScheme.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: state.maybeWhen(
+                    loading: () => const Center(
+                      child: PRFCircularProgressIndicator(),
+                    ),
+                    error: (message) => PRFEmptyView(
+                      label: 'Could not load contacts',
+                      description: message,
+                      icon: Icons.error_outline,
+                      actionLabel: 'Retry',
+                      onActionPressed: () => _refreshContacts(school.ulid),
+                    ),
+                    orElse: () => contacts.isEmpty
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'No contacts added yet',
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Add at least one contact so teams '
+                                'can reach the right person fast.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                child: PRFPrimaryButton(
+                                  onPressed: () =>
+                                      _showAddContactModal(context, school),
+                                  title: 'Add Contact',
+                                  disabled: false,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: contacts
+                                .map(
+                                  (contact) => _buildContactCard(
+                                    theme,
+                                    contact,
+                                    school,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -1424,7 +1467,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     );
   }
 
-  Widget _buildContactCard(ThemeData theme, PRFContact contact) {
+  Widget _buildContactCard(
+    ThemeData theme,
+    PRFContact contact,
+    PRFSchool school,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
@@ -1483,8 +1530,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.secondary
-                                      .withValues(alpha: 0.1),
+                                  color: theme.colorScheme.secondary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -1509,6 +1557,8 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             Expanded(
                               child: Text(
                                 contact.phone,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                   fontWeight: FontWeight.w600,
@@ -1516,7 +1566,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            _buildCallButton(theme, contact.phone),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                _buildCallButton(theme, contact.phone),
+                                _buildContactActions(theme, contact, school),
+                              ],
+                            ),
                           ],
                         ),
                         if (contact.email != null) ...[
@@ -1570,6 +1628,36 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     );
   }
 
+  Widget _buildContactActions(
+    ThemeData theme,
+    PRFContact contact,
+    PRFSchool school,
+  ) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: 'Edit contact',
+          icon: Icon(
+            Icons.edit_outlined,
+            size: 18,
+            color: theme.colorScheme.primary,
+          ),
+          onPressed: () => _showEditContactModal(context, contact, school),
+        ),
+        IconButton(
+          tooltip: 'Delete contact',
+          icon: Icon(
+            Icons.delete_outline,
+            size: 18,
+            color: theme.colorScheme.error,
+          ),
+          onPressed: () => _showDeleteContactDialog(context, contact, school),
+        ),
+      ],
+    );
+  }
+
   Future<void> _callPhoneNumber(String phone) async {
     final sanitized = phone.trim();
     if (sanitized.isEmpty) {
@@ -1589,6 +1677,193 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
+    );
+  }
+
+  void _refreshContacts(String schoolUlid) {
+    context.read<GetContactsCubit>().getContactsForSchool(schoolUlid);
+  }
+
+  void _showEditContactModal(
+    BuildContext context,
+    PRFContact contact,
+    PRFSchool school,
+  ) {
+    final theme = Theme.of(context);
+    final contactTypesState = context.read<GetContactTypesCubit>().state;
+    final contactTypes = contactTypesState.maybeWhen(
+      loaded: (types) => types,
+      orElse: () => <PRFContactType>[],
+    );
+
+    if (contactTypes.isEmpty) {
+      _showSnackBar(
+        'Contact types are still loading. Please retry in a moment.',
+      );
+      context.read<GetContactTypesCubit>().getContactTypes();
+      return;
+    }
+
+    final updateContactCubit = context.read<UpdateContactCubit>()..resetState();
+
+    WoltModalSheet.show<void>(
+      context: context,
+      pageListBuilder: (modalContext) => [
+        WoltModalSheetPage(
+          backgroundColor: Colors.white,
+          topBarTitle: Text(
+            'Edit Contact',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          isTopBarLayerAlwaysVisible: true,
+          trailingNavBarWidget: IconButton(
+            icon: Icon(
+              Icons.close,
+              color: theme.colorScheme.primary,
+            ),
+            onPressed: () => Navigator.pop(modalContext),
+          ),
+          child: BlocProvider.value(
+            value: updateContactCubit,
+            child: EditContactViewHandset(
+              contact: contact,
+              contactTypes: contactTypes,
+              onContactUpdated: () {
+                _refreshContacts(school.ulid);
+                _loadData();
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDeleteContactDialog(
+    BuildContext context,
+    PRFContact contact,
+    PRFSchool school,
+  ) {
+    final theme = Theme.of(context);
+    final deleteContactCubit = context.read<DeleteContactCubit>()..resetState();
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return BlocConsumer<DeleteContactCubit, DeleteContactState>(
+          bloc: deleteContactCubit,
+          listener: (context, state) {
+            state.maybeWhen(
+              loaded: () {
+                Navigator.of(dialogContext).pop();
+                _refreshContacts(school.ulid);
+                _loadData();
+                _showSnackBar('Contact deleted');
+              },
+              error: (message) {
+                _showSnackBar(message);
+              },
+              orElse: () {},
+            );
+          },
+          builder: (context, state) {
+            final isLoading = state.maybeWhen(
+              loading: () => true,
+              orElse: () => false,
+            );
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: theme.colorScheme.error,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Delete Contact',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to delete ${contact.name}?',
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'This cannot be undone.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: isLoading
+                      ? null
+                      : () => deleteContactCubit.deleteContact(
+                          ulid: contact.ulid,
+                        ),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: isLoading
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Delete'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.error,
+                    foregroundColor: theme.colorScheme.onError,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

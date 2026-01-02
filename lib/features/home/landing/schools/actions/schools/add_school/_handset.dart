@@ -141,7 +141,6 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SingleChildScrollView(
               child: Column(
-                
                 children: [
                   const SizedBox(height: 16),
                   _buildHeaderCard(theme),
@@ -301,7 +300,6 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
                   children: [
                     Expanded(
                       child: Column(
-                        
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const FormFieldLabel(label: 'Latitude'),

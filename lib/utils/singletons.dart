@@ -31,6 +31,7 @@ import 'package:leadership/features/home/landing/schools/cubit/delete_contact_cu
 import 'package:leadership/features/home/landing/schools/cubit/delete_contact_type_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/delete_school_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/get_contact_types_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/get_contacts_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/get_schools_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/update_contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/update_contact_type_cubit.dart';
@@ -351,6 +352,11 @@ class Singletons {
       ),
       BlocProvider<CreateContactCubit>(
         create: (context) => CreateContactCubit(
+          schoolContactService: getIt<SchoolContactService>(),
+        ),
+      ),
+      BlocProvider<GetContactsCubit>(
+        create: (context) => GetContactsCubit(
           schoolContactService: getIt<SchoolContactService>(),
         ),
       ),

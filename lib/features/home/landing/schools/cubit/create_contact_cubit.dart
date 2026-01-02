@@ -19,9 +19,9 @@ class CreateContactCubit extends Cubit<CreateContactState> {
   Future<void> createContact({
     required String name,
     required String phone,
+    required String schoolUlid,
     String? email,
     String? contactTypeUlid,
-    required String schoolUlid,
   }) async {
     emit(const CreateContactState.loading());
     try {
