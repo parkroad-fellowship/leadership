@@ -6,6 +6,7 @@ part 'prf_media.g.dart';
 @freezed
 abstract class PRFMedia with _$PRFMedia {
   factory PRFMedia(
+    String uuid,
     @JsonKey(name: 'public_temporary_url') String temporaryURL,
     int size,
     @JsonKey(name: 'human_readable_size') String humanReadableSize,

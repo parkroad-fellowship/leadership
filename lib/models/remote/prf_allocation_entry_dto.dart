@@ -23,3 +23,18 @@ abstract class PRFAllocationEntryDTO with _$PRFAllocationEntryDTO {
   factory PRFAllocationEntryDTO.fromJson(Map<String, dynamic> json) =>
       _$PRFAllocationEntryDTOFromJson(json);
 }
+
+@freezed
+abstract class PRFAllocationTokenEntryDTO with _$PRFAllocationTokenEntryDTO {
+  factory PRFAllocationTokenEntryDTO({
+    @JsonKey(name: 'accounting_event_ulid') required String accountingEventUlid,
+    @JsonKey(name: 'member_ulid') required String memberUlid,
+    @JsonEnum() @JsonKey(name: 'entry_type') required PRFEntryType entryType,
+    @JsonKey(name: 'unit_cost') required int unitCost,
+    @JsonKey(name: 'confirmation_message') required String confirmationMessage,
+    required String narration,
+  }) = _PRFAllocationTokenEntryDTO;
+
+  factory PRFAllocationTokenEntryDTO.fromJson(Map<String, dynamic> json) =>
+      _$PRFAllocationTokenEntryDTOFromJson(json);
+}

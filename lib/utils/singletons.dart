@@ -23,8 +23,9 @@ import 'package:leadership/features/home/landing/expenses/cubit/delete_allocatio
 import 'package:leadership/features/home/landing/expenses/cubit/edit_allocation_entry_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/features/home/landing/expenses/cubit/send_financial_report_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/add_mission_refund_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/delete_receipt_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_mission_expense_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
@@ -45,9 +46,9 @@ import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
 import 'package:leadership/services/api/member_service.dart';
-import 'package:leadership/services/api/mission_expenses_service.dart';
 import 'package:leadership/services/api/mission_service.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
+import 'package:leadership/services/api/refund_service.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
 import 'package:leadership/services/firebase_service.dart';
@@ -76,11 +77,11 @@ class Singletons {
         PaymentInstructionService(),
       )
       ..registerSingleton<MissionService>(MissionService())
-      ..registerSingleton<MissionExpensesService>(MissionExpensesService())
       ..registerSingleton<ExpenseService>(ExpenseService())
       ..registerSingleton<MemberService>(MemberService())
       ..registerSingleton<AccountingEventService>(AccountingEventService())
-      ..registerSingleton<AllocationEntryService>(AllocationEntryService());
+      ..registerSingleton<AllocationEntryService>(AllocationEntryService())
+      ..registerSingleton<RefundService>(RefundService());
   }
 
   static Future<void> setupDatabases() async {
@@ -212,16 +213,6 @@ class Singletons {
           missionService: getIt<MissionService>(),
         ),
       ),
-      BlocProvider<GetMissionExpenseCubit>(
-        create: (context) => GetMissionExpenseCubit(
-          missionExpensesService: getIt<MissionExpensesService>(),
-        ),
-      ),
-      BlocProvider<GetMissionExpenseCubit>(
-        create: (context) => GetMissionExpenseCubit(
-          missionExpensesService: getIt<MissionExpensesService>(),
-        ),
-      ),
       BlocProvider<GetMembersCubit>(
         create: (context) => GetMembersCubit(
           memberService: getIt<MemberService>(),
@@ -289,6 +280,15 @@ class Singletons {
       ),
       BlocProvider<DeleteAllocationEntryCubit>(
         create: (context) => DeleteAllocationEntryCubit(
+          allocationEntryService: getIt<AllocationEntryService>(),
+        ),
+      ),
+      BlocProvider<AddMissionRefundCubit>(
+        create: (context) =>
+            AddMissionRefundCubit(refundService: getIt<RefundService>()),
+      ),
+      BlocProvider<DeleteReceiptCubit>(
+        create: (context) => DeleteReceiptCubit(
           allocationEntryService: getIt<AllocationEntryService>(),
         ),
       ),
