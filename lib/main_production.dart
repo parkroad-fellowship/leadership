@@ -11,11 +11,11 @@ Future<void> main() async {
 
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
-      environment: PRFEnvironment.development,
-      hiveBox: 'prf-leadership-dev',
-      baseDomain: 'dev.api.parkroadfellowship.org',
+      environment: PRFEnvironment.production,
+      hiveBox: 'prf-leadership',
+      baseDomain: 'api.parkroadfellowship.org',
       urlScheme: 'https',
-      socketDomain: 'dev.ws.parkroadfellowship.org',
+      socketDomain: 'ws.parkroadfellowship.org',
       socketKey: 'yvnlkaqadqiadutrs9sa',
       socketScheme: 'wss',
       socketPort: 443,
