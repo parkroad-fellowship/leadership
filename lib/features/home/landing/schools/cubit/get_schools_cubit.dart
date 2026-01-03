@@ -16,18 +16,12 @@ class GetSchoolsCubit extends Cubit<GetSchoolsState> {
 
   late SchoolService _schoolService;
 
-  Future<void> getSchools({
-    Map<String, dynamic>? filters,
-    String? orderBy,
-    String? orderDirection,
-  }) async {
+  Future<void> getSchools() async {
     emit(const GetSchoolsState.loading());
     try {
       final schools = await _schoolService.list(
         includes: ['schoolContacts.contactType'],
-        filters: filters,
-        orderBy: orderBy ?? 'created_at',
-        orderDirection: orderDirection ?? 'desc',
+        limit: 1000,
       );
       emit(GetSchoolsState.loaded(schools: schools));
     } on Failure catch (e) {
