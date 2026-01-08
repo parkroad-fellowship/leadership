@@ -626,10 +626,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_country_selector
-      sha256: "79b7457224c025c1de2007fafe8a84605af3e6b0b8744d2a3225c296b66d31c1"
+      sha256: "92d7ae9092ba492bfb0ffe5cd6b38c941261b56e81941d73a0a963fdf5fcf8f6"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.18"
+    version: "1.0.19"
   flutter_datetime_picker_plus:
     dependency: "direct main"
     description:
@@ -1313,10 +1313,10 @@ packages:
     dependency: "direct main"
     description:
       name: phone_form_field
-      sha256: cfa05f6fe91bf3ce1dc32746799581e4de35e8b2036efef283f9bc9fd88ffb57
+      sha256: "9d1776041a7657a37c69c7d3c8e262c91fee8c202b81a80fac61ce0dc6bdbe98"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.16"
+    version: "10.0.17"
   phone_numbers_parser:
     dependency: transitive
     description:

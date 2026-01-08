@@ -1,6 +1,6 @@
 name: leadership
 description: A Very Good Project created by Very Good CLI.
-version: 1.17.02+117002
+version: 1.17.03+117003
 publish_to: none
 
 environment:
@@ -58,7 +58,7 @@ dependencies:
   path_provider: ^2.1.5
   pdfx: ^2.9.2
   permission_handler: ^12.0.1
-  phone_form_field: ^10.0.16
+  phone_form_field: ^10.0.17
   pretty_dio_logger: ^1.4.0
   timezone: ^0.10.1
   upgrader: ^12.3.0
