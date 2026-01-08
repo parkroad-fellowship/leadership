@@ -296,6 +296,21 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
                   enabled: !isLoading,
                 ),
                 const SizedBox(height: 16),
+                const FormFieldLabel(label: 'GPS Coordinates'),
+                const SizedBox(height: 8),
+                LocationPicker(
+                  initialLatitude: double.tryParse(
+                    _latitudeController.text,
+                  ),
+                  initialLongitude: double.tryParse(
+                    _longitudeController.text,
+                  ),
+                  onLocationSelected: (lat, lon) {
+                    _latitudeController.text = lat.toString();
+                    _longitudeController.text = lon.toString();
+                  },
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
