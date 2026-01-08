@@ -11,5 +11,7 @@ export 'input/number/number.dart';
 export 'input/password/password.dart';
 export 'input/text/text.dart';
 export 'input/text_area/text_area.dart';
+export 'map/location_display.dart';
+export 'map/location_picker.dart';
 export 'progress/circular_progress_indicator.dart';
 export 'progress/linear_progress_indicator.dart';

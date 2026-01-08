@@ -23,6 +23,7 @@ import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SchoolsPageHandset extends StatefulWidget {
@@ -1143,6 +1144,20 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   ],
                 ),
                 const SizedBox(height: 16),
+                _buildDetailSection(
+                  theme,
+                  'Location',
+                  Icons.map,
+                  [
+                    LocationDisplay(
+                      latitude: school.latitude,
+                      longitude: school.longitude,
+                      schoolName: school.name,
+                      onOpenInMaps: () => _openSchoolInMaps(school),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 _buildContactsSection(context, theme, school),
                 const SizedBox(height: 80),
               ],
@@ -1150,6 +1165,50 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _openSchoolInMaps(PRFSchool school) async {
+    final availableMaps = await MapLauncher.installedMaps;
+    if (availableMaps.isEmpty) {
+      _showSnackBar('No map apps available');
+      return;
+    }
+
+    // If only one map is available, open it directly
+    if (availableMaps.length == 1) {
+      await availableMaps.first.showMarker(
+        coords: Coords(school.latitude, school.longitude),
+        title: school.name,
+      );
+      return;
+    }
+
+    // Show bottom sheet to select map app
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: availableMaps
+                .map(
+                  (map) => ListTile(
+                    onTap: () {
+                      Navigator.pop(context);
+                      map.showMarker(
+                        coords: Coords(school.latitude, school.longitude),
+                        title: school.name,
+                      );
+                    },
+                    title: Text(map.mapName),
+                    leading: const Icon(Icons.map),
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      },
     );
   }
 
