@@ -18,6 +18,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/manage_expense/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
@@ -383,6 +384,11 @@ class Singletons {
       BlocProvider<DeleteContactTypeCubit>(
         create: (context) => DeleteContactTypeCubit(
           contactTypeService: getIt<ContactTypeService>(),
+        ),
+      ),
+      BlocProvider<ExpenseCategoriesCubit>(
+        create: (context) => ExpenseCategoriesCubit(
+          expenseCategoriesService: getIt<ExpenseCategoriesService>(),
         ),
       ),
     ];

@@ -70,140 +70,143 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<AddAllocationEntryCubit, AddAllocationEntryState>(
-          listener: (context, state) {
-            state.when(
-              initial: () {},
-              loading: () {},
-              loaded: () {
-                _loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Entry added successfully'),
-                    backgroundColor: Colors.green,
+    return Scaffold(
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<AddAllocationEntryCubit, AddAllocationEntryState>(
+            listener: (context, state) {
+              state.when(
+                initial: () {},
+                loading: () {},
+                loaded: () {
+                  _loadData();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Entry added successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                error: (message) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          BlocListener<EditAllocationEntryCubit, EditAllocationEntryState>(
+            listener: (context, state) {
+              state.when(
+                initial: () {},
+                loading: () {},
+                loaded: () {
+                  _loadData();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Expense updated successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                error: (message) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          BlocListener<DeleteAllocationEntryCubit, DeleteAllocationEntryState>(
+            listener: (context, state) {
+              state.when(
+                initial: () {},
+                loading: () {},
+                loaded: () {
+                  _loadData();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Expense deleted successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                error: (message) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          BlocListener<UploadMediaCubit, UploadMediaState>(
+            listener: (context, state) {
+              state.maybeWhen(
+                orElse: () {},
+                loaded: () {
+                  _loadData();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Receipt uploaded successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                error: (message) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to upload receipt: $message'),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+        child:
+            BlocBuilder<GetAllocationEntriesCubit, GetAllocationEntriesState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: PRFLinearProgressIndicator(),
+                  ),
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: PRFLinearProgressIndicator(),
+                  ),
+                  loaded: (entries) => _buildLoadedView(context, l10n, entries),
+                  empty: () => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: PRFEmptyView(
+                      label: 'No Expenses Yet',
+                      description: 'Start by adding your first expense',
+                      icon: Icons.receipt_long_outlined,
+                    ),
+                  ),
+                  error: (message) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: PRFEmptyView(
+                      label: 'Error',
+                      description: message,
+                      icon: Icons.error_outline,
+                      actionLabel: 'Retry',
+                      onActionPressed: _loadData,
+                    ),
                   ),
                 );
               },
-              error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        BlocListener<EditAllocationEntryCubit, EditAllocationEntryState>(
-          listener: (context, state) {
-            state.when(
-              initial: () {},
-              loading: () {},
-              loaded: () {
-                _loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Expense updated successfully'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        BlocListener<DeleteAllocationEntryCubit, DeleteAllocationEntryState>(
-          listener: (context, state) {
-            state.when(
-              initial: () {},
-              loading: () {},
-              loaded: () {
-                _loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Expense deleted successfully'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        BlocListener<UploadMediaCubit, UploadMediaState>(
-          listener: (context, state) {
-            state.maybeWhen(
-              orElse: () {},
-              loaded: () {
-                _loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Receipt uploaded successfully'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to upload receipt: $message'),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ],
-      child: BlocBuilder<GetAllocationEntriesCubit, GetAllocationEntriesState>(
-        builder: (context, state) {
-          return state.when(
-            initial: () => const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: PRFLinearProgressIndicator(),
             ),
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: PRFLinearProgressIndicator(),
-            ),
-            loaded: (entries) => _buildLoadedView(context, l10n, entries),
-            empty: () => const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: PRFEmptyView(
-                label: 'No Expenses Yet',
-                description: 'Start by adding your first expense',
-                icon: Icons.receipt_long_outlined,
-              ),
-            ),
-            error: (message) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: PRFEmptyView(
-                label: 'Error',
-                description: message,
-                icon: Icons.error_outline,
-                actionLabel: 'Retry',
-                onActionPressed: _loadData,
-              ),
-            ),
-          );
-        },
       ),
     );
   }
