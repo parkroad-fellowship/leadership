@@ -192,7 +192,7 @@ class _ExpenseCategoriesPageHandsetViewState
 
   void _showCategoryForm(BuildContext context, PRFExpenseCategory? category) {
     final theme = Theme.of(context);
-    WoltModalSheet.show(
+    WoltModalSheet.show<void>(
       context: context,
       pageListBuilder: (modalContext) => [
         WoltModalSheetPage(
