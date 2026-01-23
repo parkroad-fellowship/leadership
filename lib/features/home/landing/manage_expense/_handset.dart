@@ -208,7 +208,6 @@ class _ExpenseCategoriesPageHandsetViewState
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                
                 const SizedBox(height: 20),
                 PRFPrimaryButton(
                   onPressed: () {
