@@ -18,7 +18,10 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
+import 'package:leadership/features/home/landing/manage_expense/cubit/add_expense_category_cubit.dart';
+import 'package:leadership/features/home/landing/manage_expense/cubit/delete_expense_category_cubit.dart';
 import 'package:leadership/features/home/landing/manage_expense/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/landing/manage_expense/cubit/update_expense_category_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
@@ -388,6 +391,21 @@ class Singletons {
       ),
       BlocProvider<ExpenseCategoriesCubit>(
         create: (context) => ExpenseCategoriesCubit(
+          expenseCategoriesService: getIt<ExpenseCategoriesService>(),
+        ),
+      ),
+      BlocProvider<AddExpenseCategoryCubit>(
+        create: (context) => AddExpenseCategoryCubit(
+          expenseCategoriesService: getIt<ExpenseCategoriesService>(),
+        ),
+      ),
+      BlocProvider<DeleteExpenseCategoryCubit>(
+        create: (context) => DeleteExpenseCategoryCubit(
+          expenseCategoriesService: getIt<ExpenseCategoriesService>(),
+        ),
+      ),
+      BlocProvider<UpdateExpenseCategoryCubit>(
+        create: (context) => UpdateExpenseCategoryCubit(
           expenseCategoriesService: getIt<ExpenseCategoriesService>(),
         ),
       ),

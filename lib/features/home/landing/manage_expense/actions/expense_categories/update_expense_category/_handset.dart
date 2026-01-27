@@ -1,38 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:leadership/features/home/landing/manage_expense/cubit/add_expense_category_cubit.dart';
+import 'package:leadership/features/home/landing/manage_expense/cubit/update_expense_category_cubit.dart';
+import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/shared_widgets/buttons/primary/primary.dart';
 import 'package:leadership/shared_widgets/input/form_field_label/form_field_label.dart';
 import 'package:leadership/shared_widgets/input/text/text.dart';
 import 'package:leadership/shared_widgets/input/text_area/text_area.dart';
 
-class AddExpenseCategoryHandsetView extends StatefulWidget {
-  const AddExpenseCategoryHandsetView({
-    required this.onExpenseCategoryCreated,
+class EditExpenseCategoryHandsetView extends StatefulWidget {
+  const EditExpenseCategoryHandsetView({
+    required this.category,
+    required this.onExpenseCategoryUpdated,
     super.key,
   });
 
-  final VoidCallback onExpenseCategoryCreated;
+  final PRFExpenseCategory category;
+  final VoidCallback onExpenseCategoryUpdated;
 
   @override
-  State<AddExpenseCategoryHandsetView> createState() =>
-      _AddExpenseCategoryHandsetViewState();
+  State<EditExpenseCategoryHandsetView> createState() =>
+      _EditExpenseCategoryHandsetViewState();
 }
 
-class _AddExpenseCategoryHandsetViewState
-    extends State<AddExpenseCategoryHandsetView> {
-  final _expenseCategoryController = TextEditingController();
-  final _descriptionController = TextEditingController();
+class _EditExpenseCategoryHandsetViewState
+    extends State<EditExpenseCategoryHandsetView> {
+  late TextEditingController _descriptionController;
+  late TextEditingController _nameController;
 
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController(text: widget.category.name);
+
+    _descriptionController = TextEditingController(
+      text: widget.category.description,
+    );
   }
 
   @override
   void dispose() {
-    _expenseCategoryController.dispose();
+    _nameController.dispose();
 
     _descriptionController.dispose();
 
@@ -40,10 +47,9 @@ class _AddExpenseCategoryHandsetViewState
   }
 
   bool _validateForm() {
-    final name = _expenseCategoryController.text.trim();
-    final description = _descriptionController.text.trim();
+    final name = _nameController.text.trim();
 
-    if (name.isEmpty || description.isEmpty) {
+    if (name.isEmpty) {
       _showErrorSnackBar('Please fill in all required fields');
       return false;
     }
@@ -63,8 +69,10 @@ class _AddExpenseCategoryHandsetViewState
   void _submitForm() {
     if (!_validateForm()) return;
 
-    context.read<AddExpenseCategoryCubit>().createExpenseCategory(
-      name: _expenseCategoryController.text.trim(),
+    context.read<UpdateExpenseCategoryCubit>().updateExpenseCategory(
+      ulid: widget.category.ulid,
+      name: _nameController.text.trim(),
+
       description: _descriptionController.text.trim(),
     );
   }
@@ -72,18 +80,18 @@ class _AddExpenseCategoryHandsetViewState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return BlocConsumer<AddExpenseCategoryCubit, AddExpenseCategoryState>(
+    return BlocConsumer<UpdateExpenseCategoryCubit, UpdateExpenseCategoryState>(
       listener: (context, state) {
         state.maybeWhen(
-          loaded: (category) {
+          loaded: (updatedExpenseCategory) {
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Expense category created successfully'),
+                content: const Text('Expense Category updated successfully'),
                 backgroundColor: theme.colorScheme.primary,
               ),
             );
-            widget.onExpenseCategoryCreated();
+            widget.onExpenseCategoryUpdated();
           },
           error: (message) {
             _showErrorSnackBar(message);
@@ -91,7 +99,7 @@ class _AddExpenseCategoryHandsetViewState
           orElse: () {},
         );
       },
-      builder: (BuildContext context, AddExpenseCategoryState state) {
+      builder: (context, state) {
         final isLoading = state.maybeWhen(
           loading: () => true,
           orElse: () => false,
@@ -108,7 +116,7 @@ class _AddExpenseCategoryHandsetViewState
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsetsGeometry.symmetric(horizontal: 16),
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -149,13 +157,13 @@ class _AddExpenseCategoryHandsetViewState
       child: Column(
         children: [
           Icon(
-            Icons.category,
+            Icons.edit,
             size: 32,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: 8),
           Text(
-            'Add New Expense Category',
+            'Edit Expense Category',
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -163,7 +171,7 @@ class _AddExpenseCategoryHandsetViewState
           ),
           const SizedBox(height: 4),
           Text(
-            'Fill in the description below to create an expense category',
+            'Update the description below to keep records current',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
             ),
@@ -195,43 +203,46 @@ class _AddExpenseCategoryHandsetViewState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildFormSection(
-            icon: Icons.category,
-            title: 'Category Description',
+            icon: Icons.school_outlined,
+            title: 'Expense Category Details',
             isRequired: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FormFieldLabel(
-                  label: 'Category Name',
-                  isRequired: true,
-                ),
+                const FormFieldLabel(label: 'Expense Category Name'),
                 PRFTextInput(
-                  hintText: 'Enter category name',
-                  controller: _expenseCategoryController,
+                  hintText: 'Enter expense category name',
+                  controller: _nameController,
                   enabled: !isLoading,
                 ),
                 const SizedBox(height: 16),
-                const FormFieldLabel(
-                  label: 'Description',
-                  isRequired: true,
-                ),
-                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+
+          _buildFormSection(
+            icon: Icons.description_outlined,
+            title: 'Description',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const FormFieldLabel(label: 'Description'),
                 PRFTextAreaInput(
                   hintText: 'Enter description ',
                   controller: _descriptionController,
                   enabled: !isLoading,
                 ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: PRFPrimaryButton(
-                    onPressed: _submitForm,
-                    title: 'Create Expense Category',
-                    disabled: isLoading,
-                    isLoading: isLoading,
-                  ),
-                ),
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: PRFPrimaryButton(
+              onPressed: _submitForm,
+              title: 'Update Expense Category',
+              disabled: isLoading,
+              isLoading: isLoading,
             ),
           ),
         ],
@@ -267,6 +278,7 @@ class _AddExpenseCategoryHandsetViewState
                 ),
               ),
               const SizedBox(width: 12),
+              FormFieldLabel(label: title, isRequired: isRequired),
             ],
           ),
           const SizedBox(height: 8),

@@ -9,7 +9,7 @@ abstract class PRFExpenseCategory with _$PRFExpenseCategory {
     String ulid,
     String name,
     String description,
-    @JsonKey(name: 'is_active') String isActive,
+    @JsonKey(name: 'is_active') int isActive,
     @JsonKey(name: 'created_at') String createdAt,
     @JsonKey(name: 'updated_at') String updatedAt,
   ) = _PRFExpenseCategory;
