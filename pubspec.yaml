@@ -40,7 +40,7 @@ dependencies:
   full_screen_image: ^2.0.0
   gaimon: ^1.4.1
   get_it: ^9.2.1
-  google_fonts: ^7.0.1
+  google_fonts: ^8.0.2
   google_sign_in: ^6.3.0
   google_sign_in_ios: ^5.9.0
   google_sign_in_web: ^0.12.4+4
