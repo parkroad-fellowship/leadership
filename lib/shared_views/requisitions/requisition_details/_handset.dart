@@ -228,6 +228,11 @@ class _RequisitionDetailsPageHandsetState
         title = l10n.requisitionRecalled;
         subtitle = l10n.requisitionRecalledDesc;
         iconColor = status.color(theme);
+      case PRFApprovalStatus.ghost:
+        emptyStateIcon = Icons.help_outline;
+        title = l10n.zeroBasedRequisition;
+        subtitle = l10n.zeroBasedRequisitionDesc;
+        iconColor = status.color(theme);
     }
 
     return Center(
@@ -1215,6 +1220,7 @@ class _RequisitionDetailsPageHandsetState
       case PRFApprovalStatus.rejected:
         return _buildRejectedActions(context, l10n);
       case PRFApprovalStatus.recalled:
+      case PRFApprovalStatus.ghost:
         return [];
     }
   }
@@ -1959,6 +1965,7 @@ class _RequisitionDetailsPageHandsetState
         ];
 
       case PRFApprovalStatus.recalled:
+      case PRFApprovalStatus.ghost:
         return [];
 
       case PRFApprovalStatus.approved:

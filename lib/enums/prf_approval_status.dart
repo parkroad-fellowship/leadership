@@ -11,7 +11,9 @@ enum PRFApprovalStatus {
   @JsonValue(4)
   rejected,
   @JsonValue(5)
-  recalled
+  recalled,
+  @JsonValue(99)
+  ghost
   ;
 
   Color color(ThemeData theme) {
@@ -26,6 +28,8 @@ enum PRFApprovalStatus {
         return theme.colorScheme.error;
       case PRFApprovalStatus.recalled:
         return Colors.grey;
+      case PRFApprovalStatus.ghost:
+        return Colors.transparent;
     }
   }
 
@@ -41,6 +45,8 @@ enum PRFApprovalStatus {
         return Icons.cancel;
       case PRFApprovalStatus.recalled:
         return Icons.undo;
+      case PRFApprovalStatus.ghost:
+        return Icons.help_outline;
     }
   }
 
@@ -56,6 +62,8 @@ enum PRFApprovalStatus {
         return 'Rejected';
       case PRFApprovalStatus.recalled:
         return 'Recalled';
+      case PRFApprovalStatus.ghost:
+        return 'Zero-Based';
     }
   }
 
@@ -71,6 +79,8 @@ enum PRFApprovalStatus {
         return 4;
       case PRFApprovalStatus.recalled:
         return 5;
+      case PRFApprovalStatus.ghost:
+        return 99;
     }
   }
 }

@@ -1133,5 +1133,9 @@
     "confirmRecallRequisition": "Are you sure you want to recall this requisition? This will withdraw it from the approval process.",
     "@confirmRecallRequisition": {},
     "manageSchools": "manage schools",
-    "@manageSchools": {}
+    "@manageSchools": {},
+    "zeroBasedRequisition": "Zero-based requisition",
+    "@zeroBasedRequisition": {},
+    "zeroBasedRequisitionDesc": "No funds were issued for this",
+    "@zeroBasedRequisitionDesc": {}
 }
