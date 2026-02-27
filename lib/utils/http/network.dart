@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/http/request_signer.dart';
 import 'package:leadership/utils/http/retry_interceptor.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -38,7 +39,7 @@ class NetworkUtil {
         headers: <String, dynamic>{
           'Accept': 'application/json',
           'X-App-Version': Misc.getFullAppVersion(),
-          'X-User-Agent': 'PRF-Leadership/${Misc.getFullAppVersion()}',
+          'X-PRF-App': 'PRF-Leadership-${Misc.getFullAppVersion()}',
         },
         // Fixed timeout configuration
         connectTimeout: const Duration(seconds: 30),
@@ -55,6 +56,15 @@ class NetworkUtil {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+
+          // Generate signature with the fully resolved URL
+          final signatureHeaders = RequestSigner.generateHeaders(
+            method: options.method,
+            url: options.uri.toString(),
+            appId: PRFLeadershipConfig.instance!.values.appId,
+            appSecret: PRFLeadershipConfig.instance!.values.appSecret,
+          );
+          options.headers.addAll(signatureHeaders);
 
           // Add request timestamp for debugging
           options.headers['X-Request-Time'] = DateTime.now().toIso8601String();
@@ -94,6 +104,7 @@ class NetworkUtil {
         PrettyDioLogger(
           requestHeader: true,
           requestBody: true,
+          responseHeader: true,
         ),
       );
     }
