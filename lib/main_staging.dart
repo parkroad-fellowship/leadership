@@ -13,9 +13,9 @@ Future<void> main() async {
     values: PRFLeadershipValues(
       environment: PRFEnvironment.staging,
       hiveBox: 'prf-leadership-stg',
-      baseDomain: 'stg.api.parkroadfellowship.org',
+      baseDomain: 'stg-api.parkroadfellowship.org',
       urlScheme: 'https',
-      socketDomain: 'stg.ws.parkroadfellowship.org',
+      socketDomain: 'stg-ws.parkroadfellowship.org',
       socketKey: 'yvnlkaqadqiadutrs9sa',
       socketScheme: 'wss',
       socketPort: 443,
