@@ -13,6 +13,7 @@ import 'package:leadership/models/remote/socket_config.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/firebase_service.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/http/request_signer.dart';
 import 'package:logger/logger.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
@@ -66,6 +67,10 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
 
     Singletons.setup();
     await Singletons.setupDatabases();
+
+    await RequestSigner.syncWithServer(
+      PRFLeadershipConfig.instance!.values.baseUrl,
+    );
 
     try {
       await getIt<FirebaseService>().initRemoteConfig();
