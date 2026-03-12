@@ -12,8 +12,8 @@ import 'package:leadership/utils/crud/resource_state.dart';
 ///   3. Add resource-specific convenience methods (e.g. `createSchool(...)`).
 class ResourceCubit<T> extends Cubit<ResourceState<T>> {
   ResourceCubit({required BaseAPIService<T> service})
-      : _service = service,
-        super(ResourceState<T>.initial());
+    : _service = service,
+      super(ResourceState<T>.initial());
 
   final BaseAPIService<T> _service;
 
@@ -80,11 +80,13 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
         orderBy: orderBy ?? defaultOrderBy,
         orderDirection: orderDirection ?? defaultOrderDirection,
       );
-      emit(ResourceState.listLoaded(
-        items: [...currentItems, ...newItems],
-        page: page,
-        hasMore: newItems.isNotEmpty,
-      ));
+      emit(
+        ResourceState.listLoaded(
+          items: [...currentItems, ...newItems],
+          page: page,
+          hasMore: newItems.isNotEmpty,
+        ),
+      );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -97,18 +99,22 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
     required Map<String, dynamic> data,
     List<String>? includes,
   }) async {
-    emit(ResourceState.mutating(
-      items: currentItems,
-      operation: ResourceOperation.create,
-    ));
+    emit(
+      ResourceState.mutating(
+        items: currentItems,
+        operation: ResourceOperation.create,
+      ),
+    );
     try {
       final item = await _service.create(data: data, includes: includes);
       final updated = [item, ...currentItems];
-      emit(ResourceState.mutated(
-        items: updated,
-        operation: ResourceOperation.create,
-        item: item,
-      ));
+      emit(
+        ResourceState.mutated(
+          items: updated,
+          operation: ResourceOperation.create,
+          item: item,
+        ),
+      );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -123,10 +129,12 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
     required bool Function(T item) matchById,
     List<String>? includes,
   }) async {
-    emit(ResourceState.mutating(
-      items: currentItems,
-      operation: ResourceOperation.update,
-    ));
+    emit(
+      ResourceState.mutating(
+        items: currentItems,
+        operation: ResourceOperation.update,
+      ),
+    );
     try {
       final item = await _service.update(
         id: id,
@@ -136,11 +144,13 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       final updated = currentItems.map((existing) {
         return matchById(existing) ? item : existing;
       }).toList();
-      emit(ResourceState.mutated(
-        items: updated,
-        operation: ResourceOperation.update,
-        item: item,
-      ));
+      emit(
+        ResourceState.mutated(
+          items: updated,
+          operation: ResourceOperation.update,
+          item: item,
+        ),
+      );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -153,18 +163,21 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
     required String ulid,
     required bool Function(T item) matchById,
   }) async {
-    emit(ResourceState.mutating(
-      items: currentItems,
-      operation: ResourceOperation.delete,
-    ));
+    emit(
+      ResourceState.mutating(
+        items: currentItems,
+        operation: ResourceOperation.delete,
+      ),
+    );
     try {
       await _service.delete(ulid: ulid);
-      final updated =
-          currentItems.where((item) => !matchById(item)).toList();
-      emit(ResourceState.mutated(
-        items: updated,
-        operation: ResourceOperation.delete,
-      ));
+      final updated = currentItems.where((item) => !matchById(item)).toList();
+      emit(
+        ResourceState.mutated(
+          items: updated,
+          operation: ResourceOperation.delete,
+        ),
+      );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {

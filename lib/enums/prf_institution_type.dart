@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:prf_design/prf_design.dart';
 
 enum PRFInstitutionType {
   @JsonValue(1)
@@ -15,7 +18,8 @@ enum PRFInstitutionType {
   juniorSecondarySchool
   ;
 
-  String get label {
+
+  String get name {
     switch (this) {
       case PRFInstitutionType.highSchool:
         return 'High School';
@@ -46,6 +50,43 @@ enum PRFInstitutionType {
         return 5;
       case PRFInstitutionType.juniorSecondarySchool:
         return 6;
+    }
+  }
+
+  List<Color> get gradientColors {
+    switch (this) {
+      case PRFInstitutionType.primarySchool:
+      case PRFInstitutionType.community:
+        return [
+          PRFColorPalette.navy500,
+          PRFColorPalette.navy400,
+        ];
+      case PRFInstitutionType.highSchool:
+      case PRFInstitutionType.juniorSecondarySchool:
+        return [
+          const Color(0xFF2563EB),
+          const Color(0xFF60A5FA),
+        ];
+      case PRFInstitutionType.college:
+      case PRFInstitutionType.university:
+        return [
+          const Color(0xFFEA580C),
+          const Color(0xFFFB923C),
+        ];
+    }
+  }
+
+  Color get accentColor {
+    switch (this) {
+      case PRFInstitutionType.primarySchool:
+      case PRFInstitutionType.community:
+        return PRFColors.limeGreen;
+      case PRFInstitutionType.highSchool:
+      case PRFInstitutionType.juniorSecondarySchool:
+        return const Color(0xFF2563EB);
+      case PRFInstitutionType.college:
+      case PRFInstitutionType.university:
+        return const Color(0xFFEA580C);
     }
   }
 

@@ -4,7 +4,7 @@ import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class ContactCubit extends ResourceCubit<PRFContact> {
   ContactCubit({required SchoolContactService schoolContactService})
-      : super(service: schoolContactService);
+    : super(service: schoolContactService);
 
   @override
   List<String> get defaultIncludes => ['contactType'];
@@ -20,14 +20,16 @@ class ContactCubit extends ResourceCubit<PRFContact> {
     String? email,
     String? contactTypeUlid,
   }) {
-    return create(data: {
-      'name': name,
-      'phone': phone,
-      'school_ulid': schoolUlid,
-      if (email != null && email.isNotEmpty) 'email': email,
-      if (contactTypeUlid != null && contactTypeUlid.isNotEmpty)
-        'contact_type_ulid': contactTypeUlid,
-    });
+    return create(
+      data: {
+        'name': name,
+        'phone': phone,
+        'school_ulid': schoolUlid,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (contactTypeUlid != null && contactTypeUlid.isNotEmpty)
+          'contact_type_ulid': contactTypeUlid,
+      },
+    );
   }
 
   Future<void> updateContact({

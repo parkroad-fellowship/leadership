@@ -4,7 +4,7 @@ import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class ContactTypeCubit extends ResourceCubit<PRFContactType> {
   ContactTypeCubit({required ContactTypeService contactTypeService})
-      : super(service: contactTypeService);
+    : super(service: contactTypeService);
 
   Future<void> createContactType({required String name}) {
     return create(data: {'name': name});

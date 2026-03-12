@@ -5,7 +5,7 @@ import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class SchoolCubit extends ResourceCubit<PRFSchool> {
   SchoolCubit({required SchoolService schoolService})
-      : super(service: schoolService);
+    : super(service: schoolService);
 
   @override
   List<String> get defaultIncludes => ['schoolContacts.contactType'];
@@ -20,16 +20,18 @@ class SchoolCubit extends ResourceCubit<PRFSchool> {
     String? description,
     String? directions,
   }) {
-    return create(data: {
-      'name': name,
-      'total_students': totalStudents,
-      'institution_type': institutionType.value,
-      'address': address,
-      'latitude': latitude,
-      'longitude': longitude,
-      'description': ?description,
-      'directions': ?directions,
-    });
+    return create(
+      data: {
+        'name': name,
+        'total_students': totalStudents,
+        'institution_type': institutionType.value,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'description': ?description,
+        'directions': ?directions,
+      },
+    );
   }
 
   Future<void> updateSchool({
