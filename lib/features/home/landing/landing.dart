@@ -6,6 +6,7 @@ import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/landing/_handset.dart';
 import 'package:leadership/features/home/landing/_tablet.dart';
+import 'package:leadership/features/home/landing/models/landing_action_item.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
@@ -45,52 +46,52 @@ class _LandingPageState extends State<LandingPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    final actions = [
-      [
-        l10n.viewDeskActivities,
-        'assets/svgs/events.svg',
-        () => context.router.pushPath(
+    final actions = <LandingActionItem>[
+      LandingActionItem(
+        title: l10n.viewDeskActivities,
+        assetPath: 'assets/svgs/events.svg',
+        onTap: () => context.router.pushPath(
           PRFLeadershipRouter.deskActivitiesRoute,
         ),
-        700,
-        Misc.userCan(PRFPermissions.createEvent),
-      ],
-      [
-        l10n.viewMissions,
-        'assets/svgs/missions.svg',
-        () => context.router.pushPath(
+        animationDelay: 700,
+        isVisible: Misc.userCan(PRFPermissions.createEvent),
+      ),
+      LandingActionItem(
+        title: l10n.viewMissions,
+        assetPath: 'assets/svgs/missions.svg',
+        onTap: () => context.router.pushPath(
           PRFLeadershipRouter.missionsRoute,
         ),
-        700,
-        Misc.userCan(PRFPermissions.createEvent),
-      ],
-      [
-        l10n.manageRequisitions,
-        'assets/svgs/giving.svg',
-        () => context.router.pushPath(
+        animationDelay: 700,
+        isVisible: Misc.userCan(PRFPermissions.createEvent),
+      ),
+      LandingActionItem(
+        title: l10n.manageRequisitions,
+        assetPath: 'assets/svgs/giving.svg',
+        onTap: () => context.router.pushPath(
           PRFLeadershipRouter.requisitionApprovalsRoute,
         ),
-        700,
-        Misc.userCan(PRFPermissions.createEvent),
-      ],
-      [
-        l10n.viewCommitteeActivities,
-        'assets/svgs/events.svg',
-        () => context.router.pushPath(
+        animationDelay: 700,
+        isVisible: Misc.userCan(PRFPermissions.createEvent),
+      ),
+      LandingActionItem(
+        title: l10n.viewCommitteeActivities,
+        assetPath: 'assets/svgs/events.svg',
+        onTap: () => context.router.pushPath(
           PRFLeadershipRouter.deskActivitiesRoute,
         ),
-        700,
-        Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
-      ],
-      [
-        l10n.manageSchools,
-        'assets/svgs/schools.svg',
-        () => context.router.pushPath(
+        animationDelay: 700,
+        isVisible: Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
+      ),
+      LandingActionItem(
+        title: l10n.manageSchools,
+        assetPath: 'assets/svgs/schools.svg',
+        onTap: () => context.router.pushPath(
           PRFLeadershipRouter.schools,
         ),
-        700,
-        Misc.userCan(PRFPermissions.viewAnySchools),
-      ],
+        animationDelay: 700,
+        isVisible: Misc.userCan(PRFPermissions.viewAnySchools),
+      ),
     ];
 
     return AdaptiveBuilder(

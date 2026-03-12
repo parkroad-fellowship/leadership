@@ -1,8 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:leadership/features/home/landing/models/landing_action_item.dart';
+import 'package:leadership/features/home/landing/widgets/landing_action_tile.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
@@ -11,12 +12,15 @@ import 'package:prf_design/prf_design.dart';
 class LandingPageTablet extends StatelessWidget {
   const LandingPageTablet({required this.actions, super.key});
 
-  final List<List<Object>> actions;
+  final List<LandingActionItem> actions;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final width = MediaQuery.sizeOf(context).width;
+    final columns = width >= 1200 ? 3 : 2;
+    final visibleActions = actions.where((action) => action.isVisible).toList();
 
     return PopScope(
       canPop: false,
@@ -139,10 +143,9 @@ class LandingPageTablet extends StatelessWidget {
                               l10n.welcome,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
-                                fontSize: 14,
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: PRFSpacingTokens.xs),
                             Text(
                               l10n.hello(
                                 getIt<HiveService>().auth
@@ -154,7 +157,6 @@ class LandingPageTablet extends StatelessWidget {
                               style: theme.textTheme.displaySmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: theme.colorScheme.onSurface,
-                                fontSize: 28,
                               ),
                             ),
                           ],
@@ -172,17 +174,16 @@ class LandingPageTablet extends StatelessWidget {
                     PRFSpacingTokens.xxxl,
                     PRFSpacingTokens.xxxl,
                     PRFSpacingTokens.xxxl,
-                    48,
+                    PRFSpacingTokens.xxxl,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l10n.iWantTo,
-                        style: theme.textTheme.displayLarge?.copyWith(
+                        style: theme.textTheme.displayMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: theme.colorScheme.onSurface,
-                          fontSize: 48,
                           height: 1.1,
                         ),
                       ),
@@ -206,24 +207,23 @@ class LandingPageTablet extends StatelessWidget {
                   horizontal: PRFSpacingTokens.xxxl,
                 ),
                 sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: PRFSpacingTokens.xxl,
-                    mainAxisSpacing: PRFSpacingTokens.xxl,
-                    childAspectRatio: 1.4,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: PRFSpacingTokens.lg,
+                    mainAxisSpacing: PRFSpacingTokens.lg,
+                    childAspectRatio: 1.05,
                   ),
-                  delegate: SliverChildListDelegate(
-                    actions
-                        .where((action) => action[4] as bool)
-                        .map(
-                          (action) => _buildTabletActionCard(
-                            title: action[0] as String,
-                            assetPath: action[1] as String,
-                            onTap: action[2] as VoidCallback,
-                            delay: action[3] as int,
-                          ),
-                        )
-                        .toList(),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final action = visibleActions[index];
+                      return _buildTabletActionCard(
+                        title: action.title,
+                        assetPath: action.assetPath,
+                        onTap: action.onTap,
+                        delay: action.animationDelay + (index * 30),
+                      );
+                    },
+                    childCount: visibleActions.length,
                   ),
                 ),
               ),
@@ -248,20 +248,21 @@ class LandingPageTablet extends StatelessWidget {
     return Animate(
       effects: [
         FadeEffect(
-          duration: 400.ms,
+          duration: 360.ms,
           delay: Duration(milliseconds: delay),
         ),
         SlideEffect(
-          duration: 500.ms,
+          duration: 420.ms,
           delay: Duration(milliseconds: delay),
-          begin: const Offset(0, 0.2),
+          begin: const Offset(0, 0.08),
           curve: Curves.easeOut,
         ),
       ],
-      child: PRFActionCard(
+      child: LandingActionTile(
         title: title,
-        image: SvgPicture.asset(assetPath, height: 70),
+        assetPath: assetPath,
         onTap: onTap,
+        assetHeight: 64,
       ),
     );
   }
