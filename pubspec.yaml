@@ -87,5 +87,3 @@ flutter:
   assets:
     - assets/images/
     - assets/svgs/
-    - assets/google_fonts/lato/
-    - assets/images/authentication/

@@ -39,7 +39,7 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
 
     LicenseRegistry.addLicense(() async* {
       final license = await rootBundle.loadString(
-        'assets/google_fonts/OFL.txt',
+        'packages/prf_design/assets/google_fonts/lato/OFL.txt',
       );
       yield LicenseEntryWithLineBreaks(['google_fonts'], license);
     });
