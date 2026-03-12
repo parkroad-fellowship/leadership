@@ -1,23 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/schools/cubit/create_contact_type_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubit.dart';
+import 'package:leadership/models/remote/prf_contact_type.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
-class AddContactTypeViewHandset extends StatefulWidget {
-  const AddContactTypeViewHandset({
-    required this.onContactTypeCreated,
+class ContactTypeFormViewHandset extends StatefulWidget {
+  const ContactTypeFormViewHandset({
+    required this.onSaved,
+    this.contactType,
     super.key,
   });
 
-  final VoidCallback onContactTypeCreated;
+  final PRFContactType? contactType;
+  final VoidCallback onSaved;
 
   @override
-  State<AddContactTypeViewHandset> createState() =>
-      _AddContactTypeViewHandsetState();
+  State<ContactTypeFormViewHandset> createState() =>
+      _ContactTypeFormViewHandsetState();
 }
 
-class _AddContactTypeViewHandsetState extends State<AddContactTypeViewHandset> {
-  final _nameController = TextEditingController();
+class _ContactTypeFormViewHandsetState
+    extends State<ContactTypeFormViewHandset> {
+  late final TextEditingController _nameController;
+
+  bool get _isEditing => widget.contactType != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(
+      text: widget.contactType?.name ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -48,39 +63,58 @@ class _AddContactTypeViewHandsetState extends State<AddContactTypeViewHandset> {
   void _submitForm() {
     if (!_validateForm()) return;
 
-    context.read<CreateContactTypeCubit>().createContactType(
-      name: _nameController.text.trim(),
-    );
+    final cubit = context.read<ContactTypeCubit>();
+
+    if (_isEditing) {
+      cubit.updateContactType(
+        ulid: widget.contactType!.ulid,
+        name: _nameController.text.trim(),
+      );
+    } else {
+      cubit.createContactType(
+        name: _nameController.text.trim(),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocConsumer<CreateContactTypeCubit, CreateContactTypeState>(
+    return BlocConsumer<ContactTypeCubit, ResourceState<PRFContactType>>(
+      listenWhen: (prev, curr) =>
+          (curr is ResourceMutated<PRFContactType> &&
+              curr.operation != ResourceOperation.delete) ||
+          curr is ResourceError<PRFContactType>,
       listener: (context, state) {
-        state.maybeWhen(
-          loaded: (newContactType) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Contact type created successfully'),
-                backgroundColor: theme.colorScheme.primary,
-              ),
-            );
-            widget.onContactTypeCreated();
-          },
-          error: (message) {
+        switch (state) {
+          case ResourceMutated<PRFContactType>(:final operation):
+            if (operation == ResourceOperation.create ||
+                operation == ResourceOperation.update) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isEditing
+                        ? 'Contact type updated successfully'
+                        : 'Contact type created successfully',
+                  ),
+                  backgroundColor: theme.colorScheme.primary,
+                ),
+              );
+              widget.onSaved();
+            }
+          case ResourceError<PRFContactType>(:final message):
             _showErrorSnackBar(message);
-          },
-          orElse: () {},
-        );
+          default:
+            break;
+        }
       },
+      buildWhen: (prev, curr) =>
+          curr is ResourceMutating<PRFContactType> ||
+          curr is ResourceError<PRFContactType>,
       builder: (context, state) {
-        final isLoading = state.maybeWhen(
-          loading: () => true,
-          orElse: () => false,
-        );
+        final isLoading = state is ResourceMutating<PRFContactType>;
 
         return Container(
           decoration: BoxDecoration(
@@ -137,13 +171,13 @@ class _AddContactTypeViewHandsetState extends State<AddContactTypeViewHandset> {
       child: Column(
         children: [
           Icon(
-            Icons.contact_page,
+            _isEditing ? Icons.edit_note : Icons.contact_page,
             size: 32,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            'Add Contact Type',
+            _isEditing ? 'Edit Contact Type' : 'Add Contact Type',
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -151,7 +185,9 @@ class _AddContactTypeViewHandsetState extends State<AddContactTypeViewHandset> {
           ),
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
-            'Create a new contact type to keep records organized',
+            _isEditing
+                ? 'Update the contact type name to keep records current'
+                : 'Create a new contact type to keep records organized',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
             ),
@@ -203,7 +239,9 @@ class _AddContactTypeViewHandsetState extends State<AddContactTypeViewHandset> {
             width: double.infinity,
             child: PRFPrimaryButton(
               onPressed: _submitForm,
-              title: 'Create Contact Type',
+              title: _isEditing
+                  ? 'Update Contact Type'
+                  : 'Create Contact Type',
               disabled: isLoading,
               isLoading: isLoading,
             ),

@@ -25,18 +25,9 @@ import 'package:leadership/features/home/landing/missions/cubit/get_past_mission
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/create_contact_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/create_contact_type_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/create_school_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/delete_contact_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/delete_contact_type_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/delete_school_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/get_contact_types_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/get_contacts_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/get_schools_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/update_contact_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/update_contact_type_cubit.dart';
-import 'package:leadership/features/home/landing/schools/cubit/update_school_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/contact_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/accounting_event_service.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
@@ -329,64 +320,19 @@ class Singletons {
           accountingEventService: getIt<AccountingEventService>(),
         ),
       ),
-      BlocProvider<GetSchoolsCubit>(
-        create: (context) => GetSchoolsCubit(
+      BlocProvider<SchoolCubit>(
+        create: (context) => SchoolCubit(
           schoolService: getIt<SchoolService>(),
         ),
       ),
-      BlocProvider<CreateSchoolCubit>(
-        create: (context) => CreateSchoolCubit(
-          schoolService: getIt<SchoolService>(),
-        ),
-      ),
-      BlocProvider<UpdateSchoolCubit>(
-        create: (context) => UpdateSchoolCubit(
-          schoolService: getIt<SchoolService>(),
-        ),
-      ),
-      BlocProvider<DeleteSchoolCubit>(
-        create: (context) => DeleteSchoolCubit(
-          schoolService: getIt<SchoolService>(),
-        ),
-      ),
-      BlocProvider<GetContactTypesCubit>(
-        create: (context) => GetContactTypesCubit(
+      BlocProvider<ContactTypeCubit>(
+        create: (context) => ContactTypeCubit(
           contactTypeService: getIt<ContactTypeService>(),
         ),
       ),
-      BlocProvider<CreateContactCubit>(
-        create: (context) => CreateContactCubit(
+      BlocProvider<ContactCubit>(
+        create: (context) => ContactCubit(
           schoolContactService: getIt<SchoolContactService>(),
-        ),
-      ),
-      BlocProvider<GetContactsCubit>(
-        create: (context) => GetContactsCubit(
-          schoolContactService: getIt<SchoolContactService>(),
-        ),
-      ),
-      BlocProvider<UpdateContactCubit>(
-        create: (context) => UpdateContactCubit(
-          schoolContactService: getIt<SchoolContactService>(),
-        ),
-      ),
-      BlocProvider<DeleteContactCubit>(
-        create: (context) => DeleteContactCubit(
-          schoolContactService: getIt<SchoolContactService>(),
-        ),
-      ),
-      BlocProvider<CreateContactTypeCubit>(
-        create: (context) => CreateContactTypeCubit(
-          contactTypeService: getIt<ContactTypeService>(),
-        ),
-      ),
-      BlocProvider<UpdateContactTypeCubit>(
-        create: (context) => UpdateContactTypeCubit(
-          contactTypeService: getIt<ContactTypeService>(),
-        ),
-      ),
-      BlocProvider<DeleteContactTypeCubit>(
-        create: (context) => DeleteContactTypeCubit(
-          contactTypeService: getIt<ContactTypeService>(),
         ),
       ),
     ];

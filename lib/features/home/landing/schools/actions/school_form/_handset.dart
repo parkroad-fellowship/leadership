@@ -1,37 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
-import 'package:leadership/features/home/landing/schools/cubit/create_school_cubit.dart';
+import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
+import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/shared_widgets/_index.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
-class AddSchoolViewHandset extends StatefulWidget {
-  const AddSchoolViewHandset({
-    required this.onSchoolCreated,
+class SchoolFormViewHandset extends StatefulWidget {
+  const SchoolFormViewHandset({
+    required this.onSaved,
+    this.school,
     super.key,
   });
 
-  final VoidCallback onSchoolCreated;
+  final PRFSchool? school;
+  final VoidCallback onSaved;
 
   @override
-  State<AddSchoolViewHandset> createState() => _AddSchoolViewHandsetState();
+  State<SchoolFormViewHandset> createState() => _SchoolFormViewHandsetState();
 }
 
-class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
-  final _nameController = TextEditingController();
-  final _studentsController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _directionsController = TextEditingController();
-  final _latitudeController = TextEditingController(text: '0.0');
-  final _longitudeController = TextEditingController(text: '0.0');
+class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _studentsController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _directionsController;
+  late final TextEditingController _latitudeController;
+  late final TextEditingController _longitudeController;
 
   late PRFInstitutionType _selectedInstitutionType;
+
+  bool get _isEditing => widget.school != null;
 
   @override
   void initState() {
     super.initState();
-    _selectedInstitutionType = PRFInstitutionType.primarySchool;
+    final school = widget.school;
+    _nameController = TextEditingController(text: school?.name ?? '');
+    _studentsController = TextEditingController(
+      text: school?.totalStudents.toString() ?? '',
+    );
+    _addressController = TextEditingController(text: school?.address ?? '');
+    _descriptionController = TextEditingController(
+      text: school?.description ?? '',
+    );
+    _directionsController = TextEditingController(
+      text: school?.directions ?? '',
+    );
+    _latitudeController = TextEditingController(
+      text: school?.latitude.toString() ?? '0.0',
+    );
+    _longitudeController = TextEditingController(
+      text: school?.longitude.toString() ?? '0.0',
+    );
+    _selectedInstitutionType =
+        school?.institutionType ?? PRFInstitutionType.primarySchool;
   }
 
   @override
@@ -85,47 +110,72 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
     final students = int.parse(_studentsController.text.trim());
     final lat = double.parse(_latitudeController.text.trim());
     final lon = double.parse(_longitudeController.text.trim());
+    final cubit = context.read<SchoolCubit>();
 
-    context.read<CreateSchoolCubit>().createSchool(
-      name: _nameController.text.trim(),
-      totalStudents: students,
-      institutionType: _selectedInstitutionType,
-      address: _addressController.text.trim(),
-      latitude: lat,
-      longitude: lon,
-      description: _descriptionController.text.trim(),
-      directions: _directionsController.text.trim(),
-    );
+    if (_isEditing) {
+      cubit.updateSchool(
+        ulid: widget.school!.ulid,
+        name: _nameController.text.trim(),
+        totalStudents: students,
+        institutionType: _selectedInstitutionType,
+        address: _addressController.text.trim(),
+        latitude: lat,
+        longitude: lon,
+        description: _descriptionController.text.trim(),
+        directions: _directionsController.text.trim(),
+      );
+    } else {
+      cubit.createSchool(
+        name: _nameController.text.trim(),
+        totalStudents: students,
+        institutionType: _selectedInstitutionType,
+        address: _addressController.text.trim(),
+        latitude: lat,
+        longitude: lon,
+        description: _descriptionController.text.trim(),
+        directions: _directionsController.text.trim(),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocConsumer<CreateSchoolCubit, CreateSchoolState>(
+    return BlocConsumer<SchoolCubit, ResourceState<PRFSchool>>(
+      listenWhen: (prev, curr) =>
+          (curr is ResourceMutated<PRFSchool> &&
+              curr.operation != ResourceOperation.delete) ||
+          curr is ResourceError<PRFSchool>,
       listener: (context, state) {
-        state.maybeWhen(
-          loaded: (newSchool) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('School created successfully'),
-                backgroundColor: theme.colorScheme.primary,
-              ),
-            );
-            widget.onSchoolCreated();
-          },
-          error: (message) {
+        switch (state) {
+          case ResourceMutated<PRFSchool>(:final operation):
+            if (operation == ResourceOperation.create ||
+                operation == ResourceOperation.update) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isEditing
+                        ? 'School updated successfully'
+                        : 'School created successfully',
+                  ),
+                  backgroundColor: theme.colorScheme.primary,
+                ),
+              );
+              widget.onSaved();
+            }
+          case ResourceError<PRFSchool>(:final message):
             _showErrorSnackBar(message);
-          },
-          orElse: () {},
-        );
+          default:
+            break;
+        }
       },
+      buildWhen: (prev, curr) =>
+          curr is ResourceMutating<PRFSchool> ||
+          curr is ResourceError<PRFSchool>,
       builder: (context, state) {
-        final isLoading = state.maybeWhen(
-          loading: () => true,
-          orElse: () => false,
-        );
+        final isLoading = state is ResourceMutating<PRFSchool>;
 
         return Container(
           decoration: BoxDecoration(
@@ -182,13 +232,13 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
       child: Column(
         children: [
           Icon(
-            Icons.school,
+            _isEditing ? Icons.edit : Icons.school,
             size: 32,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            'Add New School',
+            _isEditing ? 'Edit School' : 'Add New School',
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -196,7 +246,9 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
           ),
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
-            'Fill in the details below to create a school record',
+            _isEditing
+                ? 'Update the details below to keep records current'
+                : 'Fill in the details below to create a school record',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
             ),
@@ -368,7 +420,7 @@ class _AddSchoolViewHandsetState extends State<AddSchoolViewHandset> {
             width: double.infinity,
             child: PRFPrimaryButton(
               onPressed: _submitForm,
-              title: 'Create School',
+              title: _isEditing ? 'Update School' : 'Create School',
               disabled: isLoading,
               isLoading: isLoading,
             ),
