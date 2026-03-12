@@ -48,88 +48,95 @@ class _RequisitionApprovalsPageHandsetState
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            l10n.manageReqs,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurface,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          leading: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: Column(
+        children: [
+          ColoredBox(
+            color: theme.colorScheme.primary,
+            child: Column(
+              children: [
+                PRFBrandedNavBar(
+                  title: l10n.manageReqs,
+                  onBack: () => context.router.popUntilRouteWithPath(
+                    PRFLeadershipRouter.landingRoute,
+                  ),
+                  actions: [
+                    BlocBuilder<
+                      GetApprovalRequisitionsCubit,
+                      GetApprovalRequisitionsState
+                    >(
+                      builder: (context, state) => state.maybeWhen(
+                        loading: () => const SizedBox.square(
+                          dimension: 20,
+                          child: PRFCircularProgressIndicator(),
+                        ),
+                        orElse: SizedBox.shrink,
+                      ),
+                    ),
+                    const SizedBox(width: PRFSpacingTokens.sm),
+                    BlocBuilder<
+                      GetClosedRequisitionsCubit,
+                      GetClosedRequisitionsState
+                    >(
+                      builder: (context, state) => state.maybeWhen(
+                        loading: () => const SizedBox.square(
+                          dimension: 20,
+                          child: PRFCircularProgressIndicator(),
+                        ),
+                        orElse: SizedBox.shrink,
+                      ),
+                    ),
+                    const SizedBox(width: PRFSpacingTokens.lg),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    PRFSpacingTokens.lg,
+                    0,
+                    PRFSpacingTokens.lg,
+                    PRFSpacingTokens.sm,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        labelColor: theme.colorScheme.onPrimary,
+                        unselectedLabelColor: theme.colorScheme.onPrimary
+                            .withValues(alpha: 0.65),
+                        indicatorColor: theme.colorScheme.secondary,
+                        dividerColor: theme.colorScheme.onPrimary.withValues(
+                          alpha: 0.2,
+                        ),
+                        labelStyle: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        tabs: [
+                          Tab(text: l10n.pendingApproval),
+                          Tab(text: l10n.closed),
+                          Tab(text: l10n.drafts),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            margin: const EdgeInsets.only(left: PRFSpacingTokens.sm),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: theme.colorScheme.onPrimaryContainer,
-                size: 20,
-              ),
-              onPressed: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.landingRoute,
-              ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildApprovalRequisitions(context),
+                _buildClosedRequisitions(context),
+                _buildDraftRequisitions(context),
+              ],
             ),
           ),
-          actions: [
-            BlocBuilder<
-              GetApprovalRequisitionsCubit,
-              GetApprovalRequisitionsState
-            >(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.sm),
-            BlocBuilder<GetClosedRequisitionsCubit, GetClosedRequisitionsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.lg),
-          ],
-          backgroundColor: Colors.transparent,
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: [
-              Tab(text: l10n.pendingApproval),
-              Tab(text: l10n.closed),
-              Tab(text: l10n.drafts),
-            ],
-          ),
-        ),
-
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildApprovalRequisitions(context),
-            _buildClosedRequisitions(context),
-            _buildDraftRequisitions(context),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -186,8 +193,8 @@ class _RequisitionApprovalsPageHandsetState
 
             return RefreshIndicator(
               onRefresh: () => context
-                  .read<GetApprovalRequisitionsCubit>()
-                  .getApprovalRequisitions(),
+                  .read<GetClosedRequisitionsCubit>()
+                  .getClosedRequisitions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
@@ -285,8 +292,8 @@ class _RequisitionApprovalsPageHandsetState
 
             return RefreshIndicator(
               onRefresh: () => context
-                  .read<GetApprovalRequisitionsCubit>()
-                  .getApprovalRequisitions(),
+                  .read<GetDraftRequisitionsCubit>()
+                  .getDraftRequisitions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(

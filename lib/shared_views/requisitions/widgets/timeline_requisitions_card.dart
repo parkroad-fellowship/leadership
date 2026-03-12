@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/utils/misc.dart';
+import 'package:prf_design/prf_design.dart';
 
 class TimelineRequisitionCard extends StatelessWidget {
   const TimelineRequisitionCard({
@@ -26,13 +27,13 @@ class TimelineRequisitionCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 60,
+          width: 58,
           child: Column(
             children: [
               // Date badge
               Container(
-                width: 50,
-                height: 50,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -42,11 +43,11 @@ class TimelineRequisitionCard extends StatelessWidget {
                       statusColor.withValues(alpha: 0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   boxShadow: [
                     BoxShadow(
                       color: statusColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
+                      blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -76,7 +77,9 @@ class TimelineRequisitionCard extends StatelessWidget {
                 Container(
                   width: 2,
                   height: 60,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    vertical: PRFSpacingTokens.sm,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -93,23 +96,25 @@ class TimelineRequisitionCard extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(width: 16),
+        const SizedBox(width: PRFSpacingTokens.md),
 
         Expanded(
           child: GestureDetector(
             onTap: onTap,
             child: Container(
-              margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              margin: EdgeInsets.only(
+                bottom: isLast ? 0 : PRFSpacingTokens.md,
+              ),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                 border: Border.all(
                   color: statusColor.withValues(alpha: 0.2),
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 12,
+                    blurRadius: 14,
                     offset: const Offset(0, 3),
                   ),
                   BoxShadow(
@@ -120,14 +125,14 @@ class TimelineRequisitionCard extends StatelessWidget {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Header with gradient
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -145,10 +150,14 @@ class TimelineRequisitionCard extends StatelessWidget {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(6),
+                                padding: const EdgeInsets.all(
+                                  PRFSpacingTokens.xs,
+                                ),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.sm,
+                                  ),
                                 ),
                                 child: Icon(
                                   Icons.business_outlined,
@@ -156,7 +165,7 @@ class TimelineRequisitionCard extends StatelessWidget {
                                   color: theme.colorScheme.onPrimaryContainer,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: PRFSpacingTokens.sm),
                               Expanded(
                                 child: Text(
                                   'KES '
@@ -172,12 +181,14 @@ class TimelineRequisitionCard extends StatelessWidget {
                               const Spacer(),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: PRFSpacingTokens.sm,
+                                  vertical: PRFSpacingTokens.xs,
                                 ),
                                 decoration: BoxDecoration(
                                   color: statusColor.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.sm,
+                                  ),
                                 ),
                                 child: Text(
                                   requisition.approvalStatus.name,
@@ -195,16 +206,18 @@ class TimelineRequisitionCard extends StatelessWidget {
 
                     // Details
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Date and Time
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(PRFSpacingTokens.md),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.md,
+                              ),
                               border: Border.all(
                                 color: theme.colorScheme.outline.withValues(
                                   alpha: 0.2,
@@ -218,7 +231,7 @@ class TimelineRequisitionCard extends StatelessWidget {
                                   size: 20,
                                   color: theme.colorScheme.primary,
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: PRFSpacingTokens.md),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -233,7 +246,9 @@ class TimelineRequisitionCard extends StatelessWidget {
                                                   .onSurfaceVariant,
                                             ),
                                       ),
-                                      const SizedBox(height: 2),
+                                      const SizedBox(
+                                        height: PRFSpacingTokens.xs,
+                                      ),
                                       Text(
                                         Misc.formatDate(
                                           requisitionDate,
@@ -254,7 +269,7 @@ class TimelineRequisitionCard extends StatelessWidget {
                           ),
 
                           if (requisition.remarks?.isNotEmpty ?? false) ...[
-                            const SizedBox(height: 16),
+                            const SizedBox(height: PRFSpacingTokens.md),
                             Text(
                               requisition.remarks!,
                               style: theme.textTheme.bodyMedium?.copyWith(
@@ -265,14 +280,14 @@ class TimelineRequisitionCard extends StatelessWidget {
                             ),
                           ],
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: PRFSpacingTokens.md),
 
                           // View Details button
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                              horizontal: PRFSpacingTokens.md,
+                              vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -281,7 +296,9 @@ class TimelineRequisitionCard extends StatelessWidget {
                                   statusColor.withValues(alpha: 0.05),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.sm,
+                              ),
                               border: Border.all(
                                 color: statusColor.withValues(alpha: 0.3),
                               ),
@@ -296,7 +313,7 @@ class TimelineRequisitionCard extends StatelessWidget {
                                     color: statusColor,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: PRFSpacingTokens.sm),
                                 Icon(
                                   Icons.arrow_forward_rounded,
                                   size: 18,
