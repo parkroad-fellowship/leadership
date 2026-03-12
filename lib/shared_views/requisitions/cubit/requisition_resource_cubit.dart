@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
@@ -78,6 +77,54 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         remarks: remarks,
       ).toJson(),
     );
+  }
+
+  Future<void> updateRequisition({
+    required String requisitionUlid,
+    required PRFAccountingEvent accountingEvent,
+    required DateTime requisitionDate,
+    required String remarks,
+  }) async {
+    emit(
+      ResourceState.mutating(
+        items: currentItems,
+        operation: ResourceOperation.update,
+      ),
+    );
+
+    try {
+      final member = _hiveService.retrieveMember()!;
+
+      await _requisitionService.update(
+        id: requisitionUlid,
+        data: PRFRequisitionDTO(
+          memberUlid: member.ulid,
+          accountingEventUlid: accountingEvent.ulid,
+          responsibleDesk: accountingEvent.responsibleDesk,
+          requisitionDate: requisitionDate,
+          remarks: remarks,
+        ).toJson(),
+      );
+
+      emit(
+        ResourceState.mutated(
+          items: currentItems,
+          operation: ResourceOperation.update,
+        ),
+      );
+
+      if (_lastRequisitionUlid != null) {
+        await loadRequisition(requisitionUlid: _lastRequisitionUlid!);
+      } else if (_lastAccountingEventUlid != null) {
+        await loadForAccountingEvent(
+          accountingEventUlid: _lastAccountingEventUlid!,
+        );
+      }
+    } on Failure catch (e) {
+      emit(ResourceState.error(message: e.message, items: currentItems));
+    } catch (e) {
+      emit(ResourceState.error(message: e.toString(), items: currentItems));
+    }
   }
 
   Future<void> requestReview({

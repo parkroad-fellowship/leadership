@@ -5,8 +5,8 @@ import 'package:gaimon/gaimon.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
-import 'package:leadership/shared_views/requisitions/cubit/get_requisition_item_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/update_requisition_item_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class EditRequisitionItemViewHandset extends StatefulWidget {
@@ -46,7 +46,7 @@ class _EditRequisitionItemViewHandsetState
     super.initState();
     // Get expense categories and requisition item when widget initializes
     context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
-    context.read<GetRequisitionItemCubit>().getRequisitionItem(
+    context.read<RequisitionItemResourceCubit>().loadRequisitionItem(
       requisitionItemUlid: widget.requisitionItemUlid,
     );
 
@@ -88,10 +88,53 @@ class _EditRequisitionItemViewHandsetState
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<GetRequisitionItemCubit, GetRequisitionItemState>(
+    return BlocListener<
+      RequisitionItemResourceCubit,
+      ResourceState<PRFRequisitionItem>
+    >(
       listener: (context, state) {
-        state.mapOrNull(
-          loaded: (state) => _populateForm(state.requisitionItem),
+        state.maybeWhen(
+          listLoaded: (items, _, _) {
+            if (items.isNotEmpty) {
+              _populateForm(items.first);
+            }
+          },
+          mutating: (_, operation) {
+            if (operation == ResourceOperation.update) {
+              setState(() {
+                _isLoading = true;
+              });
+            }
+          },
+          mutated: (_, operation, item) {
+            if (operation == ResourceOperation.update) {
+              setState(() {
+                _isLoading = false;
+              });
+              if (item != null) {
+                _populateForm(item);
+              }
+              Gaimon.success();
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Requisition item updated successfully'),
+                ),
+              );
+            }
+          },
+          error: (message, _) {
+            if (_isLoading) {
+              setState(() {
+                _isLoading = false;
+              });
+              Gaimon.error();
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(message)));
+            }
+          },
+          orElse: () {},
         );
       },
       child: Container(
@@ -178,21 +221,35 @@ class _EditRequisitionItemViewHandsetState
                 const SizedBox(height: PRFSpacingTokens.xxl),
 
                 // Loading state for requisition item
-                BlocBuilder<GetRequisitionItemCubit, GetRequisitionItemState>(
+                BlocBuilder<
+                  RequisitionItemResourceCubit,
+                  ResourceState<PRFRequisitionItem>
+                >(
                   builder: (context, state) {
-                    return state.when(
-                      initial: () => const PRFCircularProgressIndicator(),
-                      loading: () => const PRFCircularProgressIndicator(),
-                      loaded: (_) => _buildFormContent(),
-                      error: (message) => Center(
-                        child: Text(
-                          'Error loading requisition item: $message',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ),
-                    );
+                    return switch (state) {
+                      ResourceInitial<PRFRequisitionItem>() ||
+                      ResourceListLoading<PRFRequisitionItem>() =>
+                        const PRFCircularProgressIndicator(),
+                      ResourceListLoaded<PRFRequisitionItem>() ||
+                      ResourceMutating<PRFRequisitionItem>() ||
+                      ResourceMutated<PRFRequisitionItem>() =>
+                        _buildFormContent(),
+                      ResourceError<PRFRequisitionItem>(
+                        :final message,
+                        :final items,
+                      ) =>
+                        items.isNotEmpty
+                            ? _buildFormContent()
+                            : Center(
+                                child: Text(
+                                  'Error loading requisition item: $message',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                ),
+                              ),
+                      _ => const PRFCircularProgressIndicator(),
+                    };
                   },
                 ),
 
@@ -371,47 +428,11 @@ class _EditRequisitionItemViewHandsetState
         const SizedBox(height: PRFSpacingTokens.xxl),
 
         // Submit Button
-        BlocConsumer<UpdateRequisitionItemCubit, UpdateRequisitionItemState>(
-              listener: (context, state) {
-                state.mapOrNull(
-                  loading: (_) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  },
-                  loaded: (_) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    Gaimon.success();
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Requisition item updated successfully',
-                        ),
-                      ),
-                    );
-                  },
-                  error: (state) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    Gaimon.error();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message)),
-                    );
-                  },
-                );
-              },
-              builder: (context, state) {
-                return PRFPrimaryButton(
-                  onPressed: _submitForm,
-                  title: 'Update Item',
-                  disabled: !_isFormValid,
-                  isLoading: _isLoading,
-                );
-              },
+        PRFPrimaryButton(
+              onPressed: _submitForm,
+              title: 'Update Item',
+              disabled: !_isFormValid,
+              isLoading: _isLoading,
             )
             .animate(delay: PRFMotionTokens.enterMedium)
             .slideY(begin: 0.3)
@@ -491,7 +512,7 @@ class _EditRequisitionItemViewHandsetState
       return;
     }
 
-    await context.read<UpdateRequisitionItemCubit>().updateRequisitionItem(
+    await context.read<RequisitionItemResourceCubit>().updateRequisitionItem(
       requisitionUlid: currentRequisitionItem!.requisition!.ulid,
       requisitionItemUlid: widget.requisitionItemUlid,
       expenseCategoryUlid: selectedExpenseCategory!.ulid,

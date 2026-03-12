@@ -10,7 +10,6 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
-import 'package:leadership/shared_views/requisitions/cubit/delete_requisition_item_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/approval_requisition/_handset.dart';
@@ -41,6 +40,8 @@ class RequisitionDetailsPageHandset extends StatefulWidget {
 class _RequisitionDetailsPageHandsetState
     extends State<RequisitionDetailsPageHandset>
     with CurrentMemberMixin {
+  String? _deletingRequisitionItemUlid;
+
   @override
   void initState() {
     super.initState();
@@ -417,24 +418,29 @@ class _RequisitionDetailsPageHandsetState
     final isDeletable =
         isEditable && Misc.userCan(PRFPermissions.deleteRequisitionItem);
 
-    return BlocListener<DeleteRequisitionItemCubit, DeleteRequisitionItemState>(
+    return BlocListener<
+      RequisitionItemResourceCubit,
+      ResourceState<PRFRequisitionItem>
+    >(
           listener: (context, state) {
+            if (_deletingRequisitionItemUlid != item.ulid) return;
+
             state.maybeWhen(
-              loaded: () {
-                // Refresh the lists after deletion
-                _reloadRequisition();
-                context.read<RequisitionItemResourceCubit>().loadForRequisition(
-                  requisitionUlid: widget.requisitionUlid,
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Item deleted successfully'),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+              mutated: (_, operation, _) {
+                if (operation == ResourceOperation.delete) {
+                  setState(() => _deletingRequisitionItemUlid = null);
+                  _reloadRequisition();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Item deleted successfully'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               },
-              error: (message) {
+              error: (message, _) {
+                setState(() => _deletingRequisitionItemUlid = null);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(message),
@@ -774,29 +780,34 @@ class _RequisitionDetailsPageHandsetState
                         top: 10,
                         child:
                             BlocBuilder<
-                              DeleteRequisitionItemCubit,
-                              DeleteRequisitionItemState
+                              RequisitionItemResourceCubit,
+                              ResourceState<PRFRequisitionItem>
                             >(
                               builder: (context, state) {
-                                final isLoading = state.maybeWhen(
-                                  orElse: () => false,
-                                  loading: (loadingIndex) =>
-                                      loadingIndex == index,
-                                );
+                                final isLoading =
+                                    _deletingRequisitionItemUlid == item.ulid &&
+                                    state.maybeWhen(
+                                      mutating: (_, operation) =>
+                                          operation ==
+                                          ResourceOperation.delete,
+                                      orElse: () => false,
+                                    );
+                                final canDelete =
+                                    !isLoading &&
+                                    _deletingRequisitionItemUlid == null;
                                 return Material(
                                   color: Colors.transparent,
                                   child: Tooltip(
                                     message: 'Delete Item',
                                     child: InkWell(
-                                      onTap: isLoading
-                                          ? null
-                                          : () => _showDeleteConfirmationDialog(
+                                      onTap: canDelete
+                                          ? () => _showDeleteConfirmationDialog(
                                               context,
                                               item,
                                               theme,
                                               l10n,
-                                              index,
-                                            ),
+                                            )
+                                          : null,
                                       borderRadius: BorderRadius.circular(22),
                                       child: Container(
                                         padding: const EdgeInsets.all(10),
@@ -983,12 +994,33 @@ class _RequisitionDetailsPageHandsetState
     PRFRequisitionItem item,
     ThemeData theme,
     AppLocalizations l10n,
-    int index,
   ) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
+        return BlocListener<
+          RequisitionItemResourceCubit,
+          ResourceState<PRFRequisitionItem>
+        >(
+          listener: (listenerContext, state) {
+            state.maybeWhen(
+              mutated: (_, operation, _) {
+                if (
+                    operation == ResourceOperation.delete &&
+                    dialogContext.mounted
+                ) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+              error: (_, _) {
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+              orElse: () {},
+            );
+          },
+          child: AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
           ),
@@ -1076,28 +1108,21 @@ class _RequisitionDetailsPageHandsetState
                 ),
               ),
             ),
-            BlocConsumer<
-              DeleteRequisitionItemCubit,
-              DeleteRequisitionItemState
+            BlocBuilder<
+              RequisitionItemResourceCubit,
+              ResourceState<PRFRequisitionItem>
             >(
-              listener: (listenerContext, state) {
-                state.maybeWhen(
-                  loaded: () {
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop();
-                    }
-                  },
-                  error: (message) {
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop();
-                    }
-                  },
-                  orElse: () {},
-                );
-              },
               builder: (consumerContext, state) {
-                return state.maybeWhen(
-                  loading: (_) => Padding(
+                final isLoading =
+                    _deletingRequisitionItemUlid == item.ulid &&
+                    state.maybeWhen(
+                      mutating: (_, operation) =>
+                          operation == ResourceOperation.delete,
+                      orElse: () => false,
+                    );
+
+                if (isLoading) {
+                  return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -1112,13 +1137,14 @@ class _RequisitionDetailsPageHandsetState
                         ),
                       ),
                     ),
-                  ),
-                  orElse: () =>
-                      _buildDeleteActionButton(context, theme, item, index),
-                );
+                  );
+                }
+
+                return _buildDeleteActionButton(context, theme, item);
               },
             ),
           ],
+          ),
         );
       },
     );
@@ -1128,13 +1154,12 @@ class _RequisitionDetailsPageHandsetState
     BuildContext context,
     ThemeData theme,
     PRFRequisitionItem item,
-    int index,
   ) {
     return ElevatedButton.icon(
       onPressed: () {
-        context.read<DeleteRequisitionItemCubit>().deleteRequisitionItem(
+        setState(() => _deletingRequisitionItemUlid = item.ulid);
+        context.read<RequisitionItemResourceCubit>().deleteRequisitionItem(
           requisitionItemUlid: item.ulid,
-          index: index,
         );
       },
       icon: const Icon(Icons.delete_outline, size: 18),

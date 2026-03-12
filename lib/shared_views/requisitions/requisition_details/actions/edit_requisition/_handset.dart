@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/update_requisition_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -98,6 +97,30 @@ class _EditRequisitionViewHandsetState
                 case ResourceMutated<PRFRequisition>(:final items)
                     when items.isNotEmpty:
                   _populateForm(items.first);
+                case ResourceMutating<PRFRequisition>(:final operation)
+                    when operation == ResourceOperation.update:
+                  setState(() {
+                    _isLoading = true;
+                  });
+                case ResourceMutated<PRFRequisition>(:final operation)
+                    when operation == ResourceOperation.update:
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.requisitionUpdated)),
+                  );
+                  Gaimon.success();
+                  Navigator.of(context).pop(true);
+                case ResourceError<PRFRequisition>(:final message)
+                    when _isLoading:
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $message')),
+                  );
+                  Gaimon.error();
                 default:
                   break;
               }
@@ -256,44 +279,11 @@ class _EditRequisitionViewHandsetState
 
                 const SizedBox(height: PRFSpacingTokens.xxl),
 
-                BlocConsumer<UpdateRequisitionCubit, UpdateRequisitionState>(
-                      listener: (context, state) {
-                        state.maybeWhen(
-                          loading: () {
-                            setState(() {
-                              _isLoading = true;
-                            });
-                          },
-                          loaded: () {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.requisitionUpdated)),
-                            );
-                            Gaimon.success();
-                            Navigator.of(context).pop(true); // Indicate success
-                          },
-                          error: (message) {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $message')),
-                            );
-                            Gaimon.error();
-                          },
-                          orElse: () {},
-                        );
-                      },
-                      builder: (context, state) {
-                        return PRFPrimaryButton(
-                          onPressed: _submitForm,
-                          title: 'Update',
-                          disabled: !_isFormValid,
-                          isLoading: _isLoading,
-                        );
-                      },
+                PRFPrimaryButton(
+                      onPressed: _submitForm,
+                      title: 'Update',
+                      disabled: !_isFormValid,
+                      isLoading: _isLoading,
                     )
                     .animate(delay: PRFMotionTokens.enterMedium)
                     .slideY(begin: 0.3)
@@ -327,7 +317,7 @@ class _EditRequisitionViewHandsetState
       return;
     }
 
-    await context.read<UpdateRequisitionCubit>().updateRequisition(
+    await context.read<RequisitionResourceCubit>().updateRequisition(
       accountingEvent: requisition!.accountingEvent!,
       requisitionUlid: widget.requisitionUlid,
       requisitionDate: requisitionDate!,

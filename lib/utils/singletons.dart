@@ -46,12 +46,8 @@ import 'package:leadership/shared_views/expenses/cubit/delete_receipt_cubit.dart
 import 'package:leadership/shared_views/expenses/cubit/edit_allocation_entry_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/send_financial_report_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/delete_requisition_item_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/get_requisition_item_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/update_requisition_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/update_requisition_item_cubit.dart';
 import 'package:leadership/utils/router/router.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -151,13 +147,6 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-
-      BlocProvider<UpdateRequisitionCubit>(
-        create: (context) => UpdateRequisitionCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
       BlocProvider<RequisitionItemResourceCubit>(
         create: (context) => RequisitionItemResourceCubit(
           requisitionItemService: getIt<RequisitionItemService>(),
@@ -167,21 +156,6 @@ class Singletons {
         create: (context) => GetExpenseCategoriesCubit(
           expenseCategoriesService: getIt<ExpenseCategoriesService>(),
           hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<UpdateRequisitionItemCubit>(
-        create: (context) => UpdateRequisitionItemCubit(
-          requisitionItemService: getIt<RequisitionItemService>(),
-        ),
-      ),
-      BlocProvider<DeleteRequisitionItemCubit>(
-        create: (context) => DeleteRequisitionItemCubit(
-          requisitionItemService: getIt<RequisitionItemService>(),
-        ),
-      ),
-      BlocProvider<GetRequisitionItemCubit>(
-        create: (context) => GetRequisitionItemCubit(
-          requisitionItemService: getIt<RequisitionItemService>(),
         ),
       ),
       BlocProvider<CreatePaymentInstructionCubit>(
