@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class LandingPageTablet extends StatelessWidget {
   const LandingPageTablet({required this.actions, super.key});
@@ -32,7 +33,7 @@ class LandingPageTablet extends StatelessWidget {
               // Header Section
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.xxxl),
                   child: Row(
                     children: [
                       // Profile Picture
@@ -127,7 +128,7 @@ class LandingPageTablet extends StatelessWidget {
                           )
                           .then(delay: 1000.ms),
 
-                      const SizedBox(width: 24),
+                      const SizedBox(width: PRFSpacingTokens.xxl),
 
                       // Greeting Section
                       Expanded(
@@ -167,7 +168,12 @@ class LandingPageTablet extends StatelessWidget {
               // Title Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 32, 32, 48),
+                  padding: const EdgeInsets.fromLTRB(
+                    PRFSpacingTokens.xxxl,
+                    PRFSpacingTokens.xxxl,
+                    PRFSpacingTokens.xxxl,
+                    48,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -180,7 +186,7 @@ class LandingPageTablet extends StatelessWidget {
                           height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: PRFSpacingTokens.lg),
                       Container(
                         width: 80,
                         height: 5,
@@ -196,12 +202,14 @@ class LandingPageTablet extends StatelessWidget {
 
               // Action Cards Grid
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PRFSpacingTokens.xxxl,
+                ),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 24,
-                    mainAxisSpacing: 24,
+                    crossAxisSpacing: PRFSpacingTokens.xxl,
+                    mainAxisSpacing: PRFSpacingTokens.xxl,
                     childAspectRatio: 1.4,
                   ),
                   delegate: SliverChildListDelegate(
@@ -250,9 +258,9 @@ class LandingPageTablet extends StatelessWidget {
           curve: Curves.easeOut,
         ),
       ],
-      child: HomeActionCard(
+      child: PRFActionCard(
         title: title,
-        assetPath: assetPath,
+        image: SvgPicture.asset(assetPath, height: 70),
         onTap: onTap,
       ),
     );

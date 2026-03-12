@@ -5,6 +5,7 @@ import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/shared_views/expenses/cubit/delete_allocation_entry_cubit.dart';
+import 'package:prf_design/prf_design.dart';
 
 class DeleteExpenseDialog extends StatelessWidget {
   const DeleteExpenseDialog({
@@ -19,37 +20,11 @@ class DeleteExpenseDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.delete_outline,
-              color: theme.colorScheme.error,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              entry.entryType == PRFEntryType.credit
-                  ? 'Delete Token'
-                  : 'Delete Expense',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return PRFConfirmationDialog(
+      title: entry.entryType == PRFEntryType.credit
+          ? 'Delete Token'
+          : 'Delete Expense',
+      isDestructive: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +89,7 @@ class DeleteExpenseDialog extends StatelessWidget {
           ),
         ],
       ),
-      actions: [
+      customActions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(

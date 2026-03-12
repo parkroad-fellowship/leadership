@@ -10,7 +10,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared_views/requisitions/cubit/update_requisition_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class EditRequisitionViewHandset extends StatefulWidget {
   const EditRequisitionViewHandset({required this.requisitionUlid, super.key});
@@ -83,7 +83,7 @@ class _EditRequisitionViewHandsetState
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
           child: BlocListener<GetRequisitionCubit, GetRequisitionState>(
             listener: (context, state) {
@@ -94,63 +94,72 @@ class _EditRequisitionViewHandsetState
             },
             child: Column(
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
 
                 // Header Card
                 Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.secondary,
-                        Theme.of(
-                          context,
-                        ).colorScheme.secondary.withValues(alpha: 0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.secondary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.edit_outlined,
-                        size: 32,
-                        color: Theme.of(context).colorScheme.onSecondary,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.editRequisition,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: Theme.of(context).colorScheme.onSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.modifyRequisitionDetails,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSecondary.withValues(alpha: 0.9),
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.secondary,
+                            Theme.of(
+                              context,
+                            ).colorScheme.secondary.withValues(alpha: 0.8),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.secondary.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.sm),
+                          Text(
+                            l10n.editRequisition,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.xs),
+                          Text(
+                            l10n.modifyRequisitionDetails,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onSecondary.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .slideY(begin: -0.3)
+                    .fadeIn(duration: PRFMotionTokens.enterShort),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: PRFSpacingTokens.xxl),
 
                 // Form Card
                 BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
@@ -160,10 +169,12 @@ class _EditRequisitionViewHandsetState
                         child: CircularProgressIndicator(),
                       ),
                       loaded: (requisition) => Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(
+                            PRFRadiusTokens.lg,
+                          ),
                           border: Border.all(
                             color: Theme.of(
                               context,
@@ -181,7 +192,7 @@ class _EditRequisitionViewHandsetState
                         ),
                         child: Column(
                           children: [
-                            _buildFormSection(
+                            PRFFormSection(
                                   icon: Icons.schedule_outlined,
                                   title: 'Requisition Date',
                                   isRequired: true,
@@ -196,11 +207,11 @@ class _EditRequisitionViewHandsetState
                                     ),
                                   ),
                                 )
-                                .animate(delay: 400.ms)
+                                .animate(delay: PRFMotionTokens.stagger4)
                                 .slideX(begin: -0.2)
                                 .fadeIn(),
 
-                            _buildFormSection(
+                            PRFFormSection(
                                   icon: Icons.notes_outlined,
                                   title: l10n.purpose,
                                   isRequired: true,
@@ -209,7 +220,7 @@ class _EditRequisitionViewHandsetState
                                     controller: _remarksController,
                                   ),
                                 )
-                                .animate(delay: 600.ms)
+                                .animate(delay: PRFMotionTokens.enterShort)
                                 .slideX(begin: -0.2)
                                 .fadeIn(),
                           ],
@@ -229,91 +240,56 @@ class _EditRequisitionViewHandsetState
                   },
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: PRFSpacingTokens.xxl),
 
                 BlocConsumer<UpdateRequisitionCubit, UpdateRequisitionState>(
-                  listener: (context, state) {
-                    state.maybeWhen(
-                      loading: () {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                      },
-                      loaded: () {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.requisitionUpdated)),
+                      listener: (context, state) {
+                        state.maybeWhen(
+                          loading: () {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                          },
+                          loaded: () {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.requisitionUpdated)),
+                            );
+                            Gaimon.success();
+                            Navigator.of(context).pop(true); // Indicate success
+                          },
+                          error: (message) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $message')),
+                            );
+                            Gaimon.error();
+                          },
+                          orElse: () {},
                         );
-                        Gaimon.success();
-                        Navigator.of(context).pop(true); // Indicate success
                       },
-                      error: (message) {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $message')),
+                      builder: (context, state) {
+                        return PRFPrimaryButton(
+                          onPressed: _submitForm,
+                          title: 'Update',
+                          disabled: !_isFormValid,
+                          isLoading: _isLoading,
                         );
-                        Gaimon.error();
                       },
-                      orElse: () {},
-                    );
-                  },
-                  builder: (context, state) {
-                    return PRFPrimaryButton(
-                      onPressed: _submitForm,
-                      title: 'Update',
-                      disabled: !_isFormValid,
-                      isLoading: _isLoading,
-                    );
-                  },
-                ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
+                    )
+                    .animate(delay: PRFMotionTokens.enterMedium)
+                    .slideY(begin: 0.3)
+                    .fadeIn(),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: PRFSpacingTokens.xxxl),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.secondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FormFieldLabel(label: title, isRequired: isRequired),
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
       ),
     );
   }

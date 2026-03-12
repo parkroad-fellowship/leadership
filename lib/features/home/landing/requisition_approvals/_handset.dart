@@ -8,9 +8,9 @@ import 'package:leadership/features/home/landing/requisition_approvals/cubit/get
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared_views/requisitions/widgets/timeline_requisitions_card.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/router/router.gr.dart';
+import 'package:prf_design/prf_design.dart';
 
 class RequisitionApprovalsPageHandset extends StatefulWidget {
   const RequisitionApprovalsPageHandset({super.key});
@@ -64,7 +64,7 @@ class _RequisitionApprovalsPageHandsetState
           leading: Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
@@ -73,7 +73,7 @@ class _RequisitionApprovalsPageHandsetState
                 ),
               ],
             ),
-            margin: const EdgeInsets.only(left: 8),
+            margin: const EdgeInsets.only(left: PRFSpacingTokens.sm),
             child: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios_new,
@@ -98,7 +98,7 @@ class _RequisitionApprovalsPageHandsetState
                 orElse: SizedBox.shrink,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: PRFSpacingTokens.sm),
             BlocBuilder<GetClosedRequisitionsCubit, GetClosedRequisitionsState>(
               builder: (context, state) => state.maybeWhen(
                 loading: () => const SizedBox.square(
@@ -108,7 +108,7 @@ class _RequisitionApprovalsPageHandsetState
                 orElse: SizedBox.shrink,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: PRFSpacingTokens.lg),
           ],
           backgroundColor: Colors.transparent,
           bottom: TabBar(
@@ -160,7 +160,7 @@ class _RequisitionApprovalsPageHandsetState
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -191,8 +191,8 @@ class _RequisitionApprovalsPageHandsetState
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
                 itemCount: sortedRequisitions.length,
                 itemBuilder: (context, index) {
@@ -219,12 +219,12 @@ class _RequisitionApprovalsPageHandsetState
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),
@@ -258,7 +258,7 @@ class _RequisitionApprovalsPageHandsetState
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -290,8 +290,8 @@ class _RequisitionApprovalsPageHandsetState
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
                 itemCount: sortedRequisitions.length,
                 itemBuilder: (context, index) {
@@ -318,12 +318,12 @@ class _RequisitionApprovalsPageHandsetState
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),
@@ -357,7 +357,7 @@ class _RequisitionApprovalsPageHandsetState
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -389,8 +389,8 @@ class _RequisitionApprovalsPageHandsetState
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
                 itemCount: sortedRequisitions.length,
                 itemBuilder: (context, index) {
@@ -417,12 +417,12 @@ class _RequisitionApprovalsPageHandsetState
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),

@@ -5,9 +5,7 @@ import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/shared_views/expenses/cubit/add_allocation_token_entry_cubit.dart';
-import 'package:leadership/shared_widgets/buttons/primary/primary.dart';
-import 'package:leadership/shared_widgets/input/number/number.dart';
-import 'package:leadership/shared_widgets/input/text_area/text_area.dart';
+import 'package:prf_design/prf_design.dart';
 
 class AddTokenViewHandset extends StatefulWidget {
   const AddTokenViewHandset({
@@ -60,74 +58,78 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
 
               // Header Card
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.tertiary,
-                      Theme.of(
-                        context,
-                      ).colorScheme.tertiary.withValues(alpha: 0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.tertiary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.toll,
-                      size: 32,
-                      color: Theme.of(context).colorScheme.onTertiary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add Token',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Theme.of(context).colorScheme.onTertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Add funds as a credit entry to the allocation',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onTertiary.withValues(alpha: 0.9),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.tertiary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.tertiary.withValues(alpha: 0.8),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.tertiary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.toll,
+                          size: 32,
+                          color: Theme.of(context).colorScheme.onTertiary,
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.sm),
+                        Text(
+                          'Add Token',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onTertiary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.xs),
+                        Text(
+                          'Add funds as a credit entry to the allocation',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onTertiary.withValues(alpha: 0.9),
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                  .animate()
+                  .slideY(begin: -0.3)
+                  .fadeIn(duration: PRFMotionTokens.enterShort),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Form Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                   border: Border.all(
                     color: Theme.of(
                       context,
@@ -145,45 +147,56 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                 ),
                 child: Column(
                   children: [
-                    _buildFormSection(
-                      icon: Icons.attach_money,
-                      title: 'Amount',
-                      isRequired: true,
-                      child: _buildNumberField(
-                        controller: _amountController,
-                        label: 'Token Amount',
-                        hint: 'Enter token amount',
-                        prefix: 'KES ',
-                      ),
-                    ).animate(delay: 200.ms).slideX(begin: -0.2).fadeIn(),
-
-                    _buildFormSection(
-                      icon: Icons.description,
-                      title: l10n.description,
-                      isRequired: true,
-                      child: Column(
-                        children: [
-                          PRFTextAreaInput(
-                            hintText: l10n.confirmationMessage,
-                            controller: _confirmationController,
-                            maxLines: 3,
-                            textInputAction: TextInputAction.done,
+                    PRFFormSection(
+                          icon: Icons.attach_money,
+                          title: 'Amount',
+                          isRequired: true,
+                          child: _buildNumberField(
+                            controller: _amountController,
+                            label: 'Token Amount',
+                            hint: 'Enter token amount',
+                            prefix: 'KES ',
                           ),
-                        ],
-                      ),
-                    ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger2)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
 
-                    _buildFormSection(
-                      icon: Icons.payment,
-                      title: l10n.paymentMethod,
-                      isRequired: true,
-                      child: _buildTransactionTypeSelector(Theme.of(context)),
-                    ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
+                    PRFFormSection(
+                          icon: Icons.description,
+                          title: l10n.description,
+                          isRequired: true,
+                          child: Column(
+                            children: [
+                              PRFTextAreaInput(
+                                hintText: l10n.confirmationMessage,
+                                controller: _confirmationController,
+                                maxLines: 3,
+                                textInputAction: TextInputAction.done,
+                              ),
+                            ],
+                          ),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger4)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
+
+                    PRFFormSection(
+                          icon: Icons.payment,
+                          title: l10n.paymentMethod,
+                          isRequired: true,
+                          child: _buildTransactionTypeSelector(
+                            Theme.of(context),
+                          ),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger3)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Submit Button
               BlocConsumer<
@@ -223,64 +236,14 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                       );
                     },
                   )
-                  .animate(delay: 500.ms)
+                  .animate(delay: PRFMotionTokens.stagger5)
                   .slideY(begin: 0.3)
                   .fadeIn(),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: PRFSpacingTokens.xxxl),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (isRequired) ...[
-                const SizedBox(width: 4),
-                Text(
-                  '*',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
       ),
     );
   }
@@ -302,7 +265,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: PRFSpacingTokens.sm),
         PRFNumberInput(
           controller: controller,
           hintText: hint,
@@ -314,20 +277,23 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
 
   Widget _buildTransactionTypeSelector(ThemeData theme) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: PRFSpacingTokens.sm,
+      runSpacing: PRFSpacingTokens.sm,
       children: PRFChargeType.values.map((type) {
         final isSelected = _selectedChargeType == type;
         return GestureDetector(
           onTap: () => setState(() => _selectedChargeType = type),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            duration: PRFMotionTokens.standard,
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+              vertical: PRFSpacingTokens.md,
+            ),
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primary
                   : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary
@@ -344,7 +310,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                       ? theme.colorScheme.onPrimary
                       : theme.colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: PRFSpacingTokens.sm),
                 Text(
                   type.name,
                   style: theme.textTheme.bodySmall?.copyWith(

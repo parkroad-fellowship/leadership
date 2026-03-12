@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:leadership/enums/prf_notification_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:logger/logger.dart';
+import 'package:prf_design/prf_design.dart';
 
 abstract class NotificationService {
   Future<void> init();
@@ -161,7 +161,7 @@ class NotificationServiceImpl implements NotificationService {
               title: l10n.deny,
               disabled: false,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
             PRFPrimaryButton(
               onPressed: () {
                 userAuthorized = true;

@@ -39,8 +39,8 @@ class RequestSigner {
   /// Returns the current time in milliseconds, adjusted by the server offset.
   static int _now() =>
       DateTime.now().toUtc().millisecondsSinceEpoch + _serverOffset;
-      
-  static String generateSignature({
+
+  static String _generateSignature({
     required String method,
     required String url,
     required String timestamp,
@@ -61,7 +61,7 @@ class RequestSigner {
     required String appSecret,
   }) {
     final timestamp = _now().toString(); // Convert to seconds
-    final signature = generateSignature(
+    final signature = _generateSignature(
       method: method,
       url: url,
       timestamp: timestamp,

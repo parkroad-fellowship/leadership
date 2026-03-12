@@ -7,7 +7,7 @@ import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
 import 'package:leadership/shared_views/requisitions/cubit/get_requisition_item_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/update_requisition_item_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class EditRequisitionItemViewHandset extends StatefulWidget {
   const EditRequisitionItemViewHandset({
@@ -106,67 +106,76 @@ class _EditRequisitionItemViewHandsetState
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
 
                 // Header Card
                 Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.edit_outlined,
-                        size: 32,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Edit Requisition Item',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Update the details of this requisition item',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimary.withValues(alpha: 0.9),
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.8),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.sm),
+                          Text(
+                            'Edit Requisition Item',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.xs),
+                          Text(
+                            'Update the details of this requisition item',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimary.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .slideY(begin: -0.3)
+                    .fadeIn(duration: PRFMotionTokens.enterShort),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: PRFSpacingTokens.xxl),
 
                 // Loading state for requisition item
                 BlocBuilder<GetRequisitionItemCubit, GetRequisitionItemState>(
@@ -187,7 +196,7 @@ class _EditRequisitionItemViewHandsetState
                   },
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: PRFSpacingTokens.xxxl),
               ],
             ),
           ),
@@ -201,10 +210,10 @@ class _EditRequisitionItemViewHandsetState
       children: [
         // Form Card
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
             border: Border.all(
               color: Theme.of(
                 context,
@@ -223,115 +232,130 @@ class _EditRequisitionItemViewHandsetState
           child: Column(
             children: [
               // Expense Category Selector
-              _buildFormSection(
-                icon: Icons.category_outlined,
-                title: 'Expense Category',
-                isRequired: true,
-                child:
-                    BlocBuilder<
-                      GetExpenseCategoriesCubit,
-                      GetExpenseCategoriesState
-                    >(
-                      builder: (context, state) {
-                        return state.when(
-                          initial: () => const PRFCircularProgressIndicator(),
-                          loading: () => const PRFCircularProgressIndicator(),
-                          loaded: _buildCategorySelector,
-                          error: (message) => Text(
-                            'Error loading categories: $message',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-              ).animate(delay: 300.ms).slideX(begin: -0.2).fadeIn(),
+              PRFFormSection(
+                    icon: Icons.category_outlined,
+                    title: 'Expense Category',
+                    isRequired: true,
+                    child:
+                        BlocBuilder<
+                          GetExpenseCategoriesCubit,
+                          GetExpenseCategoriesState
+                        >(
+                          builder: (context, state) {
+                            return state.when(
+                              initial: () =>
+                                  const PRFCircularProgressIndicator(),
+                              loading: () =>
+                                  const PRFCircularProgressIndicator(),
+                              loaded: _buildCategorySelector,
+                              error: (message) => Text(
+                                'Error loading categories: $message',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                  )
+                  .animate(delay: PRFMotionTokens.stagger3)
+                  .slideX(begin: -0.2)
+                  .fadeIn(),
 
               // Item Name
-              _buildFormSection(
-                icon: Icons.inventory_2_outlined,
-                title: 'Item Name',
-                isRequired: true,
-                child: PRFTextInput(
-                  hintText: 'Enter item name',
-                  controller: _itemNameController,
-                  textCapitalization: TextCapitalization.words,
-                ),
-              ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
+              PRFFormSection(
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Item Name',
+                    isRequired: true,
+                    child: PRFTextInput(
+                      hintText: 'Enter item name',
+                      controller: _itemNameController,
+                    ),
+                  )
+                  .animate(delay: PRFMotionTokens.stagger4)
+                  .slideX(begin: -0.2)
+                  .fadeIn(),
 
               // Unit Price and Quantity Row
               Row(
-                children: [
-                  Expanded(
-                    child: _buildFormSection(
-                      icon: Icons.attach_money,
-                      title: 'Unit Price',
-                      isRequired: true,
-                      child: PRFNumberInput(
-                        hintText: 'Unit price',
-                        controller: _unitPriceController,
-                        prefixText: 'KES ',
+                    children: [
+                      Expanded(
+                        child: PRFFormSection(
+                          icon: Icons.attach_money,
+                          title: 'Unit Price',
+                          isRequired: true,
+                          child: PRFNumberInput(
+                            hintText: 'Unit price',
+                            controller: _unitPriceController,
+                            prefixText: 'KES ',
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildFormSection(
-                      icon: Icons.numbers,
-                      title: 'Quantity',
-                      isRequired: true,
-                      child: PRFNumberInput(
-                        hintText: 'Quantity',
-                        controller: _quantityController,
+                      const SizedBox(width: PRFSpacingTokens.lg),
+                      Expanded(
+                        child: PRFFormSection(
+                          icon: Icons.numbers,
+                          title: 'Quantity',
+                          isRequired: true,
+                          child: PRFNumberInput(
+                            hintText: 'Quantity',
+                            controller: _quantityController,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ).animate(delay: 500.ms).slideX(begin: -0.2).fadeIn(),
+                    ],
+                  )
+                  .animate(delay: PRFMotionTokens.stagger5)
+                  .slideX(begin: -0.2)
+                  .fadeIn(),
 
               // Total Price Display
               if (_totalPrice > 0)
                 Container(
-                  margin: const EdgeInsets.only(top: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total Price',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                      margin: const EdgeInsets.only(top: PRFSpacingTokens.lg),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.outline.withValues(alpha: 0.2),
+                        ),
                       ),
-                      Text(
-                        'KES $_totalPrice',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary,
-                            ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total Price',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          Text(
+                            'KES $_totalPrice',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ).animate(delay: 600.ms).slideY(begin: 0.2).fadeIn(),
+                    )
+                    .animate(delay: PRFMotionTokens.enterShort)
+                    .slideY(begin: 0.2)
+                    .fadeIn(),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
               // Narration
-              _buildFormSection(
+              PRFFormSection(
                 icon: Icons.note_outlined,
                 title: 'Narration/Justification',
                 isRequired: true,
@@ -344,112 +368,80 @@ class _EditRequisitionItemViewHandsetState
           ),
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: PRFSpacingTokens.xxl),
 
         // Submit Button
         BlocConsumer<UpdateRequisitionItemCubit, UpdateRequisitionItemState>(
-          listener: (context, state) {
-            state.mapOrNull(
-              loading: (_) {
-                setState(() {
-                  _isLoading = true;
-                });
-              },
-              loaded: (_) {
-                setState(() {
-                  _isLoading = false;
-                });
-                Gaimon.success();
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Requisition item updated successfully',
-                    ),
-                  ),
+              listener: (context, state) {
+                state.mapOrNull(
+                  loading: (_) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                  },
+                  loaded: (_) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    Gaimon.success();
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Requisition item updated successfully',
+                        ),
+                      ),
+                    );
+                  },
+                  error: (state) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    Gaimon.error();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message)),
+                    );
+                  },
                 );
               },
-              error: (state) {
-                setState(() {
-                  _isLoading = false;
-                });
-                Gaimon.error();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
+              builder: (context, state) {
+                return PRFPrimaryButton(
+                  onPressed: _submitForm,
+                  title: 'Update Item',
+                  disabled: !_isFormValid,
+                  isLoading: _isLoading,
                 );
               },
-            );
-          },
-          builder: (context, state) {
-            return PRFPrimaryButton(
-              onPressed: _submitForm,
-              title: 'Update Item',
-              disabled: !_isFormValid,
-              isLoading: _isLoading,
-            );
-          },
-        ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
+            )
+            .animate(delay: PRFMotionTokens.enterMedium)
+            .slideY(begin: 0.3)
+            .fadeIn(),
       ],
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FormFieldLabel(label: title, isRequired: isRequired),
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
-      ),
     );
   }
 
   Widget _buildCategorySelector(List<PRFExpenseCategory> categories) {
     final theme = Theme.of(context);
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: PRFSpacingTokens.sm,
+      runSpacing: PRFSpacingTokens.sm,
       children: categories.map((category) {
         final isSelected = selectedExpenseCategory?.ulid == category.ulid;
         return GestureDetector(
           onTap: () => setState(() => selectedExpenseCategory = category),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            duration: PRFMotionTokens.standard,
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+              vertical: PRFSpacingTokens.sm,
+            ),
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primary
                   : theme.colorScheme.surfaceContainerHighest.withValues(
                       alpha: 0.5,
                     ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary

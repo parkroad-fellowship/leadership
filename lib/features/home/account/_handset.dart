@@ -8,14 +8,15 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/enums/prf_membership_type.dart';
+import 'package:leadership/enums/prf_theme_mode.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
+import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
-import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
+import 'package:prf_design/prf_design.dart';
 
 class AccountPageHandset extends StatelessWidget {
   const AccountPageHandset({super.key});
@@ -53,7 +54,7 @@ class AccountPageHandset extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: theme.colorScheme.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                         border: Border.all(
                           color: theme.colorScheme.error.withValues(alpha: 0.3),
                         ),
@@ -73,129 +74,219 @@ class AccountPageHandset extends StatelessWidget {
               ],
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: PRFSpacingTokens.xxl),
+            ),
 
             // Profile Section
             SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Profile Picture
-                    Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                theme.colorScheme.primary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                theme.colorScheme.secondary.withValues(
-                                  alpha: 0.1,
-                                ),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            border: Border.all(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.3,
-                              ),
-                              width: 3,
-                            ),
+              child:
+                  Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: PRFSpacingTokens.lg,
+                        ),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(
+                            PRFRadiusTokens.xl,
                           ),
-                          child: ClipOval(
-                            child: ValueListenableBuilder(
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.shadow.withValues(
+                                alpha: 0.08,
+                              ),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            // Profile Picture
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        theme.colorScheme.primary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        theme.colorScheme.secondary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary
+                                          .withValues(
+                                            alpha: 0.3,
+                                          ),
+                                      width: 3,
+                                    ),
+                                  ),
+                                  child: ClipOval(
+                                    child: ValueListenableBuilder(
+                                      valueListenable: Hive.box<dynamic>(
+                                        PRFLeadershipConfig
+                                            .instance!
+                                            .values
+                                            .hiveBox,
+                                      ).listenable(),
+                                      builder: (context, _, _) {
+                                        final profilePicture =
+                                            getIt<HiveService>()
+                                                .retrieveMember()
+                                                ?.profilePicture;
+
+                                        return profilePicture != null
+                                            ? Image.network(
+                                                profilePicture.temporaryURL,
+                                                fit: BoxFit.cover,
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) => Icon(
+                                                      Icons.person_rounded,
+                                                      size: 50,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
+                                                    ),
+                                              )
+                                            : Icon(
+                                                Icons.person_rounded,
+                                                size: 50,
+                                                color:
+                                                    theme.colorScheme.primary,
+                                              );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const ChangeProfilePictureButton(),
+                              ],
+                            ),
+                            const SizedBox(height: PRFSpacingTokens.lg),
+                            // User Name
+                            ValueListenableBuilder(
                               valueListenable: Hive.box<dynamic>(
                                 PRFLeadershipConfig.instance!.values.hiveBox,
                               ).listenable(),
                               builder: (context, _, _) {
-                                final profilePicture = getIt<HiveService>()
-                                    .retrieveMember()
-                                    ?.profilePicture;
-
-                                return profilePicture != null
-                                    ? Image.network(
-                                        profilePicture.temporaryURL,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Icon(
-                                                  Icons.person_rounded,
-                                                  size: 50,
-                                                  color:
-                                                      theme.colorScheme.primary,
-                                                ),
-                                      )
-                                    : Icon(
-                                        Icons.person_rounded,
-                                        size: 50,
-                                        color: theme.colorScheme.primary,
-                                      );
+                                final profile = getIt<HiveService>().auth
+                                    .retrieveProfile();
+                                return Text(
+                                  profile?.name ?? 'User',
+                                  style: theme.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: theme.colorScheme.onSurface,
+                                      ),
+                                );
                               },
                             ),
-                          ),
+                            const SizedBox(height: PRFSpacingTokens.xs),
+                            // User Email
+                            ValueListenableBuilder(
+                              valueListenable: Hive.box<dynamic>(
+                                PRFLeadershipConfig.instance!.values.hiveBox,
+                              ).listenable(),
+                              builder: (context, _, _) {
+                                final profile = getIt<HiveService>().auth
+                                    .retrieveProfile();
+                                return Text(
+                                  profile?.email ?? '',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        const ChangeProfilePictureButton(),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // User Name
-                    ValueListenableBuilder(
-                      valueListenable: Hive.box<dynamic>(
-                        PRFLeadershipConfig.instance!.values.hiveBox,
-                      ).listenable(),
-                      builder: (context, _, _) {
-                        final profile = getIt<HiveService>().auth
-                            .retrieveProfile();
-                        return Text(
-                          profile?.name ?? 'User',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                    // User Email
-                    ValueListenableBuilder(
-                      valueListenable: Hive.box<dynamic>(
-                        PRFLeadershipConfig.instance!.values.hiveBox,
-                      ).listenable(),
-                      builder: (context, _, _) {
-                        final profile = getIt<HiveService>().auth
-                            .retrieveProfile();
-                        return Text(
-                          profile?.email ?? '',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
+                      )
+                      .animate()
+                      .fadeIn(duration: PRFMotionTokens.slow)
+                      .slideY(begin: 0.1, end: 0),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: PRFSpacingTokens.xxl),
+            ),
+
+            // Dark Mode Toggle
+            SliverToBoxAdapter(
+              child:
+                  Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: PRFSpacingTokens.lg,
+                        ),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(
+                            PRFRadiusTokens.xl,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.shadow.withValues(
+                                alpha: 0.08,
+                              ),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.dark_mode_outlined,
+                              color: theme.colorScheme.primary,
+                              size: 24,
+                            ),
+                            const SizedBox(width: PRFSpacingTokens.md),
+                            Expanded(
+                              child: Text(
+                                'Dark Mode',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                            BlocBuilder<ThemeCubit, ThemeState>(
+                              builder: (context, state) {
+                                final themeCubit = context.read<ThemeCubit>();
+                                return Switch.adaptive(
+                                  value: themeCubit.isDarkMode,
+                                  onChanged: (value) => themeCubit.setThemeMode(
+                                    value
+                                        ? PRFThemeMode.dark
+                                        : PRFThemeMode.light,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      )
+                      .animate(delay: 50.ms)
+                      .fadeIn(duration: PRFMotionTokens.slow)
+                      .slideY(begin: 0.1, end: 0),
+            ),
+
+            const SliverToBoxAdapter(
+              child: SizedBox(height: PRFSpacingTokens.xxl),
+            ),
 
             // Personal Information Section
             ValueListenableBuilder(
@@ -210,11 +301,15 @@ class AccountPageHandset extends StatelessWidget {
                 return SliverToBoxAdapter(
                   child:
                       Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(20),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: PRFSpacingTokens.lg,
+                            ),
+                            padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.xl,
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: theme.colorScheme.shadow.withValues(
@@ -235,7 +330,7 @@ class AccountPageHandset extends StatelessWidget {
                                       color: theme.colorScheme.primary,
                                       size: 24,
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: PRFSpacingTokens.md),
                                     Text(
                                       'Personal Information',
                                       style: theme.textTheme.titleLarge
@@ -246,14 +341,14 @@ class AccountPageHandset extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: PRFSpacingTokens.xl),
                                 _buildInfoField(
                                   context,
                                   label: l10n.name,
                                   value: profile.name,
                                   icon: Icons.badge_outlined,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: PRFSpacingTokens.lg),
                                 _buildInfoField(
                                   context,
                                   label: l10n.email,
@@ -262,7 +357,7 @@ class AccountPageHandset extends StatelessWidget {
                                 ),
                                 if (profile.member?.bio != null &&
                                     profile.member!.bio!.isNotEmpty) ...[
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: PRFSpacingTokens.lg),
                                   _buildInfoField(
                                     context,
                                     label: l10n.bio,
@@ -274,14 +369,16 @@ class AccountPageHandset extends StatelessWidget {
                               ],
                             ),
                           )
-                          .animate(delay: 100.ms)
-                          .fadeIn(duration: 300.ms)
+                          .animate(delay: PRFMotionTokens.stagger1)
+                          .fadeIn(duration: PRFMotionTokens.slow)
                           .slideY(begin: 0.1, end: 0),
                 );
               },
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: PRFSpacingTokens.xxl),
+            ),
 
             // Memberships Section
             ValueListenableBuilder(
@@ -297,11 +394,15 @@ class AccountPageHandset extends StatelessWidget {
                 return SliverToBoxAdapter(
                   child:
                       Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(20),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: PRFSpacingTokens.lg,
+                            ),
+                            padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.xl,
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: theme.colorScheme.shadow.withValues(
@@ -322,7 +423,7 @@ class AccountPageHandset extends StatelessWidget {
                                       color: theme.colorScheme.primary,
                                       size: 24,
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: PRFSpacingTokens.md),
                                     Text(
                                       l10n.memberships,
                                       style: theme.textTheme.titleLarge
@@ -333,7 +434,7 @@ class AccountPageHandset extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: PRFSpacingTokens.lg),
                                 ...profile!.member!.memberships
                                     .asMap()
                                     .entries
@@ -347,16 +448,18 @@ class AccountPageHandset extends StatelessWidget {
                                                           .memberships
                                                           .length -
                                                       1
-                                              ? 12
+                                              ? PRFSpacingTokens.md
                                               : 0,
                                         ),
-                                        padding: const EdgeInsets.all(16),
+                                        padding: const EdgeInsets.all(
+                                          PRFSpacingTokens.lg,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: theme
                                               .colorScheme
                                               .surfaceContainerHighest,
                                           borderRadius: BorderRadius.circular(
-                                            12,
+                                            PRFRadiusTokens.md,
                                           ),
                                           border: Border.all(
                                             color: theme.colorScheme.outline
@@ -366,7 +469,9 @@ class AccountPageHandset extends StatelessWidget {
                                         child: Row(
                                           children: [
                                             Container(
-                                              padding: const EdgeInsets.all(8),
+                                              padding: const EdgeInsets.all(
+                                                PRFSpacingTokens.sm,
+                                              ),
                                               decoration: BoxDecoration(
                                                 color: entry.value.approved
                                                     ? theme.colorScheme.primary
@@ -380,7 +485,9 @@ class AccountPageHandset extends StatelessWidget {
                                                             alpha: 0.1,
                                                           ),
                                                 borderRadius:
-                                                    BorderRadius.circular(8),
+                                                    BorderRadius.circular(
+                                                      PRFRadiusTokens.sm,
+                                                    ),
                                               ),
                                               child: Icon(
                                                 entry.value.approved
@@ -394,7 +501,9 @@ class AccountPageHandset extends StatelessWidget {
                                                 size: 20,
                                               ),
                                             ),
-                                            const SizedBox(width: 12),
+                                            const SizedBox(
+                                              width: PRFSpacingTokens.md,
+                                            ),
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment:
@@ -436,8 +545,10 @@ class AccountPageHandset extends StatelessWidget {
                                             Container(
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
+                                                    horizontal:
+                                                        PRFSpacingTokens.sm,
+                                                    vertical:
+                                                        PRFSpacingTokens.xs,
                                                   ),
                                               decoration: BoxDecoration(
                                                 color: entry.value.approved
@@ -452,7 +563,9 @@ class AccountPageHandset extends StatelessWidget {
                                                             alpha: 0.1,
                                                           ),
                                                 borderRadius:
-                                                    BorderRadius.circular(12),
+                                                    BorderRadius.circular(
+                                                      PRFRadiusTokens.md,
+                                                    ),
                                               ),
                                               child: Text(
                                                 entry.value.approved
@@ -482,24 +595,30 @@ class AccountPageHandset extends StatelessWidget {
                               ],
                             ),
                           )
-                          .animate(delay: 200.ms)
-                          .fadeIn(duration: 300.ms)
+                          .animate(delay: PRFMotionTokens.stagger2)
+                          .fadeIn(duration: PRFMotionTokens.slow)
                           .slideY(begin: 0.1, end: 0),
                 );
               },
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: PRFSpacingTokens.xxxl),
+            ),
 
             // Footer Section
             SliverToBoxAdapter(
               child:
                   Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.all(20),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: PRFSpacingTokens.lg,
+                        ),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(
+                            PRFRadiusTokens.xl,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: theme.colorScheme.shadow.withValues(
@@ -563,7 +682,7 @@ class AccountPageHandset extends StatelessWidget {
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: PRFSpacingTokens.md),
                             Text(
                               l10n.version(Misc.getAppVersion()),
                               style: theme.textTheme.labelMedium?.copyWith(
@@ -573,12 +692,14 @@ class AccountPageHandset extends StatelessWidget {
                           ],
                         ),
                       )
-                      .animate(delay: 300.ms)
-                      .fadeIn(duration: 300.ms)
+                      .animate(delay: PRFMotionTokens.stagger3)
+                      .fadeIn(duration: PRFMotionTokens.slow)
                       .slideY(begin: 0.1, end: 0),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: PRFSpacingTokens.xxxl),
+            ),
           ],
         ),
       ),
@@ -595,10 +716,10 @@ class AccountPageHandset extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
           color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
@@ -607,10 +728,10 @@ class AccountPageHandset extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(PRFSpacingTokens.sm),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
             ),
             child: Icon(
               icon,
@@ -618,7 +739,7 @@ class AccountPageHandset extends StatelessWidget {
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -630,7 +751,7 @@ class AccountPageHandset extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: PRFSpacingTokens.xs),
                 Text(
                   value,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -677,7 +798,7 @@ class ChangeProfilePictureButton extends StatelessWidget {
                   mediaType: MediaType.image,
                 ),
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(PRFSpacingTokens.sm),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary,
                 shape: BoxShape.circle,

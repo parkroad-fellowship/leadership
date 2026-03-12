@@ -8,6 +8,7 @@ import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
+import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
@@ -108,6 +109,9 @@ class Singletons {
 
   static List<BlocProvider> registerCubits() {
     return <BlocProvider>[
+      BlocProvider<ThemeCubit>(
+        create: (context) => ThemeCubit(hiveService: getIt()),
+      ),
       BlocProvider<SigninCubit>(
         create: (context) => SigninCubit(
           authService: getIt<AuthService>(),

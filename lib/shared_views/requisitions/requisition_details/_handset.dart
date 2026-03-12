@@ -20,10 +20,9 @@ import 'package:leadership/shared_views/requisitions/requisition_details/actions
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/edit_requisition_item/edit_requisition_item.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/recall_requisition/recall_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/request_review/_handset.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
-import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/current_member_mixin.dart';
+import 'package:prf_design/prf_design.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class RequisitionDetailsPageHandset extends StatefulWidget {
@@ -68,14 +67,14 @@ class _RequisitionDetailsPageHandsetState
             actions: requisitionState.maybeWhen(
               loaded: (requisition) => [
                 Container(
-                  margin: const EdgeInsets.only(right: 16),
+                  margin: const EdgeInsets.only(right: PRFSpacingTokens.lg),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -87,7 +86,7 @@ class _RequisitionDetailsPageHandsetState
                           Theme.of(context),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: PRFSpacingTokens.xs),
                       Text(
                         requisition.approvalStatus.name,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -139,13 +138,13 @@ class _RequisitionDetailsPageHandsetState
                         size: 64,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: PRFSpacingTokens.lg),
                       Text(
                         '${l10n.error}: $message',
                         style: Theme.of(context).textTheme.bodyLarge,
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: PRFSpacingTokens.lg),
                       ElevatedButton(
                         onPressed: () {
                           context
@@ -237,7 +236,7 @@ class _RequisitionDetailsPageHandsetState
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -246,7 +245,7 @@ class _RequisitionDetailsPageHandsetState
               size: 64,
               color: iconColor,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
             Text(
               title,
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -254,7 +253,7 @@ class _RequisitionDetailsPageHandsetState
                 color: iconColor,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: PRFSpacingTokens.sm),
             Text(
               subtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -262,7 +261,7 @@ class _RequisitionDetailsPageHandsetState
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
             if (isEditable)
               ElevatedButton.icon(
                 onPressed: Misc.userCan(PRFPermissions.createRequisitionItem)
@@ -284,7 +283,7 @@ class _RequisitionDetailsPageHandsetState
                 ),
                 decoration: BoxDecoration(
                   color: status.color(theme).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                   border: Border.all(
                     color: status.color(theme).withValues(alpha: 0.3),
                   ),
@@ -297,7 +296,7 @@ class _RequisitionDetailsPageHandsetState
                       color: status.color(theme),
                       size: 16,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: PRFSpacingTokens.sm),
                     Text(
                       l10n.reviewInProgress,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -343,7 +342,9 @@ class _RequisitionDetailsPageHandsetState
 
             // Items list
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.lg,
+              ),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -415,10 +416,10 @@ class _RequisitionDetailsPageHandsetState
             );
           },
           child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -468,7 +469,9 @@ class _RequisitionDetailsPageHandsetState
                               children: [
                                 // Icon badge
                                 Container(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(
+                                    PRFSpacingTokens.md,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.primary.withValues(
                                       alpha: 0.12,
@@ -481,7 +484,7 @@ class _RequisitionDetailsPageHandsetState
                                     color: theme.colorScheme.primary,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: PRFSpacingTokens.md),
                                 // Name and category
                                 Expanded(
                                   child: Column(
@@ -531,7 +534,9 @@ class _RequisitionDetailsPageHandsetState
                                               ),
                                             ),
                                           if (item.expenseCategory != null)
-                                            const SizedBox(width: 8),
+                                            const SizedBox(
+                                              width: PRFSpacingTokens.sm,
+                                            ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 10,
@@ -555,7 +560,9 @@ class _RequisitionDetailsPageHandsetState
                                                       .colorScheme
                                                       .onSurfaceVariant,
                                                 ),
-                                                const SizedBox(width: 4),
+                                                const SizedBox(
+                                                  width: PRFSpacingTokens.xs,
+                                                ),
                                                 Text(
                                                   DateFormat.MMMd().format(
                                                     item.createdAt,
@@ -592,7 +599,9 @@ class _RequisitionDetailsPageHandsetState
                                       decoration: BoxDecoration(
                                         color: theme.colorScheme.primary
                                             .withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(
+                                          PRFRadiusTokens.md,
+                                        ),
                                       ),
                                       child: Text(
                                         NumberFormat.currency(
@@ -626,13 +635,17 @@ class _RequisitionDetailsPageHandsetState
                               const SizedBox(height: 14),
                               Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(
+                                  PRFSpacingTokens.md,
+                                ),
                                 decoration: BoxDecoration(
                                   color: theme
                                       .colorScheme
                                       .surfaceContainerHighest
                                       .withValues(alpha: 0.35),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.md,
+                                  ),
                                   border: Border.all(
                                     color: theme.colorScheme.outline.withValues(
                                       alpha: 0.15,
@@ -647,7 +660,7 @@ class _RequisitionDetailsPageHandsetState
                                       size: 16,
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: PRFSpacingTokens.sm),
                                     Expanded(
                                       child: Text(
                                         item.narration!,
@@ -811,12 +824,15 @@ class _RequisitionDetailsPageHandsetState
     final theme = Theme.of(context);
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: PRFSpacingTokens.md,
+          vertical: PRFSpacingTokens.sm,
+        ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest.withValues(
             alpha: 0.35,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           border: Border.all(
             color: theme.colorScheme.outline.withValues(alpha: 0.12),
           ),
@@ -838,7 +854,7 @@ class _RequisitionDetailsPageHandsetState
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: PRFSpacingTokens.sm),
                 Expanded(
                   child: Text(
                     label,
@@ -877,14 +893,16 @@ class _RequisitionDetailsPageHandsetState
         return [
           WoltModalSheetPage(
             pageTitle: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.xxl,
+              ),
               child: Row(
                 children: [
                   Icon(
                     Icons.inventory_2_outlined,
                     color: theme.colorScheme.primary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Text(
                       item.itemName,
@@ -897,12 +915,14 @@ class _RequisitionDetailsPageHandsetState
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.xxl,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: PRFSpacingTokens.lg),
                   if (item.expenseCategory != null) ...[
                     _buildDetailRow(
                       context,
@@ -910,7 +930,7 @@ class _RequisitionDetailsPageHandsetState
                       item.expenseCategory!.name,
                       Icons.category_outlined,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: PRFSpacingTokens.md),
                   ],
                   _buildDetailRow(
                     context,
@@ -921,14 +941,14 @@ class _RequisitionDetailsPageHandsetState
                     ).format(item.unitPrice),
                     Icons.attach_money,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: PRFSpacingTokens.md),
                   _buildDetailRow(
                     context,
                     l10n.quantity,
                     '${item.quantity}',
                     Icons.numbers,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: PRFSpacingTokens.md),
                   _buildDetailRow(
                     context,
                     l10n.totalPrice,
@@ -938,14 +958,14 @@ class _RequisitionDetailsPageHandsetState
                     ).format(item.totalPrice),
                     Icons.calculate,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: PRFSpacingTokens.md),
                   _buildDetailRow(
                     context,
                     l10n.created,
                     DateFormat.yMMMd().add_Hm().format(item.createdAt),
                     Icons.schedule,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
                 ],
               ),
             ),
@@ -967,15 +987,15 @@ class _RequisitionDetailsPageHandsetState
       builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
           ),
           title: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 ),
                 child: Icon(
                   Icons.delete_outline,
@@ -983,7 +1003,7 @@ class _RequisitionDetailsPageHandsetState
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: PRFSpacingTokens.md),
               Expanded(
                 child: Text(
                   'Delete Item',
@@ -1002,14 +1022,14 @@ class _RequisitionDetailsPageHandsetState
                 'Are you sure you want to delete this item?',
                 style: theme.textTheme.bodyMedium,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: PRFSpacingTokens.md),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(PRFSpacingTokens.md),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHighest.withValues(
                     alpha: 0.5,
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1020,7 +1040,7 @@ class _RequisitionDetailsPageHandsetState
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: PRFSpacingTokens.xs),
                     Text(
                       '${NumberFormat.currency(
                         symbol: 'KES ',
@@ -1033,7 +1053,7 @@ class _RequisitionDetailsPageHandsetState
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: PRFSpacingTokens.md),
               Text(
                 'This action cannot be undone.',
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -1120,9 +1140,12 @@ class _RequisitionDetailsPageHandsetState
         backgroundColor: theme.colorScheme.error,
         foregroundColor: theme.colorScheme.onError,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: PRFSpacingTokens.lg,
+          vertical: PRFSpacingTokens.sm,
+        ),
       ),
     );
   }
@@ -1141,7 +1164,7 @@ class _RequisitionDetailsPageHandsetState
           size: 16,
           color: theme.colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: PRFSpacingTokens.sm),
         Expanded(
           child: Text(
             label,
@@ -1245,7 +1268,7 @@ class _RequisitionDetailsPageHandsetState
               isDisabled: !Misc.userCan(PRFPermissions.createRequisitionItem),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           // Payment Action
           Expanded(
             child: _buildActionButton(
@@ -1267,7 +1290,7 @@ class _RequisitionDetailsPageHandsetState
           ),
         ],
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: PRFSpacingTokens.sm),
       // Secondary Actions Row
       Row(
         children: [
@@ -1281,7 +1304,7 @@ class _RequisitionDetailsPageHandsetState
               isDisabled: !Misc.userCan(PRFPermissions.createRequisition),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: _buildActionButton(
               context,
@@ -1318,11 +1341,11 @@ class _RequisitionDetailsPageHandsetState
                 // Show approval banner for the appointed approver
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                  margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                     border: Border.all(
                       color: Colors.green.withValues(alpha: 0.3),
                     ),
@@ -1334,7 +1357,7 @@ class _RequisitionDetailsPageHandsetState
                         color: Colors.green,
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: PRFSpacingTokens.sm),
                       Expanded(
                         child: Text(
                           'This requisition is awaiting your approval.',
@@ -1351,11 +1374,11 @@ class _RequisitionDetailsPageHandsetState
                 // Show standard under review banner for non-approvers
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                  margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                     border: Border.all(
                       color: statusColor.withValues(alpha: 0.3),
                     ),
@@ -1367,7 +1390,7 @@ class _RequisitionDetailsPageHandsetState
                         color: statusColor,
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: PRFSpacingTokens.sm),
                       Expanded(
                         child: Text(
                           l10n.requisitionUnderReviewBanner,
@@ -1384,11 +1407,11 @@ class _RequisitionDetailsPageHandsetState
             },
             orElse: () => Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(PRFSpacingTokens.md),
+              margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 border: Border.all(color: statusColor.withValues(alpha: 0.3)),
               ),
               child: Row(
@@ -1398,7 +1421,7 @@ class _RequisitionDetailsPageHandsetState
                     color: statusColor,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Text(
                       l10n.requisitionUnderReviewBanner,
@@ -1436,7 +1459,7 @@ class _RequisitionDetailsPageHandsetState
                       ),
                     ),
                     if (paymentInstruction != null) ...[
-                      const SizedBox(width: 12),
+                      const SizedBox(width: PRFSpacingTokens.md),
                       Expanded(
                         child: _buildActionButton(
                           context,
@@ -1471,7 +1494,7 @@ class _RequisitionDetailsPageHandsetState
                               isSecondary: true,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: PRFSpacingTokens.md),
                         ],
                         Expanded(
                           child: _buildActionButton(
@@ -1487,7 +1510,7 @@ class _RequisitionDetailsPageHandsetState
                     ),
                     // Show recall button for requisitors
                     if (loggedInMember.ulid == requisition.member?.ulid) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: PRFSpacingTokens.sm),
                       SizedBox(
                         width: double.infinity,
                         child: _buildActionButton(
@@ -1518,7 +1541,7 @@ class _RequisitionDetailsPageHandsetState
                       isSecondary: true,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: PRFSpacingTokens.md),
                 ],
                 Expanded(
                   child: _buildActionButton(
@@ -1549,11 +1572,11 @@ class _RequisitionDetailsPageHandsetState
       // Approved Banner
       Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(PRFSpacingTokens.md),
+        margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
         decoration: BoxDecoration(
           color: statusColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
           border: Border.all(color: statusColor.withValues(alpha: 0.3)),
         ),
         child: Row(
@@ -1563,7 +1586,7 @@ class _RequisitionDetailsPageHandsetState
               color: statusColor,
               size: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: PRFSpacingTokens.sm),
             Expanded(
               child: Text(
                 l10n.requisitionApprovedBanner,
@@ -1598,7 +1621,7 @@ class _RequisitionDetailsPageHandsetState
                             isPrimary: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: PRFSpacingTokens.md),
                       ],
                       Expanded(
                         child: _buildActionButton(
@@ -1613,7 +1636,7 @@ class _RequisitionDetailsPageHandsetState
                   ),
                   // Show recall button for requisitors
                   if (loggedInMember.ulid == requisition.member?.ulid) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: PRFSpacingTokens.sm),
                     SizedBox(
                       width: double.infinity,
                       child: _buildActionButton(
@@ -1643,7 +1666,7 @@ class _RequisitionDetailsPageHandsetState
                       isPrimary: true,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: PRFSpacingTokens.md),
                 ],
                 Expanded(
                   child: _buildActionButton(
@@ -1673,11 +1696,11 @@ class _RequisitionDetailsPageHandsetState
       // Rejected Banner
       Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(PRFSpacingTokens.md),
+        margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
         decoration: BoxDecoration(
           color: statusColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
           border: Border.all(
             color: statusColor.withValues(alpha: 0.3),
           ),
@@ -1689,7 +1712,7 @@ class _RequisitionDetailsPageHandsetState
               color: statusColor,
               size: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: PRFSpacingTokens.sm),
             Expanded(
               child: Text(
                 l10n.requisitionRejectedBanner,
@@ -1714,7 +1737,7 @@ class _RequisitionDetailsPageHandsetState
               isPrimary: true,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: _buildActionButton(
               context,
@@ -1746,7 +1769,7 @@ class _RequisitionDetailsPageHandsetState
               isDisabled: !Misc.userCan(PRFPermissions.createRequisitionItem),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: _buildActionButton(
               context,
@@ -1813,11 +1836,14 @@ class _RequisitionDetailsPageHandsetState
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        padding: const EdgeInsets.symmetric(
+          vertical: PRFSpacingTokens.md,
+          horizontal: PRFSpacingTokens.lg,
+        ),
         side: border,
         elevation: isOutlined ? 0 : 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         ),
       ),
     );
@@ -1853,7 +1879,9 @@ class _RequisitionDetailsPageHandsetState
         return [
           WoltModalSheetPage(
             pageTitle: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.xxl,
+              ),
               child: Text(
                 l10n.moreActions,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -1862,12 +1890,14 @@ class _RequisitionDetailsPageHandsetState
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.xxl,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: PRFSpacingTokens.lg),
                   // Status-aware Action Items
                   BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
                     builder: (context, requisitionState) {
@@ -1884,7 +1914,7 @@ class _RequisitionDetailsPageHandsetState
                       );
                     },
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
                 ],
               ),
             ),
@@ -2036,10 +2066,10 @@ class _RequisitionDetailsPageHandsetState
 
     return ListTile(
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(PRFSpacingTokens.sm),
         decoration: BoxDecoration(
           color: theme.colorScheme.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
         ),
         child: Icon(
           icon,
@@ -2061,7 +2091,7 @@ class _RequisitionDetailsPageHandsetState
       ),
       onTap: onTap,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
       ),
     );
   }
@@ -2154,14 +2184,16 @@ class _RequisitionDetailsPageHandsetState
         return [
           WoltModalSheetPage(
             pageTitle: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.xxl,
+              ),
               child: Row(
                 children: [
                   Icon(
                     Icons.payment,
                     color: theme.colorScheme.primary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Text(
                       l10n.paymentInstructions,
@@ -2174,17 +2206,19 @@ class _RequisitionDetailsPageHandsetState
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.xxl,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: PRFSpacingTokens.lg),
 
                   // Payment Method Header
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -2192,7 +2226,7 @@ class _RequisitionDetailsPageHandsetState
                           theme.colorScheme.primary.withValues(alpha: 0.8),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                     ),
                     child: Column(
                       children: [
@@ -2203,7 +2237,7 @@ class _RequisitionDetailsPageHandsetState
                           color: theme.colorScheme.onPrimary,
                           size: 32,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: PRFSpacingTokens.sm),
                         Text(
                           _getPaymentMethodDisplayName(
                             paymentInstruction.paymentMethod,
@@ -2217,7 +2251,7 @@ class _RequisitionDetailsPageHandsetState
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: PRFSpacingTokens.xl),
 
                   // Recipient Details
                   _buildPaymentDetailRow(
@@ -2228,7 +2262,7 @@ class _RequisitionDetailsPageHandsetState
                   ),
 
                   if (paymentInstruction.reference != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: PRFSpacingTokens.md),
                     _buildPaymentDetailRow(
                       context,
                       l10n.reference,
@@ -2237,7 +2271,7 @@ class _RequisitionDetailsPageHandsetState
                     ),
                   ],
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: PRFSpacingTokens.xl),
 
                   // Method-specific details
                   ..._buildPaymentMethodSpecificDetails(
@@ -2245,7 +2279,7 @@ class _RequisitionDetailsPageHandsetState
                     paymentInstruction,
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
                 ],
               ),
             ),
@@ -2308,7 +2342,7 @@ class _RequisitionDetailsPageHandsetState
               Icons.account_balance,
             ),
           if (paymentInstruction.bankAccountNumber != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: PRFSpacingTokens.md),
             _buildPaymentDetailRow(
               context,
               l10n.accountNumber,
@@ -2317,7 +2351,7 @@ class _RequisitionDetailsPageHandsetState
             ),
           ],
           if (paymentInstruction.bankAccountName != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: PRFSpacingTokens.md),
             _buildPaymentDetailRow(
               context,
               l10n.accountName,
@@ -2326,7 +2360,7 @@ class _RequisitionDetailsPageHandsetState
             ),
           ],
           if (paymentInstruction.bankBranch != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: PRFSpacingTokens.md),
             _buildPaymentDetailRow(
               context,
               l10n.branch,
@@ -2335,7 +2369,7 @@ class _RequisitionDetailsPageHandsetState
             ),
           ],
           if (paymentInstruction.bankSwiftCode != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: PRFSpacingTokens.md),
             _buildPaymentDetailRow(
               context,
               l10n.swiftCode,
@@ -2355,7 +2389,7 @@ class _RequisitionDetailsPageHandsetState
               Icons.receipt,
             ),
           if (paymentInstruction.paybillAccountNumber != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: PRFSpacingTokens.md),
             _buildPaymentDetailRow(
               context,
               l10n.accountNumber,
@@ -2386,10 +2420,10 @@ class _RequisitionDetailsPageHandsetState
   ) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(PRFSpacingTokens.md),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
         border: Border.all(
           color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
@@ -2401,7 +2435,7 @@ class _RequisitionDetailsPageHandsetState
             size: 20,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: Text(
               label,
@@ -2434,7 +2468,7 @@ class _RequisitionDetailsPageHandsetState
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -2442,7 +2476,7 @@ class _RequisitionDetailsPageHandsetState
             requisition.approvalStatus.color(theme).withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
             color: requisition.approvalStatus
@@ -2460,10 +2494,10 @@ class _RequisitionDetailsPageHandsetState
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 ),
                 child: Icon(
                   requisition.approvalStatus.icon,
@@ -2471,7 +2505,7 @@ class _RequisitionDetailsPageHandsetState
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: PRFSpacingTokens.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2498,7 +2532,7 @@ class _RequisitionDetailsPageHandsetState
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: PRFSpacingTokens.xl),
 
           // Details Grid
           Column(
@@ -2514,7 +2548,7 @@ class _RequisitionDetailsPageHandsetState
                       theme,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: PRFSpacingTokens.md),
                   Expanded(
                     child: _buildDetailItem(
                       context,
@@ -2529,7 +2563,7 @@ class _RequisitionDetailsPageHandsetState
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: PRFSpacingTokens.md),
               Row(
                 children: [
                   Expanded(
@@ -2541,7 +2575,7 @@ class _RequisitionDetailsPageHandsetState
                       theme,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: PRFSpacingTokens.md),
                   Expanded(
                     child: _buildDetailItem(
                       context,
@@ -2558,12 +2592,12 @@ class _RequisitionDetailsPageHandsetState
 
           // Member Information
           if (requisition.member != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(PRFSpacingTokens.md),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 border: Border.all(
                   color: theme.colorScheme.surface.withValues(alpha: 0.2),
                 ),
@@ -2575,14 +2609,14 @@ class _RequisitionDetailsPageHandsetState
                     color: theme.colorScheme.surface,
                     size: 16,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: PRFSpacingTokens.sm),
                   Text(
                     l10n.requestedBy,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.surface.withValues(alpha: 0.8),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Text(
                       requisition.member!.fullName,
@@ -2599,12 +2633,12 @@ class _RequisitionDetailsPageHandsetState
 
           // Approval Information
           if (requisition.approvalStatus != PRFApprovalStatus.pending) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: PRFSpacingTokens.md),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(PRFSpacingTokens.md),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 border: Border.all(
                   color: theme.colorScheme.surface.withValues(alpha: 0.2),
                 ),
@@ -2619,7 +2653,7 @@ class _RequisitionDetailsPageHandsetState
                         color: theme.colorScheme.surface,
                         size: 16,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: PRFSpacingTokens.sm),
                       Text(
                         requisition.approvalStatus.name,
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -2643,7 +2677,7 @@ class _RequisitionDetailsPageHandsetState
                     ],
                   ),
                   if (requisition.approvalNotes != null) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: PRFSpacingTokens.sm),
                     Text(
                       '${l10n.notes}: ${requisition.approvalNotes}',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -2652,7 +2686,7 @@ class _RequisitionDetailsPageHandsetState
                       ),
                     ),
                   ],
-                  const SizedBox(height: 4),
+                  const SizedBox(height: PRFSpacingTokens.xs),
                   Text(
                     '${l10n.date}: ${DateFormat.yMMMd().add_Hm().format(
                       requisition.approvedAt ?? requisition.createdAt,
@@ -2678,10 +2712,10 @@ class _RequisitionDetailsPageHandsetState
     ThemeData theme,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(PRFSpacingTokens.md),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
         border: Border.all(
           color: theme.colorScheme.surface.withValues(alpha: 0.2),
         ),
@@ -2705,7 +2739,7 @@ class _RequisitionDetailsPageHandsetState
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -2720,10 +2754,13 @@ class _RequisitionDetailsPageHandsetState
 
   Widget _buildStatusChip(PRFApprovalStatus status, ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.md,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -2766,7 +2803,7 @@ class _RequisitionDetailsPageHandsetState
                     : PRFApprovalStatus.approved.color(theme),
                 size: 24,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: PRFSpacingTokens.md),
               Expanded(
                 child: Text(
                   title,

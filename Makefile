@@ -56,7 +56,7 @@ sha1:
 		keytool -list -v -keystore ~/.android/debug.keystore
 
 pods:
-		cd ios && pod install --repo-update --verbose && cd ..
+		cd ios && pod install --verbose && cd ..
 
 gallery-cert:
 		keytool -export -rfc -keystore upload-keystore.jks -alias upload -file upload_certificate.pem

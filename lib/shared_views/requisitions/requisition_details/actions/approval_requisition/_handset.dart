@@ -5,7 +5,7 @@ import 'package:gaimon/gaimon.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/approve_requisition_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/reject_requisition_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class ApproveRequisitionViewHandset extends StatefulWidget {
   const ApproveRequisitionViewHandset({
@@ -56,74 +56,78 @@ class _ApproveRequisitionViewHandsetState
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
 
               // Header Card
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.fact_check_outlined,
-                      size: 32,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Review Requisition',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Approve or reject this requisition request',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onPrimary.withValues(alpha: 0.9),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.8),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.fact_check_outlined,
+                          size: 32,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.sm),
+                        Text(
+                          'Review Requisition',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.xs),
+                        Text(
+                          'Approve or reject this requisition request',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary.withValues(alpha: 0.9),
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                  .animate()
+                  .slideY(begin: -0.3)
+                  .fadeIn(duration: PRFMotionTokens.enterShort),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Notes Section
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                   border: Border.all(
                     color: Theme.of(
                       context,
@@ -139,19 +143,23 @@ class _ApproveRequisitionViewHandsetState
                     ),
                   ],
                 ),
-                child: _buildFormSection(
-                  icon: Icons.notes_outlined,
-                  title: 'Approval Notes',
-                  subtitle: 'Optional for approval, required for rejection',
-                  child: PRFTextAreaInput(
-                    controller: _notesController,
-                    hintText: 'Enter your notes or reason for rejection...',
-                    maxLines: 4,
-                  ),
-                ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
+                child:
+                    PRFFormSection(
+                          icon: Icons.notes_outlined,
+                          title: 'Approval Notes',
+                          child: PRFTextAreaInput(
+                            controller: _notesController,
+                            hintText:
+                                'Enter your notes or reason for rejection...',
+                            maxLines: 4,
+                          ),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger4)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Action Buttons
               MultiBlocListener(
@@ -224,83 +232,36 @@ class _ApproveRequisitionViewHandsetState
                   children: [
                     // Approve Button
                     PRFPrimaryButton(
-                      onPressed: _approveRequisition,
-                      title: 'Approve Requisition',
-                      disabled: !_canApprove,
-                      isLoading: _isLoading && !_isRejecting,
-                    ).animate(delay: 600.ms).slideY(begin: 0.3).fadeIn(),
+                          onPressed: _approveRequisition,
+                          title: 'Approve Requisition',
+                          disabled: !_canApprove,
+                          isLoading: _isLoading && !_isRejecting,
+                        )
+                        .animate(delay: PRFMotionTokens.enterShort)
+                        .slideY(begin: 0.3)
+                        .fadeIn(),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: PRFSpacingTokens.md),
 
                     // Reject Button
                     PRFDestroyButton(
-                      onPressed: _rejectRequisition,
-                      title: 'Reject Requisition',
-                      disabled: !_canReject,
-                      isLoading: _isLoading && _isRejecting,
-                    ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
+                          onPressed: _rejectRequisition,
+                          title: 'Reject Requisition',
+                          disabled: !_canReject,
+                          isLoading: _isLoading && _isRejecting,
+                        )
+                        .animate(delay: PRFMotionTokens.enterMedium)
+                        .slideY(begin: 0.3)
+                        .fadeIn(),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: PRFSpacingTokens.xxxl),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Widget child,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        child,
-      ],
     );
   }
 

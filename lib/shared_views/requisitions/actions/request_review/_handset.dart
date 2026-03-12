@@ -8,7 +8,7 @@ import 'package:leadership/features/home/landing/desk_activities/desk_activity_d
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/shared_views/requisitions/cubit/request_review_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class RequestReviewViewHandset extends StatefulWidget {
   const RequestReviewViewHandset({required this.requisitionUlid, super.key});
@@ -55,71 +55,75 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
         ),
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: Column(
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
 
             // Header Card
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.8),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.add_circle_outline,
-                    size: 32,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.requestReview,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.8),
+                      ],
                     ),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.requestReviewDescription,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onPrimary.withValues(alpha: 0.9),
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline,
+                        size: 32,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      const SizedBox(height: PRFSpacingTokens.sm),
+                      Text(
+                        l10n.requestReview,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: PRFSpacingTokens.xs),
+                      Text(
+                        l10n.requestReviewDescription,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary.withValues(alpha: 0.9),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+                )
+                .animate()
+                .slideY(begin: -0.3)
+                .fadeIn(duration: PRFMotionTokens.enterShort),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
 
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 border: Border.all(
                   color: Theme.of(
                     context,
@@ -135,7 +139,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                   ),
                 ],
               ),
-              child: _buildFormSection(
+              child: PRFFormSection(
                 icon: Icons.person_outline,
                 title: l10n.selectApprover,
                 isRequired: true,
@@ -180,91 +184,56 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
             // Submit Button
             BlocConsumer<RequestReviewCubit, RequestReviewState>(
-              listener: (context, state) {
-                state.mapOrNull(
-                  loading: (_) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  },
-                  loaded: (_) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    Gaimon.success();
-                    context.read<GetRequisitionCubit>().getRequisition(
-                      requisitionUlid: requisitionUlid,
+                  listener: (context, state) {
+                    state.mapOrNull(
+                      loading: (_) {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                      },
+                      loaded: (_) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Gaimon.success();
+                        context.read<GetRequisitionCubit>().getRequisition(
+                          requisitionUlid: requisitionUlid,
+                        );
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.activityCreated)),
+                        );
+                      },
+                      error: (error) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Gaimon.error();
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(error.message)));
+                      },
                     );
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.activityCreated)),
+                  },
+                  builder: (context, state) {
+                    return PRFPrimaryButton(
+                      onPressed: _submitForm,
+                      title: l10n.record,
+                      disabled: !_isFormValid,
+                      isLoading: _isLoading,
                     );
                   },
-                  error: (error) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    Gaimon.error();
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(error.message)));
-                  },
-                );
-              },
-              builder: (context, state) {
-                return PRFPrimaryButton(
-                  onPressed: _submitForm,
-                  title: l10n.record,
-                  disabled: !_isFormValid,
-                  isLoading: _isLoading,
-                );
-              },
-            ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
+                )
+                .animate(delay: PRFMotionTokens.enterMedium)
+                .slideY(begin: 0.3)
+                .fadeIn(),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: PRFSpacingTokens.xxxl),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FormFieldLabel(label: title, isRequired: isRequired),
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
       ),
     );
   }

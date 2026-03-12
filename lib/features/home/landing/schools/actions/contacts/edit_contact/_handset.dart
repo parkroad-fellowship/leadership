@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/schools/cubit/update_contact_cubit.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/shared_widgets/input/phone/phone.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import 'package:prf_design/prf_design.dart';
 
 class EditContactViewHandset extends StatefulWidget {
   const EditContactViewHandset({
@@ -121,15 +121,17 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+            ),
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: PRFSpacingTokens.lg),
                   _buildHeaderCard(theme),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: PRFSpacingTokens.xxl),
                   _buildFormCard(theme, isLoading),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
                 ],
               ),
             ),
@@ -142,7 +144,7 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
   Widget _buildHeaderCard(ThemeData theme) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -150,7 +152,7 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
             theme.colorScheme.primary.withValues(alpha: 0.85),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -166,7 +168,7 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
             size: 32,
             color: theme.colorScheme.onPrimary,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: PRFSpacingTokens.sm),
           Text(
             'Edit Contact',
             style: theme.textTheme.headlineSmall?.copyWith(
@@ -174,7 +176,7 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             'Update this person’s details and save.',
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -189,10 +191,10 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
 
   Widget _buildFormCard(ThemeData theme, bool isLoading) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
           color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
@@ -207,21 +209,21 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFormSection(
+          PRFFormSection(
             icon: Icons.badge_outlined,
             title: 'Contact Details',
             isRequired: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FormFieldLabel(label: 'Contact Name'),
+                const PRFFormFieldLabel(label: 'Contact Name'),
                 PRFTextInput(
                   hintText: 'Enter contact name',
                   controller: _nameController,
                   enabled: !isLoading,
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'Contact Type'),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'Contact Type'),
                 DropdownButtonFormField<PRFContactType?>(
                   initialValue: _selectedContactType,
                   decoration: const InputDecoration(
@@ -243,15 +245,15 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
                           });
                         },
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'Phone Number'),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'Phone Number'),
                 PRFPhoneInput(
                   hintText: 'Enter phone number (e.g., 254712345678)',
                   controller: _phoneController,
                   enabled: !isLoading,
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'Email Address'),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'Email Address'),
                 PRFTextInput(
                   hintText: 'Enter email address (optional)',
                   controller: _emailController,
@@ -260,7 +262,7 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: PRFSpacingTokens.sm),
           SizedBox(
             width: double.infinity,
             child: PRFPrimaryButton(
@@ -270,44 +272,6 @@ class _EditContactViewHandsetState extends State<EditContactViewHandset> {
               isLoading: isLoading,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(
-                    alpha: 0.1,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FormFieldLabel(label: title, isRequired: isRequired),
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
         ],
       ),
     );

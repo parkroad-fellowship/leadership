@@ -7,10 +7,9 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
-import 'package:leadership/shared_widgets/empty_state.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
+import 'package:prf_design/prf_design.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class MissionsDetailsPageHandset extends StatefulWidget {
@@ -92,7 +91,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: PRFSpacingTokens.lg),
+              ),
               SliverFillRemaining(
                 fillOverscroll: true,
                 child: BlocBuilder<GetMissionCubit, GetMissionState>(
@@ -129,7 +130,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                               size: 48,
                               color: Theme.of(context).colorScheme.error,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: PRFSpacingTokens.lg),
                             Text(
                               'Error: $message',
                               style: TextStyle(

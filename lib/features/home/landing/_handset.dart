@@ -2,12 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
-import 'package:leadership/shared_widgets/_index.dart';
-import 'package:leadership/shared_widgets/home_action_card/home_action_card.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class LandingPageHandset extends StatelessWidget {
   const LandingPageHandset({required this.actions, super.key});
@@ -35,7 +35,7 @@ class LandingPageHandset extends StatelessWidget {
               // Header Section
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                   child: Row(
                     children: [
                       // Profile Picture
@@ -130,7 +130,7 @@ class LandingPageHandset extends StatelessWidget {
                           )
                           .then(delay: 1000.ms),
 
-                      const SizedBox(width: 16),
+                      const SizedBox(width: PRFSpacingTokens.lg),
 
                       // Greeting Section
                       Expanded(
@@ -143,7 +143,7 @@ class LandingPageHandset extends StatelessWidget {
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: PRFSpacingTokens.xs),
                             Text(
                               l10n.hello(
                                 getIt<HiveService>().auth
@@ -169,7 +169,12 @@ class LandingPageHandset extends StatelessWidget {
               // Title Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(
+                    PRFSpacingTokens.lg,
+                    PRFSpacingTokens.xxl,
+                    PRFSpacingTokens.lg,
+                    PRFSpacingTokens.xxxl,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -182,7 +187,7 @@ class LandingPageHandset extends StatelessWidget {
                           height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: PRFSpacingTokens.md),
                       Container(
                         width: 60,
                         height: 4,
@@ -207,11 +212,14 @@ class LandingPageHandset extends StatelessWidget {
                           (action) => _buildAnimatedCard(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                                horizontal: PRFSpacingTokens.sm,
                               ),
-                              child: HomeActionCard(
+                              child: PRFActionCard(
                                 title: action[0] as String,
-                                assetPath: action[1] as String,
+                                image: SvgPicture.asset(
+                                  action[1] as String,
+                                  height: 100,
+                                ),
                                 onTap: action[2] as VoidCallback,
                               ),
                             ),
@@ -234,7 +242,7 @@ class LandingPageHandset extends StatelessWidget {
     required int delay,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: PRFSpacingTokens.lg),
       child: Animate(
         effects: [
           FadeEffect(

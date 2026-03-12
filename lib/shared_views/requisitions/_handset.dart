@@ -8,10 +8,10 @@ import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared_views/requisitions/widgets/timeline_requisitions_card.dart';
-import 'package:leadership/shared_widgets/empty_state.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
+import 'package:prf_design/prf_design.dart';
 
 class RequisitionsViewHandset extends StatefulWidget {
   const RequisitionsViewHandset({
@@ -63,7 +63,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -80,13 +80,15 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                   accountingEventUlid: accountingEvent.ulid,
                 ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.lg,
+              ),
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
                   if (event != null) ...[
                     _buildEventHeroCard(context, event!, l10n, theme),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: PRFSpacingTokens.xxl),
                   ],
                   PRFEmptyView(
                     label: l10n.requisitions,
@@ -113,7 +115,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                   if (event != null) ...[
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                         child: _buildEventHeroCard(
                           context,
                           event!,
@@ -125,7 +127,9 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                   ],
                   // Requisitions List
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: PRFSpacingTokens.lg,
+                    ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -155,12 +159,12 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                               .animate()
                               .fadeIn(
                                 delay: Duration(milliseconds: index * 100),
-                                duration: 600.ms,
+                                duration: PRFMotionTokens.enterShort,
                               )
                               .slideX(
                                 begin: 0.3,
                                 end: 0,
-                                curve: Curves.easeOutCubic,
+                                curve: PRFMotionTokens.emphasized,
                               );
                         },
                         childCount: sortedRequisitions.length,
@@ -198,7 +202,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                 theme.colorScheme.primary.withValues(alpha: 0.8),
               ],
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.xxl),
             boxShadow: [
               BoxShadow(
                 color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -208,7 +212,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -221,7 +225,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                       ),
                       child: Text(
                         'EVENT',
@@ -234,10 +238,10 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                       ),
                       child: const Icon(
                         Icons.event_rounded,
@@ -247,7 +251,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   event.name.toUpperCase(),
                   style: theme.textTheme.headlineLarge?.copyWith(
@@ -256,7 +260,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                     height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: PRFSpacingTokens.sm),
                 if (event.venue != null)
                   Text(
                     event.venue!,
@@ -265,7 +269,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                const SizedBox(height: 20),
+                const SizedBox(height: PRFSpacingTokens.xl),
                 Row(
                   children: [
                     _buildDateTimeChip(
@@ -279,7 +283,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: PRFSpacingTokens.sm),
                 Row(
                   children: [
                     _buildDateTimeChip(
@@ -298,7 +302,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
           ),
         )
         .animate()
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -309,16 +313,19 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
     ThemeData theme,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.md,
+        vertical: PRFSpacingTokens.sm,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 8),
+          const SizedBox(width: PRFSpacingTokens.sm),
           Text(
             text,
             style: theme.textTheme.bodySmall?.copyWith(

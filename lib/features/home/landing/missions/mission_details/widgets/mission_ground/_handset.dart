@@ -5,6 +5,7 @@ import 'package:leadership/models/remote/prf_mission.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:map_launcher/map_launcher.dart';
+import 'package:prf_design/prf_design.dart';
 
 class MissionGroundViewHandset extends StatefulWidget {
   const MissionGroundViewHandset({required this.mission, super.key});
@@ -175,7 +176,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
           ),
         )
         .animate()
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -240,8 +241,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ),
           ],
         )
-        .animate(delay: const Duration(milliseconds: 200))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.stagger2)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -347,8 +348,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ),
           ],
         )
-        .animate(delay: const Duration(milliseconds: 400))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.stagger4)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -516,7 +517,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                           effects: const [
                             ShakeEffect(
                               duration: Duration(seconds: 2),
-                              delay: Duration(milliseconds: 500),
+                              delay: PRFMotionTokens.stagger5,
                             ),
                           ],
                         ),
@@ -528,8 +529,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ],
           ),
         )
-        .animate(delay: const Duration(milliseconds: 600))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.enterShort)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -599,7 +600,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                     effects: const [
                       ShakeEffect(
                         duration: Duration(seconds: 2),
-                        delay: Duration(milliseconds: 500),
+                        delay: PRFMotionTokens.stagger5,
                       ),
                     ],
                   ),
@@ -686,8 +687,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ],
           ),
         )
-        .animate(delay: const Duration(milliseconds: 800))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.enterMedium)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 

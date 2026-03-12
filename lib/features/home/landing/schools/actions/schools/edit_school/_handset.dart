@@ -4,6 +4,7 @@ import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/features/home/landing/schools/cubit/update_school_cubit.dart';
 import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class EditSchoolViewHandset extends StatefulWidget {
   const EditSchoolViewHandset({
@@ -159,15 +160,17 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+            ),
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: PRFSpacingTokens.lg),
                   _buildHeaderCard(theme),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: PRFSpacingTokens.xxl),
                   _buildFormCard(theme, isLoading),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
                 ],
               ),
             ),
@@ -180,7 +183,7 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
   Widget _buildHeaderCard(ThemeData theme) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -188,7 +191,7 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
             theme.colorScheme.primary.withValues(alpha: 0.85),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -204,7 +207,7 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
             size: 32,
             color: theme.colorScheme.onPrimary,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: PRFSpacingTokens.sm),
           Text(
             'Edit School',
             style: theme.textTheme.headlineSmall?.copyWith(
@@ -212,7 +215,7 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             'Update the details below to keep records current',
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -227,10 +230,10 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
 
   Widget _buildFormCard(ThemeData theme, bool isLoading) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
           color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
@@ -245,21 +248,21 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFormSection(
+          PRFFormSection(
             icon: Icons.school_outlined,
             title: 'School Details',
             isRequired: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FormFieldLabel(label: 'School Name'),
+                const PRFFormFieldLabel(label: 'School Name'),
                 PRFTextInput(
                   hintText: 'Enter school name',
                   controller: _nameController,
                   enabled: !isLoading,
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'Institution Type'),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'Institution Type'),
                 StatefulBuilder(
                   builder: (context, setState) {
                     return DropdownButtonFormField<PRFInstitutionType>(
@@ -287,8 +290,8 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
                     );
                   },
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'Total Students'),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'Total Students'),
                 PRFNumberInput(
                   hintText: 'Enter total students',
                   controller: _studentsController,
@@ -296,29 +299,29 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
               ],
             ),
           ),
-          _buildFormSection(
+          PRFFormSection(
             icon: Icons.place_outlined,
             title: 'Location',
             isRequired: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FormFieldLabel(label: 'Address'),
+                const PRFFormFieldLabel(label: 'Address'),
                 PRFTextAreaInput(
                   hintText: 'Enter school address',
                   controller: _addressController,
                   enabled: !isLoading,
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'Directions'),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'Directions'),
                 PRFTextAreaInput(
                   hintText: 'Enter directions (optional)',
                   controller: _directionsController,
                   enabled: !isLoading,
                 ),
-                const SizedBox(height: 16),
-                const FormFieldLabel(label: 'GPS Coordinates'),
-                const SizedBox(height: 8),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                const PRFFormFieldLabel(label: 'GPS Coordinates'),
+                const SizedBox(height: PRFSpacingTokens.sm),
                 LocationPicker(
                   initialLatitude: double.tryParse(
                     _latitudeController.text,
@@ -331,14 +334,14 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
                     _longitudeController.text = lon.toString();
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Row(
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const FormFieldLabel(label: 'Latitude'),
+                          const PRFFormFieldLabel(label: 'Latitude'),
                           PRFTextInput(
                             hintText: '0.0',
                             controller: _latitudeController,
@@ -347,12 +350,12 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: PRFSpacingTokens.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const FormFieldLabel(label: 'Longitude'),
+                          const PRFFormFieldLabel(label: 'Longitude'),
                           PRFTextInput(
                             hintText: '0.0',
                             controller: _longitudeController,
@@ -366,13 +369,13 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
               ],
             ),
           ),
-          _buildFormSection(
+          PRFFormSection(
             icon: Icons.description_outlined,
             title: 'Additional Info',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FormFieldLabel(label: 'Description'),
+                const PRFFormFieldLabel(label: 'Description'),
                 PRFTextAreaInput(
                   hintText: 'Enter description (optional)',
                   controller: _descriptionController,
@@ -381,7 +384,7 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: PRFSpacingTokens.sm),
           SizedBox(
             width: double.infinity,
             child: PRFPrimaryButton(
@@ -391,44 +394,6 @@ class _EditSchoolViewHandsetState extends State<EditSchoolViewHandset> {
               isLoading: isLoading,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(
-                    alpha: 0.1,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FormFieldLabel(label: title, isRequired: isRequired),
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
         ],
       ),
     );

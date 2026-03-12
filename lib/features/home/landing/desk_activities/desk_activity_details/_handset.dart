@@ -6,10 +6,9 @@ import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
-import 'package:leadership/shared_widgets/empty_state.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
+import 'package:prf_design/prf_design.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class DeskEventDetailsPageHandset extends StatefulWidget {

@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_payment_instruction_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/shared_widgets/input/phone/phone.dart';
 import 'package:phone_form_field/phone_form_field.dart';
+import 'package:prf_design/prf_design.dart';
 
 class CreatePaymentInstructionViewHandset extends StatefulWidget {
   const CreatePaymentInstructionViewHandset({
@@ -127,7 +127,7 @@ class _CreatePaymentInstructionViewHandsetState
         children: [
           // Progress indicator
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(PRFSpacingTokens.lg),
             child: Row(
               children: [
                 _buildStepIndicator(0, 'Method'),
@@ -166,44 +166,6 @@ class _CreatePaymentInstructionViewHandsetState
     );
   }
 
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FormFieldLabel(label: title, isRequired: isRequired),
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
-      ),
-    );
-  }
-
   Widget _buildPaymentMethodSelector() {
     final theme = Theme.of(context);
     final paymentMethods = <Map<String, dynamic>>[
@@ -237,19 +199,19 @@ class _CreatePaymentInstructionViewHandsetState
         final isSelected = selectedPaymentMethod == method;
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
           child: GestureDetector(
             onTap: () => setState(() => selectedPaymentMethod = method),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(16),
+              duration: PRFMotionTokens.standard,
+              padding: const EdgeInsets.all(PRFSpacingTokens.lg),
               decoration: BoxDecoration(
                 color: isSelected
                     ? theme.colorScheme.primary.withValues(alpha: 0.1)
                     : theme.colorScheme.surfaceContainerHighest.withValues(
                         alpha: 0.3,
                       ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 border: Border.all(
                   color: isSelected
                       ? theme.colorScheme.primary
@@ -265,7 +227,7 @@ class _CreatePaymentInstructionViewHandsetState
                         ? theme.colorScheme.primary
                         : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: PRFSpacingTokens.lg),
                   Expanded(
                     child: Text(
                       name,
@@ -309,7 +271,7 @@ class _CreatePaymentInstructionViewHandsetState
   Widget _buildMpesaFields() {
     return Column(
       children: [
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.phone,
           title: 'M-PESA Phone Number',
           isRequired: true,
@@ -325,7 +287,7 @@ class _CreatePaymentInstructionViewHandsetState
   Widget _buildBankTransferFields() {
     return Column(
       children: [
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.account_balance,
           title: 'Bank Name',
           isRequired: true,
@@ -334,7 +296,7 @@ class _CreatePaymentInstructionViewHandsetState
             controller: _bankNameController,
           ),
         ),
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.numbers,
           title: 'Account Number',
           isRequired: true,
@@ -344,7 +306,7 @@ class _CreatePaymentInstructionViewHandsetState
           ),
         ),
 
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.person,
           title: 'Account Name',
           isRequired: true,
@@ -354,7 +316,7 @@ class _CreatePaymentInstructionViewHandsetState
           ),
         ),
 
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.location_on,
           title: 'Branch',
           child: PRFTextInput(
@@ -362,7 +324,7 @@ class _CreatePaymentInstructionViewHandsetState
             controller: _bankBranchController,
           ),
         ),
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.code,
           title: 'SWIFT Code',
           child: PRFTextInput(
@@ -377,7 +339,7 @@ class _CreatePaymentInstructionViewHandsetState
   Widget _buildPaybillFields() {
     return Column(
       children: [
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.receipt,
           title: 'Paybill Number',
           isRequired: true,
@@ -387,7 +349,7 @@ class _CreatePaymentInstructionViewHandsetState
           ),
         ),
 
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.account_box,
           title: 'Account Number',
           isRequired: true,
@@ -403,7 +365,7 @@ class _CreatePaymentInstructionViewHandsetState
   Widget _buildTillNumberFields() {
     return Column(
       children: [
-        _buildFormSection(
+        PRFFormSection(
           icon: Icons.store,
           title: 'Till Number',
           isRequired: true,
@@ -471,7 +433,10 @@ class _CreatePaymentInstructionViewHandsetState
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.lg,
+        vertical: PRFSpacingTokens.sm,
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -504,7 +469,7 @@ class _CreatePaymentInstructionViewHandsetState
                     ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: PRFSpacingTokens.sm),
           Text(
             title,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -521,16 +486,16 @@ class _CreatePaymentInstructionViewHandsetState
 
   Widget _buildStep1() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
 
             // Header Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -540,7 +505,7 @@ class _CreatePaymentInstructionViewHandsetState
                     ).colorScheme.primary.withValues(alpha: 0.8),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(
@@ -558,7 +523,7 @@ class _CreatePaymentInstructionViewHandsetState
                     size: 32,
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: PRFSpacingTokens.sm),
                   Text(
                     'Payment Method',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -566,7 +531,7 @@ class _CreatePaymentInstructionViewHandsetState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: PRFSpacingTokens.xs),
                   Text(
                     'Choose payment method and recipient details',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -580,14 +545,14 @@ class _CreatePaymentInstructionViewHandsetState
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
 
             // Form Card
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 border: Border.all(
                   color: Theme.of(
                     context,
@@ -606,7 +571,7 @@ class _CreatePaymentInstructionViewHandsetState
               child: Column(
                 children: [
                   // Payment Method Selector
-                  _buildFormSection(
+                  PRFFormSection(
                     icon: Icons.payment_outlined,
                     title: 'Payment Method',
                     isRequired: true,
@@ -614,7 +579,7 @@ class _CreatePaymentInstructionViewHandsetState
                   ),
 
                   // Recipient Name
-                  _buildFormSection(
+                  PRFFormSection(
                     icon: Icons.person_outline,
                     title: 'Recipient Name',
                     isRequired: true,
@@ -627,7 +592,7 @@ class _CreatePaymentInstructionViewHandsetState
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
 
             // Next Button
             PRFPrimaryButton(
@@ -645,16 +610,16 @@ class _CreatePaymentInstructionViewHandsetState
 
   Widget _buildStep2() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
 
             // Header Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -664,7 +629,7 @@ class _CreatePaymentInstructionViewHandsetState
                     ).colorScheme.secondary.withValues(alpha: 0.8),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(
@@ -682,7 +647,7 @@ class _CreatePaymentInstructionViewHandsetState
                     size: 32,
                     color: Theme.of(context).colorScheme.onSecondary,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: PRFSpacingTokens.sm),
                   Text(
                     'Payment Details',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -690,7 +655,7 @@ class _CreatePaymentInstructionViewHandsetState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: PRFSpacingTokens.xs),
                   Text(
                     selectedPaymentMethod != null
                         ? 'Enter specific details '
@@ -707,14 +672,14 @@ class _CreatePaymentInstructionViewHandsetState
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
 
             // Form Card
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 border: Border.all(
                   color: Theme.of(
                     context,
@@ -737,7 +702,7 @@ class _CreatePaymentInstructionViewHandsetState
                     _buildPaymentMethodFields(),
 
                   // Reference (Optional)
-                  _buildFormSection(
+                  PRFFormSection(
                     icon: Icons.receipt_long_outlined,
                     title: 'Reference',
                     child: PRFTextInput(
@@ -749,7 +714,7 @@ class _CreatePaymentInstructionViewHandsetState
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
 
             // Action Buttons
             Row(
@@ -761,7 +726,7 @@ class _CreatePaymentInstructionViewHandsetState
                     disabled: false,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: PRFSpacingTokens.lg),
                 Expanded(
                   flex: 2,
                   child:
@@ -824,7 +789,7 @@ class _CreatePaymentInstructionViewHandsetState
   void _goToStep2() {
     if (_isStep1Valid) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: PRFMotionTokens.slow,
         curve: Curves.easeInOut,
       );
     }
@@ -832,7 +797,7 @@ class _CreatePaymentInstructionViewHandsetState
 
   void _goToStep1() {
     _pageController.previousPage(
-      duration: const Duration(milliseconds: 300),
+      duration: PRFMotionTokens.slow,
       curve: Curves.easeInOut,
     );
   }

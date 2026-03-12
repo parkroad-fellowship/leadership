@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/schools/cubit/delete_contact_type_cubit.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class DeleteContactTypeDialog extends StatelessWidget {
   const DeleteContactTypeDialog({
@@ -20,10 +20,11 @@ class DeleteContactTypeDialog extends StatelessWidget {
 
     return BlocProvider.value(
       value: context.read<DeleteContactTypeCubit>(),
-      child: AlertDialog(
-        title: const Text('Delete Contact Type'),
-        content: Text('Are you sure you want to delete "${contactType.name}"?'),
-        actions: [
+      child: PRFConfirmationDialog(
+        title: 'Delete Contact Type',
+        message: 'Are you sure you want to delete "${contactType.name}"?',
+        isDestructive: true,
+        customActions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),

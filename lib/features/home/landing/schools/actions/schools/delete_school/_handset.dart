@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/home/landing/schools/cubit/delete_school_cubit.dart';
 import 'package:leadership/models/remote/prf_school.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class DeleteSchoolDialog extends StatelessWidget {
   const DeleteSchoolDialog({
@@ -20,10 +20,11 @@ class DeleteSchoolDialog extends StatelessWidget {
 
     return BlocProvider.value(
       value: context.read<DeleteSchoolCubit>(),
-      child: AlertDialog(
-        title: const Text('Delete School'),
-        content: Text('Are you sure you want to delete ${school.name}?'),
-        actions: [
+      child: PRFConfirmationDialog(
+        title: 'Delete School',
+        message: 'Are you sure you want to delete ${school.name}?',
+        isDestructive: true,
+        customActions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),

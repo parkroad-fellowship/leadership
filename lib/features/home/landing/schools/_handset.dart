@@ -21,9 +21,9 @@ import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/shared_widgets/_index.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:map_launcher/map_launcher.dart';
+import 'package:prf_design/prf_design.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SchoolsPageHandset extends StatefulWidget {
@@ -69,11 +69,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
         title: 'Schools & Contacts',
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: PRFSpacingTokens.sm),
             child: Container(
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               ),
               child: IconButton(
                 icon: Icon(
@@ -103,7 +103,10 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
   Widget _buildTabSelector(ThemeData theme) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.lg,
+        vertical: PRFSpacingTokens.lg,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -114,7 +117,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
               Icons.school_outlined,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: _buildTabButton(
               theme,
@@ -125,7 +128,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms);
+    ).animate().fadeIn(duration: PRFMotionTokens.slow);
   }
 
   Widget _buildTabButton(
@@ -138,7 +141,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: PRFMotionTokens.slow,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           gradient: isSelected
@@ -150,7 +153,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 )
               : null,
           color: !isSelected ? theme.colorScheme.surfaceContainerHighest : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -171,7 +174,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   ? Colors.white
                   : theme.colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: PRFSpacingTokens.sm),
             Text(
               label,
               style: theme.textTheme.labelLarge?.copyWith(
@@ -236,7 +239,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
       children: [
         Container(
           color: Colors.white,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(PRFSpacingTokens.lg),
           child: Column(
             children: [
               PRFTextInput(
@@ -246,7 +249,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   setState(() {});
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: PRFSpacingTokens.md),
               SizedBox(
                 width: double.infinity,
                 child: PRFPrimaryButton(
@@ -261,7 +264,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
         Expanded(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(PRFSpacingTokens.lg),
               child: Column(
                 children: [
                   ...List.generate(schools.length, (index) {
@@ -273,7 +276,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                     }
                     return _buildSchoolCard(theme, school, index);
                   }),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: PRFSpacingTokens.lg),
                 ],
               ),
             ),
@@ -286,30 +289,30 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
   Widget _buildSchoolCard(ThemeData theme, PRFSchool school, int index) {
     return Card(
           elevation: 3,
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.lg),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
           ),
           shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.15),
           child: InkWell(
             onTap: () => _showSchoolDetails(context, school),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 border: Border.all(
                   color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(PRFSpacingTokens.md),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -321,7 +324,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                 ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.md,
+                            ),
                           ),
                           child: Icon(
                             Icons.school,
@@ -329,7 +334,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             size: 24,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: PRFSpacingTokens.md),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,11 +346,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                   color: theme.colorScheme.primary,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: PRFSpacingTokens.xs),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: PRFSpacingTokens.sm,
+                                  vertical: PRFSpacingTokens.xs,
                                 ),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.secondary.withValues(
@@ -369,13 +374,19 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () => _showSchoolForm(context, school),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.md,
+                            ),
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(
+                                PRFSpacingTokens.sm,
+                              ),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.primaryContainer
                                     .withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(
+                                  PRFRadiusTokens.md,
+                                ),
                                 border: Border.all(
                                   color: theme.colorScheme.primary.withValues(
                                     alpha: 0.3,
@@ -390,20 +401,26 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: PRFSpacingTokens.sm),
                         // Delete Button
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () =>
                                 _showDeleteSchoolDialog(context, school),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.md,
+                            ),
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(
+                                PRFSpacingTokens.sm,
+                              ),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.errorContainer
                                     .withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(
+                                  PRFRadiusTokens.md,
+                                ),
                                 border: Border.all(
                                   color: theme.colorScheme.error.withValues(
                                     alpha: 0.3,
@@ -437,7 +454,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             color: theme.colorScheme.primary.withValues(
                               alpha: 0.08,
                             ),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.sm,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -458,7 +477,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: PRFSpacingTokens.sm),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -468,7 +487,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             color: theme.colorScheme.secondary.withValues(
                               alpha: 0.1,
                             ),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.sm,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -551,7 +572,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 // Add button header
                 Container(
                   color: Colors.white,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                   child: SizedBox(
                     width: double.infinity,
                     child: PRFPrimaryButton(
@@ -565,7 +586,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                       child: Column(
                         children: [
                           ...List.generate(contactTypes.length, (index) {
@@ -576,7 +597,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                               index,
                             );
                           }),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: PRFSpacingTokens.lg),
                         ],
                       ),
                     ),
@@ -605,27 +626,27 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
   ) {
     return Card(
           elevation: 3,
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.lg),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
           ),
           shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.15),
           child: InkWell(
             onTap: () => _showEditContactTypeModal(context, contactType),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 border: Border.all(
                   color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -633,7 +654,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             theme.colorScheme.secondary.withValues(alpha: 0.05),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                       ),
                       child: Icon(
                         Icons.label_outline,
@@ -641,7 +662,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         size: 24,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: PRFSpacingTokens.lg),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -673,13 +694,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                       child: InkWell(
                         onTap: () =>
                             _showEditContactTypeModal(context, contactType),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primaryContainer
                                 .withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.md,
+                            ),
                             border: Border.all(
                               color: theme.colorScheme.primary.withValues(
                                 alpha: 0.3,
@@ -694,21 +717,23 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: PRFSpacingTokens.sm),
                     // Delete Button
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () =>
                             _showDeleteContactTypeDialog(context, contactType),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.errorContainer.withValues(
                               alpha: 0.5,
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.md,
+                            ),
                             border: Border.all(
                               color: theme.colorScheme.error.withValues(
                                 alpha: 0.3,
@@ -821,15 +846,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
           ),
           title: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 ),
                 child: Icon(
                   Icons.delete_outline,
@@ -837,7 +862,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: PRFSpacingTokens.lg),
               Expanded(
                 child: Text(
                   'Delete Contact Type',
@@ -856,15 +881,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 'Are you sure you want to delete this contact type?',
                 style: theme.textTheme.bodyLarge,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer.withValues(
                     alpha: 0.3,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   border: Border.all(
                     color: theme.colorScheme.error.withValues(alpha: 0.3),
                   ),
@@ -878,7 +903,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: PRFSpacingTokens.sm),
                     Text(
                       'Created ${Misc.formatDate(
                         contactType.createdAt,
@@ -894,7 +919,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
               Text(
                 'This action cannot be undone.',
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -932,11 +957,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 backgroundColor: theme.colorScheme.error,
                 foregroundColor: theme.colorScheme.onError,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.sm,
                 ),
               ),
             ),
@@ -954,15 +979,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
           ),
           title: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 ),
                 child: Icon(
                   Icons.delete_outline,
@@ -970,7 +995,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: PRFSpacingTokens.lg),
               Expanded(
                 child: Text(
                   'Delete School',
@@ -989,15 +1014,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 'Are you sure you want to delete this school?',
                 style: theme.textTheme.bodyLarge,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer.withValues(
                     alpha: 0.3,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   border: Border.all(
                     color: theme.colorScheme.error.withValues(alpha: 0.3),
                   ),
@@ -1011,7 +1036,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: PRFSpacingTokens.sm),
                     Text(
                       school.institutionType.name,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -1022,7 +1047,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                       ),
                     ),
                     if (school.address.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: PRFSpacingTokens.sm),
                       Text(
                         school.address,
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -1038,7 +1063,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
               Text(
                 'This action cannot be undone.',
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -1076,11 +1101,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 backgroundColor: theme.colorScheme.error,
                 foregroundColor: theme.colorScheme.onError,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.sm,
                 ),
               ),
             ),
@@ -1113,7 +1138,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
             onPressed: () => Navigator.pop(context),
           ),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(PRFSpacingTokens.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1143,7 +1168,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 _buildDetailSection(
                   theme,
                   'Location',
@@ -1157,7 +1182,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 _buildContactsSection(context, theme, school),
                 const SizedBox(height: 80),
               ],
@@ -1275,14 +1300,14 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
         );
 
         return Card(
-          elevation: 2,
+          elevation: PRFElevationTokens.sm,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
           ),
           shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.1),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
               border: Border.all(
                 color: theme.colorScheme.outline.withValues(alpha: 0.1),
               ),
@@ -1291,7 +1316,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -1309,7 +1334,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(
+                            PRFRadiusTokens.md,
+                          ),
                           border: Border.all(
                             color: theme.colorScheme.primary.withValues(
                               alpha: 0.15,
@@ -1322,7 +1349,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                           size: 20,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: PRFSpacingTokens.md),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1334,7 +1361,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                 color: theme.colorScheme.primary,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: PRFSpacingTokens.xs),
                             Text(
                               '${contacts.length} linked to this school',
                               style: theme.textTheme.labelSmall?.copyWith(
@@ -1353,7 +1380,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         ),
                         tooltip: 'Refresh contacts',
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: PRFSpacingTokens.xs),
                       TextButton.icon(
                         onPressed: () => _showAddContactModal(context, school),
                         icon: const Icon(Icons.add_circle_outline, size: 18),
@@ -1361,7 +1388,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                         style: TextButton.styleFrom(
                           foregroundColor: theme.colorScheme.primary,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
+                            horizontal: PRFSpacingTokens.md,
                             vertical: 10,
                           ),
                           shape: RoundedRectangleBorder(
@@ -1374,7 +1401,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                   child: state.maybeWhen(
                     loading: () => const Center(
                       child: PRFCircularProgressIndicator(),
@@ -1397,7 +1424,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                   color: theme.colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: PRFSpacingTokens.sm),
                               Text(
                                 'Add at least one contact so teams '
                                 'can reach the right person fast.',
@@ -1405,7 +1432,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: PRFSpacingTokens.lg),
                               SizedBox(
                                 width: double.infinity,
                                 child: PRFPrimaryButton(
@@ -1445,27 +1472,27 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     List<Widget> children,
   ) {
     return Card(
-      elevation: 2,
+      elevation: PRFElevationTokens.sm,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
       ),
       shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.1),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
           border: Border.all(
             color: theme.colorScheme.outline.withValues(alpha: 0.1),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(PRFSpacingTokens.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: PRFSpacingTokens.md,
+                  vertical: PRFSpacingTokens.sm,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1474,12 +1501,12 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                       theme.colorScheme.primary.withValues(alpha: 0.05),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 ),
                 child: Row(
                   children: [
                     Icon(icon, color: theme.colorScheme.primary, size: 20),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: PRFSpacingTokens.sm),
                     Text(
                       title,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -1490,7 +1517,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
               ...children,
             ],
           ),
@@ -1532,21 +1559,21 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     PRFSchool school,
   ) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.08),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           border: Border.all(
             color: theme.colorScheme.outline.withValues(alpha: 0.15),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1554,10 +1581,10 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                     ),
                     child: Icon(
                       Icons.person,
@@ -1565,7 +1592,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                       color: theme.colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1585,8 +1612,8 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                             if (contact.contactType != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: PRFSpacingTokens.sm,
+                                  vertical: PRFSpacingTokens.xs,
                                 ),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.secondary.withValues(
@@ -1604,7 +1631,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                               ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: PRFSpacingTokens.md),
                         Row(
                           children: [
                             Icon(
@@ -1624,7 +1651,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: PRFSpacingTokens.sm),
                             Wrap(
                               spacing: 6,
                               runSpacing: 6,
@@ -1637,7 +1664,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                           ],
                         ),
                         if (contact.email != null) ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: PRFSpacingTokens.sm),
                           Row(
                             children: [
                               Icon(
@@ -1835,15 +1862,15 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
 
             return AlertDialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
               ),
               title: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                     ),
                     child: Icon(
                       Icons.delete_outline,
@@ -1851,7 +1878,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: PRFSpacingTokens.md),
                   Expanded(
                     child: Text(
                       'Delete Contact',
@@ -1870,7 +1897,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                     'Are you sure you want to delete ${contact.name}?',
                     style: theme.textTheme.bodyLarge,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: PRFSpacingTokens.md),
                   Text(
                     'This cannot be undone.',
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -1910,11 +1937,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                     backgroundColor: theme.colorScheme.error,
                     foregroundColor: theme.colorScheme.onError,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: PRFSpacingTokens.lg,
+                      vertical: PRFSpacingTokens.sm,
                     ),
                   ),
                 ),
