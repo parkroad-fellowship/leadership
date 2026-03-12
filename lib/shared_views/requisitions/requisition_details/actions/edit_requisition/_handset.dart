@@ -6,10 +6,11 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/update_requisition_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class EditRequisitionViewHandset extends StatefulWidget {
@@ -44,7 +45,7 @@ class _EditRequisitionViewHandsetState
     _requisitionDateController.addListener(() => setState(() {}));
 
     // Load the requisition data
-    context.read<GetRequisitionCubit>().getRequisition(
+    context.read<RequisitionResourceCubit>().loadRequisition(
       requisitionUlid: widget.requisitionUlid,
     );
   }
@@ -85,12 +86,21 @@ class _EditRequisitionViewHandsetState
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
-          child: BlocListener<GetRequisitionCubit, GetRequisitionState>(
+          child: BlocListener<
+            RequisitionResourceCubit,
+            ResourceState<PRFRequisition>
+          >(
             listener: (context, state) {
-              state.maybeWhen(
-                loaded: _populateForm,
-                orElse: () {},
-              );
+              switch (state) {
+                case ResourceListLoaded<PRFRequisition>(:final items)
+                    when items.isNotEmpty:
+                  _populateForm(items.first);
+                case ResourceMutated<PRFRequisition>(:final items)
+                    when items.isNotEmpty:
+                  _populateForm(items.first);
+                default:
+                  break;
+              }
             },
             child: Column(
               children: [
@@ -162,13 +172,17 @@ class _EditRequisitionViewHandsetState
                 const SizedBox(height: PRFSpacingTokens.xxl),
 
                 // Form Card
-                BlocBuilder<GetRequisitionCubit, GetRequisitionState>(
+                BlocBuilder<
+                  RequisitionResourceCubit,
+                  ResourceState<PRFRequisition>
+                >(
                   builder: (context, state) {
-                    return state.maybeWhen(
-                      loading: () => const Center(
+                    return switch (state) {
+                      ResourceListLoading<PRFRequisition>() => const Center(
                         child: CircularProgressIndicator(),
                       ),
-                      loaded: (requisition) => Container(
+                      ResourceListLoaded<PRFRequisition>(:final items)
+                          when items.isNotEmpty => Container(
                         padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
@@ -226,7 +240,7 @@ class _EditRequisitionViewHandsetState
                           ],
                         ),
                       ),
-                      error: (message) => Center(
+                      ResourceError<PRFRequisition>(:final message) => Center(
                         child: Text(
                           'Error loading requisition: $message',
                           style: Theme.of(context).textTheme.bodyLarge
@@ -235,8 +249,8 @@ class _EditRequisitionViewHandsetState
                               ),
                         ),
                       ),
-                      orElse: () => const SizedBox.shrink(),
-                    );
+                      _ => const SizedBox.shrink(),
+                    };
                   },
                 ),
 

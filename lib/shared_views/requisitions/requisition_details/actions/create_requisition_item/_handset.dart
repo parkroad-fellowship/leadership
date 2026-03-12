@@ -3,8 +3,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_item_cubit.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
+import 'package:leadership/models/remote/prf_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class CreateRequisitionItemViewHandset extends StatefulWidget {
@@ -317,40 +319,36 @@ class _CreateRequisitionItemViewHandsetState
 
               // Submit Button
               BlocConsumer<
-                    CreateRequisitionItemCubit,
-                    CreateRequisitionItemState
+                    RequisitionItemResourceCubit,
+                    ResourceState<PRFRequisitionItem>
                   >(
                     listener: (context, state) {
-                      state.mapOrNull(
-                        loading: (_) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                        },
-                        loaded: (_) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Gaimon.success();
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Requisition item created successfully',
-                              ),
-                            ),
-                          );
-                        },
-                        error: (error) {
-                          setState(() {
-                            _isLoading = false;
-                          });
+                      switch (state) {
+                        case ResourceMutating<PRFRequisitionItem>(
+                          :final operation,
+                        ):
+                          if (operation == ResourceOperation.create) {
+                            setState(() => _isLoading = true);
+                          }
+                        case ResourceMutated<PRFRequisitionItem>(
+                          :final operation,
+                        ):
+                          if (operation == ResourceOperation.create) {
+                            setState(() => _isLoading = false);
+                            Gaimon.success();
+                            Navigator.of(context).pop();
+                            PRFSnackbar.success(
+                              context,
+                              'Requisition item created successfully',
+                            );
+                          }
+                        case ResourceError<PRFRequisitionItem>(:final message):
+                          setState(() => _isLoading = false);
                           Gaimon.error();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error.message)),
-                          );
-                        },
-                      );
+                          PRFSnackbar.error(context, message);
+                        default:
+                          break;
+                      }
                     },
                     builder: (context, state) {
                       return PRFPrimaryButton(
@@ -423,28 +421,24 @@ class _CreateRequisitionItemViewHandsetState
     final quantity = int.tryParse(_quantityController.text);
 
     if (unitPrice == null || quantity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter valid numbers for price and quantity'),
-        ),
+      PRFSnackbar.error(
+        context,
+        'Please enter valid numbers for price and quantity',
       );
       Gaimon.warning();
       return;
     }
 
     if (_narrationController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please provide a narration/justification for this item',
-          ),
-        ),
+      PRFSnackbar.error(
+        context,
+        'Please provide a narration/justification for this item',
       );
       Gaimon.warning();
       return;
     }
 
-    await context.read<CreateRequisitionItemCubit>().createRequisitionItem(
+    await context.read<RequisitionItemResourceCubit>().createRequisitionItem(
       requisitionUlid: widget.requisitionUlid,
       expenseCategoryUlid: selectedExpenseCategory!.ulid,
       itemName: _itemNameController.text.trim(),

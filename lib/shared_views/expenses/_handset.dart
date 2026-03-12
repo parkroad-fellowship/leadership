@@ -31,7 +31,6 @@ import 'package:leadership/shared_views/expenses/widgets/reciept_preview.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:prf_design/prf_design.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class ExpensesViewHandset extends StatefulWidget {
   const ExpensesViewHandset({
@@ -1502,16 +1501,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
 
   void _showAddExpenseModal(BuildContext context) {
     context.read<SelectMediaCubit>().clearMedia();
-    WoltModalSheet.show<void>(
-      context: context,
-      pageListBuilder: (context) => [
-        _buildAddExpenseModalPage(context),
-      ],
-    );
-  }
-
-  WoltModalSheetPage _buildAddExpenseModalPage(BuildContext context) {
-    return WoltModalSheetPage(
+    PRFBottomSheet.show<void>(
+      context,
+      title: context.l10n.addExpense,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: AddExpenseViewHandset(accountingEventUlid: accountingEventUlid),
@@ -1520,19 +1512,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   }
 
   void _showExpenseDetails(BuildContext context, PRFAllocationEntry entry) {
-    WoltModalSheet.show<void>(
-      context: context,
-      pageListBuilder: (context) => [
-        _buildExpenseDetailsModalPage(context, entry),
-      ],
-    );
-  }
-
-  WoltModalSheetPage _buildExpenseDetailsModalPage(
-    BuildContext context,
-    PRFAllocationEntry entry,
-  ) {
-    return WoltModalSheetPage(
+    PRFBottomSheet.show<void>(
+      context,
+      title: context.l10n.edit,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: EditExpenseViewHandset(
@@ -1728,22 +1710,15 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     BuildContext context,
     PRFAccountingEvent accountingEvent,
   ) {
-    WoltModalSheet.show<void>(
-      context: context,
-      pageListBuilder: (modalSheetContext) {
-        return [
-          WoltModalSheetPage(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            child: SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.8,
-              child: AddTokenViewHandset(
-                accountingEventUlid: accountingEvent.ulid,
-              ),
-            ),
-          ),
-        ];
-      },
+    PRFBottomSheet.show<void>(
+      context,
+      title: context.l10n.addToken,
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.8,
+        child: AddTokenViewHandset(
+          accountingEventUlid: accountingEvent.ulid,
+        ),
+      ),
     ).then((_) {
       if (context.mounted) {
         context.read<GetAllocationEntriesCubit>().getAllocationEntries(
@@ -1757,22 +1732,15 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     BuildContext context,
     PRFAccountingEvent accountingEvent,
   ) {
-    WoltModalSheet.show<void>(
-      context: context,
-      pageListBuilder: (modalSheetContext) {
-        return [
-          WoltModalSheetPage(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            child: SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.8,
-              child: AddRefundViewHandset(
-                accountingEventUlid: accountingEvent.ulid,
-              ),
-            ),
-          ),
-        ];
-      },
+    PRFBottomSheet.show<void>(
+      context,
+      title: 'Add Refund',
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.8,
+        child: AddRefundViewHandset(
+          accountingEventUlid: accountingEvent.ulid,
+        ),
+      ),
     ).then((_) {
       if (context.mounted) {
         context.read<GetAllocationEntriesCubit>().getAllocationEntries(
@@ -2347,20 +2315,15 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   void _showSendReportModal(
     BuildContext context,
   ) {
-    WoltModalSheet.show<void>(
-      context: context,
-      pageListBuilder: (modalSheetContext) {
-        return [
-          WoltModalSheetPage(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: SendFinancialReportViewHandset(
-                accountingEventUlid: accountingEventUlid,
-              ),
-            ),
-          ),
-        ];
-      },
+    PRFBottomSheet.show<void>(
+      context,
+      title: 'Send Financial Report',
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: SendFinancialReportViewHandset(
+          accountingEventUlid: accountingEventUlid,
+        ),
+      ),
     );
   }
 }

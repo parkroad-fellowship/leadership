@@ -10,7 +10,6 @@ import 'package:leadership/shared_views/requisitions/requisitions.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
 import 'package:prf_design/prf_design.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class MissionsDetailsPageHandset extends StatefulWidget {
   const MissionsDetailsPageHandset({required this.missionUlid, super.key});
@@ -159,17 +158,12 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                 icon: const Icon(Icons.add),
                 onPressed: () {
                   if (mission.accountingEvent != null) {
-                    WoltModalSheet.show<void>(
-                      context: context,
-                      pageListBuilder: (modalSheetContext) {
-                        return [
-                          WoltModalSheetPage(
-                            child: CreateRequisitionView(
-                              accountingEvent: mission.accountingEvent!,
-                            ),
-                          ),
-                        ];
-                      },
+                    PRFBottomSheet.show<void>(
+                      context,
+                      title: l10n.createRequisition,
+                      child: CreateRequisitionView(
+                        accountingEvent: mission.accountingEvent!,
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

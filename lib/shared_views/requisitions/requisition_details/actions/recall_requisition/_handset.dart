@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/recall_requisition_cubit.dart';
+import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class RecallRequisitionViewHandset extends StatefulWidget {
@@ -191,52 +192,47 @@ class _RecallRequisitionViewHandsetState
               const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Action Buttons
-              BlocListener<RecallRequisitionCubit, RecallRequisitionState>(
+              BlocListener<
+                RequisitionResourceCubit,
+                ResourceState<PRFRequisition>
+              >(
                 listener: (context, state) {
-                  state.maybeWhen(
-                    loading: () {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                    },
-                    loaded: () {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Requisition recalled successfully',
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    },
-                    error: (message) {
+                  switch (state) {
+                    case ResourceMutating<PRFRequisition>(:final operation):
+                      if (operation == ResourceOperation.update) {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                      }
+                    case ResourceMutated<PRFRequisition>(:final operation):
+                      if (operation == ResourceOperation.update) {
+                        Navigator.of(context).pop();
+                        PRFSnackbar.success(
+                          context,
+                          'Requisition recalled successfully',
+                        );
+                      }
+                    case ResourceError<PRFRequisition>(:final message):
                       setState(() {
                         _isLoading = false;
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(message)),
-                      );
-                    },
-                    orElse: () {},
-                  );
+                      PRFSnackbar.error(context, message);
+                    default:
+                      break;
+                  }
                 },
                 child: Column(
                   children: [
                     // Recall Button
-                    BlocBuilder<RecallRequisitionCubit, RecallRequisitionState>(
-                      builder: (context, state) {
-                        return PRFDestroyButton(
-                              onPressed: _recallRequisition,
-                              title: 'Recall Requisition',
-                              disabled: !_canRecall,
-                              isLoading: _isLoading,
-                            )
-                            .animate(delay: PRFMotionTokens.enterShort)
-                            .slideY(begin: 0.3)
-                            .fadeIn();
-                      },
-                    ),
+                    PRFDestroyButton(
+                          onPressed: _recallRequisition,
+                          title: 'Recall Requisition',
+                          disabled: !_canRecall,
+                          isLoading: _isLoading,
+                        )
+                        .animate(delay: PRFMotionTokens.enterShort)
+                        .slideY(begin: 0.3)
+                        .fadeIn(),
 
                     const SizedBox(height: PRFSpacingTokens.md),
 
@@ -262,18 +258,11 @@ class _RecallRequisitionViewHandsetState
   }
 
   Future<void> _recallRequisition() async {
-    await context.read<RecallRequisitionCubit>().recallRequisition(
-      ulid: widget.requisitionUlid,
+    await context.read<RequisitionResourceCubit>().recallRequisition(
+      requisitionUlid: widget.requisitionUlid,
       approvalNotes: _notesController.text.trim().isEmpty
           ? 'Requisition recalled by the requisitor'
           : _notesController.text.trim(),
     );
-
-    // Refresh the requisition data
-    if (mounted) {
-      await context.read<GetRequisitionCubit>().getRequisition(
-        requisitionUlid: widget.requisitionUlid,
-      );
-    }
   }
 }

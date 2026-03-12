@@ -4,10 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/shared_views/requisitions/cubit/request_review_cubit.dart';
+import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class RequestReviewViewHandset extends StatefulWidget {
@@ -186,37 +187,40 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
             ),
             const SizedBox(height: PRFSpacingTokens.xxl),
             // Submit Button
-            BlocConsumer<RequestReviewCubit, RequestReviewState>(
+            BlocConsumer<
+                  RequisitionResourceCubit,
+                  ResourceState<PRFRequisition>
+                >(
                   listener: (context, state) {
-                    state.mapOrNull(
-                      loading: (_) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                      },
-                      loaded: (_) {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        Gaimon.success();
-                        context.read<GetRequisitionCubit>().getRequisition(
-                          requisitionUlid: requisitionUlid,
-                        );
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.activityCreated)),
-                        );
-                      },
-                      error: (error) {
+                    switch (state) {
+                      case ResourceMutating<PRFRequisition>(
+                        :final operation,
+                      ):
+                        if (operation == ResourceOperation.update) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                        }
+                      case ResourceMutated<PRFRequisition>(
+                        :final operation,
+                      ):
+                        if (operation == ResourceOperation.update) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          Gaimon.success();
+                          Navigator.of(context).pop();
+                          PRFSnackbar.success(context, l10n.activityCreated);
+                        }
+                      case ResourceError<PRFRequisition>(:final message):
                         setState(() {
                           _isLoading = false;
                         });
                         Gaimon.error();
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(error.message)));
-                      },
-                    );
+                        PRFSnackbar.error(context, message);
+                      default:
+                        break;
+                    }
                   },
                   builder: (context, state) {
                     return PRFPrimaryButton(
@@ -249,8 +253,8 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
       return;
     }
 
-    await context.read<RequestReviewCubit>().requestReview(
-      ulid: requisitionUlid,
+    await context.read<RequisitionResourceCubit>().requestReview(
+      requisitionUlid: requisitionUlid,
       approverUlid: selectedApprover!.ulid,
     );
   }

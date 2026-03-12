@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/approve_requisition_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/reject_requisition_cubit.dart';
+import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class ApproveRequisitionViewHandset extends StatefulWidget {
@@ -162,72 +162,40 @@ class _ApproveRequisitionViewHandsetState
               const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Action Buttons
-              MultiBlocListener(
-                listeners: [
-                  BlocListener<
-                    ApproveRequisitionCubit,
-                    ApproveRequisitionState
-                  >(
-                    listener: (context, state) {
-                      state.mapOrNull(
-                        loading: (_) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                        },
-                        loaded: (_) {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Requisition approved successfully',
-                              ),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        },
-                        error: (error) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error.message)),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  BlocListener<RejectRequisitionCubit, RejectRequisitionState>(
-                    listener: (context, state) {
-                      state.mapOrNull(
-                        loading: (_) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                        },
-                        loaded: (_) {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Requisition rejected successfully',
-                              ),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        },
-                        error: (error) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error.message)),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
+              BlocListener<
+                RequisitionResourceCubit,
+                ResourceState<PRFRequisition>
+              >(
+                listener: (context, state) {
+                  switch (state) {
+                    case ResourceMutating<PRFRequisition>(:final operation):
+                      if (operation == ResourceOperation.update) {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                      }
+                    case ResourceMutated<PRFRequisition>(:final operation):
+                      if (operation == ResourceOperation.update) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Navigator.of(context).pop();
+                        PRFSnackbar.success(
+                          context,
+                          _isRejecting
+                              ? 'Requisition rejected successfully'
+                              : 'Requisition approved successfully',
+                        );
+                      }
+                    case ResourceError<PRFRequisition>(:final message):
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      PRFSnackbar.error(context, message);
+                    default:
+                      break;
+                  }
+                },
                 child: Column(
                   children: [
                     // Approve Button
@@ -270,19 +238,12 @@ class _ApproveRequisitionViewHandsetState
       _isRejecting = false;
     });
 
-    await context.read<ApproveRequisitionCubit>().approveRequisition(
-      ulid: widget.requisitionUlid,
+    await context.read<RequisitionResourceCubit>().approveRequisition(
+      requisitionUlid: widget.requisitionUlid,
       approvalNotes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
     );
-
-    // Refresh the requisition data
-    if (mounted) {
-      await context.read<GetRequisitionCubit>().getRequisition(
-        requisitionUlid: widget.requisitionUlid,
-      );
-    }
   }
 
   Future<void> _rejectRequisition() async {
@@ -302,16 +263,9 @@ class _ApproveRequisitionViewHandsetState
       _isRejecting = true;
     });
 
-    await context.read<RejectRequisitionCubit>().rejectRequisition(
-      ulid: widget.requisitionUlid,
+    await context.read<RequisitionResourceCubit>().rejectRequisition(
+      requisitionUlid: widget.requisitionUlid,
       approvalNotes: notes,
     );
-
-    // Refresh the requisition data
-    if (mounted) {
-      await context.read<GetRequisitionCubit>().getRequisition(
-        requisitionUlid: widget.requisitionUlid,
-      );
-    }
   }
 }

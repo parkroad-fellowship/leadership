@@ -28,9 +28,7 @@ class CreateEventViewHandset extends StatefulWidget {
 
 class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   final _titleController = TextEditingController();
-  final _purposeController = TextEditingController();
   final _startDateController = TextEditingController();
-  final _endDateController = TextEditingController();
   HiveService get _hiveService => getIt<HiveService>();
 
   bool _isLoading = false;
@@ -39,15 +37,12 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   List<PRFMember> selectedParticipants = [];
 
   DateTime? startsAt;
-  DateTime? endsAt;
 
   // Add form validity check
   bool get _isFormValid {
     return selectedResponsibleDesk != null &&
         _titleController.text.isNotEmpty &&
-        _purposeController.text.isNotEmpty &&
-        startsAt != null &&
-        endsAt != null;
+        startsAt != null;
   }
 
   @override
@@ -56,7 +51,13 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
 
     // Add listeners to update form validity
     _titleController.addListener(() => setState(() {}));
-    _purposeController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _startDateController.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,314 +77,298 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: PRFSpacingTokens.lg),
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
+              children: [
+                const SizedBox(height: PRFSpacingTokens.lg),
 
-              // Header Card
-              Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.8),
+                // Header Card
+                Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.add_circle_outline,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.sm),
-                        Text(
-                          l10n.createNewActivity,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.xs),
-                        Text(
-                          l10n.createActivityDescription,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimary.withValues(alpha: 0.9),
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.add_circle_outline,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.sm),
+                          Text(
+                            l10n.createNewActivity,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.xs),
+                          Text(
+                            l10n.createActivityDescription,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimary.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .slideY(begin: -0.3)
+                    .fadeIn(duration: PRFMotionTokens.enterShort),
 
-              const SizedBox(height: PRFSpacingTokens.xxl),
+                const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Form Card
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
+                // Form Card
+                Container(
+                  padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                    border: Border.all(
                       color: Theme.of(
                         context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      ).colorScheme.outline.withValues(alpha: 0.2),
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    PRFFormSection(
-                          icon: Icons.group_outlined,
-                          title: l10n.responsibleDesk,
-                          isRequired: true,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              return DropdownMenu<PRFResponsibleDesk>(
-                                width: constraints.maxWidth,
-                                initialSelection: selectedResponsibleDesk,
-                                hintText: l10n.responsibleDesk,
-                                dropdownMenuEntries: _hiveService
-                                    .responsibleDesks
-                                    .map(
-                                      (responsibleDesk) =>
-                                          DropdownMenuEntry<PRFResponsibleDesk>(
-                                            value: responsibleDesk,
-                                            label: responsibleDesk.name,
-                                          ),
-                                    )
-                                    .toList(),
-                                onSelected: (responsibleDesk) {
-                                  setState(() {
-                                    selectedResponsibleDesk = responsibleDesk;
-                                  });
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.shadow.withValues(alpha: 0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      PRFFormSection(
+                            icon: Icons.group_outlined,
+                            title: l10n.responsibleDesk,
+                            isRequired: true,
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return DropdownMenu<PRFResponsibleDesk>(
+                                  width: constraints.maxWidth,
+                                  initialSelection: selectedResponsibleDesk,
+                                  hintText: l10n.responsibleDesk,
+                                  dropdownMenuEntries: _hiveService
+                                      .responsibleDesks
+                                      .map(
+                                        (responsibleDesk) =>
+                                            DropdownMenuEntry<
+                                              PRFResponsibleDesk
+                                            >(
+                                              value: responsibleDesk,
+                                              label: responsibleDesk.name,
+                                            ),
+                                      )
+                                      .toList(),
+                                  onSelected: (responsibleDesk) {
+                                    setState(() {
+                                      selectedResponsibleDesk = responsibleDesk;
+                                    });
 
-                                  // Fetch members for the selected
-                                  // responsible desk
-                                  context.read<GetMembersCubit>().getMembers(
-                                    groups:
+                                    // Fetch members for the selected
+                                    // responsible desk
+                                    final groups =
                                         PRFLeadershipGroup.fromResponsibleDesk(
                                           responsibleDesk!,
+                                        );
+                                    context.read<GetMembersCubit>().getMembers(
+                                      groups: groups,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          )
+                          .animate(delay: PRFMotionTokens.stagger3)
+                          .slideX(begin: -0.2)
+                          .fadeIn(),
+
+                      PRFFormSection(
+                            icon: Icons.badge_outlined,
+                            title: l10n.title,
+                            isRequired: true,
+                            child: PRFTextInput(
+                              hintText: l10n.name,
+                              controller: _titleController,
+                            ),
+                          )
+                          .animate(delay: PRFMotionTokens.enterShort)
+                          .slideX(begin: -0.2)
+                          .fadeIn(),
+
+                      PRFFormSection(
+                            icon: Icons.schedule_outlined,
+                            title: l10n.startTime,
+                            isRequired: true,
+                            child: GestureDetector(
+                              onTap: _selectStartDate,
+                              child: PRFTextInput(
+                                hintText: l10n.startTime,
+                                controller: _startDateController,
+                                enabled: false,
+                              ),
+                            ),
+                          )
+                          .animate(delay: PRFMotionTokens.stagger4)
+                          .slideX(begin: -0.2)
+                          .fadeIn(),
+
+                      PRFFormSection(
+                            icon: Icons.group_outlined,
+                            title: l10n.participants,
+                            child:
+                                BlocBuilder<GetMembersCubit, GetMembersState>(
+                                  builder: (context, state) {
+                                    return state.maybeWhen(
+                                      loaded: _buildParticipantsMultiSelect,
+                                      loading: () => Container(
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color:
+                                                Theme.of(
+                                                      context,
+                                                    ).colorScheme.outline
+                                                    .withValues(
+                                                      alpha: 0.2,
+                                                    ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            PRFRadiusTokens.md,
+                                          ),
                                         ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    PRFFormSection(
-                          icon: Icons.badge_outlined,
-                          title: l10n.title,
-                          isRequired: true,
-                          child: PRFTextInput(
-                            hintText: l10n.name,
-                            controller: _titleController,
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.enterShort)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    PRFFormSection(
-                          icon: Icons.badge_outlined,
-                          title: l10n.purpose,
-                          isRequired: true,
-                          child: PRFTextAreaInput(
-                            hintText: l10n.purpose,
-                            controller: _purposeController,
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.enterShort)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    PRFFormSection(
-                          icon: Icons.schedule_outlined,
-                          title: l10n.startTime,
-                          isRequired: true,
-                          child: GestureDetector(
-                            onTap: _selectStartDate,
-                            child: PRFTextInput(
-                              hintText: l10n.startTime,
-                              controller: _startDateController,
-                              enabled: false,
-                            ),
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    PRFFormSection(
-                          icon: Icons.schedule_outlined,
-                          title: l10n.endTime,
-                          isRequired: true,
-                          child: GestureDetector(
-                            onTap: _selectEndDate,
-                            child: PRFTextInput(
-                              hintText: l10n.endTime,
-                              controller: _endDateController,
-                              enabled: false,
-                            ),
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger5)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    PRFFormSection(
-                          icon: Icons.group_outlined,
-                          title: l10n.participants,
-                          child: BlocBuilder<GetMembersCubit, GetMembersState>(
-                            builder: (context, state) {
-                              return state.maybeWhen(
-                                loaded: _buildParticipantsMultiSelect,
-                                loading: () => Container(
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.outline.withValues(
-                                            alpha: 0.2,
+                                        child: const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      ),
+                                      orElse: () => Container(
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color:
+                                                Theme.of(
+                                                      context,
+                                                    ).colorScheme.outline
+                                                    .withValues(
+                                                      alpha: 0.2,
+                                                    ),
                                           ),
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      PRFRadiusTokens.md,
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
+                                          borderRadius: BorderRadius.circular(
+                                            PRFRadiusTokens.md,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            'No members available',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color:
+                                                      Theme.of(
+                                                            context,
+                                                          )
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                                orElse: () => Container(
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.outline.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      PRFRadiusTokens.md,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'No members available',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-                  ],
+                          )
+                          .animate(delay: PRFMotionTokens.stagger3)
+                          .slideX(begin: -0.2)
+                          .fadeIn(),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: PRFSpacingTokens.xxl),
+                const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Submit Button
-              BlocConsumer<AddEventCubit, AddEventState>(
-                listener: (context, state) {
-                  state.mapOrNull(
-                    loading: (_) {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                    },
-                    loaded: (data) {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Gaimon.success();
-                      context.read<GetEventsCubit>().getUpcomingEvents();
+                // Submit Button
+                BlocConsumer<AddEventCubit, AddEventState>(
+                  listener: (context, state) {
+                    state.mapOrNull(
+                      loading: (_) {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                      },
+                      loaded: (data) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Gaimon.success();
+                        context.read<GetEventsCubit>().getUpcomingEvents();
 
-                      Navigator.of(context).pop();
-                      context.router.push(
-                        RequisitionDetailsRoute(
-                          requisitionUlid: data.requisition.ulid,
-                        ),
-                      );
+                        Navigator.of(context).pop();
+                        context.router.push(
+                          RequisitionDetailsRoute(
+                            requisitionUlid: data.requisition.ulid,
+                          ),
+                        );
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.activityCreated)),
-                      );
-                    },
-                    error: (error) {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Gaimon.error();
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(error.message)));
-                    },
-                  );
-                },
-                builder: (context, state) {
-                  return PRFPrimaryButton(
-                    onPressed: _submitForm,
-                    title: l10n.record,
-                    disabled: !_isFormValid,
-                    isLoading: _isLoading,
-                  );
-                },
-              ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
+                        PRFSnackbar.success(context, l10n.activityCreated);
+                      },
+                      error: (error) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Gaimon.error();
+                        PRFSnackbar.error(context, error.message);
+                      },
+                    );
+                  },
+                  builder: (context, state) {
+                    return PRFPrimaryButton(
+                      onPressed: _submitForm,
+                      title: l10n.record,
+                      disabled: !_isFormValid,
+                      isLoading: _isLoading,
+                    );
+                  },
+                ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
 
-              const SizedBox(height: PRFSpacingTokens.xxxl),
-            ],
+                const SizedBox(height: PRFSpacingTokens.xxxl),
+              ],
+            ),
           ),
         ),
       ),
@@ -562,56 +547,40 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
   }
 
   Future<void> _submitForm() async {
-    final l10n = context.l10n;
-
-    if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.enterTitle)),
-      );
-      Gaimon.warning();
-      return;
-    }
-
-    if (_purposeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.enterPurpose)),
-      );
-      Gaimon.warning();
-      return;
-    }
-
-    if (startsAt == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.addStartEnd)),
-      );
-      Gaimon.warning();
-      return;
-    }
-
-    if (endsAt == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.addStartEnd)),
-      );
-      Gaimon.warning();
-      return;
-    }
-
-    if (selectedResponsibleDesk == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectResponsibleDesk)),
-      );
-      Gaimon.warning();
+    if (!_validateForm()) {
       return;
     }
 
     await context.read<AddEventCubit>().addEvent(
       name: _titleController.text.trim(),
-      remarks: _purposeController.text.trim(),
       startTime: startsAt!,
-      endTime: endsAt!,
       responsibleDesk: selectedResponsibleDesk!,
       participants: selectedParticipants,
     );
+  }
+
+  bool _validateForm() {
+    final l10n = context.l10n;
+
+    if (_titleController.text.trim().isEmpty) {
+      PRFSnackbar.error(context, l10n.enterTitle);
+      Gaimon.warning();
+      return false;
+    }
+
+    if (startsAt == null) {
+      PRFSnackbar.error(context, l10n.addStartEnd);
+      Gaimon.warning();
+      return false;
+    }
+
+    if (selectedResponsibleDesk == null) {
+      PRFSnackbar.error(context, l10n.selectResponsibleDesk);
+      Gaimon.warning();
+      return false;
+    }
+
+    return true;
   }
 
   Future<void> _selectStartDate() async {
@@ -636,23 +605,4 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     );
   }
 
-  Future<void> _selectEndDate() async {
-    await DatePicker.showDateTimePicker(
-      context,
-      minTime: DateTime.now().subtract(const Duration(days: 7)),
-      maxTime: DateTime.now().add(const Duration(days: 30 * 12)),
-      theme: picker.DatePickerTheme(
-        itemStyle: Theme.of(context).textTheme.headlineSmall!,
-        doneStyle: Theme.of(context).textTheme.headlineSmall!,
-        cancelStyle: Theme.of(context).textTheme.headlineSmall!,
-      ),
-      onConfirm: (date) {
-        setState(() {
-          endsAt = date;
-        });
-        _endDateController.text = DateFormat.MMMMEEEEd().add_Hm().format(date);
-      },
-      currentTime: DateTime.now(),
-    );
-  }
 }

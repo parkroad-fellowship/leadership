@@ -14,11 +14,6 @@ import 'package:leadership/features/home/landing/desk_activities/cubit/add_event
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_payment_instruction_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_item_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisition_items_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
@@ -51,12 +46,10 @@ import 'package:leadership/shared_views/expenses/cubit/delete_receipt_cubit.dart
 import 'package:leadership/shared_views/expenses/cubit/edit_allocation_entry_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/get_allocation_entries_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/send_financial_report_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/approve_requisition_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/delete_requisition_item_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/get_requisition_item_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/recall_requisition_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/reject_requisition_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/request_review_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/update_requisition_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/update_requisition_item_cubit.dart';
 import 'package:leadership/utils/router/router.dart';
@@ -152,18 +145,8 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-      BlocProvider<GetRequisitionsCubit>(
-        create: (context) => GetRequisitionsCubit(
-          requisitionService: getIt<RequisitionService>(),
-        ),
-      ),
-      BlocProvider<GetRequisitionCubit>(
-        create: (context) => GetRequisitionCubit(
-          requisitionService: getIt<RequisitionService>(),
-        ),
-      ),
-      BlocProvider<CreateRequisitionCubit>(
-        create: (context) => CreateRequisitionCubit(
+      BlocProvider<RequisitionResourceCubit>(
+        create: (context) => RequisitionResourceCubit(
           requisitionService: getIt<RequisitionService>(),
           hiveService: getIt<HiveService>(),
         ),
@@ -175,8 +158,8 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-      BlocProvider<GetRequisitionItemsCubit>(
-        create: (context) => GetRequisitionItemsCubit(
+      BlocProvider<RequisitionItemResourceCubit>(
+        create: (context) => RequisitionItemResourceCubit(
           requisitionItemService: getIt<RequisitionItemService>(),
         ),
       ),
@@ -184,11 +167,6 @@ class Singletons {
         create: (context) => GetExpenseCategoriesCubit(
           expenseCategoriesService: getIt<ExpenseCategoriesService>(),
           hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<CreateRequisitionItemCubit>(
-        create: (context) => CreateRequisitionItemCubit(
-          requisitionItemService: getIt<RequisitionItemService>(),
         ),
       ),
       BlocProvider<UpdateRequisitionItemCubit>(
@@ -231,11 +209,6 @@ class Singletons {
           memberService: getIt<MemberService>(),
         ),
       ),
-      BlocProvider<RequestReviewCubit>(
-        create: (context) => RequestReviewCubit(
-          requisitionService: getIt<RequisitionService>(),
-        ),
-      ),
       BlocProvider<GetApprovalRequisitionsCubit>(
         create: (context) => GetApprovalRequisitionsCubit(
           requisitionService: getIt<RequisitionService>(),
@@ -250,24 +223,6 @@ class Singletons {
       ),
       BlocProvider<GetDraftRequisitionsCubit>(
         create: (context) => GetDraftRequisitionsCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<ApproveRequisitionCubit>(
-        create: (context) => ApproveRequisitionCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<RejectRequisitionCubit>(
-        create: (context) => RejectRequisitionCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<RecallRequisitionCubit>(
-        create: (context) => RecallRequisitionCubit(
           requisitionService: getIt<RequisitionService>(),
           hiveService: getIt<HiveService>(),
         ),

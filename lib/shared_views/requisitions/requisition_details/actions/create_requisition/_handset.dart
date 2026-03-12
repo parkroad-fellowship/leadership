@@ -6,10 +6,11 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_requisition_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/get_requisitions_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
+import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class CreateRequisitionViewHandset extends StatefulWidget {
@@ -31,10 +32,8 @@ class _CreateRequisitionViewHandsetState
   final _requisitionDateController = TextEditingController();
 
   bool _isLoading = false;
-
   DateTime? requisitionDate;
 
-  // Add form validity check
   bool get _isFormValid {
     return _remarksController.text.isNotEmpty && requisitionDate != null;
   }
@@ -43,9 +42,15 @@ class _CreateRequisitionViewHandsetState
   void initState() {
     super.initState();
     _setDefaultDate();
-    // Add listeners to update form validity
     _remarksController.addListener(() => setState(() {}));
     _requisitionDateController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _remarksController.dispose();
+    _requisitionDateController.dispose();
+    super.dispose();
   }
 
   void _setDefaultDate() {
@@ -53,9 +58,7 @@ class _CreateRequisitionViewHandsetState
     setState(() {
       requisitionDate = date;
     });
-    _requisitionDateController.text = DateFormat.MMMMEEEEd().format(
-      date,
-    );
+    _requisitionDateController.text = DateFormat.MMMMEEEEd().format(date);
   }
 
   @override
@@ -76,11 +79,10 @@ class _CreateRequisitionViewHandsetState
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Column(
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
-
-              // Header Card
               Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(PRFSpacingTokens.xl),
@@ -137,10 +139,7 @@ class _CreateRequisitionViewHandsetState
                   .animate()
                   .slideY(begin: -0.3)
                   .fadeIn(duration: PRFMotionTokens.enterShort),
-
               const SizedBox(height: PRFSpacingTokens.xxl),
-
-              // Form Card
               Container(
                 padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                 decoration: BoxDecoration(
@@ -179,7 +178,6 @@ class _CreateRequisitionViewHandsetState
                         .animate(delay: PRFMotionTokens.stagger4)
                         .slideX(begin: -0.2)
                         .fadeIn(),
-
                     PRFFormSection(
                           icon: Icons.notes_outlined,
                           title: l10n.purpose,
@@ -195,42 +193,35 @@ class _CreateRequisitionViewHandsetState
                   ],
                 ),
               ),
-
               const SizedBox(height: PRFSpacingTokens.xxl),
-
-              BlocConsumer<CreateRequisitionCubit, CreateRequisitionState>(
+              BlocConsumer<
+                    RequisitionResourceCubit,
+                    ResourceState<PRFRequisition>
+                  >(
                     listener: (context, state) {
-                      state.mapOrNull(
-                        loading: (_) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                        },
-                        loaded: (_) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Gaimon.success();
-                          context.read<GetRequisitionsCubit>().getRequisitions(
-                            accountingEventUlid: widget.accountingEvent.ulid,
-                          );
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.activityCreated)),
-                          );
-                        },
-                        error: (error) {
-                          setState(() {
-                            _isLoading = false;
-                          });
+                      switch (state) {
+                        case ResourceMutating<PRFRequisition>(
+                          :final operation,
+                        ):
+                          if (operation == ResourceOperation.create) {
+                            setState(() => _isLoading = true);
+                          }
+                        case ResourceMutated<PRFRequisition>(
+                          :final operation,
+                        ):
+                          if (operation == ResourceOperation.create) {
+                            setState(() => _isLoading = false);
+                            Gaimon.success();
+                            Navigator.of(context).pop();
+                            PRFSnackbar.success(context, l10n.activityCreated);
+                          }
+                        case ResourceError<PRFRequisition>(:final message):
+                          setState(() => _isLoading = false);
                           Gaimon.error();
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            SnackBar(content: Text(error.message)),
-                          );
-                        },
-                      );
+                          PRFSnackbar.error(context, message);
+                        default:
+                          break;
+                      }
                     },
                     builder: (context, state) {
                       return PRFPrimaryButton(
@@ -244,7 +235,6 @@ class _CreateRequisitionViewHandsetState
                   .animate(delay: PRFMotionTokens.enterMedium)
                   .slideY(begin: 0.3)
                   .fadeIn(),
-
               const SizedBox(height: PRFSpacingTokens.xxxl),
             ],
           ),
@@ -257,22 +247,18 @@ class _CreateRequisitionViewHandsetState
     final l10n = context.l10n;
 
     if (_remarksController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.enterPurpose)),
-      );
+      PRFSnackbar.error(context, l10n.enterPurpose);
       Gaimon.warning();
       return;
     }
 
     if (requisitionDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select requisition date')),
-      );
+      PRFSnackbar.error(context, 'Please select requisition date');
       Gaimon.warning();
       return;
     }
 
-    await context.read<CreateRequisitionCubit>().createRequisition(
+    await context.read<RequisitionResourceCubit>().createRequisition(
       accountingEvent: widget.accountingEvent,
       requisitionDate: requisitionDate!,
       remarks: _remarksController.text.trim(),
@@ -293,9 +279,7 @@ class _CreateRequisitionViewHandsetState
         setState(() {
           requisitionDate = date;
         });
-        _requisitionDateController.text = DateFormat.MMMMEEEEd().format(
-          date,
-        );
+        _requisitionDateController.text = DateFormat.MMMMEEEEd().format(date);
       },
       currentTime: DateTime.now(),
     );

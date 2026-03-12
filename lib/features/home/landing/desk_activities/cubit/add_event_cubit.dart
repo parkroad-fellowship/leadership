@@ -32,9 +32,7 @@ class AddEventCubit extends Cubit<AddEventState> {
   Future<void> addEvent({
     required String name,
     required DateTime startTime,
-    required DateTime endTime,
     required PRFResponsibleDesk responsibleDesk,
-    required String remarks,
     required List<PRFMember> participants,
   }) async {
     emit(const AddEventState.loading());
@@ -46,8 +44,8 @@ class AddEventCubit extends Cubit<AddEventState> {
           description: name,
           startDate: startTime.toUtc().toIso8601String().split('T')[0],
           startTime: startTime.toUtc().toIso8601String().split('T')[1],
-          endDate: endTime.toUtc().toIso8601String().split('T')[0],
-          endTime: endTime.toUtc().toIso8601String().split('T')[1],
+          endDate: startTime.add(Duration(days: 3)).toUtc().toIso8601String().split('T')[0],
+          endTime: startTime.add(Duration(days: 3)).toUtc().toIso8601String().split('T')[1],
           responsibleDesk: responsibleDesk.apiKey,
           eventType: PRFEventType.leadership.apiKey,
           participantMemberUlids: participants.map((e) => e.ulid).toList(),
@@ -64,7 +62,7 @@ class AddEventCubit extends Cubit<AddEventState> {
           accountingEventUlid: event.accountingEvent!.ulid,
           requisitionDate: DateTime.now(),
           responsibleDesk: responsibleDesk,
-          remarks: remarks,
+          remarks: 'Initial requisition for event ${event.name}',
         ).toJson(),
       );
 
