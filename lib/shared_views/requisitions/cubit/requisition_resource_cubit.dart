@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
@@ -64,7 +65,6 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
 
   Future<void> createRequisition({
     required PRFAccountingEvent accountingEvent,
-    required DateTime requisitionDate,
     required String remarks,
   }) {
     _lastAccountingEventUlid = accountingEvent.ulid;
@@ -74,7 +74,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         memberUlid: member!.ulid,
         accountingEventUlid: accountingEvent.ulid,
         responsibleDesk: accountingEvent.responsibleDesk,
-        requisitionDate: requisitionDate,
+        requisitionDate: DateTime.now(),
         remarks: remarks,
       ).toJson(),
     );

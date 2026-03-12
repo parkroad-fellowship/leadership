@@ -29,36 +29,30 @@ class CreateRequisitionViewHandset extends StatefulWidget {
 class _CreateRequisitionViewHandsetState
     extends State<CreateRequisitionViewHandset> {
   final _remarksController = TextEditingController();
-  final _requisitionDateController = TextEditingController();
 
   bool _isLoading = false;
-  DateTime? requisitionDate;
 
   bool get _isFormValid {
-    return _remarksController.text.isNotEmpty && requisitionDate != null;
+    return _remarksController.text.isNotEmpty;
   }
 
   @override
   void initState() {
     super.initState();
-    _setDefaultDate();
+    _setDefaultPurpose();
     _remarksController.addListener(() => setState(() {}));
-    _requisitionDateController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _remarksController.dispose();
-    _requisitionDateController.dispose();
     super.dispose();
   }
 
-  void _setDefaultDate() {
-    final date = DateTime.now();
+  void _setDefaultPurpose() {
     setState(() {
-      requisitionDate = date;
+      _remarksController.text = widget.accountingEvent.name.split(': ').last;
     });
-    _requisitionDateController.text = DateFormat.MMMMEEEEd().format(date);
   }
 
   @override
@@ -115,24 +109,14 @@ class _CreateRequisitionViewHandsetState
                         ),
                         const SizedBox(height: PRFSpacingTokens.sm),
                         Text(
-                          'Create New Requisition',
+                          l10n.createNewRequisition,
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
                                 color: Theme.of(context).colorScheme.onPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
-                        const SizedBox(height: PRFSpacingTokens.xs),
-                        Text(
-                          'Create a new requisition for the accounting event',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimary.withValues(alpha: 0.9),
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
+                        
                       ],
                     ),
                   )
@@ -162,22 +146,6 @@ class _CreateRequisitionViewHandsetState
                 ),
                 child: Column(
                   children: [
-                    PRFFormSection(
-                          icon: Icons.schedule_outlined,
-                          title: 'Requisition Date',
-                          isRequired: true,
-                          child: GestureDetector(
-                            onTap: _selectRequisitionDate,
-                            child: PRFTextInput(
-                              hintText: 'Requisition Date',
-                              controller: _requisitionDateController,
-                              enabled: false,
-                            ),
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
                     PRFFormSection(
                           icon: Icons.notes_outlined,
                           title: l10n.purpose,
@@ -252,36 +220,10 @@ class _CreateRequisitionViewHandsetState
       return;
     }
 
-    if (requisitionDate == null) {
-      PRFSnackbar.error(context, 'Please select requisition date');
-      Gaimon.warning();
-      return;
-    }
 
     await context.read<RequisitionResourceCubit>().createRequisition(
       accountingEvent: widget.accountingEvent,
-      requisitionDate: requisitionDate!,
       remarks: _remarksController.text.trim(),
-    );
-  }
-
-  Future<void> _selectRequisitionDate() async {
-    await DatePicker.showDatePicker(
-      context,
-      minTime: DateTime.now().subtract(const Duration(days: 7)),
-      maxTime: DateTime.now().add(const Duration(days: 30)),
-      theme: picker.DatePickerTheme(
-        itemStyle: Theme.of(context).textTheme.headlineSmall!,
-        doneStyle: Theme.of(context).textTheme.headlineSmall!,
-        cancelStyle: Theme.of(context).textTheme.headlineSmall!,
-      ),
-      onConfirm: (date) {
-        setState(() {
-          requisitionDate = date;
-        });
-        _requisitionDateController.text = DateFormat.MMMMEEEEd().format(date);
-      },
-      currentTime: DateTime.now(),
     );
   }
 }
