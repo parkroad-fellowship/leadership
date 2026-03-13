@@ -190,8 +190,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
-              keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.only(bottom: viewInsets.bottom),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -486,27 +485,67 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PRFCategoryChips<PRFSchoolTerm>(
-                categories: terms,
-                labelBuilder: (term) => term.name,
-                selectedCategory: terms.cast<PRFSchoolTerm?>().firstWhere(
-                  (term) => term?.ulid == _selectedSchoolTermUlid,
-                  orElse: () => null,
-                ),
-                showAllOption: false,
-                onCategorySelected: _isLoading
-                    ? (_) {}
-                    : (term) {
-                        if (term == null) {
-                          return;
-                        }
-                        setState(() {
-                          _selectedSchoolTermUlid = term.ulid;
-                        });
-                        if (_showValidation) {
-                          _validateForm();
-                        }
-                      },
+              Wrap(
+                spacing: PRFSpacingTokens.sm,
+                runSpacing: PRFSpacingTokens.sm,
+                children: terms.map((term) {
+                  final isSelected = term.ulid == _selectedSchoolTermUlid;
+                  return GestureDetector(
+                    onTap: _isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedSchoolTermUlid = term.ulid;
+                            });
+                            if (_showValidation) {
+                              _validateForm();
+                            }
+                          },
+                    child: AnimatedContainer(
+                      duration: PRFMotionTokens.standard,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: PRFSpacingTokens.lg,
+                        vertical: PRFSpacingTokens.sm,
+                      ),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
+                        border: Border.all(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.outline.withValues(
+                                  alpha: 0.3,
+                                ),
+                        ),
+                      ),
+                      child: Text(
+                        term.name,
+                        maxLines: 2,
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
               if (_showValidation && _schoolTermError != null)
                 Padding(
@@ -544,27 +583,67 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PRFCategoryChips<PRFMissionType>(
-                categories: types,
-                labelBuilder: (type) => type.name,
-                selectedCategory: types.cast<PRFMissionType?>().firstWhere(
-                  (type) => type?.ulid == _selectedMissionTypeUlid,
-                  orElse: () => null,
-                ),
-                showAllOption: false,
-                onCategorySelected: _isLoading
-                    ? (_) {}
-                    : (type) {
-                        if (type == null) {
-                          return;
-                        }
-                        setState(() {
-                          _selectedMissionTypeUlid = type.ulid;
-                        });
-                        if (_showValidation) {
-                          _validateForm();
-                        }
-                      },
+              Wrap(
+                spacing: PRFSpacingTokens.sm,
+                runSpacing: PRFSpacingTokens.sm,
+                children: types.map((type) {
+                  final isSelected = type.ulid == _selectedMissionTypeUlid;
+                  return GestureDetector(
+                    onTap: _isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedMissionTypeUlid = type.ulid;
+                            });
+                            if (_showValidation) {
+                              _validateForm();
+                            }
+                          },
+                    child: AnimatedContainer(
+                      duration: PRFMotionTokens.standard,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: PRFSpacingTokens.lg,
+                        vertical: PRFSpacingTokens.sm,
+                      ),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
+                        border: Border.all(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.outline.withValues(
+                                  alpha: 0.3,
+                                ),
+                        ),
+                      ),
+                      child: Text(
+                        type.name,
+                        maxLines: 2,
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
               if (_showValidation && _missionTypeError != null)
                 Padding(

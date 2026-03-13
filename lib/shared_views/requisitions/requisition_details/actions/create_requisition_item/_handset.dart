@@ -32,12 +32,25 @@ class _CreateRequisitionItemViewHandsetState
   bool _isLoading = false;
   PRFExpenseCategory? selectedExpenseCategory;
   int _totalPrice = 0;
+  bool _showValidation = false;
+
+  String? _itemNameError;
+  String? _categoryError;
+  String? _unitPriceError;
+  String? _quantityError;
+  String? _narrationError;
 
   bool get _isFormValid {
+    final unitPrice = int.tryParse(_unitPriceController.text.trim());
+    final quantity = int.tryParse(_quantityController.text.trim());
+
     return selectedExpenseCategory != null &&
-        _itemNameController.text.isNotEmpty &&
-        _unitPriceController.text.isNotEmpty &&
-        _quantityController.text.isNotEmpty;
+        _itemNameController.text.trim().isNotEmpty &&
+        unitPrice != null &&
+        unitPrice > 0 &&
+        quantity != null &&
+        quantity > 0 &&
+        _narrationController.text.trim().isNotEmpty;
   }
 
   @override
@@ -189,7 +202,32 @@ class _CreateRequisitionItemViewHandsetState
                                         const PRFCircularProgressIndicator(),
                                     loading: () =>
                                         const PRFCircularProgressIndicator(),
-                                    loaded: _buildCategorySelector,
+                                    loaded: (expenseCategories) => Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildCategorySelector(
+                                          expenseCategories,
+                                        ),
+                                        if (_showValidation &&
+                                            _categoryError != null) ...[
+                                          const SizedBox(
+                                            height: PRFSpacingTokens.xs,
+                                          ),
+                                          Text(
+                                            _categoryError!,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.error,
+                                                ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                     error: (message) => Text(
                                       'Error loading categories: $message',
                                       style: TextStyle(
@@ -213,7 +251,11 @@ class _CreateRequisitionItemViewHandsetState
                           isRequired: true,
                           child: PRFTextInput(
                             hintText: 'Enter item name',
+                            labelText: 'Item Name *',
+                            helperText: 'Required',
                             controller: _itemNameController,
+                            enabled: !_isLoading,
+                            errorText: _showValidation ? _itemNameError : null,
                           ),
                         )
                         .animate(delay: PRFMotionTokens.stagger4)
@@ -230,8 +272,15 @@ class _CreateRequisitionItemViewHandsetState
                                 isRequired: true,
                                 child: PRFNumberInput(
                                   hintText: 'Unit price',
+                                  labelText: 'Unit Price *',
+                                  helperText: 'Required',
                                   controller: _unitPriceController,
                                   prefixText: 'KES ',
+                                  enabled: !_isLoading,
+                                  isLoading: _isLoading,
+                                  errorText: _showValidation
+                                      ? _unitPriceError
+                                      : null,
                                 ),
                               ),
                             ),
@@ -243,7 +292,14 @@ class _CreateRequisitionItemViewHandsetState
                                 isRequired: true,
                                 child: PRFNumberInput(
                                   hintText: 'Quantity',
+                                  labelText: 'Quantity *',
+                                  helperText: 'Required',
                                   controller: _quantityController,
+                                  enabled: !_isLoading,
+                                  isLoading: _isLoading,
+                                  errorText: _showValidation
+                                      ? _quantityError
+                                      : null,
                                 ),
                               ),
                             ),
@@ -308,7 +364,11 @@ class _CreateRequisitionItemViewHandsetState
                       isRequired: true,
                       child: PRFTextAreaInput(
                         hintText: 'Enter narration',
+                        labelText: 'Narration/Justification *',
+                        helperText: 'Required',
                         controller: _narrationController,
+                        enabled: !_isLoading,
+                        errorText: _showValidation ? _narrationError : null,
                       ),
                     ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
                   ],
@@ -386,6 +446,9 @@ class _CreateRequisitionItemViewHandsetState
               horizontal: PRFSpacingTokens.lg,
               vertical: PRFSpacingTokens.sm,
             ),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primary
@@ -401,6 +464,10 @@ class _CreateRequisitionItemViewHandsetState
             ),
             child: Text(
               category.name,
+              maxLines: 2,
+              softWrap: true,
+              overflow: TextOverflow.visible,
+              textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: isSelected
                     ? theme.colorScheme.onPrimary
@@ -414,8 +481,67 @@ class _CreateRequisitionItemViewHandsetState
     );
   }
 
+  bool _validateForm({bool showSnackbar = true}) {
+    _itemNameError = null;
+    _categoryError = null;
+    _unitPriceError = null;
+    _quantityError = null;
+    _narrationError = null;
+
+    final unitPrice = int.tryParse(_unitPriceController.text.trim());
+    final quantity = int.tryParse(_quantityController.text.trim());
+
+    if (selectedExpenseCategory == null) {
+      _categoryError = 'Please select an expense category';
+    }
+
+    if (_itemNameController.text.trim().isEmpty) {
+      _itemNameError = 'Item name is required';
+    }
+
+    if (_unitPriceController.text.trim().isEmpty) {
+      _unitPriceError = 'Unit price is required';
+    } else if (unitPrice == null || unitPrice <= 0) {
+      _unitPriceError = 'Enter a valid unit price';
+    }
+
+    if (_quantityController.text.trim().isEmpty) {
+      _quantityError = 'Quantity is required';
+    } else if (quantity == null || quantity <= 0) {
+      _quantityError = 'Enter a valid quantity';
+    }
+
+    if (_narrationController.text.trim().isEmpty) {
+      _narrationError = 'Narration/justification is required';
+    }
+
+    final isValid = [
+      _itemNameError,
+      _categoryError,
+      _unitPriceError,
+      _quantityError,
+      _narrationError,
+    ].every((error) => error == null);
+
+    setState(() {
+      _showValidation = true;
+    });
+
+    if (!isValid && showSnackbar) {
+      Gaimon.warning();
+      PRFSnackbar.error(
+        context,
+        'Please fix the highlighted fields and try again.',
+      );
+    }
+
+    return isValid;
+  }
+
   Future<void> _submitForm() async {
-    if (!_isFormValid) return;
+    if (!_validateForm()) {
+      return;
+    }
 
     final unitPrice = int.tryParse(_unitPriceController.text);
     final quantity = int.tryParse(_quantityController.text);
@@ -424,15 +550,6 @@ class _CreateRequisitionItemViewHandsetState
       PRFSnackbar.error(
         context,
         'Please enter valid numbers for price and quantity',
-      );
-      Gaimon.warning();
-      return;
-    }
-
-    if (_narrationController.text.trim().isEmpty) {
-      PRFSnackbar.error(
-        context,
-        'Please provide a narration/justification for this item',
       );
       Gaimon.warning();
       return;

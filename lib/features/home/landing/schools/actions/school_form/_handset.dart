@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
 import 'package:leadership/models/remote/prf_school.dart';
@@ -42,6 +44,27 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
   bool _showValidation = false;
 
   bool get _isEditing => widget.school != null;
+  bool get _hasValidCoordinates {
+    final latitude = double.tryParse(_latitudeController.text.trim());
+    final longitude = double.tryParse(_longitudeController.text.trim());
+    return latitude != null &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude != null &&
+        longitude >= -180 &&
+        longitude <= 180;
+  }
+
+  bool get _isFormValid {
+    final students = int.tryParse(_studentsController.text.trim());
+
+    return _nameController.text.trim().isNotEmpty &&
+        _addressController.text.trim().isNotEmpty &&
+        students != null &&
+        students > 0 &&
+        _selectedInstitutionType.name.isNotEmpty &&
+        _hasValidCoordinates;
+  }
 
   @override
   void initState() {
@@ -66,6 +89,20 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
     );
     _selectedInstitutionType =
         school?.institutionType ?? PRFInstitutionType.primarySchool;
+
+    _nameController.addListener(_onFormChanged);
+    _studentsController.addListener(_onFormChanged);
+    _addressController.addListener(_onFormChanged);
+    _latitudeController.addListener(_onFormChanged);
+    _longitudeController.addListener(_onFormChanged);
+  }
+
+  void _onFormChanged() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {});
   }
 
   @override
@@ -143,6 +180,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
 
   void _submitForm() {
     if (!_validateForm()) {
+      Gaimon.warning();
       PRFSnackbar.error(
         context,
         'Please fix the highlighted fields and try again.',
@@ -184,8 +222,6 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return BlocConsumer<SchoolCubit, ResourceState<PRFSchool>>(
       listenWhen: (prev, curr) =>
           (curr is ResourceMutated<PRFSchool> &&
@@ -196,6 +232,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           case ResourceMutated<PRFSchool>(:final operation):
             if (operation == ResourceOperation.create ||
                 operation == ResourceOperation.update) {
+              Gaimon.success();
               Navigator.pop(context);
               PRFSnackbar.success(
                 context,
@@ -206,6 +243,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
               widget.onSaved();
             }
           case ResourceError<PRFSchool>(:final message):
+            Gaimon.error();
             PRFSnackbar.error(context, message);
           default:
             break;
@@ -219,40 +257,139 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
 
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: PRFSpacingTokens.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: PRFSpacingTokens.xl),
-                  _buildAvatar(),
-                  const SizedBox(height: PRFSpacingTokens.xxl),
-                  _buildIdentitySection(theme, isLoading),
-                  const SizedBox(height: PRFSpacingTokens.lg),
-                  _buildLocationSection(theme, isLoading),
-                  const SizedBox(height: PRFSpacingTokens.lg),
-                  _buildDetailsSection(isLoading),
-                  const SizedBox(height: PRFSpacingTokens.xxl),
-                  SizedBox(
-                    width: double.infinity,
-                    child: PRFPrimaryButton(
-                      onPressed: _submitForm,
-                      title: _isEditing ? 'Update School' : 'Create School',
-                      disabled: isLoading,
-                      isLoading: isLoading,
-                    ),
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.xxxl),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                  Theme.of(context).colorScheme.surface,
                 ],
+              ),
+            ),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PRFSpacingTokens.lg,
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: PRFSpacingTokens.lg),
+                    _buildHeaderCard(context)
+                        .animate()
+                        .slideY(begin: -0.3)
+                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                    const SizedBox(height: PRFSpacingTokens.xxl),
+                    Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.lg,
+                            ),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outline.withValues(alpha: 0.2),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.shadow.withValues(alpha: 0.1),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              _buildAvatar(),
+                              const SizedBox(height: PRFSpacingTokens.xl),
+                              _buildIdentitySection(isLoading),
+                              _buildLocationSection(isLoading),
+                              _buildDetailsSection(isLoading),
+                            ],
+                          ),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger3)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
+                    const SizedBox(height: PRFSpacingTokens.xxl),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PRFPrimaryButton(
+                        onPressed: _submitForm,
+                        title: _isEditing ? 'Update School' : 'Create School',
+                        disabled: isLoading || !_isFormValid,
+                        isLoading: isLoading,
+                      ),
+                    ),
+                    const SizedBox(height: PRFSpacingTokens.xxxl),
+                  ],
+                ),
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeaderCard(BuildContext context) {
+    final isEditing = _isEditing;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            isEditing ? Icons.edit_outlined : Icons.school_outlined,
+            size: 32,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          Text(
+            isEditing ? 'Edit School' : 'Create School',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: PRFSpacingTokens.xs),
+          Text(
+            isEditing
+                ? 'Update school details and location information'
+                : 'Add a new school with details and location information',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimary.withValues(
+                alpha: 0.9,
+              ),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -306,7 +443,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
     return name.substring(0, name.length.clamp(0, 2)).toUpperCase();
   }
 
-  Widget _buildIdentitySection(ThemeData theme, bool isLoading) {
+  Widget _buildIdentitySection(bool isLoading) {
     return Column(
       children: [
         PRFFormSection(
@@ -405,7 +542,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
     );
   }
 
-  Widget _buildLocationSection(ThemeData theme, bool isLoading) {
+  Widget _buildLocationSection(bool isLoading) {
     return Column(
       children: [
         PRFFormSection(

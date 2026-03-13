@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gaimon/gaimon.dart';
 import 'package:leadership/features/home/landing/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
@@ -35,7 +37,24 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
   PRFContactType? _selectedContactType;
   late List<PRFContactType> _availableTypes;
 
+  String? _nameError;
+  String? _typeError;
+  String? _phoneError;
+  String? _emailError;
+  bool _showValidation = false;
+
   bool get _isEditing => widget.contact != null;
+  bool get _isFormValid {
+    final name = _nameController.text.trim();
+    final phone = _phoneController.value.nsn.trim();
+    final email = _emailController.text.trim();
+    final hasValidEmail = email.isEmpty || _isValidEmail(email);
+
+    return name.isNotEmpty &&
+        phone.isNotEmpty &&
+        _selectedContactType != null &&
+        hasValidEmail;
+  }
 
   @override
   void initState() {
@@ -62,6 +81,23 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     } else if (_availableTypes.isNotEmpty) {
       _selectedContactType = _availableTypes.first;
     }
+
+    _nameController.addListener(_onFormChanged);
+    _emailController.addListener(_onFormChanged);
+    _phoneController.addListener(_onFormChanged);
+  }
+
+  void _onFormChanged() {
+    if (!mounted) {
+      return;
+    }
+
+    if (_showValidation) {
+      _validateForm(showSnackbar: false);
+      return;
+    }
+
+    setState(() {});
   }
 
   @override
@@ -72,27 +108,57 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     super.dispose();
   }
 
-  bool _validateForm() {
+  bool _validateForm({bool showSnackbar = true}) {
     final name = _nameController.text.trim();
     final phone = _phoneController.value.nsn.trim();
+    final email = _emailController.text.trim();
 
-    if (name.isEmpty || phone.isEmpty) {
-      PRFSnackbar.error(
-        context,
-        'Please fill in all required fields',
-      );
-      return false;
+    _nameError = null;
+    _typeError = null;
+    _phoneError = null;
+    _emailError = null;
+
+    if (name.isEmpty) {
+      _nameError = 'Contact name is required';
+    }
+
+    if (phone.isEmpty) {
+      _phoneError = 'Phone number is required';
     }
 
     if (_selectedContactType == null) {
-      PRFSnackbar.error(
-        context,
-        'Please select a contact type',
-      );
-      return false;
+      _typeError = 'Please select a contact type';
     }
 
-    return true;
+    if (email.isNotEmpty && !_isValidEmail(email)) {
+      _emailError = 'Enter a valid email address';
+    }
+
+    final isValid = [
+      _nameError,
+      _typeError,
+      _phoneError,
+      _emailError,
+    ].every((error) => error == null);
+
+    setState(() {
+      _showValidation = true;
+    });
+
+    if (!isValid && showSnackbar) {
+      Gaimon.warning();
+      PRFSnackbar.error(
+        context,
+        'Please fix the highlighted fields and try again.',
+      );
+    }
+
+    return isValid;
+  }
+
+  bool _isValidEmail(String email) {
+    final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    return regex.hasMatch(email);
   }
 
   void _submitForm() {
@@ -135,6 +201,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           ):
             if (operation == ResourceOperation.create ||
                 operation == ResourceOperation.update) {
+              Gaimon.success();
               Navigator.pop(context);
               PRFSnackbar.success(
                 context,
@@ -147,6 +214,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           case ResourceError<PRFContact>(
             :final message,
           ):
+            Gaimon.error();
             PRFSnackbar.error(context, message);
           default:
             break;
@@ -158,39 +226,129 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
       builder: (context, state) {
         final isLoading = state is ResourceMutating<PRFContact>;
 
-        return SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: PRFSpacingTokens.lg,
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  theme.colorScheme.primary.withValues(alpha: 0.05),
+                  theme.colorScheme.surface,
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: PRFSpacingTokens.lg,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PRFSpacingTokens.lg,
                 ),
-                _buildFields(theme, isLoading),
-                const SizedBox(
-                  height: PRFSpacingTokens.xxl,
+                child: Column(
+                  children: [
+                    const SizedBox(height: PRFSpacingTokens.lg),
+                    _buildHeaderCard(theme)
+                        .animate()
+                        .slideY(begin: -0.3)
+                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                    const SizedBox(height: PRFSpacingTokens.xxl),
+                    Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.lg,
+                            ),
+                            border: Border.all(
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: 0.2,
+                              ),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.shadow.withValues(
+                                  alpha: 0.1,
+                                ),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: _buildFields(theme, isLoading),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger3)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
+                    const SizedBox(height: PRFSpacingTokens.xxl),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PRFPrimaryButton(
+                        onPressed: _submitForm,
+                        title: _isEditing ? 'Update Contact' : 'Add Contact',
+                        disabled: isLoading || !_isFormValid,
+                        isLoading: isLoading,
+                      ),
+                    ),
+                    const SizedBox(height: PRFSpacingTokens.xxxl),
+                  ],
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: PRFPrimaryButton(
-                    onPressed: _submitForm,
-                    title: _isEditing ? 'Update Contact' : 'Add Contact',
-                    disabled: isLoading,
-                    isLoading: isLoading,
-                  ),
-                ),
-                const SizedBox(
-                  height: PRFSpacingTokens.xxxl,
-                ),
-              ],
+              ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeaderCard(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            _isEditing ? Icons.edit_outlined : Icons.person_add_alt_1,
+            size: 32,
+            color: theme.colorScheme.onPrimary,
+          ),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          Text(
+            _isEditing ? 'Edit Contact' : 'Create Contact',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: PRFSpacingTokens.xs),
+          Text(
+            _isEditing
+                ? 'Update contact details for this school'
+                : 'Add a contact person to this school',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -210,6 +368,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
             hintText: 'Enter contact name',
             labelText: 'Contact Name *',
             helperText: 'Required',
+            errorText: _showValidation ? _nameError : null,
             controller: _nameController,
             enabled: !isLoading,
           ),
@@ -223,17 +382,71 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PRFCategoryChips<PRFContactType>(
-                categories: _availableTypes,
-                labelBuilder: (type) => type.name,
-                selectedCategory: _selectedContactType,
-                showAllOption: false,
-                onCategorySelected: (type) {
-                  setState(() {
-                    _selectedContactType = type;
-                  });
-                },
+              Wrap(
+                spacing: PRFSpacingTokens.sm,
+                runSpacing: PRFSpacingTokens.sm,
+                children: _availableTypes.map((type) {
+                  final isSelected = _selectedContactType?.ulid == type.ulid;
+                  return GestureDetector(
+                    onTap: isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedContactType = type;
+                              _typeError = null;
+                            });
+                          },
+                    child: AnimatedContainer(
+                      duration: PRFMotionTokens.standard,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: PRFSpacingTokens.lg,
+                        vertical: PRFSpacingTokens.sm,
+                      ),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
+                        border: Border.all(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outline.withValues(
+                                  alpha: 0.3,
+                                ),
+                        ),
+                      ),
+                      child: Text(
+                        type.name,
+                        maxLines: 2,
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? theme.colorScheme.onPrimary
+                              : theme.colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
+              if (_showValidation && _typeError != null) ...[
+                const SizedBox(height: PRFSpacingTokens.xs),
+                Text(
+                  _typeError!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
               const SizedBox(height: PRFSpacingTokens.sm),
               _buildNewTypeButton(theme),
             ],
@@ -245,12 +458,26 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           isRequired: true,
           subtitle: 'Required',
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFPhoneInput(
-            hintText:
-                'Enter phone number '
-                '(e.g., 254712345678)',
-            controller: _phoneController,
-            enabled: !isLoading,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFPhoneInput(
+                hintText:
+                    'Enter phone number '
+                    '(e.g., 254712345678)',
+                controller: _phoneController,
+                enabled: !isLoading,
+              ),
+              if (_showValidation && _phoneError != null) ...[
+                const SizedBox(height: PRFSpacingTokens.xs),
+                Text(
+                  _phoneError!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         PRFFormSection(
@@ -262,6 +489,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
             hintText: 'Enter email address',
             labelText: 'Email Address',
             helperText: 'Optional',
+            errorText: _showValidation ? _emailError : null,
             controller: _emailController,
             enabled: !isLoading,
           ),
@@ -311,40 +539,21 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     );
   }
 
-  void _showNewTypeDialog(ThemeData theme) {
-    final controller = TextEditingController();
+  Future<void> _showNewTypeDialog(ThemeData theme) async {
+    final typeName = await PRFBottomSheet.show<String>(
+      context,
+      title: 'New Contact Type',
+      child: const _NewContactTypeFormBody(),
+    );
 
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('New Contact Type'),
-          content: PRFTextInput(
-            hintText: 'Enter type name',
-            controller: controller,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = controller.text.trim();
-                if (name.isEmpty) return;
+    if (!mounted || typeName == null || typeName.trim().isEmpty) {
+      return;
+    }
 
-                final cubit = context.read<ContactTypeCubit>()
-                  ..createContactType(name: name);
-                Navigator.pop(dialogContext);
-
-                _listenForNewType(cubit, name);
-              },
-              child: const Text('Create'),
-            ),
-          ],
-        );
-      },
-    ).then((_) => controller.dispose());
+    final cleanedName = typeName.trim();
+    final cubit = context.read<ContactTypeCubit>()
+      ..createContactType(name: cleanedName);
+    _listenForNewType(cubit, cleanedName);
   }
 
   void _listenForNewType(
@@ -392,5 +601,199 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
         ),
       );
     }
+  }
+}
+
+class _NewContactTypeFormBody extends StatefulWidget {
+  const _NewContactTypeFormBody();
+
+  @override
+  State<_NewContactTypeFormBody> createState() =>
+      _NewContactTypeFormBodyState();
+}
+
+class _NewContactTypeFormBodyState extends State<_NewContactTypeFormBody> {
+  late final TextEditingController _controller;
+  bool _showValidation = false;
+  String? _error;
+
+  bool get _isFormValid => _controller.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController()..addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    if (_showValidation) {
+      _validate();
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller
+      ..removeListener(_onChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  bool _validate() {
+    final isValid = _controller.text.trim().isNotEmpty;
+    setState(() {
+      _showValidation = true;
+      _error = isValid ? null : 'Contact type name is required';
+    });
+    return isValid;
+  }
+
+  void _submit() {
+    if (!_validate()) {
+      Gaimon.warning();
+      PRFSnackbar.error(context, 'Please fill in all required fields');
+      return;
+    }
+
+    Gaimon.success();
+    Navigator.of(context).pop(_controller.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primary.withValues(alpha: 0.05),
+              theme.colorScheme.surface,
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: PRFSpacingTokens.lg),
+                _buildHeaderCard(theme)
+                    .animate()
+                    .slideY(begin: -0.3)
+                    .fadeIn(duration: PRFMotionTokens.enterShort),
+                const SizedBox(height: PRFSpacingTokens.xxl),
+                Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.2,
+                          ),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.shadow.withValues(
+                              alpha: 0.1,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: PRFFormSection(
+                        icon: Icons.category_outlined,
+                        title: 'Contact Type Name',
+                        subtitle: 'Required',
+                        isRequired: true,
+                        margin: EdgeInsets.zero,
+                        child: PRFTextInput(
+                          hintText: 'Enter type name',
+                          labelText: 'Contact Type Name *',
+                          helperText: 'Required',
+                          controller: _controller,
+                          errorText: _showValidation ? _error : null,
+                        ),
+                      ),
+                    )
+                    .animate(delay: PRFMotionTokens.stagger3)
+                    .slideX(begin: -0.2)
+                    .fadeIn(),
+                const SizedBox(height: PRFSpacingTokens.xxl),
+                SizedBox(
+                  width: double.infinity,
+                  child: PRFPrimaryButton(
+                    onPressed: _submit,
+                    title: 'Create Type',
+                    disabled: !_isFormValid,
+                  ),
+                ),
+                const SizedBox(height: PRFSpacingTokens.xxxl),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.add_card_outlined,
+            size: 32,
+            color: theme.colorScheme.onPrimary,
+          ),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          Text(
+            'New Contact Type',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: PRFSpacingTokens.xs),
+          Text(
+            'Create a reusable type for school contacts',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 }
