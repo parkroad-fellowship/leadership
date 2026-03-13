@@ -33,6 +33,13 @@ abstract class FirebaseMessagingService {
     Logger().d('Notification: ${notification?.title}');
     Logger().d('Data payload: $data');
 
+    // Only process notifications explicitly targeted at this app
+    final targetApp = data['target_app'] as String?;
+    if (targetApp != 'leadership_app') {
+      Logger().d('Ignoring FCM message: target_app=$targetApp');
+      return;
+    }
+
     if (notification == null) {
       Logger().w('FCM message has no notification body');
       return;
