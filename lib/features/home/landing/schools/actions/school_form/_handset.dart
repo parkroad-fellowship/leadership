@@ -307,16 +307,18 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
   }
 
   Widget _buildIdentitySection(ThemeData theme, bool isLoading) {
-    return _FormSection(
-      title: 'Core Details',
-      subtitle: 'Identity, type and capacity',
-      child: Column(
-        children: [
-          PRFTextInput(
+    return Column(
+      children: [
+        PRFFormSection(
+          icon: Icons.school_outlined,
+          title: 'School Name',
+          isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextInput(
             hintText: 'School name',
-            labelText: 'School Name',
-
-            helperText: 'Use the official registered name',
+            labelText: 'School Name *',
+            helperText: 'Required',
             errorText: _showValidation ? _nameError : null,
             controller: _nameController,
             enabled: !isLoading,
@@ -326,12 +328,18 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
               }
             },
           ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          DropdownButtonFormField<PRFInstitutionType>(
+        ),
+        PRFFormSection(
+          icon: Icons.category_outlined,
+          title: 'Institution Type',
+          isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: DropdownButtonFormField<PRFInstitutionType>(
             initialValue: _selectedInstitutionType,
             decoration: InputDecoration(
-              labelText: 'Institution Type',
-              helperText: 'Used for icon and category filtering',
+              labelText: 'Institution Type *',
+              helperText: 'Required',
               errorText: _showValidation ? _institutionTypeError : null,
             ),
             items: PRFInstitutionType.values
@@ -354,11 +362,17 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
                     });
                   },
           ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          PRFNumberInput(
+        ),
+        PRFFormSection(
+          icon: Icons.groups_outlined,
+          title: 'Total Students',
+          isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFNumberInput(
             hintText: '0',
-            labelText: 'Total Students',
-            helperText: 'Current enrolled students',
+            labelText: 'Total Students *',
+            helperText: 'Required',
             errorText: _showValidation ? _studentsError : null,
             controller: _studentsController,
             enabled: !isLoading,
@@ -369,52 +383,37 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
               }
             },
           ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          PRFTextAreaInput(
+        ),
+        PRFFormSection(
+          icon: Icons.location_on_outlined,
+          title: 'Address',
+          isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextAreaInput(
             hintText: 'Address',
-            labelText: 'Address',
-            helperText: 'Street, district and city',
+            labelText: 'Address *',
+            helperText: 'Required',
             errorText: _showValidation ? _addressError : null,
             controller: _addressController,
             enabled: !isLoading,
             minLines: 2,
             maxLines: 3,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildLocationSection(ThemeData theme, bool isLoading) {
-    return _FormSection(
-      title: 'Location',
-      subtitle: 'Pin it accurately for navigation and mapping',
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(PRFSpacingTokens.md),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.explore_rounded,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: PRFSpacingTokens.sm),
-                Expanded(
-                  child: Text(
-                    'Tap on the map to set exact coordinates.',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          LocationPicker(
+    return Column(
+      children: [
+        PRFFormSection(
+          icon: Icons.explore_rounded,
+          title: 'Map Location',
+          subtitle: 'Tap on the map to set exact coordinates',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: LocationPicker(
             initialLatitude: double.tryParse(_latitudeController.text),
             initialLongitude: double.tryParse(_longitudeController.text),
             onLocationSelected: (lat, lon) {
@@ -426,116 +425,77 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
               });
             },
           ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          Row(
-            children: [
-              Expanded(
-                child: PRFTextInput(
-                  hintText: '0.000000',
-                  labelText: 'Latitude',
-                  helperText: 'Set from map only',
-                  errorText: _showValidation ? _latitudeError : null,
-                  controller: _latitudeController,
-                  readOnly: true,
-                  enabled: false,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                ),
-              ),
-              const SizedBox(width: PRFSpacingTokens.md),
-              Expanded(
-                child: PRFTextInput(
-                  hintText: '0.000000',
-                  labelText: 'Longitude',
-                  helperText: 'Set from map only',
-                  errorText: _showValidation ? _longitudeError : null,
-                  controller: _longitudeController,
-                  readOnly: true,
-                  enabled: false,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                ),
-              ),
-            ],
+        ),
+        PRFFormSection(
+          icon: Icons.pin_drop_outlined,
+          title: 'Latitude',
+          isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextInput(
+            hintText: '0.000000',
+            labelText: 'Latitude *',
+            helperText: 'Required',
+            errorText: _showValidation ? _latitudeError : null,
+            controller: _latitudeController,
+            readOnly: true,
+            enabled: false,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
-        ],
-      ),
+        ),
+        PRFFormSection(
+          icon: Icons.pin_drop_outlined,
+          title: 'Longitude',
+          isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextInput(
+            hintText: '0.000000',
+            labelText: 'Longitude *',
+            helperText: 'Required',
+            errorText: _showValidation ? _longitudeError : null,
+            controller: _longitudeController,
+            readOnly: true,
+            enabled: false,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildDetailsSection(bool isLoading) {
-    return _FormSection(
-      title: 'Additional Details',
-      subtitle: 'Optional context for routing and operations',
-      child: Column(
-        children: [
-          PRFTextAreaInput(
+    return Column(
+      children: [
+        PRFFormSection(
+          icon: Icons.route_outlined,
+          title: 'Directions',
+          subtitle: 'Optional',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextAreaInput(
             hintText: 'Directions',
             labelText: 'Directions',
-            helperText: 'Landmarks or access notes',
+            helperText: 'Optional',
             controller: _directionsController,
             enabled: !isLoading,
             minLines: 2,
             maxLines: 4,
           ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          PRFTextAreaInput(
+        ),
+        PRFFormSection(
+          icon: Icons.description_outlined,
+          title: 'Description',
+          subtitle: 'Optional',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextAreaInput(
             hintText: 'Description',
             labelText: 'Description',
-            helperText: 'What should field teams know about this school?',
+            helperText: 'Optional',
             controller: _descriptionController,
             enabled: !isLoading,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FormSection extends StatelessWidget {
-  const _FormSection({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-
-  final String title;
-  final String subtitle;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.5),
         ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14090B1F),
-            blurRadius: 16,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.textTheme.titleLarge),
-          const SizedBox(height: PRFSpacingTokens.xs),
-          Text(subtitle, style: theme.textTheme.bodySmall),
-          const SizedBox(height: PRFSpacingTokens.md),
-          child,
-        ],
-      ),
+      ],
     );
   }
 }

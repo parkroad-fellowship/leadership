@@ -199,67 +199,72 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     bool isLoading,
   ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Contact Name
-        const PRFFormFieldLabel(
-          label: 'Contact Name',
+        PRFFormSection(
+          icon: Icons.badge_outlined,
+          title: 'Contact Name',
           isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextInput(
+            hintText: 'Enter contact name',
+            labelText: 'Contact Name *',
+            helperText: 'Required',
+            controller: _nameController,
+            enabled: !isLoading,
+          ),
         ),
-        PRFTextInput(
-          hintText: 'Enter contact name',
-          controller: _nameController,
-          enabled: !isLoading,
-        ),
-        const SizedBox(height: PRFSpacingTokens.lg),
-
-        // Contact Type
-        const PRFFormFieldLabel(
-          label: 'Contact Type',
+        PRFFormSection(
+          icon: Icons.category_outlined,
+          title: 'Contact Type',
           isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFCategoryChips<PRFContactType>(
+                categories: _availableTypes,
+                labelBuilder: (type) => type.name,
+                selectedCategory: _selectedContactType,
+                showAllOption: false,
+                onCategorySelected: (type) {
+                  setState(() {
+                    _selectedContactType = type;
+                  });
+                },
+              ),
+              const SizedBox(height: PRFSpacingTokens.sm),
+              _buildNewTypeButton(theme),
+            ],
+          ),
         ),
-        const SizedBox(
-          height: PRFSpacingTokens.sm,
-        ),
-        PRFCategoryChips<PRFContactType>(
-          categories: _availableTypes,
-          labelBuilder: (type) => type.name,
-          selectedCategory: _selectedContactType,
-          showAllOption: false,
-          onCategorySelected: (type) {
-            setState(() {
-              _selectedContactType = type;
-            });
-          },
-        ),
-        const SizedBox(
-          height: PRFSpacingTokens.sm,
-        ),
-        _buildNewTypeButton(theme),
-        const SizedBox(height: PRFSpacingTokens.lg),
-
-        // Phone Number
-        const PRFFormFieldLabel(
-          label: 'Phone Number',
+        PRFFormSection(
+          icon: Icons.phone_outlined,
+          title: 'Phone Number',
           isRequired: true,
+          subtitle: 'Required',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFPhoneInput(
+            hintText:
+                'Enter phone number '
+                '(e.g., 254712345678)',
+            controller: _phoneController,
+            enabled: !isLoading,
+          ),
         ),
-        PRFPhoneInput(
-          hintText:
-              'Enter phone number '
-              '(e.g., 254712345678)',
-          controller: _phoneController,
-          enabled: !isLoading,
-        ),
-        const SizedBox(height: PRFSpacingTokens.lg),
-
-        // Email Address
-        const PRFFormFieldLabel(
-          label: 'Email Address',
-        ),
-        PRFTextInput(
-          hintText: 'Enter email address (optional)',
-          controller: _emailController,
-          enabled: !isLoading,
+        PRFFormSection(
+          icon: Icons.email_outlined,
+          title: 'Email Address',
+          subtitle: 'Optional',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: PRFTextInput(
+            hintText: 'Enter email address',
+            labelText: 'Email Address',
+            helperText: 'Optional',
+            controller: _emailController,
+            enabled: !isLoading,
+          ),
         ),
       ],
     );

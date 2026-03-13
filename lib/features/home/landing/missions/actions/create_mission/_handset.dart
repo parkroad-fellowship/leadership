@@ -268,152 +268,202 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildForm(BuildContext context, AppLocalizations l10n) {
     return Column(
       children: [
-        _MissionFormSection(
-          title: 'Core Details',
-          subtitle: 'Mission type, term, and destination school',
-          child: Column(
-            children: [
-              _buildSchoolTermDropdown(),
-              const SizedBox(height: PRFSpacingTokens.md),
-              _buildMissionTypeDropdown(),
-              const SizedBox(height: PRFSpacingTokens.md),
-              _buildSchoolDropdown(),
-            ],
-          ),
-        ),
-        const SizedBox(height: PRFSpacingTokens.lg),
-        _MissionFormSection(
-          title: 'Schedule',
-          subtitle: 'Set mission date range and time window',
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: PRFTextInput(
-                      hintText: 'YYYY-MM-DD',
-                      labelText: 'Start Date',
-                      helperText: 'Select mission start date',
-                      errorText: _showValidation ? _startDateError : null,
-                      controller: _startDateController,
-                      enabled: false,
-                    ),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  IconButton.outlined(
-                    onPressed: _isLoading ? null : _selectStartDate,
-                    icon: const Icon(Icons.event),
-                  ),
-                ],
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: PRFTextInput(
-                      hintText: 'HH:mm',
-                      labelText: 'Start Time',
-                      helperText: 'Mission start time',
-                      errorText: _showValidation ? _startTimeError : null,
-                      controller: _startTimeController,
-                      enabled: false,
-                    ),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  IconButton.outlined(
-                    onPressed: _isLoading ? null : _selectStartTime,
-                    icon: const Icon(Icons.schedule),
-                  ),
-                ],
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: PRFTextInput(
-                      hintText: 'YYYY-MM-DD',
-                      labelText: 'End Date',
-                      helperText: 'Select mission end date',
-                      errorText: _showValidation ? _endDateError : null,
-                      controller: _endDateController,
-                      enabled: false,
-                    ),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  IconButton.outlined(
-                    onPressed: _isLoading ? null : _selectEndDate,
-                    icon: const Icon(Icons.event_available),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: PRFSpacingTokens.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: PRFTextInput(
-                      hintText: 'HH:mm',
-                      labelText: 'End Time',
-                      helperText: 'Mission end time',
-                      errorText: _showValidation ? _endTimeError : null,
-                      controller: _endTimeController,
-                      enabled: false,
-                    ),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  IconButton.outlined(
-                    onPressed: _isLoading ? null : _selectEndTime,
-                    icon: const Icon(Icons.schedule_send),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: PRFSpacingTokens.lg),
-        _MissionFormSection(
-          title: 'Additional Details',
-          subtitle: 'Optional context for team communication',
-          child: Column(
-            children: [
-              PRFTextInput(
-                hintText: 'Mission theme',
-                labelText: l10n.theme,
-                helperText: 'Required mission focus/theme',
-                errorText: _showValidation ? _themeError : null,
-                controller: _themeController,
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              PRFNumberInput(
-                hintText: '0',
-                labelText: 'Capacity',
-                helperText: 'Required: missionaries needed',
-                errorText: _showValidation ? _capacityError : null,
-                controller: _capacityController,
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              PRFTextInput(
-                hintText: 'https://...',
-                labelText: 'WhatsApp Link',
-                helperText: 'Optional group link for coordination',
-                controller: _whatsAppLinkController,
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              PRFTextAreaInput(
-                hintText: 'Any mission preparation notes',
-                labelText: 'Preparation Notes',
-                helperText: 'Notes for field team and leaders',
-                controller: _prepNotesController,
-                enabled: !_isLoading,
-              ),
-            ],
-          ),
-        ),
+        _buildSchoolTermDropdown(),
+        _buildMissionTypeDropdown(),
+        _buildSchoolDropdown(),
+        _buildStartDateField(),
+        _buildStartTimeField(),
+        _buildEndDateField(),
+        _buildEndTimeField(),
+        _buildThemeField(l10n),
+        _buildCapacityField(),
+        _buildWhatsAppField(),
+        _buildPreparationNotesField(),
       ],
+    );
+  }
+
+  Widget _buildStartDateField() {
+    return PRFFormSection(
+      icon: Icons.event,
+      title: 'Start Date',
+      isRequired: true,
+      subtitle: 'Select mission start date',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: Row(
+        children: [
+          Expanded(
+            child: PRFTextInput(
+              hintText: 'YYYY-MM-DD',
+              labelText: 'Start Date *',
+              helperText: 'Select mission start date',
+              errorText: _showValidation ? _startDateError : null,
+              controller: _startDateController,
+              enabled: false,
+            ),
+          ),
+          const SizedBox(width: PRFSpacingTokens.sm),
+          IconButton.outlined(
+            onPressed: _isLoading ? null : _selectStartDate,
+            icon: const Icon(Icons.event),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStartTimeField() {
+    return PRFFormSection(
+      icon: Icons.schedule,
+      title: 'Start Time',
+      isRequired: true,
+      subtitle: 'Mission start time',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: Row(
+        children: [
+          Expanded(
+            child: PRFTextInput(
+              hintText: 'HH:mm',
+              labelText: 'Start Time *',
+              helperText: 'Mission start time',
+              errorText: _showValidation ? _startTimeError : null,
+              controller: _startTimeController,
+              enabled: false,
+            ),
+          ),
+          const SizedBox(width: PRFSpacingTokens.sm),
+          IconButton.outlined(
+            onPressed: _isLoading ? null : _selectStartTime,
+            icon: const Icon(Icons.schedule),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEndDateField() {
+    return PRFFormSection(
+      icon: Icons.event_available,
+      title: 'End Date',
+      isRequired: true,
+      subtitle: 'Select mission end date',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: Row(
+        children: [
+          Expanded(
+            child: PRFTextInput(
+              hintText: 'YYYY-MM-DD',
+              labelText: 'End Date *',
+              helperText: 'Select mission end date',
+              errorText: _showValidation ? _endDateError : null,
+              controller: _endDateController,
+              enabled: false,
+            ),
+          ),
+          const SizedBox(width: PRFSpacingTokens.sm),
+          IconButton.outlined(
+            onPressed: _isLoading ? null : _selectEndDate,
+            icon: const Icon(Icons.event_available),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEndTimeField() {
+    return PRFFormSection(
+      icon: Icons.schedule_send,
+      title: 'End Time',
+      isRequired: true,
+      subtitle: 'Mission end time',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: Row(
+        children: [
+          Expanded(
+            child: PRFTextInput(
+              hintText: 'HH:mm',
+              labelText: 'End Time *',
+              helperText: 'Mission end time',
+              errorText: _showValidation ? _endTimeError : null,
+              controller: _endTimeController,
+              enabled: false,
+            ),
+          ),
+          const SizedBox(width: PRFSpacingTokens.sm),
+          IconButton.outlined(
+            onPressed: _isLoading ? null : _selectEndTime,
+            icon: const Icon(Icons.schedule_send),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeField(AppLocalizations l10n) {
+    return PRFFormSection(
+      icon: Icons.label_outline,
+      title: l10n.theme,
+      isRequired: true,
+      subtitle: 'Mission focus/theme',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: PRFTextInput(
+        hintText: 'Mission theme',
+        labelText: '${l10n.theme} *',
+        helperText: 'Mission focus/theme',
+        errorText: _showValidation ? _themeError : null,
+        controller: _themeController,
+        enabled: !_isLoading,
+      ),
+    );
+  }
+
+  Widget _buildCapacityField() {
+    return PRFFormSection(
+      icon: Icons.groups_outlined,
+      title: 'Capacity',
+      isRequired: true,
+      subtitle: 'Missionaries needed',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: PRFNumberInput(
+        hintText: '0',
+        labelText: 'Capacity *',
+        helperText: 'Missionaries needed',
+        errorText: _showValidation ? _capacityError : null,
+        controller: _capacityController,
+        enabled: !_isLoading,
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppField() {
+    return PRFFormSection(
+      icon: Icons.forum_outlined,
+      title: 'WhatsApp Link',
+      subtitle: 'Optional',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: PRFTextInput(
+        hintText: 'https://...',
+        labelText: 'WhatsApp Link',
+        helperText: 'Optional',
+        controller: _whatsAppLinkController,
+        enabled: !_isLoading,
+      ),
+    );
+  }
+
+  Widget _buildPreparationNotesField() {
+    return PRFFormSection(
+      icon: Icons.notes_outlined,
+      title: 'Preparation Notes',
+      subtitle: 'Optional',
+      margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+      child: PRFTextAreaInput(
+        hintText: 'Any mission preparation notes',
+        labelText: 'Preparation Notes',
+        helperText: 'Optional',
+        controller: _prepNotesController,
+        enabled: !_isLoading,
+      ),
     );
   }
 
@@ -432,6 +482,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           icon: Icons.calendar_view_month,
           title: 'School Term',
           isRequired: true,
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -489,6 +540,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           icon: Icons.category_outlined,
           title: 'Mission Type',
           isRequired: true,
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -546,6 +598,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           icon: Icons.school_outlined,
           title: 'School',
           isRequired: true,
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: DropdownMenu<String>(
             width: double.infinity,
             initialSelection: _selectedSchoolUlid,
@@ -686,52 +739,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
         whatsAppLink: _whatsAppLinkController.text.trim().isEmpty
             ? null
             : _whatsAppLinkController.text.trim(),
-      ),
-    );
-  }
-}
-
-class _MissionFormSection extends StatelessWidget {
-  const _MissionFormSection({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-
-  final String title;
-  final String subtitle;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.5),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14090B1F),
-            blurRadius: 16,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.textTheme.titleLarge),
-          const SizedBox(height: PRFSpacingTokens.xs),
-          Text(subtitle, style: theme.textTheme.bodySmall),
-          const SizedBox(height: PRFSpacingTokens.md),
-          child,
-        ],
       ),
     );
   }

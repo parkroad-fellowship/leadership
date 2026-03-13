@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_soul_decision_type.dart';
+import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_session_resource_cubit.dart';
@@ -52,6 +54,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
   late TabController _tabController;
   int _currentTab = 0;
+  PRFInstitutionType? _loadedClassGroupInstitutionType;
 
   void _changeTab() {
     setState(() {
@@ -112,6 +115,22 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         missionUlid: missionUlid,
       ),
     ]);
+  }
+
+  Future<void> _loadClassGroupsForMission(PRFMission mission) async {
+    final institutionType = mission.school?.institutionType;
+    if (institutionType == null) {
+      return;
+    }
+
+    if (_loadedClassGroupInstitutionType == institutionType) {
+      return;
+    }
+
+    _loadedClassGroupInstitutionType = institutionType;
+    await context.read<ClassGroupResourceCubit>().loadActiveForInstitutionType(
+      institutionType,
+    );
   }
 
   List<T> _itemsFromResourceState<T>(ResourceState<T> state) {
@@ -178,20 +197,22 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   List<PRFClassGroup> _availableClassGroups() {
-    final sessions = _itemsFromResourceState(
-      context.read<MissionSessionResourceCubit>().state,
+    final mission = _currentMissionFromState(
+      context.read<MissionResourceCubit>().state,
+    );
+    final missionInstitutionType = mission?.school?.institutionType;
+    final classGroups = _itemsFromResourceState(
+      context.read<ClassGroupResourceCubit>().state,
     );
 
-    final byUlid = <String, PRFClassGroup>{};
-    for (final session in sessions) {
-      final group = session.classGroup;
-      if (group == null || group.ulid.isEmpty) {
-        continue;
-      }
-      byUlid[group.ulid] = group;
-    }
-
-    final result = byUlid.values.toList()
+    final result = classGroups
+        .where(
+          (group) =>
+              missionInstitutionType == null ||
+              group.institutionType == missionInstitutionType,
+        )
+        .where((group) => group.ulid.isNotEmpty)
+        .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
     return result;
@@ -407,7 +428,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     if (classGroups.isEmpty) {
       PRFSnackbar.error(
         context,
-        'No class groups found. Add a mission session with class group first.',
+        'No active class groups found. Create one and try again.',
       );
       return;
     }
@@ -558,164 +579,170 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: DefaultTabController(
-        length: tabCount,
-        child: Column(
-          children: [
-            ColoredBox(
-              color: theme.colorScheme.primary,
-              child: Column(
-                children: [
-                  PRFBrandedNavBar(
-                    title: l10n.missionDetails,
-                    onBack: () => context.router.popUntilRouteWithPath(
-                      PRFLeadershipRouter.missionsRoute,
-                    ),
-                    actions: [
-                      BlocBuilder<
-                        MissionResourceCubit,
-                        ResourceState<PRFMission>
-                      >(
-                        builder: (context, state) {
-                          final isBusy = state is ResourceMutating<PRFMission>;
-                          if (isBusy) {
-                            return const SizedBox.square(
-                              dimension: 20,
-                              child: PRFCircularProgressIndicator(),
-                            );
-                          }
-
-                          return IconButton(
-                            tooltip: 'Refresh mission',
-                            onPressed: () => context
-                                .read<MissionResourceCubit>()
-                                .loadMission(missionUlid: missionUlid),
-                            icon: Icon(
-                              Icons.refresh_rounded,
-                              color: theme.colorScheme.onPrimary,
-                            ),
-                          );
-                        },
+    return BlocListener<MissionResourceCubit, ResourceState<PRFMission>>(
+      listener: (context, state) {
+        final mission = _currentMissionFromState(state);
+        if (mission != null) {
+          _loadClassGroupsForMission(mission);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        body: DefaultTabController(
+          length: tabCount,
+          child: Column(
+            children: [
+              ColoredBox(
+                color: theme.colorScheme.primary,
+                child: Column(
+                  children: [
+                    PRFBrandedNavBar(
+                      title: l10n.missionDetails,
+                      onBack: () => context.router.popUntilRouteWithPath(
+                        PRFLeadershipRouter.missionsRoute,
                       ),
-                      const SizedBox(width: PRFSpacingTokens.lg),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      PRFSpacingTokens.sm,
-                      0,
-                      PRFSpacingTokens.sm,
-                      PRFSpacingTokens.sm,
+                      actions: [
+                        BlocBuilder<
+                          MissionResourceCubit,
+                          ResourceState<PRFMission>
+                        >(
+                          builder: (context, state) {
+                            final isBusy = state is ResourceMutating<PRFMission>;
+                            if (isBusy) {
+                              return const SizedBox.square(
+                                dimension: 20,
+                                child: PRFCircularProgressIndicator(),
+                              );
+                            }
+
+                            return IconButton(
+                              tooltip: 'Refresh mission',
+                              onPressed: () => context
+                                  .read<MissionResourceCubit>()
+                                  .loadMission(missionUlid: missionUlid),
+                              icon: Icon(
+                                Icons.refresh_rounded,
+                                color: theme.colorScheme.onPrimary,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: PRFSpacingTokens.lg),
+                      ],
                     ),
-                    child: Transform.translate(
-                      offset: const Offset(0, -6),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TabBar(
-                          controller: _tabController,
-                          onTap: (value) => setState(() {
-                            _currentTab = value;
-                          }),
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.start,
-                          padding: EdgeInsets.zero,
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: PRFSpacingTokens.sm,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        PRFSpacingTokens.sm,
+                        0,
+                        PRFSpacingTokens.sm,
+                        PRFSpacingTokens.sm,
+                      ),
+                      child: Transform.translate(
+                        offset: const Offset(0, -6),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: TabBar(
+                            controller: _tabController,
+                            onTap: (value) => setState(() {
+                              _currentTab = value;
+                            }),
+                            isScrollable: true,
+                            tabAlignment: TabAlignment.start,
+                            padding: EdgeInsets.zero,
+                            labelPadding: const EdgeInsets.symmetric(
+                              horizontal: PRFSpacingTokens.sm,
+                            ),
+                            labelColor: theme.colorScheme.onPrimary,
+                            unselectedLabelColor: theme.colorScheme.onPrimary
+                                .withValues(alpha: 0.65),
+                            indicatorColor: theme.colorScheme.secondary,
+                            dividerColor:
+                                theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.2,
+                                ),
+                            labelStyle: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            tabs: const [
+                              Tab(text: 'Overview'),
+                              Tab(text: 'People Data'),
+                              Tab(text: 'Feedback Data'),
+                              Tab(text: 'Finance'),
+                            ],
                           ),
-                          labelColor: theme.colorScheme.onPrimary,
-                          unselectedLabelColor: theme.colorScheme.onPrimary
-                              .withValues(alpha: 0.65),
-                          indicatorColor: theme.colorScheme.secondary,
-                          dividerColor: theme.colorScheme.onPrimary.withValues(
-                            alpha: 0.2,
-                          ),
-                          labelStyle: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                          tabs: const [
-                            Tab(text: 'Overview'),
-                            Tab(text: 'People Data'),
-                            Tab(text: 'Feedback Data'),
-                            Tab(text: 'Finance'),
-                          ],
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child:
-                  BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
-                    builder: (context, state) {
-                      final mission = _currentMissionFromState(state);
+              Expanded(
+                child: BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
+                  builder: (context, state) {
+                    final mission = _currentMissionFromState(state);
 
-                      if (state is ResourceListLoading<PRFMission> &&
-                          mission == null) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                    if (state is ResourceListLoading<PRFMission> &&
+                        mission == null) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                      if (mission == null &&
-                          state is ResourceError<PRFMission>) {
-                        final message = state.message;
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                size: 48,
+                    if (mission == null && state is ResourceError<PRFMission>) {
+                      final message = state.message;
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: theme.colorScheme.error,
+                            ),
+                            const SizedBox(height: PRFSpacingTokens.lg),
+                            Text(
+                              'Error: $message',
+                              style: TextStyle(
                                 color: theme.colorScheme.error,
                               ),
-                              const SizedBox(height: PRFSpacingTokens.lg),
-                              Text(
-                                'Error: $message',
-                                style: TextStyle(
-                                  color: theme.colorScheme.error,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (mission == null) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      return TabBarView(
-                        controller: _tabController,
-                        children: [
-                          OverviewMissionDetailsSection(
-                            missionGround: MissionGroundView(mission: mission),
-                            operations: _buildMissionOperationsTab(mission),
-                          ),
-                          PeopleDataMissionDetailsSection(
-                            subscribers: _buildMissionSubscribersTab(mission),
-                            sessions: _buildMissionSessionsTab(),
-                          ),
-                          FeedbackDataMissionDetailsSection(
-                            debriefNotes: _buildMissionDebriefTab(),
-                            souls: _buildSoulsTab(),
-                            questions: _buildMissionQuestionsTab(),
-                          ),
-                          FinanceMissionDetailsSection(
-                            requisitionsLabel: l10n.requisitions,
-                            expensesLabel: l10n.expenses,
-                            requisitions: _buildMissionRequisitionsTab(mission),
-                            expenses: _buildMissionExpensesTab(mission),
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       );
-                    },
-                  ),
-            ),
-          ],
+                    }
+
+                    if (mission == null) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        OverviewMissionDetailsSection(
+                          missionGround: MissionGroundView(mission: mission),
+                          operations: _buildMissionOperationsTab(mission),
+                        ),
+                        PeopleDataMissionDetailsSection(
+                          subscribers: _buildMissionSubscribersTab(mission),
+                          sessions: _buildMissionSessionsTab(),
+                        ),
+                        FeedbackDataMissionDetailsSection(
+                          debriefNotes: _buildMissionDebriefTab(),
+                          souls: _buildSoulsTab(),
+                          questions: _buildMissionQuestionsTab(),
+                        ),
+                        FinanceMissionDetailsSection(
+                          requisitionsLabel: l10n.requisitions,
+                          expensesLabel: l10n.expenses,
+                          requisitions: _buildMissionRequisitionsTab(mission),
+                          expenses: _buildMissionExpensesTab(mission),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       floatingActionButton:
           BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
             builder: (context, state) {
@@ -749,6 +776,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
               };
             },
           ),
+      ),
     );
   }
 
@@ -1448,28 +1476,21 @@ class _MissionTextFormBodyState extends State<_MissionTextFormBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
-              Text(
-                widget.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+              PRFFormSection(
+                icon: Icons.edit_note_outlined,
+                title: widget.title,
+                subtitle: widget.subtitle,
+                isRequired: widget.isRequired,
+                margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+                child: PRFTextAreaInput(
+                  hintText: widget.hintText,
+                  labelText: widget.labelText,
+                  helperText: widget.helperText,
+                  errorText: _showValidation ? _error : null,
+                  controller: _controller,
+                  minLines: widget.minLines,
+                  maxLines: widget.maxLines,
                 ),
-              ),
-              const SizedBox(height: PRFSpacingTokens.xs),
-              Text(
-                widget.subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: PRFSpacingTokens.sm),
-              PRFTextAreaInput(
-                hintText: widget.hintText,
-                labelText: widget.labelText,
-                helperText: widget.helperText,
-                errorText: _showValidation ? _error : null,
-                controller: _controller,
-                minLines: widget.minLines,
-                maxLines: widget.maxLines,
               ),
               const SizedBox(height: PRFSpacingTokens.xxl),
               SizedBox(
@@ -1562,70 +1583,72 @@ class _MissionMemberSubscriptionFormBodyState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: PRFSpacingTokens.lg),
-                  Text(
-                    'Subscription',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.xs),
-                  Text(
-                    'Choose a member to add to this mission',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.sm),
-                  if (isLoading)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: PRFSpacingTokens.md,
-                      ),
-                      child: PRFCircularProgressIndicator(),
-                    )
-                  else
-                    DropdownMenu<String>(
-                      width: double.infinity,
-                      initialSelection: _selectedMemberUlid,
-                      enableFilter: true,
-                      requestFocusOnTap: true,
-                      label: const Text('Member *'),
-                      hintText: 'Search member',
-                      helperText: 'Only active members are shown',
-                      errorText: _selectionError,
-                      dropdownMenuEntries: members
-                          .map(
-                            (member) => DropdownMenuEntry<String>(
-                              value: member.ulid,
-                              label: member.fullName,
+                  PRFFormSection(
+                    icon: Icons.group_add_outlined,
+                    title: 'Subscription Member',
+                    subtitle: 'Choose a member to add to this mission',
+                    isRequired: true,
+                    margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isLoading)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: PRFSpacingTokens.md,
                             ),
+                            child: PRFCircularProgressIndicator(),
                           )
-                          .toList(),
-                      onSelected: (value) {
-                        setState(() {
-                          _selectedMemberUlid = value;
-                          _selectionError = null;
-                        });
-                      },
+                        else
+                          DropdownMenu<String>(
+                            width: double.infinity,
+                            initialSelection: _selectedMemberUlid,
+                            enableFilter: true,
+                            requestFocusOnTap: true,
+                            label: const Text('Member *'),
+                            hintText: 'Search member',
+                            helperText: 'Only active members are shown',
+                            errorText: _selectionError,
+                            dropdownMenuEntries: members
+                                .map(
+                                  (member) => DropdownMenuEntry<String>(
+                                    value: member.ulid,
+                                    label: member.fullName,
+                                  ),
+                                )
+                                .toList(),
+                            onSelected: (value) {
+                              setState(() {
+                                _selectedMemberUlid = value;
+                                _selectionError = null;
+                              });
+                            },
+                          ),
+                        if (errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: PRFSpacingTokens.sm,
+                            ),
+                            child: Text(
+                              errorMessage,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        if (!isLoading && members.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: PRFSpacingTokens.sm,
+                            ),
+                            child: Text(
+                              'No members found. Refresh and try again.',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ),
+                      ],
                     ),
-                  if (errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: PRFSpacingTokens.sm),
-                      child: Text(
-                        errorMessage,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.error,
-                        ),
-                      ),
-                    ),
-                  if (!isLoading && members.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: PRFSpacingTokens.sm),
-                      child: Text(
-                        'No members found. Refresh and try again.',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ),
+                  ),
                   const SizedBox(height: PRFSpacingTokens.xxl),
                   SizedBox(
                     width: double.infinity,
@@ -1741,8 +1764,6 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
@@ -1753,76 +1774,85 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
-              Text(
-                'Soul Record',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+              PRFFormSection(
+                icon: Icons.person_outline,
+                title: 'Name / Identifier',
+                isRequired: true,
+                subtitle: 'Required',
+                margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+                child: PRFTextInput(
+                  hintText: 'Enter a name or identifier',
+                  labelText: 'Name / Identifier *',
+                  helperText: 'Required',
+                  errorText: _showValidation ? _nameError : null,
+                  controller: _nameController,
                 ),
               ),
-              const SizedBox(height: PRFSpacingTokens.xs),
-              Text(
-                'Capture a decision and follow-up note',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+              PRFFormSection(
+                icon: Icons.class_outlined,
+                title: 'Class Group',
+                isRequired: true,
+                subtitle: 'Required',
+                margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+                child: DropdownMenu<String>(
+                  width: double.infinity,
+                  initialSelection: _selectedClassGroupUlid,
+                  enabled: widget.classGroups.isNotEmpty,
+                  enableFilter: true,
+                  requestFocusOnTap: true,
+                  label: const Text('Class Group *'),
+                  hintText: 'Search class group',
+                  helperText: widget.classGroups.isEmpty
+                      ? 'No class groups found for this school type'
+                      : 'Required',
+                  errorText: _showValidation ? _classGroupError : null,
+                  dropdownMenuEntries: widget.classGroups
+                      .map(
+                        (group) => DropdownMenuEntry<String>(
+                          value: group.ulid,
+                          label: group.name,
+                        ),
+                      )
+                      .toList(),
+                  onSelected: (value) {
+                    setState(() {
+                      _selectedClassGroupUlid = value;
+                      _classGroupError = null;
+                    });
+                  },
                 ),
               ),
-              const SizedBox(height: PRFSpacingTokens.sm),
-              PRFTextInput(
-                hintText: 'Enter a name or identifier',
-                labelText: 'Name / Identifier',
-                helperText: 'Required',
-                errorText: _showValidation ? _nameError : null,
-                controller: _nameController,
+              PRFFormSection(
+                icon: Icons.favorite_outline,
+                title: 'Decision Type',
+                subtitle: 'Select one',
+                margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+                child: PRFCategoryChips<PRFSoulDecisionType>(
+                  categories: PRFSoulDecisionType.values,
+                  labelBuilder: (value) => value.name,
+                  selectedCategory: _selectedDecisionType,
+                  showAllOption: false,
+                  onCategorySelected: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedDecisionType = value;
+                    });
+                  },
+                ),
               ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              DropdownMenu<String>(
-                width: double.infinity,
-                initialSelection: _selectedClassGroupUlid,
-                enabled: widget.classGroups.isNotEmpty,
-                enableFilter: true,
-                requestFocusOnTap: true,
-                label: const Text('Class Group *'),
-                hintText: 'Search class group',
-                helperText: widget.classGroups.isEmpty
-                    ? 'No class groups found from mission sessions'
-                    : 'Required',
-                errorText: _showValidation ? _classGroupError : null,
-                dropdownMenuEntries: widget.classGroups
-                    .map(
-                      (group) => DropdownMenuEntry<String>(
-                        value: group.ulid,
-                        label: group.name,
-                      ),
-                    )
-                    .toList(),
-                onSelected: (value) {
-                  setState(() {
-                    _selectedClassGroupUlid = value;
-                    _classGroupError = null;
-                  });
-                },
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              PRFCategoryChips<PRFSoulDecisionType>(
-                categories: PRFSoulDecisionType.values,
-                labelBuilder: (value) => value.name,
-                selectedCategory: _selectedDecisionType,
-                showAllOption: false,
-                onCategorySelected: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _selectedDecisionType = value;
-                  });
-                },
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              PRFTextAreaInput(
-                hintText: 'Optional details for follow-up',
-                labelText: 'Notes',
-                helperText: 'Optional',
-                controller: _noteController,
+              PRFFormSection(
+                icon: Icons.notes_outlined,
+                title: 'Notes',
+                subtitle: 'Optional',
+                margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+                child: PRFTextAreaInput(
+                  hintText: 'Optional details for follow-up',
+                  labelText: 'Notes',
+                  helperText: 'Optional',
+                  controller: _noteController,
+                ),
               ),
               const SizedBox(height: PRFSpacingTokens.xxl),
               SizedBox(
