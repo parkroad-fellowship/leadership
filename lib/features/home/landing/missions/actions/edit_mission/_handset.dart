@@ -149,8 +149,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
-              keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.only(bottom: viewInsets.bottom),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

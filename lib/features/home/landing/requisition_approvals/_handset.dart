@@ -116,9 +116,9 @@ class _RequisitionApprovalsPageHandsetState
                           fontWeight: FontWeight.w700,
                         ),
                         padding: EdgeInsets.zero,
-                  labelPadding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.sm,
-                  ),
+                        labelPadding: const EdgeInsets.symmetric(
+                          horizontal: PRFSpacingTokens.sm,
+                        ),
                         tabs: [
                           Tab(text: l10n.pendingApproval),
                           Tab(text: l10n.closed),

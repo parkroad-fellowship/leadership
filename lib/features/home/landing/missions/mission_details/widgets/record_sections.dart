@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission_offline_member.dart';
 import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -280,12 +281,14 @@ class MissionSubscribersTab extends StatelessWidget {
     required this.mission,
     required this.onRefresh,
     required this.subscriptionsSection,
+    required this.offlineMembersSection,
     super.key,
   });
 
   final PRFMission mission;
   final Future<void> Function() onRefresh;
   final Widget subscriptionsSection;
+  final Widget offlineMembersSection;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +311,9 @@ class MissionSubscribersTab extends StatelessWidget {
         children: [
           MissionSectionCard(
             title: 'Subscriber Capacity',
-            subtitle: 'Track mission signup progress and remaining slots.',
+            subtitle:
+                'Track mission signup progress '
+                'and remaining slots.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -321,7 +326,9 @@ class MissionSubscribersTab extends StatelessWidget {
                         icon: Icons.groups_rounded,
                       ),
                     ),
-                    const SizedBox(width: PRFSpacingTokens.md),
+                    const SizedBox(
+                      width: PRFSpacingTokens.md,
+                    ),
                     Expanded(
                       child: _PeopleMetric(
                         label: 'Filled',
@@ -329,7 +336,9 @@ class MissionSubscribersTab extends StatelessWidget {
                         icon: Icons.person_add_alt_rounded,
                       ),
                     ),
-                    const SizedBox(width: PRFSpacingTokens.md),
+                    const SizedBox(
+                      width: PRFSpacingTokens.md,
+                    ),
                     Expanded(
                       child: _PeopleMetric(
                         label: 'Open',
@@ -341,7 +350,9 @@ class MissionSubscribersTab extends StatelessWidget {
                 ),
                 const SizedBox(height: PRFSpacingTokens.lg),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+                  borderRadius: BorderRadius.circular(
+                    PRFRadiusTokens.sm,
+                  ),
                   child: LinearProgressIndicator(
                     minHeight: 10,
                     value: progress,
@@ -353,7 +364,8 @@ class MissionSubscribersTab extends StatelessWidget {
                 ),
                 const SizedBox(height: PRFSpacingTokens.sm),
                 Text(
-                  '${(progress * 100).toStringAsFixed(0)}% filled',
+                  '${(progress * 100).toStringAsFixed(0)}'
+                  '% filled',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -363,6 +375,8 @@ class MissionSubscribersTab extends StatelessWidget {
           ),
           const SizedBox(height: PRFSpacingTokens.md),
           subscriptionsSection,
+          const SizedBox(height: PRFSpacingTokens.md),
+          offlineMembersSection,
         ],
       ),
     );
@@ -513,6 +527,176 @@ class MissionSubscriptionCard extends StatelessWidget {
             ),
             IconButton(
               tooltip: 'Remove subscriber',
+              onPressed: onRemove,
+              icon: Icon(
+                Icons.person_remove_alt_1,
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MissionOfflineMembersSection extends StatelessWidget {
+  const MissionOfflineMembersSection({
+    required this.offlineMembers,
+    required this.error,
+    required this.onAdd,
+    required this.onRemove,
+    required this.formatDate,
+    super.key,
+  });
+
+  final List<PRFMissionOfflineMember> offlineMembers;
+  final String? error;
+  final VoidCallback onAdd;
+  final Future<void> Function(PRFMissionOfflineMember member) onRemove;
+  final String Function(DateTime? value) formatDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return MissionSectionCard(
+      title: 'Non-Member Missioners',
+      subtitle:
+          'People who joined the mission but '
+          "aren't registered members.",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${offlineMembers.length} missioner'
+                  '${offlineMembers.length == 1 ? '' : 's'}',
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: onAdd,
+                icon: const Icon(
+                  Icons.person_add_alt_outlined,
+                ),
+                label: const Text('Add Missioner'),
+              ),
+            ],
+          ),
+          const SizedBox(height: PRFSpacingTokens.md),
+          if (error != null)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(
+                bottom: PRFSpacingTokens.md,
+              ),
+              padding: const EdgeInsets.all(
+                PRFSpacingTokens.sm,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(
+                  PRFRadiusTokens.md,
+                ),
+              ),
+              child: Text(
+                error!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+          if (offlineMembers.isEmpty)
+            const PRFEmptyView(
+              label: 'No non-member missioners',
+              description:
+                  'Add people who joined the mission '
+                  "but aren't registered members.",
+            )
+          else
+            ...offlineMembers.map(
+              (member) => MissionOfflineMemberCard(
+                member: member,
+                subtitle:
+                    'Added ${formatDate(
+                      member.createdAt,
+                    )}',
+                onRemove: () => onRemove(member),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class MissionOfflineMemberCard extends StatelessWidget {
+  const MissionOfflineMemberCard({
+    required this.member,
+    required this.subtitle,
+    required this.onRemove,
+    super.key,
+  });
+
+  final PRFMissionOfflineMember member;
+  final String subtitle;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: PRFSpacingTokens.sm,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PRFSpacingTokens.md,
+          vertical: PRFSpacingTokens.md,
+        ),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(
+            PRFRadiusTokens.md,
+          ),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(
+              alpha: 0.38,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    member.name,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    member.phone,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'Remove missioner',
               onPressed: onRemove,
               icon: Icon(
                 Icons.person_remove_alt_1,

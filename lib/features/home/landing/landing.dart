@@ -76,7 +76,7 @@ class _LandingPageState extends State<LandingPage> {
         ),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
-         isNeutralCard: true,
+        isNeutralCard: true,
         deskGroup: 'My Desk',
       ),
       LandingActionItem(

@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
+import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_soul_decision_type.dart';
-import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_offline_member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_session_resource_cubit.dart';
@@ -22,6 +23,8 @@ import 'package:leadership/features/home/landing/missions/mission_details/widget
 import 'package:leadership/features/home/landing/missions/mission_details/widgets/record_sections.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission_offline_member.dart';
+import 'package:leadership/models/remote/mission/prf_mission_offline_member_dto.dart';
 import 'package:leadership/models/remote/mission/prf_mission_question.dart';
 import 'package:leadership/models/remote/mission/prf_mission_session.dart';
 import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
@@ -29,13 +32,15 @@ import 'package:leadership/models/remote/mission/prf_mission_subscription_dto.da
 import 'package:leadership/models/remote/mission/prf_soul.dart';
 import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
 import 'package:leadership/models/remote/prf_class_group.dart';
-import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/models/remote/prf_debrief_note.dart';
+import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
+import 'package:leadership/shared_widgets/input/phone/phone.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 import 'package:prf_design/prf_design.dart';
 
 class MissionsDetailsPageHandset extends StatefulWidget {
@@ -114,6 +119,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       ),
       context.read<MissionSessionResourceCubit>().loadForMission(
         // Works
+        missionUlid: missionUlid,
+      ),
+      context.read<MissionOfflineMemberResourceCubit>().loadForMission(
         missionUlid: missionUlid,
       ),
     ]);
@@ -244,10 +252,10 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
-  Future<PRFMissionSubscriptionDTO?> _showMemberSubscriptionFormSheet() {
+  Future<Object?> _showMemberSubscriptionFormSheet() {
     context.read<GetMembersCubit>().getMembers();
 
-    return PRFBottomSheet.show<PRFMissionSubscriptionDTO>(
+    return PRFBottomSheet.show<Object>(
       context,
       title: 'Subscribe Member',
       child: _MissionMemberSubscriptionFormBody(missionUlid: missionUlid),
@@ -513,28 +521,51 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptSubscribeMember(PRFMission mission) async {
-    final subscriptionData = await _showMemberSubscriptionFormSheet();
-    if (!mounted || subscriptionData == null) return;
+    final result = await _showMemberSubscriptionFormSheet();
+    if (!mounted || result == null) return;
 
-    final cubit = context.read<MissionSubscriptionResourceCubit>();
-    await cubit.subscribeMember(
-      missionUlid: mission.ulid,
-      memberUlid: subscriptionData.memberUlid,
-    );
-    if (!mounted) return;
+    if (result is PRFMissionSubscriptionDTO) {
+      final cubit = context.read<MissionSubscriptionResourceCubit>();
+      await cubit.subscribeMember(
+        missionUlid: mission.ulid,
+        memberUlid: result.memberUlid,
+      );
+      if (!mounted) return;
 
-    final error = _resourceErrorMessage(cubit.state);
-    if (error != null) {
-      PRFSnackbar.error(context, error);
-      return;
+      final error = _resourceErrorMessage(cubit.state);
+      if (error != null) {
+        PRFSnackbar.error(context, error);
+        return;
+      }
+
+      await context.read<MissionResourceCubit>().loadMission(
+        missionUlid: mission.ulid,
+      );
+      if (!mounted) return;
+
+      PRFSnackbar.success(context, 'Member subscribed to mission');
+    } else if (result is PRFMissionOfflineMemberDTO) {
+      final cubit = context.read<MissionOfflineMemberResourceCubit>();
+      await cubit.addOfflineMember(
+        missionUlid: mission.ulid,
+        name: result.name,
+        phone: result.phone,
+      );
+      if (!mounted) return;
+
+      final error = _resourceErrorMessage(cubit.state);
+      if (error != null) {
+        PRFSnackbar.error(context, error);
+        return;
+      }
+
+      await context.read<MissionResourceCubit>().loadMission(
+        missionUlid: mission.ulid,
+      );
+      if (!mounted) return;
+
+      PRFSnackbar.success(context, 'Missioner added to mission');
     }
-
-    await context.read<MissionResourceCubit>().loadMission(
-      missionUlid: mission.ulid,
-    );
-    if (!mounted) return;
-
-    PRFSnackbar.success(context, 'Member subscribed to mission');
   }
 
   Future<void> _unsubscribeMember({
@@ -831,6 +862,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       mission: mission,
       onRefresh: _loadMissionSubdomainData,
       subscriptionsSection: _buildMissionSubscriptionsSection(mission),
+      offlineMembersSection: _buildOfflineMembersSection(mission),
     );
   }
 
@@ -970,6 +1002,63 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         );
       },
     );
+  }
+
+  Widget _buildOfflineMembersSection(PRFMission mission) {
+    return BlocBuilder<
+      MissionOfflineMemberResourceCubit,
+      ResourceState<PRFMissionOfflineMember>
+    >(
+      builder: (context, state) {
+        final members = _itemsFromResourceState(state);
+        final error = _resourceErrorMessage(state);
+        return MissionOfflineMembersSection(
+          offlineMembers: members,
+          error: error,
+          onAdd: () => _promptSubscribeMember(mission),
+          onRemove: (member) => _removeOfflineMember(
+            mission: mission,
+            member: member,
+          ),
+          formatDate: _formatDate,
+        );
+      },
+    );
+  }
+
+  Future<void> _removeOfflineMember({
+    required PRFMission mission,
+    required PRFMissionOfflineMember member,
+  }) async {
+    if (member.ulid.isEmpty) {
+      PRFSnackbar.error(
+        context,
+        'Missioner cannot be removed yet',
+      );
+      return;
+    }
+
+    final shouldDelete = await _showDeleteConfirmation(
+      title: 'Remove Missioner',
+    );
+    if (!shouldDelete || !mounted) return;
+
+    final cubit = context.read<MissionOfflineMemberResourceCubit>();
+    await cubit.removeOfflineMember(ulid: member.ulid);
+    if (!mounted) return;
+
+    final error = _resourceErrorMessage(cubit.state);
+    if (error != null) {
+      PRFSnackbar.error(context, error);
+      return;
+    }
+
+    await context.read<MissionResourceCubit>().loadMission(
+      missionUlid: mission.ulid,
+    );
+    if (!mounted) return;
+
+    PRFSnackbar.success(context, 'Missioner removed');
   }
 
   Widget _buildMissionOperationsTab(PRFMission mission) {
@@ -1684,6 +1773,19 @@ class _MissionMemberSubscriptionFormBodyState
     );
   }
 
+  Future<void> _promptAddOfflineMember() async {
+    final dto = await PRFBottomSheet.show<PRFMissionOfflineMemberDTO>(
+      context,
+      title: 'Add Missioner',
+      child: _OfflineMemberFormBody(missionUlid: widget.missionUlid),
+    );
+
+    if (!mounted || dto == null) return;
+
+    Gaimon.success();
+    Navigator.of(context).pop(dto);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GetMembersCubit, GetMembersState>(
@@ -1771,8 +1873,6 @@ class _MissionMemberSubscriptionFormBodyState
                                 else
                                   PRFSearchableDropdown<String>(
                                     initialSelection: _selectedMemberUlid,
-                                    enableFilter: true,
-                                    requestFocusOnTap: true,
                                     labelText: 'Member *',
                                     hintText: 'Search member',
                                     helperText: 'Only active members are shown',
@@ -1813,10 +1913,15 @@ class _MissionMemberSubscriptionFormBodyState
                                       top: PRFSpacingTokens.sm,
                                     ),
                                     child: Text(
-                                      'No members found. Refresh and try again.',
+                                      'No members found. '
+                                      'Refresh and try again.',
                                       style: theme.textTheme.bodySmall,
                                     ),
                                   ),
+                                const SizedBox(
+                                  height: PRFSpacingTokens.lg,
+                                ),
+                                _buildAddMissionerButton(theme),
                               ],
                             ),
                           ),
@@ -1845,6 +1950,47 @@ class _MissionMemberSubscriptionFormBodyState
     );
   }
 
+  Widget _buildAddMissionerButton(ThemeData theme) {
+    return GestureDetector(
+      onTap: _promptAddOfflineMember,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PRFSpacingTokens.md,
+          vertical: PRFSpacingTokens.xs,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(
+            PRFRadiusTokens.full,
+          ),
+          border: Border.all(
+            color: PRFColors.limeGreen.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.add,
+              size: 16,
+              color: PRFColors.limeGreen,
+            ),
+            const SizedBox(
+              width: PRFSpacingTokens.xs,
+            ),
+            Text(
+              'Add Missioner',
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: PRFColors.limeGreen,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeaderCard(ThemeData theme) {
     return Container(
       width: double.infinity,
@@ -1859,7 +2005,9 @@ class _MissionMemberSubscriptionFormBodyState
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            color: theme.colorScheme.primary.withValues(
+              alpha: 0.3,
+            ),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -1882,9 +2030,270 @@ class _MissionMemberSubscriptionFormBodyState
           ),
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
-            'Choose a fellowship member to join this mission',
+            'Choose a fellowship member to '
+            'join this mission',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: 0.9,
+              ),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OfflineMemberFormBody extends StatefulWidget {
+  const _OfflineMemberFormBody({required this.missionUlid});
+
+  final String missionUlid;
+
+  @override
+  State<_OfflineMemberFormBody> createState() => _OfflineMemberFormBodyState();
+}
+
+class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
+  late final TextEditingController _nameController;
+  late final PhoneController _phoneController;
+  bool _showValidation = false;
+  String? _nameError;
+
+  bool get _isFormValid {
+    return _nameController.text.trim().isNotEmpty &&
+        _phoneController.value.nsn.isNotEmpty;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController()..addListener(_onChanged);
+    _phoneController = PhoneController(
+      initialValue: const PhoneNumber(
+        isoCode: IsoCode.KE,
+        nsn: '',
+      ),
+    );
+    _phoneController.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    if (_showValidation) {
+      _validate();
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _nameController
+      ..removeListener(_onChanged)
+      ..dispose();
+    _phoneController
+      ..removeListener(_onChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  bool _validate() {
+    final hasName = _nameController.text.trim().isNotEmpty;
+    final hasPhone = _phoneController.value.nsn.isNotEmpty;
+    setState(() {
+      _showValidation = true;
+      _nameError = hasName ? null : 'Name is required';
+    });
+    return hasName && hasPhone;
+  }
+
+  void _submit() {
+    if (!_validate()) {
+      Gaimon.warning();
+      PRFSnackbar.error(
+        context,
+        'Please fill in all required fields',
+      );
+      return;
+    }
+
+    Gaimon.success();
+    Navigator.of(context).pop(
+      PRFMissionOfflineMemberDTO(
+        missionUlid: widget.missionUlid,
+        name: _nameController.text.trim(),
+        phone: _phoneController.value.international,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primary.withValues(
+                alpha: 0.05,
+              ),
+              theme.colorScheme.surface,
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: PRFSpacingTokens.lg),
+                _buildHeaderCard(theme)
+                    .animate()
+                    .slideY(begin: -0.3)
+                    .fadeIn(
+                      duration: PRFMotionTokens.enterShort,
+                    ),
+                const SizedBox(height: PRFSpacingTokens.xxl),
+                Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(
+                        PRFSpacingTokens.xl,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          PRFRadiusTokens.lg,
+                        ),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.2,
+                          ),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.shadow.withValues(
+                              alpha: 0.1,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          PRFFormSection(
+                            icon: Icons.person_outline,
+                            title: 'Full Name',
+                            subtitle: 'Required',
+                            isRequired: true,
+                            margin: EdgeInsets.zero,
+                            child: PRFTextInput(
+                              hintText: 'Enter full name',
+                              labelText: 'Full Name *',
+                              helperText: 'Required',
+                              controller: _nameController,
+                              errorText: _showValidation ? _nameError : null,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: PRFSpacingTokens.xl,
+                          ),
+                          PRFFormSection(
+                            icon: Icons.phone_outlined,
+                            title: 'Phone Number',
+                            subtitle: 'Required',
+                            isRequired: true,
+                            margin: EdgeInsets.zero,
+                            child: PRFPhoneInput(
+                              hintText: 'Enter phone number',
+                              controller: _phoneController,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate(
+                      delay: PRFMotionTokens.stagger3,
+                    )
+                    .slideX(begin: -0.2)
+                    .fadeIn(),
+                const SizedBox(height: PRFSpacingTokens.xxl),
+                SizedBox(
+                  width: double.infinity,
+                  child: PRFPrimaryButton(
+                    onPressed: _submit,
+                    title: 'Add Missioner',
+                    disabled: !_isFormValid,
+                  ),
+                ),
+                const SizedBox(
+                  height: PRFSpacingTokens.xxxl,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(
+              alpha: 0.8,
+            ),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(
+          PRFRadiusTokens.lg,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(
+              alpha: 0.3,
+            ),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.person_add_alt_outlined,
+            size: 32,
+            color: theme.colorScheme.onPrimary,
+          ),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          Text(
+            'Add Missioner',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: PRFSpacingTokens.xs),
+          Text(
+            "Add someone who isn't a "
+            'registered member',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: 0.9,
+              ),
             ),
             textAlign: TextAlign.center,
           ),
@@ -2076,8 +2485,6 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             child: PRFSearchableDropdown<String>(
                               initialSelection: _selectedClassGroupUlid,
                               enabled: widget.classGroups.isNotEmpty,
-                              enableFilter: true,
-                              requestFocusOnTap: true,
                               labelText: 'Class Group *',
                               hintText: 'Search class group',
                               helperText: widget.classGroups.isEmpty

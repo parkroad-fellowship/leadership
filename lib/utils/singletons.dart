@@ -14,9 +14,10 @@ import 'package:leadership/features/home/landing/desk_activities/cubit/event_res
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_ground_suggestion_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_offline_member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_session_resource_cubit.dart';
@@ -33,14 +34,15 @@ import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/accounting_event_service.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
-import 'package:leadership/services/api/contact_type_service.dart';
 import 'package:leadership/services/api/class_group_service.dart';
+import 'package:leadership/services/api/contact_type_service.dart';
 import 'package:leadership/services/api/debrief_note_service.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
 import 'package:leadership/services/api/member_service.dart';
 import 'package:leadership/services/api/mission_ground_suggestion_service.dart';
+import 'package:leadership/services/api/mission_offline_member_service.dart';
 import 'package:leadership/services/api/mission_question_service.dart';
 import 'package:leadership/services/api/mission_service.dart';
 import 'package:leadership/services/api/mission_session_service.dart';
@@ -87,6 +89,9 @@ class Singletons {
       ..registerSingleton<MissionService>(MissionService())
       ..registerSingleton<MissionSubscriptionService>(
         MissionSubscriptionService(),
+      )
+      ..registerSingleton<MissionOfflineMemberService>(
+        MissionOfflineMemberService(),
       )
       ..registerSingleton<MissionTypeService>(MissionTypeService())
       ..registerSingleton<SchoolTermService>(SchoolTermService())
@@ -205,6 +210,11 @@ class Singletons {
       BlocProvider<MissionSubscriptionResourceCubit>(
         create: (context) => MissionSubscriptionResourceCubit(
           missionSubscriptionService: getIt<MissionSubscriptionService>(),
+        ),
+      ),
+      BlocProvider<MissionOfflineMemberResourceCubit>(
+        create: (context) => MissionOfflineMemberResourceCubit(
+          missionOfflineMemberService: getIt<MissionOfflineMemberService>(),
         ),
       ),
       BlocProvider<MissionSessionResourceCubit>(

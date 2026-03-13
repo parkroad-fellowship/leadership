@@ -681,8 +681,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           child: PRFSearchableDropdown<String>(
             initialSelection: _selectedSchoolUlid,
             enabled: !_isLoading,
-            enableFilter: true,
-            requestFocusOnTap: true,
             labelText: 'School *',
             hintText: 'Search school',
             helperText: 'Destination school for this mission',

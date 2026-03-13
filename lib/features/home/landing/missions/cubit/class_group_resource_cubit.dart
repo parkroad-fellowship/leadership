@@ -6,7 +6,7 @@ import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class ClassGroupResourceCubit extends ResourceCubit<PRFClassGroup> {
   ClassGroupResourceCubit({required ClassGroupService classGroupService})
-      : super(service: classGroupService);
+    : super(service: classGroupService);
 
   Future<void> loadActive() {
     return loadAll(
@@ -17,7 +17,9 @@ class ClassGroupResourceCubit extends ResourceCubit<PRFClassGroup> {
     );
   }
 
-  Future<void> loadActiveForInstitutionType(PRFInstitutionType institutionType) {
+  Future<void> loadActiveForInstitutionType(
+    PRFInstitutionType institutionType,
+  ) {
     return loadAll(
       filters: {
         'status_key': PRFActiveStatus.active.apiKey,

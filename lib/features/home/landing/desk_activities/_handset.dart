@@ -664,7 +664,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                               mainAxisSize: MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   'View Details',

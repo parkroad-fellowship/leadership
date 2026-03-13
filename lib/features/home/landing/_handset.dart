@@ -36,16 +36,15 @@ class LandingPageHandset extends StatelessWidget {
 
     final sections = <_LandingActionSection>[
       if (settingsActions.isNotEmpty)
-        
-      ...deskGroups.entries
-          .where((entry) => entry.value.isNotEmpty)
-          .map(
-            (entry) => _LandingActionSection(
-              title: entry.key,
-              actions: entry.value,
+        ...deskGroups.entries
+            .where((entry) => entry.value.isNotEmpty)
+            .map(
+              (entry) => _LandingActionSection(
+                title: entry.key,
+                actions: entry.value,
+              ),
             ),
-          ),
-          _LandingActionSection(title: 'Settings', actions: settingsActions),
+      _LandingActionSection(title: 'Settings', actions: settingsActions),
     ];
 
     return PopScope(
@@ -193,8 +192,6 @@ class LandingPageHandset extends StatelessWidget {
                   ),
                 ),
               ),
-
-             
 
               ..._buildSectionSlivers(
                 context: context,

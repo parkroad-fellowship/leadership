@@ -9,7 +9,7 @@ class SchoolTermResourceCubit extends ResourceCubit<PRFSchoolTerm> {
 
   Future<void> loadActive() {
     return loadAll(
-            filters: {'status_key': PRFActiveStatus.active.apiKey},
+      filters: {'status_key': PRFActiveStatus.active.apiKey},
 
       orderBy: 'created_at',
       orderDirection: 'desc',
