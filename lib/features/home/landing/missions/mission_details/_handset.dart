@@ -16,7 +16,6 @@ import 'package:leadership/features/home/landing/missions/mission_details/widget
 import 'package:leadership/features/home/landing/missions/mission_details/widgets/overview_section.dart';
 import 'package:leadership/features/home/landing/missions/mission_details/widgets/people_data_section.dart';
 import 'package:leadership/features/home/landing/missions/mission_details/widgets/record_sections.dart';
-import 'package:leadership/features/home/landing/missions/mission_details/widgets/sheets.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/mission/prf_mission_question.dart';
@@ -26,6 +25,7 @@ import 'package:leadership/models/remote/mission/prf_mission_subscription_dto.da
 import 'package:leadership/models/remote/mission/prf_soul.dart';
 import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
 import 'package:leadership/models/remote/prf_class_group.dart';
+import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/models/remote/prf_debrief_note.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
@@ -139,7 +139,14 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: MissionQuestionFormSheet(
+      child: _MissionTextFormBody(
+        title: 'Question',
+        subtitle: 'Capture what students asked during the mission',
+        labelText: 'Question',
+        helperText: 'Required',
+        validationErrorText: 'Question is required',
+        hintText: 'What did the students want to know?',
+        isRequired: true,
         initialValue: initialValue,
         submitLabel: submitLabel,
       ),
@@ -154,7 +161,16 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: MissionDebriefNoteFormSheet(
+      child: _MissionTextFormBody(
+        title: 'Debrief Note',
+        subtitle: 'Capture what happened and what the team learned',
+        labelText: 'Debrief Note',
+        helperText: 'Required',
+        validationErrorText: 'Debrief note is required',
+        hintText: 'Capture what happened and what we learned.',
+        isRequired: true,
+        minLines: 4,
+        maxLines: 8,
         initialValue: initialValue,
         submitLabel: submitLabel,
       ),
@@ -192,7 +208,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<PRFSoulDTO>(
       context,
       title: title,
-      child: MissionSoulFormSheet(
+      child: _MissionSoulFormBody(
         missionUlid: missionUlid,
         classGroups: _availableClassGroups(),
         initialName: initialName,
@@ -210,7 +226,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<PRFMissionSubscriptionDTO>(
       context,
       title: 'Subscribe Member',
-      child: MissionMemberSubscriptionFormSheet(missionUlid: missionUlid),
+      child: _MissionMemberSubscriptionFormBody(missionUlid: missionUlid),
     );
   }
 
@@ -218,14 +234,12 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     required String title,
     String message = 'Are you sure you want to continue?',
   }) async {
-    final shouldDelete = await PRFBottomSheet.show<bool>(
+    final shouldDelete = await PRFConfirmationDialog.show(
       context,
       title: title,
-      child: MissionConfirmationSheet(
-        message: message,
-        confirmLabel: 'Delete',
-        destructive: true,
-      ),
+      message: message,
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
 
     return shouldDelete ?? false;
@@ -535,7 +549,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<void>(
       context,
       title: 'Subscriber Details',
-      child: MissionSubscriberDetailsSheet(subscription: subscription),
+      child: _MissionSubscriberDetailsBody(subscription: subscription),
     );
   }
 
@@ -1121,13 +1135,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     required String content,
     required String confirmLabel,
   }) {
-    return PRFBottomSheet.show<bool>(
+    return PRFConfirmationDialog.show(
       context,
       title: title,
-      child: MissionConfirmationSheet(
-        message: content,
-        confirmLabel: confirmLabel,
-      ),
+      message: content,
+      confirmLabel: confirmLabel,
     );
   }
 
@@ -1178,9 +1190,14 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final result = await PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: MissionReasonFormSheet(
+      child: _MissionTextFormBody(
+        title: 'Reason',
+        subtitle: 'Optional context for this action',
+        labelText: 'Reason',
+        helperText: 'Optional',
         hintText: hintText,
         submitLabel: confirmLabel,
+        isRequired: false,
       ),
     );
 
@@ -1330,6 +1347,554 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
           ),
         );
       },
+    );
+  }
+}
+
+class _MissionTextFormBody extends StatefulWidget {
+  const _MissionTextFormBody({
+    required this.title,
+    required this.subtitle,
+    required this.labelText,
+    required this.helperText,
+    required this.hintText,
+    required this.submitLabel,
+    required this.isRequired,
+    this.initialValue,
+    this.validationErrorText,
+    this.minLines = 3,
+    this.maxLines = 6,
+  });
+
+  final String title;
+  final String subtitle;
+  final String labelText;
+  final String helperText;
+  final String hintText;
+  final String submitLabel;
+  final bool isRequired;
+  final String? initialValue;
+  final String? validationErrorText;
+  final int minLines;
+  final int maxLines;
+
+  @override
+  State<_MissionTextFormBody> createState() => _MissionTextFormBodyState();
+}
+
+class _MissionTextFormBodyState extends State<_MissionTextFormBody> {
+  late final TextEditingController _controller;
+  String? _error;
+  bool _showValidation = false;
+
+  bool _validate() {
+    if (!widget.isRequired) {
+      setState(() {
+        _showValidation = true;
+        _error = null;
+      });
+      return true;
+    }
+
+    final isValid = _controller.text.trim().isNotEmpty;
+    setState(() {
+      _showValidation = true;
+      _error = isValid ? null : (widget.validationErrorText ?? 'Required');
+    });
+    return isValid;
+  }
+
+  void _submit() {
+    if (!_validate()) {
+      PRFSnackbar.error(context, 'Please fill in all required fields');
+      return;
+    }
+
+    Navigator.of(context).pop(_controller.text.trim());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue ?? '')
+      ..addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    if (_showValidation) {
+      _validate();
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller
+      ..removeListener(_onChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: PRFSpacingTokens.lg),
+              Text(
+                widget.title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.xs),
+              Text(
+                widget.subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.sm),
+              PRFTextAreaInput(
+                hintText: widget.hintText,
+                labelText: widget.labelText,
+                helperText: widget.helperText,
+                errorText: _showValidation ? _error : null,
+                controller: _controller,
+                minLines: widget.minLines,
+                maxLines: widget.maxLines,
+              ),
+              const SizedBox(height: PRFSpacingTokens.xxl),
+              SizedBox(
+                width: double.infinity,
+                child: PRFPrimaryButton(
+                  onPressed: _submit,
+                  title: widget.submitLabel,
+                  disabled: false,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.xxxl),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MissionMemberSubscriptionFormBody extends StatefulWidget {
+  const _MissionMemberSubscriptionFormBody({required this.missionUlid});
+
+  final String missionUlid;
+
+  @override
+  State<_MissionMemberSubscriptionFormBody> createState() =>
+      _MissionMemberSubscriptionFormBodyState();
+}
+
+class _MissionMemberSubscriptionFormBodyState
+    extends State<_MissionMemberSubscriptionFormBody> {
+  String? _selectedMemberUlid;
+  String? _selectionError;
+
+  bool _validateSelection() {
+    if (_selectedMemberUlid != null && _selectedMemberUlid!.trim().isNotEmpty) {
+      setState(() {
+        _selectionError = null;
+      });
+      return true;
+    }
+
+    setState(() {
+      _selectionError = 'Please select a member to continue';
+    });
+    return false;
+  }
+
+  void _submit() {
+    if (!_validateSelection()) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      PRFMissionSubscriptionDTO(
+        missionUlid: widget.missionUlid,
+        memberUlid: _selectedMemberUlid!.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return BlocBuilder<GetMembersCubit, GetMembersState>(
+      builder: (context, state) {
+        final members = state.maybeWhen(
+          loaded: (members) => members,
+          orElse: () => <PRFMember>[],
+        );
+        final isLoading = state.maybeWhen(
+          loading: () => true,
+          orElse: () => false,
+        );
+        final errorMessage = state.maybeWhen(
+          error: (message) => message,
+          orElse: () => null,
+        );
+
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: PRFSpacingTokens.lg),
+                  Text(
+                    'Subscription',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: PRFSpacingTokens.xs),
+                  Text(
+                    'Choose a member to add to this mission',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: PRFSpacingTokens.sm),
+                  if (isLoading)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: PRFSpacingTokens.md,
+                      ),
+                      child: PRFCircularProgressIndicator(),
+                    )
+                  else
+                    DropdownMenu<String>(
+                      width: double.infinity,
+                      initialSelection: _selectedMemberUlid,
+                      enableFilter: true,
+                      requestFocusOnTap: true,
+                      label: const Text('Member *'),
+                      hintText: 'Search member',
+                      helperText: 'Only active members are shown',
+                      errorText: _selectionError,
+                      dropdownMenuEntries: members
+                          .map(
+                            (member) => DropdownMenuEntry<String>(
+                              value: member.ulid,
+                              label: member.fullName,
+                            ),
+                          )
+                          .toList(),
+                      onSelected: (value) {
+                        setState(() {
+                          _selectedMemberUlid = value;
+                          _selectionError = null;
+                        });
+                      },
+                    ),
+                  if (errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: PRFSpacingTokens.sm),
+                      child: Text(
+                        errorMessage,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  if (!isLoading && members.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: PRFSpacingTokens.sm),
+                      child: Text(
+                        'No members found. Refresh and try again.',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                  const SizedBox(height: PRFSpacingTokens.xxl),
+                  SizedBox(
+                    width: double.infinity,
+                    child: PRFPrimaryButton(
+                      onPressed: _submit,
+                      title: 'Subscribe Member',
+                      disabled: isLoading,
+                      isLoading: isLoading,
+                    ),
+                  ),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MissionSoulFormBody extends StatefulWidget {
+  const _MissionSoulFormBody({
+    required this.missionUlid,
+    required this.classGroups,
+    required this.submitLabel,
+    this.initialName,
+    this.initialNote,
+    this.initialClassGroupUlid,
+    this.initialDecisionType = PRFSoulDecisionType.salvation,
+  });
+
+  final String missionUlid;
+  final List<PRFClassGroup> classGroups;
+  final String submitLabel;
+  final String? initialName;
+  final String? initialNote;
+  final String? initialClassGroupUlid;
+  final PRFSoulDecisionType initialDecisionType;
+
+  @override
+  State<_MissionSoulFormBody> createState() => _MissionSoulFormBodyState();
+}
+
+class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _noteController;
+  String? _selectedClassGroupUlid;
+  late PRFSoulDecisionType _selectedDecisionType;
+  String? _nameError;
+  String? _classGroupError;
+  bool _showValidation = false;
+
+  bool _validate() {
+    final hasName = _nameController.text.trim().isNotEmpty;
+    final hasClassGroup =
+        _selectedClassGroupUlid != null && _selectedClassGroupUlid!.isNotEmpty;
+
+    setState(() {
+      _showValidation = true;
+      _nameError = hasName ? null : 'Name / Identifier is required';
+      _classGroupError = hasClassGroup ? null : 'Class group is required';
+    });
+
+    return hasName && hasClassGroup;
+  }
+
+  void _submit() {
+    if (!_validate()) {
+      PRFSnackbar.error(context, 'Please fill in all required fields');
+      return;
+    }
+
+    Navigator.of(context).pop(
+      PRFSoulDTO(
+        fullName: _nameController.text.trim(),
+        missionUlid: widget.missionUlid,
+        classGroupUlid: _selectedClassGroupUlid!,
+        decisionType: _selectedDecisionType.apiKey,
+        notes: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName ?? '')
+      ..addListener(_onChanged);
+    _noteController = TextEditingController(text: widget.initialNote ?? '');
+    _selectedClassGroupUlid = widget.initialClassGroupUlid;
+    _selectedDecisionType = widget.initialDecisionType;
+  }
+
+  void _onChanged() {
+    if (_showValidation) {
+      _validate();
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _nameController
+      ..removeListener(_onChanged)
+      ..dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: PRFSpacingTokens.lg),
+              Text(
+                'Soul Record',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.xs),
+              Text(
+                'Capture a decision and follow-up note',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.sm),
+              PRFTextInput(
+                hintText: 'Enter a name or identifier',
+                labelText: 'Name / Identifier',
+                helperText: 'Required',
+                errorText: _showValidation ? _nameError : null,
+                controller: _nameController,
+              ),
+              const SizedBox(height: PRFSpacingTokens.md),
+              DropdownMenu<String>(
+                width: double.infinity,
+                initialSelection: _selectedClassGroupUlid,
+                enabled: widget.classGroups.isNotEmpty,
+                enableFilter: true,
+                requestFocusOnTap: true,
+                label: const Text('Class Group *'),
+                hintText: 'Search class group',
+                helperText: widget.classGroups.isEmpty
+                    ? 'No class groups found from mission sessions'
+                    : 'Required',
+                errorText: _showValidation ? _classGroupError : null,
+                dropdownMenuEntries: widget.classGroups
+                    .map(
+                      (group) => DropdownMenuEntry<String>(
+                        value: group.ulid,
+                        label: group.name,
+                      ),
+                    )
+                    .toList(),
+                onSelected: (value) {
+                  setState(() {
+                    _selectedClassGroupUlid = value;
+                    _classGroupError = null;
+                  });
+                },
+              ),
+              const SizedBox(height: PRFSpacingTokens.md),
+              PRFCategoryChips<PRFSoulDecisionType>(
+                categories: PRFSoulDecisionType.values,
+                labelBuilder: (value) => value.name,
+                selectedCategory: _selectedDecisionType,
+                showAllOption: false,
+                onCategorySelected: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    _selectedDecisionType = value;
+                  });
+                },
+              ),
+              const SizedBox(height: PRFSpacingTokens.md),
+              PRFTextAreaInput(
+                hintText: 'Optional details for follow-up',
+                labelText: 'Notes',
+                helperText: 'Optional',
+                controller: _noteController,
+              ),
+              const SizedBox(height: PRFSpacingTokens.xxl),
+              SizedBox(
+                width: double.infinity,
+                child: PRFPrimaryButton(
+                  onPressed: _submit,
+                  title: widget.submitLabel,
+                  disabled: false,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.xxxl),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MissionSubscriberDetailsBody extends StatelessWidget {
+  const _MissionSubscriberDetailsBody({required this.subscription});
+
+  final PRFMissionSubscription subscription;
+
+  @override
+  Widget build(BuildContext context) {
+    final member = subscription.member;
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: PRFSpacingTokens.lg),
+            _detailRow('Name', member?.fullName),
+            _detailRow('Member ULID', member?.ulid),
+            _detailRow('Email', member?.email),
+            _detailRow('Phone', member?.phoneNumber),
+            _detailRow('Residence', member?.residence),
+            _detailRow('Pastor', member?.pastor),
+            const SizedBox(height: PRFSpacingTokens.xxl),
+            SizedBox(
+              width: double.infinity,
+              child: PRFPrimaryButton(
+                onPressed: () => Navigator.of(context).pop(),
+                title: 'Done',
+                disabled: false,
+              ),
+            ),
+            const SizedBox(height: PRFSpacingTokens.xxxl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String? value) {
+    final safeValue = (value ?? '').trim();
+    if (safeValue.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(safeValue),
+        ],
+      ),
     );
   }
 }
