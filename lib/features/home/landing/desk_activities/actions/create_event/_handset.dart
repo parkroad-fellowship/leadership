@@ -179,39 +179,32 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             icon: Icons.group_outlined,
                             title: l10n.responsibleDesk,
                             isRequired: true,
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                return DropdownMenu<PRFResponsibleDesk>(
-                                  width: constraints.maxWidth,
-                                  initialSelection: selectedResponsibleDesk,
-                                  hintText: l10n.responsibleDesk,
-                                  dropdownMenuEntries: _hiveService
-                                      .responsibleDesks
-                                      .map(
-                                        (responsibleDesk) =>
-                                            DropdownMenuEntry<
-                                              PRFResponsibleDesk
-                                            >(
-                                              value: responsibleDesk,
-                                              label: responsibleDesk.name,
-                                            ),
-                                      )
-                                      .toList(),
-                                  onSelected: (responsibleDesk) {
-                                    setState(() {
-                                      selectedResponsibleDesk = responsibleDesk;
-                                    });
+                            child: PRFSearchableDropdown<PRFResponsibleDesk>(
+                              initialSelection: selectedResponsibleDesk,
+                              hintText: l10n.responsibleDesk,
+                              labelText: l10n.responsibleDesk,
+                              dropdownMenuEntries: _hiveService.responsibleDesks
+                                  .map(
+                                    (responsibleDesk) =>
+                                        DropdownMenuEntry<PRFResponsibleDesk>(
+                                          value: responsibleDesk,
+                                          label: responsibleDesk.name,
+                                        ),
+                                  )
+                                  .toList(),
+                              onSelected: (responsibleDesk) {
+                                setState(() {
+                                  selectedResponsibleDesk = responsibleDesk;
+                                });
 
-                                    // Fetch members for the selected
-                                    // responsible desk
-                                    final groups =
-                                        PRFLeadershipGroup.fromResponsibleDesk(
-                                          responsibleDesk!,
-                                        );
-                                    context.read<GetMembersCubit>().getMembers(
-                                      groups: groups,
+                                // Fetch members for the selected responsible
+                                // desk.
+                                final groups =
+                                    PRFLeadershipGroup.fromResponsibleDesk(
+                                      responsibleDesk!,
                                     );
-                                  },
+                                context.read<GetMembersCubit>().getMembers(
+                                  groups: groups,
                                 );
                               },
                             ),

@@ -6,6 +6,7 @@ import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubi
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
 import 'package:leadership/features/home/landing/schools/widgets/school_card.dart';
 import 'package:leadership/models/remote/prf_school.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -205,36 +206,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
             title: 'Schools',
             onBack: _goBackToHome,
             actions: [
-              GestureDetector(
+              PRFHeaderActionButton(
+                label: '+ New',
                 onTap: () => _showSchoolForm(context, null),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.md,
-                    vertical: PRFSpacingTokens.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(
-                      PRFRadiusTokens.md,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.secondary.withValues(
-                          alpha: 0.3,
-                        ),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    '+ New',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

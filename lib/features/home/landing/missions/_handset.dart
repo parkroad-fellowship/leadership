@@ -7,6 +7,7 @@ import 'package:leadership/features/home/landing/missions/actions/create_mission
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/debouncer.dart' as app_utils;
@@ -90,27 +91,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                     ),
                     actions: [
                       if (Misc.userCan(PRFPermissions.createMission))
-                        GestureDetector(
+                        PRFHeaderActionButton(
+                          label: '+ New',
                           onTap: _showCreateMissionForm,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: PRFSpacingTokens.md,
-                              vertical: PRFSpacingTokens.xs,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.secondary,
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.md,
-                              ),
-                            ),
-                            child: Text(
-                              '+ New',
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
                         ),
                       if (Misc.userCan(PRFPermissions.createMission))
                         const SizedBox(width: PRFSpacingTokens.sm),
@@ -209,9 +192,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                             fontWeight: FontWeight.w700,
                           ),
                           padding: EdgeInsets.zero,
-                  labelPadding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.sm,
-                  ),
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: PRFSpacingTokens.sm,
+                          ),
                           tabs: [
                             Tab(text: l10n.upcoming),
                             Tab(text: l10n.past),

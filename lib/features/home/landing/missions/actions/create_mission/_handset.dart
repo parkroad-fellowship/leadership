@@ -678,13 +678,12 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           title: 'School',
           isRequired: true,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: DropdownMenu<String>(
-            width: double.infinity,
+          child: PRFSearchableDropdown<String>(
             initialSelection: _selectedSchoolUlid,
             enabled: !_isLoading,
             enableFilter: true,
             requestFocusOnTap: true,
-            label: const Text('School *'),
+            labelText: 'School *',
             hintText: 'Search school',
             helperText: 'Destination school for this mission',
             errorText: _showValidation ? _schoolError : null,

@@ -7,6 +7,7 @@ import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubi
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
@@ -64,36 +65,10 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         title: 'Contacts',
         onBack: () => context.router.maybePop(),
         actions: [
-          GestureDetector(
+          PRFHeaderActionButton(
+            label: 'Add',
+            icon: Icons.add,
             onTap: () => _showContactForm(null),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: PRFSpacingTokens.md,
-                vertical: PRFSpacingTokens.xs,
-              ),
-              decoration: BoxDecoration(
-                color: PRFColorPalette.lime900.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.add,
-                    size: 16,
-                    color: PRFColorPalette.lime300,
-                  ),
-                  SizedBox(width: PRFSpacingTokens.xs),
-                  Text(
-                    'Add',
-                    style: TextStyle(
-                      color: PRFColorPalette.lime300,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

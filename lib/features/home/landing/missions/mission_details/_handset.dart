@@ -1769,12 +1769,11 @@ class _MissionMemberSubscriptionFormBodyState
                                     child: PRFCircularProgressIndicator(),
                                   )
                                 else
-                                  DropdownMenu<String>(
-                                    width: double.infinity,
+                                  PRFSearchableDropdown<String>(
                                     initialSelection: _selectedMemberUlid,
                                     enableFilter: true,
                                     requestFocusOnTap: true,
-                                    label: const Text('Member *'),
+                                    labelText: 'Member *',
                                     hintText: 'Search member',
                                     helperText: 'Only active members are shown',
                                     errorText: _showValidation
@@ -2074,13 +2073,12 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             margin: const EdgeInsets.only(
                               bottom: PRFSpacingTokens.md,
                             ),
-                            child: DropdownMenu<String>(
-                              width: double.infinity,
+                            child: PRFSearchableDropdown<String>(
                               initialSelection: _selectedClassGroupUlid,
                               enabled: widget.classGroups.isNotEmpty,
                               enableFilter: true,
                               requestFocusOnTap: true,
-                              label: const Text('Class Group *'),
+                              labelText: 'Class Group *',
                               hintText: 'Search class group',
                               helperText: widget.classGroups.isEmpty
                                   ? 'No class groups found for this school type'

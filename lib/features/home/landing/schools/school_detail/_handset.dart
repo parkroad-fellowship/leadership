@@ -9,6 +9,7 @@ import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';
+import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
@@ -95,28 +96,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   title: 'Schools',
                   onBack: () => context.router.maybePop(),
                   actions: [
-                    GestureDetector(
+                    PRFHeaderActionButton(
+                      label: 'Edit',
                       onTap: () => _showEditForm(school),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: PRFSpacingTokens.md,
-                          vertical: PRFSpacingTokens.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: PRFColorPalette.lime900.withValues(
-                            alpha: 0.35,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Edit',
-                          style: TextStyle(
-                            color: PRFColorPalette.lime300,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
                     ),
                     const SizedBox(width: PRFSpacingTokens.sm),
                     Container(

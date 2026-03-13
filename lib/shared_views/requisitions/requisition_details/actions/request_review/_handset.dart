@@ -155,12 +155,11 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                               loading: () => const Center(
                                 child: LinearProgressIndicator(),
                               ),
-                              loaded: (leaders) => LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return DropdownMenu<PRFMember>(
-                                    width: constraints.maxWidth,
+                              loaded: (leaders) =>
+                                  PRFSearchableDropdown<PRFMember>(
                                     initialSelection: selectedApprover,
                                     hintText: l10n.selectApprover,
+                                    labelText: l10n.selectApprover,
                                     dropdownMenuEntries: leaders
                                         .map(
                                           (leader) =>
@@ -173,9 +172,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                                     onSelected: (member) => setState(() {
                                       selectedApprover = member;
                                     }),
-                                  );
-                                },
-                              ),
+                                  ),
                             );
                           },
                         );
