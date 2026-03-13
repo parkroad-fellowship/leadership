@@ -8,7 +8,7 @@ import 'package:leadership/features/home/landing/missions/cubit/mission_type_res
 import 'package:leadership/features/home/landing/missions/cubit/school_term_resource_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_mission_dto.dart';
 import 'package:leadership/models/remote/prf_mission_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';

@@ -6,7 +6,7 @@ import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/missions/actions/create_mission/create_mission.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/debouncer.dart' as app_utils;
@@ -29,6 +29,16 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     milliseconds: 300,
   );
   String _searchQuery = '';
+
+  List<PRFMission> _missionsFromState(ResourceState<PRFMission> state) {
+    return state.maybeWhen(
+      listLoaded: (items, _, _) => items,
+      mutating: (items, _) => items,
+      mutated: (items, _, _) => items,
+      error: (_, items) => items,
+      orElse: () => const <PRFMission>[],
+    );
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -125,6 +135,60 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                       PRFSpacingTokens.lg,
                       0,
                       PRFSpacingTokens.lg,
+                      PRFSpacingTokens.md,
+                    ),
+                    child:
+                        BlocBuilder<
+                          MissionResourceCubit,
+                          ResourceState<PRFMission>
+                        >(
+                          builder: (context, state) {
+                            final items = _missionsFromState(state);
+                            final totalCapacity = items.fold<int>(
+                              0,
+                              (sum, mission) => sum + mission.capacity,
+                            );
+                            final openSlots = items.fold<int>(
+                              0,
+                              (sum, mission) =>
+                                  sum + mission.missionSubscriptionsNeeded,
+                            );
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: _buildHeaderStat(
+                                    label: 'Missions',
+                                    value: '${items.length}',
+                                    color: theme.colorScheme.secondary,
+                                  ),
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.sm),
+                                Expanded(
+                                  child: _buildHeaderStat(
+                                    label: 'Capacity',
+                                    value: '$totalCapacity',
+                                    color: theme.colorScheme.tertiary,
+                                  ),
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.sm),
+                                Expanded(
+                                  child: _buildHeaderStat(
+                                    label: 'Open Slots',
+                                    value: '$openSlots',
+                                    color: theme.colorScheme.errorContainer,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PRFSpacingTokens.lg,
+                      0,
+                      PRFSpacingTokens.lg,
                       PRFSpacingTokens.sm,
                     ),
                     child: Transform.translate(
@@ -175,6 +239,43 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderStat({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.sm,
+        vertical: PRFSpacingTokens.sm,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
       ),
     );
   }

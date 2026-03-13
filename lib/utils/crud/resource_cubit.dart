@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/api/_base_api_service.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:logger/logger.dart';
 
 /// A single cubit that handles list, create, update, and delete
 /// for any resource backed by a [BaseAPIService<T>].
@@ -57,7 +58,8 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       emit(ResourceState.listLoaded(items: items, page: page ?? 1));
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
-    } catch (e) {
+    } catch (e, s) {
+      Logger().e('Error loading resources', stackTrace: s);
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
   }
@@ -89,7 +91,8 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
-    } catch (e) {
+    } catch (e, s) {
+      Logger().e('Error loading more resources', error: e, stackTrace: s);
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
   }
@@ -117,7 +120,8 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
-    } catch (e) {
+    } catch (e, s) {
+      Logger().e('Error creating resource', error: e, stackTrace: s);
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
   }
@@ -153,7 +157,8 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
-    } catch (e) {
+    } catch (e, s) {
+      Logger().e('Error updating resource', error: e, stackTrace: s);
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
   }
@@ -180,7 +185,8 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       );
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
-    } catch (e) {
+    } catch (e, s) {
+      Logger().e('Error deleting resource', error: e, stackTrace: s);
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
   }

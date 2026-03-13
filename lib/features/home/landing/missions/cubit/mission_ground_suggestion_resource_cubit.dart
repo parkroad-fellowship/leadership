@@ -1,4 +1,4 @@
-import 'package:leadership/models/remote/prf_mission_ground_suggestion.dart';
+import 'package:leadership/models/remote/mission/prf_mission_ground_suggestion.dart';
 import 'package:leadership/services/api/mission_ground_suggestion_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 

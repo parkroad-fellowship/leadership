@@ -1,9 +1,9 @@
-import 'package:leadership/models/remote/prf_mission_soul.dart';
-import 'package:leadership/services/api/mission_soul_service.dart';
+import 'package:leadership/models/remote/mission/prf_soul.dart';
+import 'package:leadership/services/api/soul_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
-class MissionSoulResourceCubit extends ResourceCubit<PRFMissionSoul> {
-  MissionSoulResourceCubit({
+class SoulResourceCubit extends ResourceCubit<PRFSoul> {
+  SoulResourceCubit({
     required MissionSoulService missionSoulService,
   }) : super(service: missionSoulService);
 

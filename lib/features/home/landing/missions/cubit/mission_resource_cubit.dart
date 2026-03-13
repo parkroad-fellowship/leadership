@@ -1,9 +1,10 @@
 import 'package:leadership/models/remote/failure.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_mission_dto.dart';
 import 'package:leadership/services/api/mission_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:logger/logger.dart';
 
 class MissionResourceCubit extends ResourceCubit<PRFMission> {
   MissionResourceCubit({required MissionService missionService})
@@ -63,13 +64,14 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
         ulid: missionUlid,
         includes: [
           ...defaultIncludes,
-          'loggedInMemberMissionSubscription',
         ],
       );
       emit(ResourceState<PRFMission>.listLoaded(items: [mission]));
-    } on Failure catch (e) {
+    } on Failure catch (e, s) {
+      Logger().e('Error loading mission', error: e, stackTrace: s);
       emit(ResourceState<PRFMission>.error(message: e.message));
-    } catch (e) {
+    } catch (e, s) {
+      Logger().e('Error loading mission', error: e, stackTrace: s);
       emit(ResourceState<PRFMission>.error(message: e.toString()));
     }
   }

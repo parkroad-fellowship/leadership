@@ -1,11 +1,10 @@
-import 'package:leadership/models/remote/prf_mission_debrief_note.dart';
-import 'package:leadership/services/api/mission_debrief_note_service.dart';
+import 'package:leadership/models/remote/prf_debrief_note.dart';
+import 'package:leadership/services/api/debrief_note_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
-class MissionDebriefNoteResourceCubit
-    extends ResourceCubit<PRFMissionDebriefNote> {
-  MissionDebriefNoteResourceCubit({
-    required MissionDebriefNoteService missionDebriefNoteService,
+class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
+  DebriefNoteResourceCubit({
+    required DebriefNoteService missionDebriefNoteService,
   }) : super(service: missionDebriefNoteService);
 
   Future<void> loadForMission({required String missionUlid}) {

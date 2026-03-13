@@ -1,4 +1,4 @@
-import 'package:leadership/models/remote/prf_mission_subscription.dart';
+import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
 import 'package:leadership/services/api/mission_subscription_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 

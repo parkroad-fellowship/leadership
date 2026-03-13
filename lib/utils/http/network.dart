@@ -104,7 +104,8 @@ class NetworkUtil {
         PrettyDioLogger(
           requestHeader: true,
           requestBody: true,
-          responseHeader: true,
+          responseHeader: false,
+          responseBody: false
         ),
       );
     }

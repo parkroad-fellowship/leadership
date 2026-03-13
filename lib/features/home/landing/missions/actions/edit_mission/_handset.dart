@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 

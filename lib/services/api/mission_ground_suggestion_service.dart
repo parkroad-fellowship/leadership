@@ -1,4 +1,4 @@
-import 'package:leadership/models/remote/prf_mission_ground_suggestion.dart';
+import 'package:leadership/models/remote/mission/prf_mission_ground_suggestion.dart';
 import 'package:leadership/services/api/_base_api_service.dart';
 
 class MissionGroundSuggestionService

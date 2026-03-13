@@ -1,26 +1,19 @@
-class PRFSchoolTerm {
-  const PRFSchoolTerm({
-    required this.ulid,
-    required this.name,
-    this.isActive,
-    this.createdAt,
-    this.updatedAt,
-  });
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  factory PRFSchoolTerm.fromJson(Map<String, dynamic> json) {
-    return PRFSchoolTerm(
-      ulid: (json['ulid'] ?? '').toString(),
-      name: (json['name'] ?? json['title'] ?? json['term'] ?? 'Unknown term')
-          .toString(),
-      isActive: (json['is_active'] as num?)?.toInt(),
-      createdAt: DateTime.tryParse((json['created_at'] ?? '').toString()),
-      updatedAt: DateTime.tryParse((json['updated_at'] ?? '').toString()),
-    );
-  }
+part 'prf_school_term.freezed.dart';
+part 'prf_school_term.g.dart';
 
-  final String ulid;
-  final String name;
-  final int? isActive;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+@freezed
+abstract class PRFSchoolTerm with _$PRFSchoolTerm {
+  factory PRFSchoolTerm(
+    String ulid,
+    String name,
+    int year,
+    @JsonKey(name: 'is_active') int isActive,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime updatedAt,
+  ) = _PRFSchoolTerm;
+
+  factory PRFSchoolTerm.fromJson(Map<String, dynamic> json) =>
+      _$PRFSchoolTermFromJson(json);
 }

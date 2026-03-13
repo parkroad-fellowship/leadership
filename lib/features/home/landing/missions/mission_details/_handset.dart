@@ -3,20 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
-import 'package:leadership/features/home/landing/missions/actions/edit_mission/edit_mission.dart';
-import 'package:leadership/features/home/landing/missions/cubit/mission_debrief_note_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/mission_soul_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_session_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_subscription_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/soul_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/mission_details/widgets/feedback_data_section.dart';
+import 'package:leadership/features/home/landing/missions/mission_details/widgets/finance_section.dart';
 import 'package:leadership/features/home/landing/missions/mission_details/widgets/mission_ground/mission_ground.dart';
+import 'package:leadership/features/home/landing/missions/mission_details/widgets/overview_section.dart';
+import 'package:leadership/features/home/landing/missions/mission_details/widgets/people_data_section.dart';
+import 'package:leadership/features/home/landing/missions/mission_details/widgets/record_sections.dart';
+import 'package:leadership/features/home/landing/missions/mission_details/widgets/sheets.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
-import 'package:leadership/models/remote/prf_mission_debrief_note.dart';
-import 'package:leadership/models/remote/prf_mission_question.dart';
-import 'package:leadership/models/remote/prf_mission_soul.dart';
-import 'package:leadership/models/remote/prf_mission_subscription.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission_question.dart';
+import 'package:leadership/models/remote/mission/prf_mission_session.dart';
+import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
+import 'package:leadership/models/remote/mission/prf_soul.dart';
+import 'package:leadership/models/remote/prf_debrief_note.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
@@ -38,7 +44,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     with SingleTickerProviderStateMixin {
   String get missionUlid => widget.missionUlid;
 
-  int tabCount = 8;
+  int tabCount = 4;
 
   late TabController _tabController;
   int _currentTab = 0;
@@ -65,7 +71,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return switch (state) {
       ResourceListLoaded<PRFMission>(:final items) when items.isNotEmpty =>
         items.first,
+      ResourceMutating<PRFMission>(:final items) when items.isNotEmpty =>
+        items.first,
       ResourceMutated<PRFMission>(:final items) when items.isNotEmpty =>
+        items.first,
+      ResourceError<PRFMission>(:final items) when items.isNotEmpty =>
         items.first,
       _ => null,
     };
@@ -79,18 +89,22 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     super.dispose();
   }
 
+
   Future<void> _loadMissionSubdomainData() {
     return Future.wait([
       context.read<MissionQuestionResourceCubit>().loadForMission(
         missionUlid: missionUlid,
       ),
-      context.read<MissionDebriefNoteResourceCubit>().loadForMission(
+      context.read<DebriefNoteResourceCubit>().loadForMission(
         missionUlid: missionUlid,
       ),
-      context.read<MissionSoulResourceCubit>().loadForMission(
+      context.read<SoulResourceCubit>().loadForMission(
         missionUlid: missionUlid,
       ),
       context.read<MissionSubscriptionResourceCubit>().loadForMission(
+        missionUlid: missionUlid,
+      ),
+      context.read<MissionSessionResourceCubit>().loadForMission( // Works
         missionUlid: missionUlid,
       ),
     ]);
@@ -125,7 +139,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: _MissionSimpleTextFormSheet(
+      child: MissionSimpleTextFormSheet(
         label: label,
         hintText: hintText,
         maxLines: maxLines,
@@ -145,7 +159,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<({String name, String? note})>(
       context,
       title: title,
-      child: _MissionSoulFormSheet(
+      child: MissionSoulFormSheet(
         initialName: initialName,
         initialNote: initialNote,
         submitLabel: submitLabel,
@@ -159,7 +173,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<String>(
       context,
       title: 'Subscribe Member',
-      child: const _MissionMemberSubscriptionFormSheet(),
+      child: const MissionMemberSubscriptionFormSheet(),
     );
   }
 
@@ -170,7 +184,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final shouldDelete = await PRFBottomSheet.show<bool>(
       context,
       title: title,
-      child: _MissionConfirmationSheet(
+      child: MissionConfirmationSheet(
         message: message,
         confirmLabel: 'Delete',
         destructive: true,
@@ -277,7 +291,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
     if (!mounted || noteText == null || noteText.isEmpty) return;
 
-    final cubit = context.read<MissionDebriefNoteResourceCubit>();
+    final cubit = context.read<DebriefNoteResourceCubit>();
     await cubit.createNote(missionUlid: missionUlid, note: noteText);
     if (!mounted) return;
 
@@ -289,7 +303,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     PRFSnackbar.success(context, 'Debrief note added');
   }
 
-  Future<void> _deleteDebriefNote(PRFMissionDebriefNote note) async {
+  Future<void> _deleteDebriefNote(PRFDebriefNote note) async {
     if (note.ulid.isEmpty) {
       PRFSnackbar.error(context, 'Debrief note cannot be deleted yet');
       return;
@@ -300,7 +314,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
     if (!shouldDelete || !mounted) return;
 
-    final cubit = context.read<MissionDebriefNoteResourceCubit>();
+    final cubit = context.read<DebriefNoteResourceCubit>();
     await cubit.deleteNote(noteUlid: note.ulid);
     if (!mounted) return;
 
@@ -312,7 +326,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     PRFSnackbar.success(context, 'Debrief note deleted');
   }
 
-  Future<void> _promptEditDebriefNote(PRFMissionDebriefNote note) async {
+  Future<void> _promptEditDebriefNote(PRFDebriefNote note) async {
     if (note.ulid.isEmpty) {
       PRFSnackbar.error(context, 'Debrief note cannot be edited yet');
       return;
@@ -328,7 +342,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
     if (!mounted || updatedNote == null || updatedNote.isEmpty) return;
 
-    final cubit = context.read<MissionDebriefNoteResourceCubit>();
+    final cubit = context.read<DebriefNoteResourceCubit>();
     await cubit.updateNote(noteUlid: note.ulid, note: updatedNote);
     if (!mounted) return;
 
@@ -347,7 +361,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
     if (!mounted || soulData == null || soulData.name.trim().isEmpty) return;
 
-    final cubit = context.read<MissionSoulResourceCubit>();
+    final cubit = context.read<SoulResourceCubit>();
     await cubit.createSoul(
       missionUlid: missionUlid,
       name: soulData.name.trim(),
@@ -363,7 +377,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     PRFSnackbar.success(context, 'Soul recorded');
   }
 
-  Future<void> _deleteSoul(PRFMissionSoul soul) async {
+  Future<void> _deleteSoul(PRFSoul soul) async {
     if (soul.ulid.isEmpty) {
       PRFSnackbar.error(context, 'Soul cannot be deleted yet');
       return;
@@ -372,7 +386,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final shouldDelete = await _showDeleteConfirmation(title: 'Delete Soul');
     if (!shouldDelete || !mounted) return;
 
-    final cubit = context.read<MissionSoulResourceCubit>();
+    final cubit = context.read<SoulResourceCubit>();
     await cubit.deleteSoul(soulUlid: soul.ulid);
     if (!mounted) return;
 
@@ -384,7 +398,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     PRFSnackbar.success(context, 'Soul deleted');
   }
 
-  Future<void> _promptEditSoul(PRFMissionSoul soul) async {
+  Future<void> _promptEditSoul(PRFSoul soul) async {
     if (soul.ulid.isEmpty) {
       PRFSnackbar.error(context, 'Soul cannot be edited yet');
       return;
@@ -393,14 +407,14 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final updatedSoul = await _showSoulFormSheet(
       title: 'Edit Soul',
       submitLabel: 'Update',
-      initialName: soul.name,
-      initialNote: soul.note,
+      initialName: soul.fullName,
+      initialNote: soul.notes,
     );
     if (!mounted || updatedSoul == null || updatedSoul.name.trim().isEmpty) {
       return;
     }
 
-    final cubit = context.read<MissionSoulResourceCubit>();
+    final cubit = context.read<SoulResourceCubit>();
     await cubit.updateSoul(
       soulUlid: soul.ulid,
       name: updatedSoul.name.trim(),
@@ -471,6 +485,14 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     if (!mounted) return;
 
     PRFSnackbar.success(context, 'Subscription removed');
+  }
+
+  Future<void> _viewSubscriberDetails(PRFMissionSubscription subscription) {
+    return PRFBottomSheet.show<void>(
+      context,
+      title: 'Subscriber Details',
+      child: MissionSubscriberDetailsSheet(subscription: subscription),
+    );
   }
 
   @override
@@ -549,15 +571,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                           labelStyle: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
-                          tabs: [
-                            Tab(text: l10n.missionGround),
-                            const Tab(text: 'People'),
-                            const Tab(text: 'Questions'),
-                            const Tab(text: 'Debrief'),
-                            const Tab(text: 'Souls'),
-                            const Tab(text: 'Operations'),
-                            Tab(text: l10n.requisitions),
-                            Tab(text: l10n.expenses),
+                          tabs: const [
+                            Tab(text: 'Overview'),
+                            Tab(text: 'People Data'),
+                            Tab(text: 'Feedback Data'),
+                            Tab(text: 'Finance'),
                           ],
                         ),
                       ),
@@ -572,13 +590,14 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                     builder: (context, state) {
                       final mission = _currentMissionFromState(state);
 
-                      if (state is ResourceListLoading<PRFMission>) {
+                      if (state is ResourceListLoading<PRFMission> &&
+                          mission == null) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      if (state case ResourceError<PRFMission>(
-                        :final message,
-                      )) {
+                      if (mission == null &&
+                          state is ResourceError<PRFMission>) {
+                        final message = state.message;
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -607,31 +626,25 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                       return TabBarView(
                         controller: _tabController,
                         children: [
-                          MissionGroundView(mission: mission),
-                          _buildMissionPeopleTab(mission),
-                          _buildMissionQuestionsTab(),
-                          _buildMissionDebriefTab(),
-                          _buildMissionSoulsTab(),
-                          _buildMissionOperationsTab(mission),
-                          if (mission.accountingEvent != null)
-                            RequisitionsView(
-                              accountingEvent: mission.accountingEvent!,
-                            )
-                          else
-                            PRFEmptyView(
-                              label: l10n.requisitionUnavailable,
-                              description: l10n.requisitionUnavailableDesc,
-                            ),
-                          if (mission.accountingEvent != null)
-                            ExpensesView(
-                              accountingEventUlid:
-                                  mission.accountingEvent!.ulid,
-                            )
-                          else
-                            PRFEmptyView(
-                              label: l10n.expensesUnavailable,
-                              description: l10n.expensesUnavailableDesc,
-                            ),
+                          OverviewMissionDetailsSection(
+                            missionGround: MissionGroundView(mission: mission),
+                            operations: _buildMissionOperationsTab(mission),
+                          ),
+                          PeopleDataMissionDetailsSection(
+                            subscribers: _buildMissionSubscribersTab(mission),
+                            sessions: _buildMissionSessionsTab(),
+                          ),
+                          FeedbackDataMissionDetailsSection(
+                            debriefNotes: _buildMissionDebriefTab(),
+                            souls: _buildSoulsTab(),
+                            questions: _buildMissionQuestionsTab(),
+                          ),
+                          FinanceMissionDetailsSection(
+                            requisitionsLabel: l10n.requisitions,
+                            expensesLabel: l10n.expenses,
+                            requisitions: _buildMissionRequisitionsTab(mission),
+                            expenses: _buildMissionExpensesTab(mission),
+                          ),
                         ],
                       );
                     },
@@ -649,13 +662,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
               }
 
               return switch (_currentTab) {
-                0 when _canShowMissionActions() =>
-                  FloatingActionButton.extended(
-                    icon: const Icon(Icons.tune_rounded),
-                    onPressed: () => _showMissionActions(mission),
-                    label: const Text('Mission Actions'),
-                  ),
-                6 when Misc.userCan(PRFPermissions.createRequisition) =>
+                3 when Misc.userCan(PRFPermissions.createRequisition) =>
                   FloatingActionButton.extended(
                     backgroundColor: PRFColorPalette.lime300,
                     foregroundColor: PRFColorPalette.navy900,
@@ -682,6 +689,40 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
+  Widget _buildMissionRequisitionsTab(PRFMission mission) {
+    final l10n = context.l10n;
+
+    if (mission.accountingEvent == null) {
+      return PRFEmptyView(
+        label: l10n.requisitionUnavailable,
+        description: l10n.requisitionUnavailableDesc,
+      );
+    }
+
+    return RequisitionsView(accountingEvent: mission.accountingEvent!);
+  }
+
+  Widget _buildMissionExpensesTab(PRFMission mission) {
+    final l10n = context.l10n;
+
+    if (mission.accountingEvent == null) {
+      return PRFEmptyView(
+        label: l10n.expensesUnavailable,
+        description: l10n.expensesUnavailableDesc,
+      );
+    }
+
+    return ExpensesView(accountingEventUlid: mission.accountingEvent!.ulid);
+  }
+
+  Widget _buildMissionSubscribersTab(PRFMission mission) {
+    return MissionSubscribersTab(
+      mission: mission,
+      onRefresh: _loadMissionSubdomainData,
+      subscriptionsSection: _buildMissionSubscriptionsSection(mission),
+    );
+  }
+
   Widget _buildMissionQuestionsTab() {
     return BlocBuilder<
       MissionQuestionResourceCubit,
@@ -691,7 +732,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         final questions = _itemsFromResourceState(state);
         final error = _resourceErrorMessage(state);
 
-        return _buildMissionResourceTab(
+        return MissionResourceTabView(
           isLoading: state is ResourceListLoading<PRFMissionQuestion>,
           error: error,
           isEmpty: questions.isEmpty,
@@ -707,7 +748,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
               'Questions captured on mission ground will appear here.',
           items: questions
               .map(
-                (question) => _buildMissionResourceCard(
+                (question) => MissionResourceCard(
                   title: question.question.isEmpty
                       ? 'Untitled question'
                       : question.question,
@@ -725,20 +766,17 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Widget _buildMissionDebriefTab() {
-    return BlocBuilder<
-      MissionDebriefNoteResourceCubit,
-      ResourceState<PRFMissionDebriefNote>
-    >(
+    return BlocBuilder<DebriefNoteResourceCubit, ResourceState<PRFDebriefNote>>(
       builder: (context, state) {
         final notes = _itemsFromResourceState(state);
         final error = _resourceErrorMessage(state);
 
-        return _buildMissionResourceTab(
-          isLoading: state is ResourceListLoading<PRFMissionDebriefNote>,
+        return MissionResourceTabView(
+          isLoading: state is ResourceListLoading<PRFDebriefNote>,
           error: error,
           isEmpty: notes.isEmpty,
           onRefresh: () => context
-              .read<MissionDebriefNoteResourceCubit>()
+              .read<DebriefNoteResourceCubit>()
               .loadForMission(missionUlid: missionUlid),
           onAdd: _promptAddDebriefNote,
           addButtonLabel: 'Add Debrief Note',
@@ -748,7 +786,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
               'Capture reflection notes from the mission team here.',
           items: notes
               .map(
-                (note) => _buildMissionResourceCard(
+                (note) => MissionResourceCard(
                   title: note.note.isEmpty ? 'Untitled note' : note.note,
                   subtitle: 'Captured ${_formatDate(note.createdAt)}',
                   editTooltip: 'Edit debrief note',
@@ -763,20 +801,19 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
-  Widget _buildMissionSoulsTab() {
-    return BlocBuilder<MissionSoulResourceCubit, ResourceState<PRFMissionSoul>>(
+  Widget _buildSoulsTab() {
+    return BlocBuilder<SoulResourceCubit, ResourceState<PRFSoul>>(
       builder: (context, state) {
         final souls = _itemsFromResourceState(state);
         final error = _resourceErrorMessage(state);
 
-        return _buildMissionResourceTab(
-          isLoading: state is ResourceListLoading<PRFMissionSoul>,
+        return MissionResourceTabView(
+          isLoading: state is ResourceListLoading<PRFSoul>,
           error: error,
           isEmpty: souls.isEmpty,
-          onRefresh: () =>
-              context.read<MissionSoulResourceCubit>().loadForMission(
-                missionUlid: missionUlid,
-              ),
+          onRefresh: () => context.read<SoulResourceCubit>().loadForMission(
+            missionUlid: missionUlid,
+          ),
           onAdd: _promptAddSoul,
           addButtonLabel: 'Record Soul',
           addButtonIcon: Icons.favorite_outline,
@@ -784,10 +821,10 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
           emptyDescription: 'Souls recorded during ministry will appear here.',
           items: souls
               .map(
-                (soul) => _buildMissionResourceCard(
-                  title: soul.name,
-                  subtitle: soul.note?.trim().isNotEmpty ?? false
-                      ? soul.note
+                (soul) => MissionResourceCard(
+                  title: soul.fullName,
+                  subtitle: soul.notes?.trim().isNotEmpty ?? false
+                      ? soul.notes
                       : 'Captured ${_formatDate(soul.createdAt)}',
                   editTooltip: 'Edit soul',
                   onEdit: () => _promptEditSoul(soul),
@@ -801,373 +838,6 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
-  Widget _buildMissionResourceTab({
-    required bool isLoading,
-    required String? error,
-    required bool isEmpty,
-    required Future<void> Function() onRefresh,
-    required VoidCallback onAdd,
-    required String addButtonLabel,
-    required IconData addButtonIcon,
-    required String emptyLabel,
-    required String emptyDescription,
-    required List<Widget> items,
-  }) {
-    final theme = Theme.of(context);
-
-    if (isLoading && isEmpty) {
-      return const Center(child: PRFCircularProgressIndicator());
-    }
-
-    if (error != null && isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: PRFSpacingTokens.lg),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: PRFSpacingTokens.xl,
-              ),
-              child: Text(
-                error,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ),
-            const SizedBox(height: PRFSpacingTokens.lg),
-            FilledButton.icon(
-              onPressed: onRefresh,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
-          PRFSpacingTokens.lg,
-          PRFSpacingTokens.lg,
-          PRFSpacingTokens.lg,
-          PRFSpacingTokens.xxxl,
-        ),
-        children: [
-          _buildMissionSectionCard(
-            title: 'Mission Records',
-            subtitle: emptyDescription,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FilledButton.icon(
-                  onPressed: onAdd,
-                  icon: Icon(addButtonIcon),
-                  label: Text(addButtonLabel),
-                ),
-                const SizedBox(height: PRFSpacingTokens.md),
-                if (error != null)
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-                    padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                    ),
-                    child: Text(
-                      error,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ),
-                if (isEmpty)
-                  PRFEmptyView(label: emptyLabel, description: emptyDescription)
-                else
-                  ...items,
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMissionSectionCard({
-    required String title,
-    required String subtitle,
-    required Widget child,
-  }) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.4),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.xs),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMissionResourceCard({
-    required String title,
-    required String? subtitle,
-    required String editTooltip,
-    required VoidCallback onEdit,
-    required String deleteTooltip,
-    required VoidCallback onDelete,
-  }) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.md,
-          vertical: PRFSpacingTokens.md,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.38),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  if (subtitle != null && subtitle.isNotEmpty)
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.sm),
-            Tooltip(
-              message: editTooltip,
-              child: GestureDetector(
-                onTap: onEdit,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.sm,
-                    vertical: PRFSpacingTokens.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.11),
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-                  ),
-                  child: Text(
-                    'Edit',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.xs),
-            Tooltip(
-              message: deleteTooltip,
-              child: IconButton(
-                onPressed: onDelete,
-                icon: Icon(
-                  Icons.delete_outline,
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMissionPeopleTab(PRFMission mission) {
-    final theme = Theme.of(context);
-    final capacity = mission.capacity;
-    final registrationsOpen = mission.missionSubscriptionsNeeded;
-    final filled = (capacity - registrationsOpen).clamp(0, capacity);
-    final progress = capacity == 0 ? 0.0 : filled / capacity;
-
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        PRFSpacingTokens.lg,
-        PRFSpacingTokens.lg,
-        PRFSpacingTokens.lg,
-        PRFSpacingTokens.xxxl,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Subscription Capacity',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _peopleMetric(
-                        label: 'Capacity',
-                        value: '$capacity',
-                        icon: Icons.groups_rounded,
-                      ),
-                    ),
-                    const SizedBox(width: PRFSpacingTokens.md),
-                    Expanded(
-                      child: _peopleMetric(
-                        label: 'Filled',
-                        value: '$filled',
-                        icon: Icons.person_add_alt_rounded,
-                      ),
-                    ),
-                    const SizedBox(width: PRFSpacingTokens.md),
-                    Expanded(
-                      child: _peopleMetric(
-                        label: 'Open',
-                        value: '$registrationsOpen',
-                        icon: Icons.pending_actions_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  child: LinearProgressIndicator(
-                    minHeight: 10,
-                    value: progress,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: PRFSpacingTokens.xl),
-                _buildMissionSubscriptionsSection(mission),
-                const SizedBox(height: PRFSpacingTokens.sm),
-                Text(
-                  '${(progress * 100).toStringAsFixed(0)}% filled',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.xl),
-          Text(
-            'People Actions',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.md),
-          _operationTile(
-            icon: Icons.forum_outlined,
-            title: 'Notify WhatsApp Group',
-            subtitle: 'Send mission update to missionaries',
-            onTap: () => _runMissionAction(
-              successMessage: 'WhatsApp group notified successfully',
-              action: () => context
-                  .read<MissionResourceCubit>()
-                  .notifyWhatsappGroup(missionUlid: mission.ulid),
-            ),
-          ),
-          _operationTile(
-            icon: Icons.notifications_active_outlined,
-            title: 'Notify School',
-            subtitle: 'Send an update to school contacts',
-            onTap: () => _runMissionAction(
-              successMessage: 'School notified successfully',
-              action: () => context.read<MissionResourceCubit>().notifySchool(
-                missionUlid: mission.ulid,
-              ),
-            ),
-          ),
-          _operationTile(
-            icon: Icons.rate_review_outlined,
-            title: 'Request School Feedback',
-            subtitle: 'Ask school for mission feedback',
-            onTap: () => _runMissionAction(
-              successMessage: 'Feedback requested successfully',
-              action: () => context
-                  .read<MissionResourceCubit>()
-                  .requestSchoolFeedback(missionUlid: mission.ulid),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMissionSubscriptionsSection(PRFMission mission) {
     return BlocBuilder<
       MissionSubscriptionResourceCubit,
@@ -1176,150 +846,18 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       builder: (context, state) {
         final subscriptions = _itemsFromResourceState(state);
         final error = _resourceErrorMessage(state);
-        final theme = Theme.of(context);
-
-        return _buildMissionSectionCard(
-          title: 'Mission Subscriptions',
-          subtitle: 'Manage members subscribed to this mission.',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(child: Text('${subscriptions.length} subscribed')),
-                  FilledButton.icon(
-                    onPressed: () => _promptSubscribeMember(mission),
-                    icon: const Icon(Icons.person_add_alt_rounded),
-                    label: const Text('Subscribe Member'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              if (error != null)
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-                  padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.errorContainer,
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                  ),
-                  child: Text(
-                    error,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onErrorContainer,
-                    ),
-                  ),
-                ),
-              if (subscriptions.isEmpty)
-                const PRFEmptyView(
-                  label: 'No subscriptions yet',
-                  description:
-                      'Subscribe members to this mission from the people tab.',
-                )
-              else
-                ...subscriptions.map(
-                  (subscription) => _buildMissionSubscriptionCard(
-                    mission: mission,
-                    subscription: subscription,
-                  ),
-                ),
-            ],
+        return MissionSubscriptionsSection(
+          subscriptions: subscriptions,
+          error: error,
+          onSubscribe: () => _promptSubscribeMember(mission),
+          onViewSubscriber: _viewSubscriberDetails,
+          onUnsubscribe: (subscription) => _unsubscribeMember(
+            mission: mission,
+            subscription: subscription,
           ),
+          formatDate: _formatDate,
         );
       },
-    );
-  }
-
-  Widget _buildMissionSubscriptionCard({
-    required PRFMission mission,
-    required PRFMissionSubscription subscription,
-  }) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.md,
-          vertical: PRFSpacingTokens.md,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.38),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    subscription.displayName,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    'Subscribed ${_formatDate(subscription.createdAt)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              tooltip: 'Remove subscription',
-              onPressed: () => _unsubscribeMember(
-                mission: mission,
-                subscription: subscription,
-              ),
-              icon: Icon(
-                Icons.person_remove_alt_1,
-                color: theme.colorScheme.error,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _peopleMetric({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(height: PRFSpacingTokens.xs),
-          Text(
-            value,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1463,206 +1001,6 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
-  bool _canShowMissionActions() {
-    return true;
-  }
-
-  void _showMissionActions(PRFMission mission) {
-    final isMutating = _isMissionMutating;
-
-    PRFBottomSheet.show<void>(
-      context,
-      title: 'Mission Actions',
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: PRFSpacingTokens.sm),
-            if (_canApproveMission(mission))
-              _buildMissionActionTile(
-                icon: Icons.verified_outlined,
-                title: 'Approve Mission',
-                subtitle: 'Mark mission as approved',
-                onTap: () => _runMissionAction(
-                  successMessage: 'Mission approved successfully',
-                  action: () => context
-                      .read<MissionResourceCubit>()
-                      .approveMission(missionUlid: mission.ulid),
-                ),
-                enabled: !isMutating,
-              ),
-            if (_canRejectMission(mission))
-              _buildMissionActionTile(
-                icon: Icons.close_rounded,
-                title: 'Reject Mission',
-                subtitle: 'Reject this mission request',
-                onTap: () => _rejectMission(mission),
-                enabled: !isMutating,
-              ),
-            if (_canCancelMission(mission))
-              _buildMissionActionTile(
-                icon: Icons.event_busy_outlined,
-                title: 'Cancel Mission',
-                subtitle: 'Cancel this mission',
-                onTap: () => _cancelMission(mission),
-                enabled: !isMutating,
-              ),
-            if (_canCompleteMission(mission))
-              _buildMissionActionTile(
-                icon: Icons.task_alt_outlined,
-                title: 'Complete Mission',
-                subtitle: 'Mark mission as serviced',
-                onTap: () => _confirmCompleteMission(mission),
-                enabled: !isMutating,
-              ),
-            if (_canNotifySchool(mission))
-              _buildMissionActionTile(
-                icon: Icons.notifications_active_outlined,
-                title: 'Notify School',
-                subtitle: 'Send mission notification to school',
-                onTap: () => _runMissionAction(
-                  successMessage: 'School notified successfully',
-                  action: () => context
-                      .read<MissionResourceCubit>()
-                      .notifySchool(missionUlid: mission.ulid),
-                ),
-                enabled: !isMutating,
-              ),
-            if (_canRequestFeedback(mission))
-              _buildMissionActionTile(
-                icon: Icons.rate_review_outlined,
-                title: 'Request School Feedback',
-                subtitle: 'Ask school for mission feedback',
-                onTap: () => _runMissionAction(
-                  successMessage: 'Feedback requested successfully',
-                  action: () => context
-                      .read<MissionResourceCubit>()
-                      .requestSchoolFeedback(missionUlid: mission.ulid),
-                ),
-                enabled: !isMutating,
-              ),
-            if (_canNotifyWhatsapp(mission))
-              _buildMissionActionTile(
-                icon: Icons.forum_outlined,
-                title: 'Notify WhatsApp Group',
-                subtitle: 'Send mission update to WhatsApp group',
-                onTap: () => _runMissionAction(
-                  successMessage: 'WhatsApp group notified successfully',
-                  action: () => context
-                      .read<MissionResourceCubit>()
-                      .notifyWhatsappGroup(missionUlid: mission.ulid),
-                ),
-                enabled: !isMutating,
-              ),
-            if (_canGenerateSummary(mission))
-              _buildMissionActionTile(
-                icon: Icons.summarize_outlined,
-                title: 'Generate Summary',
-                subtitle: 'Generate mission summary',
-                onTap: () => _runMissionAction(
-                  successMessage: 'Mission summary generated successfully',
-                  action: () => context
-                      .read<MissionResourceCubit>()
-                      .generateSummary(missionUlid: mission.ulid),
-                ),
-                enabled: !isMutating,
-              ),
-            if (_canUploadMedia(mission))
-              _buildMissionActionTile(
-                icon: Icons.cloud_upload_outlined,
-                title: 'Upload Media To Drive',
-                subtitle: 'Upload mission media to Google Drive',
-                onTap: () => _runMissionAction(
-                  successMessage: 'Mission media upload started',
-                  action: () => context
-                      .read<MissionResourceCubit>()
-                      .uploadMediaToDrive(missionUlid: mission.ulid),
-                ),
-                enabled: !isMutating,
-              ),
-            if (_canMakeZeroRequisition(mission))
-              _buildMissionActionTile(
-                icon: Icons.receipt_long_outlined,
-                title: 'Make Zero Requisition',
-                subtitle: 'Create a zero-value requisition for this mission',
-                onTap: () => _confirmMakeZeroRequisition(mission),
-                enabled: !isMutating,
-              ),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: const Text('Edit Mission'),
-              subtitle: const Text('Update mission details'),
-              onTap: () {
-                Navigator.of(context).pop();
-                PRFBottomSheet.show<void>(
-                  context,
-                  title: 'Edit Mission',
-                  child: EditMissionView(mission: mission),
-                ).then((_) {
-                  if (!mounted) return;
-                  context.read<MissionResourceCubit>().loadMission(
-                    missionUlid: mission.ulid,
-                  );
-                });
-              },
-              enabled: !isMutating,
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              title: Text(
-                'Delete Mission',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              subtitle: const Text('Remove this mission permanently'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _confirmDeleteMission(mission);
-              },
-              enabled: !isMutating,
-            ),
-            if (isMutating)
-              Padding(
-                padding: const EdgeInsets.only(top: PRFSpacingTokens.sm),
-                child: Text(
-                  'Please wait, mission action in progress...',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            const SizedBox(height: PRFSpacingTokens.sm),
-          ],
-        ),
-      ),
-    );
-  }
-
-  ListTile _buildMissionActionTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    bool enabled = true,
-  }) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      enabled: enabled,
-      onTap: enabled
-          ? () {
-              Navigator.of(context).pop();
-              onTap();
-            }
-          : null,
-    );
-  }
-
   Future<void> _runMissionAction({
     required Future<void> Function() action,
     required String successMessage,
@@ -1737,7 +1075,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return PRFBottomSheet.show<bool>(
       context,
       title: title,
-      child: _MissionConfirmationSheet(
+      child: MissionConfirmationSheet(
         message: content,
         confirmLabel: confirmLabel,
       ),
@@ -1750,40 +1088,40 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _rejectMission(PRFMission mission) async {
-    final reasonInput = await _promptReason(
+    final reason = await _promptReason(
       title: 'Reject Mission',
       hintText: 'Optional reason',
       confirmLabel: 'Reject',
     );
-    if (!mounted || reasonInput == null) return;
+    if (!mounted || reason == null) return;
 
     await _runMissionAction(
       successMessage: 'Mission rejected successfully',
       action: () => context.read<MissionResourceCubit>().rejectMission(
         missionUlid: mission.ulid,
-        reason: reasonInput.reason,
+        reason: reason,
       ),
     );
   }
 
   Future<void> _cancelMission(PRFMission mission) async {
-    final reasonInput = await _promptReason(
+    final reason = await _promptReason(
       title: 'Cancel Mission',
       hintText: 'Optional reason',
       confirmLabel: 'Cancel Mission',
     );
-    if (!mounted || reasonInput == null) return;
+    if (!mounted || reason == null) return;
 
     await _runMissionAction(
       successMessage: 'Mission cancelled successfully',
       action: () => context.read<MissionResourceCubit>().cancelMission(
         missionUlid: mission.ulid,
-        reason: reasonInput.reason,
+        reason: reason,
       ),
     );
   }
 
-  Future<_MissionReasonInput?> _promptReason({
+  Future<String?> _promptReason({
     required String title,
     required String hintText,
     required String confirmLabel,
@@ -1791,7 +1129,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final result = await PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: _MissionSimpleTextFormSheet(
+      child: MissionSimpleTextFormSheet(
         label: 'Reason',
         hintText: hintText,
         maxLines: 3,
@@ -1804,448 +1142,148 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       return null;
     }
 
-    return _MissionReasonInput(reason: result.trim().isEmpty ? null : result);
+    final trimmed = result.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 
-  bool _canApproveMission(PRFMission mission) {
-    return true;
+  String _formatDateTime(DateTime value) {
+    final local = value.toLocal();
+    final month = local.month.toString().padLeft(2, '0');
+    final day = local.day.toString().padLeft(2, '0');
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${local.year}-$month-$day $hour:$minute';
   }
 
-  bool _canRejectMission(PRFMission mission) {
-    return true;
-  }
-
-  bool _canCancelMission(PRFMission mission) {
-    return true;
-  }
-
-  bool _canCompleteMission(PRFMission mission) {
-    return true;
-  }
-
-  bool _canNotifySchool(PRFMission mission) {
-    return true;
-  }
-
-  bool _canRequestFeedback(PRFMission mission) {
-    return true;
-  }
-
-  bool _canNotifyWhatsapp(PRFMission mission) {
-    return true;
-  }
-
-  bool _canGenerateSummary(PRFMission mission) {
-    return true;
-  }
-
-  bool _canUploadMedia(PRFMission mission) {
-    return true;
-  }
-
-  bool _canMakeZeroRequisition(PRFMission mission) {
-    return true;
-  }
-
-  Future<void> _confirmDeleteMission(PRFMission mission) async {
-    final shouldDelete = await _showDeleteConfirmation(
-      title: 'Delete Mission',
-      message:
-          'Are you sure you want to delete this mission? '
-          'This cannot be undone.',
-    );
-
-    if (!shouldDelete || !mounted) return;
-
-    await context.read<MissionResourceCubit>().deleteMission(
-      missionUlid: mission.ulid,
-    );
-
-    if (!mounted) return;
-    PRFSnackbar.success(context, 'Mission deleted successfully');
-    context.router.popUntilRouteWithPath(PRFLeadershipRouter.missionsRoute);
-  }
-}
-
-class _MissionReasonInput {
-  const _MissionReasonInput({this.reason});
-
-  final String? reason;
-}
-
-class _MissionConfirmationSheet extends StatelessWidget {
-  const _MissionConfirmationSheet({
-    required this.message,
-    required this.confirmLabel,
-    this.destructive = false,
-  });
-
-  final String message;
-  final String confirmLabel;
-  final bool destructive;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(message),
-        const SizedBox(height: PRFSpacingTokens.lg),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.md),
-            Expanded(
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: destructive
-                    ? FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
-                      )
-                    : null,
-                child: Text(confirmLabel),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _MissionMemberSubscriptionFormSheet extends StatefulWidget {
-  const _MissionMemberSubscriptionFormSheet();
-
-  @override
-  State<_MissionMemberSubscriptionFormSheet> createState() =>
-      _MissionMemberSubscriptionFormSheetState();
-}
-
-class _MissionMemberSubscriptionFormSheetState
-    extends State<_MissionMemberSubscriptionFormSheet> {
-  String? _selectedMemberUlid;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<GetMembersCubit, GetMembersState>(
+  Widget _buildMissionSessionsTab() {
+    return BlocBuilder<
+      MissionSessionResourceCubit,
+      ResourceState<PRFMissionSession>
+    >(
       builder: (context, state) {
-        final members = state.maybeWhen(
-          loaded: (members) => members,
-          orElse: () => <PRFMember>[],
-        );
-        final isLoading = state.maybeWhen(
-          loading: () => true,
-          orElse: () => false,
-        );
-        final errorMessage = state.maybeWhen(
-          error: (message) => message,
-          orElse: () => null,
-        );
+        final sessions = _itemsFromResourceState(state);
+        final error = _resourceErrorMessage(state);
+        final theme = Theme.of(context);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _MissionSheetSection(
-              title: 'Subscription',
-              subtitle: 'Choose a member to add to this mission',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const PRFFormFieldLabel(label: 'Member', isRequired: true),
-                  const SizedBox(height: PRFSpacingTokens.xs),
-                  if (isLoading)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: PRFSpacingTokens.md,
+        if (state is ResourceListLoading<PRFMissionSession> &&
+            sessions.isEmpty) {
+          return const Center(child: PRFCircularProgressIndicator());
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => context
+              .read<MissionSessionResourceCubit>()
+              .loadForMission(missionUlid: missionUlid),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              PRFSpacingTokens.lg,
+              PRFSpacingTokens.md,
+              PRFSpacingTokens.lg,
+              PRFSpacingTokens.xxxl,
+            ),
+            children: [
+              MissionSectionCard(
+                title: 'Mission Sessions',
+                subtitle:
+                    'Track who led each session and when the ministry happened.',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (error != null)
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(
+                          bottom: PRFSpacingTokens.md,
+                        ),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.sm),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(
+                            PRFRadiusTokens.md,
+                          ),
+                        ),
+                        child: Text(
+                          error,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
                       ),
-                      child: PRFCircularProgressIndicator(),
-                    )
-                  else
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedMemberUlid,
-                      decoration: const InputDecoration(
-                        hintText: 'Select a member',
-                        helperText: 'Only active members are shown',
-                      ),
-                      items: members
-                          .map<DropdownMenuItem<String>>(
-                            (member) => DropdownMenuItem<String>(
-                              value: member.ulid,
-                              child: Text(member.fullName),
+                    if (sessions.isEmpty)
+                      const PRFEmptyView(
+                        label: 'No sessions yet',
+                        description:
+                            'Session records for this mission will appear here.',
+                      )
+                    else
+                      ...sessions.map(
+                        (session) => Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: PRFSpacingTokens.sm,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: PRFSpacingTokens.md,
+                              vertical: PRFSpacingTokens.md,
                             ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedMemberUlid = value;
-                        });
-                      },
-                    ),
-                  const SizedBox(height: PRFSpacingTokens.md),
-                  if (errorMessage != null)
-                    Text(
-                      errorMessage,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.md,
+                              ),
+                              border: Border.all(
+                                color: theme.colorScheme.outline.withValues(
+                                  alpha: 0.38,
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  session.classGroup?.name ?? 'Mission Session',
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: PRFSpacingTokens.xs),
+                                Text(
+                                  '${_formatDateTime(session.startsAt)} - ${_formatDateTime(session.endsAt)}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: PRFSpacingTokens.xs),
+                                Text(
+                                  'Facilitator: ${session.facilitator?.fullName ?? 'Unassigned'}',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                Text(
+                                  'Speaker: ${session.speaker?.fullName ?? 'Unassigned'}',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                if (session.notes.trim().isNotEmpty) ...[
+                                  const SizedBox(height: PRFSpacingTokens.sm),
+                                  Text(
+                                    session.notes,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  if (!isLoading && members.isEmpty)
-                    Text(
-                      'No members found. Refresh and try again.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: PRFSpacingTokens.lg),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _selectedMemberUlid == null
-                    ? null
-                    : () => Navigator.of(context).pop(_selectedMemberUlid),
-                child: const Text('Subscribe'),
-              ),
-            ),
-          ],
+            ],
+          ),
         );
       },
-    );
-  }
-}
-
-class _MissionSimpleTextFormSheet extends StatefulWidget {
-  const _MissionSimpleTextFormSheet({
-    required this.label,
-    required this.hintText,
-    required this.submitLabel,
-    this.maxLines = 4,
-    this.isRequired = true,
-    this.initialValue,
-  });
-
-  final String label;
-  final String hintText;
-  final String submitLabel;
-  final int maxLines;
-  final bool isRequired;
-  final String? initialValue;
-
-  @override
-  State<_MissionSimpleTextFormSheet> createState() =>
-      _MissionSimpleTextFormSheetState();
-}
-
-class _MissionSimpleTextFormSheetState
-    extends State<_MissionSimpleTextFormSheet> {
-  late final TextEditingController _controller;
-
-  bool get _canSubmit {
-    if (!widget.isRequired) {
-      return true;
-    }
-
-    return _controller.text.trim().isNotEmpty;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialValue ?? '')
-      ..addListener(_onChanged);
-  }
-
-  void _onChanged() => setState(() {});
-
-  @override
-  void dispose() {
-    _controller
-      ..removeListener(_onChanged)
-      ..dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _MissionSheetSection(
-          title: widget.label,
-          subtitle: widget.isRequired
-              ? 'This field is required'
-              : 'This field is optional',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PRFFormFieldLabel(
-                label: widget.label,
-                isRequired: widget.isRequired,
-              ),
-              if (widget.maxLines > 1)
-                PRFTextAreaInput(
-                  hintText: widget.hintText,
-                  controller: _controller,
-                )
-              else
-                PRFTextInput(
-                  hintText: widget.hintText,
-                  controller: _controller,
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: PRFSpacingTokens.lg),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _canSubmit
-                ? () => Navigator.of(context).pop(_controller.text.trim())
-                : null,
-            child: Text(widget.submitLabel),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MissionSoulFormSheet extends StatefulWidget {
-  const _MissionSoulFormSheet({
-    required this.submitLabel,
-    this.initialName,
-    this.initialNote,
-  });
-
-  final String submitLabel;
-  final String? initialName;
-  final String? initialNote;
-
-  @override
-  State<_MissionSoulFormSheet> createState() => _MissionSoulFormSheetState();
-}
-
-class _MissionSoulFormSheetState extends State<_MissionSoulFormSheet> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _noteController;
-
-  bool get _canSubmit => _nameController.text.trim().isNotEmpty;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.initialName ?? '')
-      ..addListener(_onChanged);
-    _noteController = TextEditingController(text: widget.initialNote ?? '');
-  }
-
-  void _onChanged() => setState(() {});
-
-  @override
-  void dispose() {
-    _nameController
-      ..removeListener(_onChanged)
-      ..dispose();
-    _noteController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _MissionSheetSection(
-          title: 'Soul Record',
-          subtitle: 'Capture a decision and follow-up note',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const PRFFormFieldLabel(
-                label: 'Name / Identifier',
-                isRequired: true,
-              ),
-              PRFTextInput(
-                hintText: 'Enter a name or identifier',
-                controller: _nameController,
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              const PRFFormFieldLabel(label: 'Decision Note'),
-              PRFTextAreaInput(
-                hintText: 'Optional details for follow-up',
-                controller: _noteController,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: PRFSpacingTokens.lg),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _canSubmit
-                ? () => Navigator.of(context).pop((
-                    name: _nameController.text.trim(),
-                    note: _noteController.text.trim().isEmpty
-                        ? null
-                        : _noteController.text.trim(),
-                  ))
-                : null,
-            child: Text(widget.submitLabel),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MissionSheetSection extends StatelessWidget {
-  const _MissionSheetSection({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-
-  final String title;
-  final String subtitle;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.4),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: PRFSpacingTokens.xs),
-          Text(subtitle, style: theme.textTheme.bodySmall),
-          const SizedBox(height: PRFSpacingTokens.md),
-          child,
-        ],
-      ),
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:leadership/models/remote/prf_mission_subscription.dart';
+import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
 import 'package:leadership/services/api/_base_api_service.dart';
 
 class MissionSubscriptionService

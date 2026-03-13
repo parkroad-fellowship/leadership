@@ -1,4 +1,4 @@
-import 'package:leadership/models/remote/prf_mission_question.dart';
+import 'package:leadership/models/remote/mission/prf_mission_question.dart';
 import 'package:leadership/services/api/mission_question_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 

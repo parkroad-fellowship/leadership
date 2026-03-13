@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/features/home/landing/missions/actions/edit_mission/_handset.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 
 class EditMissionView extends StatelessWidget {
   const EditMissionView({required this.mission, super.key});
