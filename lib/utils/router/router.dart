@@ -112,11 +112,5 @@ class PRFLeadershipRouter extends RootStackRouter {
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
-    CustomRoute<dynamic>(
-      page: SchoolContactsRoute.page,
-      path: schoolContactsRoute,
-      guards: [AuthGuard()],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-    ),
   ];
 }

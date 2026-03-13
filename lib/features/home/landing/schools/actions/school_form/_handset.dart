@@ -341,6 +341,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
 
   Widget _buildHeaderCard(BuildContext context) {
     final isEditing = _isEditing;
+    final theme = Theme.of(context);
 
     return Container(
       width: double.infinity,
@@ -348,14 +349,14 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -366,13 +367,13 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           Icon(
             isEditing ? Icons.edit_outlined : Icons.school_outlined,
             size: 32,
-            color: Theme.of(context).colorScheme.onPrimary,
+            color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
             isEditing ? 'Edit School' : 'Create School',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onPrimary,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -381,10 +382,8 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
             isEditing
                 ? 'Update school details and location information'
                 : 'Add a new school with details and location information',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onPrimary.withValues(
-                alpha: 0.9,
-              ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
             ),
             textAlign: TextAlign.center,
           ),

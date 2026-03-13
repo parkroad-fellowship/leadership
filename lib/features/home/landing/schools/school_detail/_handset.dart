@@ -6,13 +6,13 @@ import 'package:leadership/features/home/landing/schools/actions/school_form/_ha
 import 'package:leadership/features/home/landing/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
+import 'package:leadership/features/home/landing/schools/widgets/school_contact_row.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
-import 'package:leadership/utils/router/router.gr.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -88,94 +88,116 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
 
         return Scaffold(
           backgroundColor: theme.colorScheme.surface,
-          body: SingleChildScrollView(
+          body: DefaultTabController(
+            length: 2,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                PRFBrandedNavBar(
-                  title: 'Schools',
-                  onBack: () => context.router.maybePop(),
-                  actions: [
-                    PRFHeaderActionButton(
-                      label: 'Edit',
-                      onTap: () => _showEditForm(school),
-                    ),
-                    const SizedBox(width: PRFSpacingTokens.sm),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onPrimary.withValues(
-                          alpha: 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: PopupMenuButton<String>(
-                        padding: EdgeInsets.zero,
-                        icon: Icon(
-                          Icons.more_vert,
-                          color: theme.colorScheme.onPrimary,
-                          size: 20,
-                        ),
-                        onSelected: (value) {
-                          if (value == 'delete') {
-                            _showDeleteDialog(school);
-                          }
-                        },
-                        itemBuilder: (_) => [
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.delete_outline,
-                                  size: 20,
+                ColoredBox(
+                  color: theme.colorScheme.primary,
+                  child: Column(
+                    children: [
+                      PRFBrandedNavBar(
+                        title: 'Schools',
+                        onBack: () => context.router.maybePop(),
+                        actions: [
+                          PRFHeaderActionButton(
+                            label: 'Edit',
+                            variant: PRFHeaderActionButtonVariant.neutral,
+                            onTap: () => _showEditForm(school),
+                          ),
+                          const SizedBox(width: PRFSpacingTokens.sm),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.onPrimary.withValues(
+                                alpha: 0.14,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.md,
+                              ),
+                              border: Border.all(
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.18,
                                 ),
-                                SizedBox(
-                                  width: PRFSpacingTokens.sm,
+                              ),
+                            ),
+                            child: PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: theme.colorScheme.onPrimary,
+                                size: 20,
+                              ),
+                              onSelected: (value) {
+                                if (value == 'delete') {
+                                  _showDeleteDialog(school);
+                                }
+                              },
+                              itemBuilder: (_) => [
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 20,
+                                      ),
+                                      SizedBox(
+                                        width: PRFSpacingTokens.sm,
+                                      ),
+                                      Text('Delete School'),
+                                    ],
+                                  ),
                                 ),
-                                Text('Delete School'),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                _buildHeroSection(theme, school),
-                Padding(
-                  padding: const EdgeInsets.all(
-                    PRFSpacingTokens.lg,
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          PRFSpacingTokens.sm,
+                          0,
+                          PRFSpacingTokens.sm,
+                          PRFSpacingTokens.sm,
+                        ),
+                        child: Transform.translate(
+                          offset: const Offset(0, -6),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TabBar(
+                              isScrollable: true,
+                              tabAlignment: TabAlignment.start,
+                              labelColor: theme.colorScheme.onPrimary,
+                              unselectedLabelColor: theme.colorScheme.onPrimary
+                                  .withValues(alpha: 0.65),
+                              indicatorColor: theme.colorScheme.secondary,
+                              dividerColor: theme.colorScheme.onPrimary
+                                  .withValues(
+                                    alpha: 0.2,
+                                  ),
+                              labelStyle: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                              padding: EdgeInsets.zero,
+                              labelPadding: const EdgeInsets.symmetric(
+                                horizontal: PRFSpacingTokens.sm,
+                              ),
+                              tabs: const [
+                                Tab(text: 'Overview'),
+                                Tab(text: 'Contacts'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                Expanded(
+                  child: TabBarView(
                     children: [
-                      _buildInfoSection(
-                        theme,
-                        school,
-                      ),
-                      const SizedBox(
-                        height: PRFSpacingTokens.lg,
-                      ),
-                      if (school.latitude != 0.0 || school.longitude != 0.0)
-                        _buildLocationRow(
-                          theme,
-                          school,
-                        ),
-                      if (school.latitude != 0.0 || school.longitude != 0.0)
-                        const SizedBox(
-                          height: PRFSpacingTokens.lg,
-                        ),
-                      _buildContactsPreview(
-                        theme,
-                        school,
-                      ),
-                      const SizedBox(
-                        height: PRFSpacingTokens.xxl,
-                      ),
-                      _buildDeleteZone(theme, school),
-                      const SizedBox(
-                        height: PRFSpacingTokens.xxxl,
-                      ),
+                      _buildOverviewTab(theme, school),
+                      _buildContactsTab(theme, school),
                     ],
                   ),
                 ),
@@ -184,6 +206,61 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildOverviewTab(
+    ThemeData theme,
+    PRFSchool school,
+  ) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeroSection(theme, school),
+          Transform.translate(
+            offset: const Offset(0, -PRFSpacingTokens.md),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                PRFSpacingTokens.lg,
+                0,
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.xxxl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoSection(
+                    theme,
+                    school,
+                  ),
+                  if (school.latitude != 0.0 || school.longitude != 0.0) ...[
+                    const SizedBox(
+                      height: PRFSpacingTokens.lg,
+                    ),
+                    _buildLocationRow(theme, school),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactsTab(
+    ThemeData theme,
+    PRFSchool school,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+        PRFSpacingTokens.lg,
+        PRFSpacingTokens.lg,
+        PRFSpacingTokens.lg,
+        PRFSpacingTokens.xxxl,
+      ),
+      child: _buildContactsPreview(theme, school),
     );
   }
 
@@ -312,6 +389,21 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                 ),
               ],
             ),
+            const SizedBox(height: PRFSpacingTokens.lg),
+            Container(
+              height: PRFSpacingTokens.lg,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    theme.colorScheme.surface.withValues(alpha: 0.8),
+                    theme.colorScheme.surface,
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -326,16 +418,8 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     ThemeData theme,
     PRFSchool school,
   ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.4),
-        ),
-      ),
+    return _buildSectionCard(
+      theme: theme,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -409,16 +493,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     ThemeData theme,
     PRFSchool school,
   ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-      ),
+    return _buildSectionCard(
+      theme: theme,
+      padding: const EdgeInsets.all(PRFSpacingTokens.md),
       child: InkWell(
         onTap: () => _openSchoolInMaps(school),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
@@ -426,11 +503,11 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           children: [
             // Location icon container
             Container(
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: PRFColorPalette.navy50,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               ),
               alignment: Alignment.center,
               child: Icon(
@@ -560,18 +637,8 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           _ => school.contacts,
         };
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(
-            PRFSpacingTokens.lg,
-          ),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.55),
-            ),
-          ),
+        return _buildSectionCard(
+          theme: theme,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -590,17 +657,13 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                       ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () => _showContactForm(
+                  PRFHeaderActionButton(
+                    label: 'New',
+                    icon: Icons.add,
+                    variant: PRFHeaderActionButtonVariant.primary,
+                    onTap: () => _showContactForm(
                       null,
                       school,
-                    ),
-                    child: Text(
-                      '+ Add',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: PRFColorPalette.lime800,
-                        fontWeight: FontWeight.w700,
-                      ),
                     ),
                   ),
                 ],
@@ -633,39 +696,20 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   ),
                 )
               else
-                ...contacts
-                    .take(3)
-                    .map(
-                      (c) => _buildContactRow(
-                        theme,
-                        c,
-                        school,
-                      ),
+                ...contacts.map(
+                  (c) => Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: PRFSpacingTokens.sm,
                     ),
-              if (contacts.length > 3) ...[
-                const SizedBox(
-                  height: PRFSpacingTokens.sm,
-                ),
-                Center(
-                  child: GestureDetector(
-                    onTap: () => context.router.push(
-                      SchoolContactsRoute(
-                        schoolUlid: widget.schoolUlid,
-                      ),
-                    ),
-                    child: Text(
-                      'View all'
-                      ' ${contacts.length}'
-                      ' contacts',
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: SchoolContactRow(
+                      contact: c,
+                      onTapEdit: () => _showContactForm(c, school),
+                      onTapCall: c.phone.isEmpty
+                          ? null
+                          : () => _callPhoneNumber(c.phone),
                     ),
                   ),
                 ),
-              ],
             ],
           ),
         );
@@ -673,161 +717,22 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     );
   }
 
-  Widget _buildContactRow(
-    ThemeData theme,
-    PRFContact contact,
-    PRFSchool school,
-  ) {
-    final initials = _getInitials(contact.name);
-
-    // Build subtitle: "Type · Phone"
-    final parts = <String>[];
-    if (contact.contactType != null) {
-      parts.add(contact.contactType!.name);
-    }
-    if (contact.phone.isNotEmpty) {
-      parts.add(contact.phone);
-    }
-    final subtitle = parts.join(' \u00b7 ');
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-        onTap: () => _showContactForm(contact, school),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: PRFSpacingTokens.xs,
-            vertical: PRFSpacingTokens.xs,
-          ),
-          child: Row(
-            children: [
-              // Circular avatar (radius 16 = 32px)
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: theme.colorScheme.primary.withValues(
-                  alpha: 0.18,
-                ),
-                child: Text(
-                  initials,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: PRFSpacingTokens.md),
-              // Name + subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      contact.name,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (subtitle.isNotEmpty)
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.sm,
-                  vertical: PRFSpacingTokens.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-                ),
-                child: Text(
-                  'Edit',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              if (contact.phone.isNotEmpty) ...[
-                const SizedBox(width: PRFSpacingTokens.sm),
-                GestureDetector(
-                  onTap: () => _callPhoneNumber(contact.phone),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: PRFSpacingTokens.sm,
-                      vertical: PRFSpacingTokens.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: PRFColorPalette.lime100,
-                      border: Border.all(
-                        color: PRFColorPalette.lime300,
-                      ),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.call,
-                          size: 14,
-                          color: PRFColorPalette.lime800,
-                        ),
-                        SizedBox(width: PRFSpacingTokens.xs / 2),
-                        Text(
-                          'Call',
-                          style: TextStyle(
-                            color: PRFColorPalette.lime800,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
+  Widget _buildSectionCard({
+    required ThemeData theme,
+    required Widget child,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(PRFSpacingTokens.lg),
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.34),
         ),
       ),
-    );
-  }
-
-  // -----------------------------------------------------------
-  // Delete zone
-  // -----------------------------------------------------------
-
-  Widget _buildDeleteZone(
-    ThemeData theme,
-    PRFSchool school,
-  ) {
-    return Center(
-      child: GestureDetector(
-        onTap: () => _showDeleteDialog(school),
-        child: Text(
-          'Delete School',
-          style: TextStyle(
-            color: theme.colorScheme.error,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
+      child: child,
     );
   }
 

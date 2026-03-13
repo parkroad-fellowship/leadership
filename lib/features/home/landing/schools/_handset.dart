@@ -207,7 +207,8 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
             onBack: _goBackToHome,
             actions: [
               PRFHeaderActionButton(
-                label: '+ New',
+                label: 'New',
+                icon: Icons.add,
                 onTap: () => _showSchoolForm(context, null),
               ),
             ],

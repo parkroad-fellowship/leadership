@@ -5,6 +5,7 @@ import 'package:leadership/features/home/landing/schools/actions/contact_form/_h
 import 'package:leadership/features/home/landing/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
+import 'package:leadership/features/home/landing/schools/widgets/school_contact_row.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
 import 'package:leadership/shared_widgets/_index.dart';
@@ -66,7 +67,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         onBack: () => context.router.maybePop(),
         actions: [
           PRFHeaderActionButton(
-            label: 'Add',
+            label: 'New',
             icon: Icons.add,
             onTap: () => _showContactForm(null),
           ),
@@ -145,7 +146,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
               PRFSpacingTokens.lg,
               PRFSpacingTokens.lg,
               PRFSpacingTokens.lg,
-              PRFSpacingTokens.md,
+              PRFSpacingTokens.lg,
             ),
             child: _buildListHeader(theme, contacts.length),
           ),
@@ -162,7 +163,13 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
               final contact = contacts[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
-                child: _buildContactRow(theme, contact),
+                child: SchoolContactRow(
+                  contact: contact,
+                  onTapEdit: () => _showContactForm(contact),
+                  onTapCall: contact.phone.isEmpty
+                      ? null
+                      : () => _callPhoneNumber(contact.phone),
+                ),
               );
             }, childCount: contacts.length),
           ),
@@ -209,7 +216,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
                     color: theme.colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: PRFSpacingTokens.xs / 2),
+                const SizedBox(height: PRFSpacingTokens.xs),
                 Text(
                   'Tap a contact to edit details quickly',
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -220,146 +227,6 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildContactRow(
-    ThemeData theme,
-    PRFContact contact,
-  ) {
-    final initials = _getInitials(contact.name);
-
-    // Build subtitle: "Type . Phone"
-    final parts = <String>[];
-    if (contact.contactType != null) {
-      parts.add(contact.contactType!.name);
-    }
-    if (contact.phone.isNotEmpty) {
-      parts.add(contact.phone);
-    }
-    final subtitle = parts.join(' \u00B7 ');
-
-    return GestureDetector(
-      onTap: () => _showContactForm(contact),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.md,
-          vertical: PRFSpacingTokens.md,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.38),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Avatar
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: theme.colorScheme.primary.withValues(
-                alpha: 0.14,
-              ),
-              child: Text(
-                initials,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-            const SizedBox(
-              width: PRFSpacingTokens.md,
-            ),
-            // Name + subtitle
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    contact.name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  if (subtitle.isNotEmpty)
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: PRFSpacingTokens.sm,
-                vertical: PRFSpacingTokens.xs,
-              ),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.11),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-              ),
-              child: Text(
-                'Edit',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.sm),
-            // Call button
-            if (contact.phone.isNotEmpty)
-              GestureDetector(
-                onTap: () => _callPhoneNumber(
-                  contact.phone,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.sm,
-                    vertical: PRFSpacingTokens.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: PRFColorPalette.lime100,
-                    border: Border.all(
-                      color: PRFColorPalette.lime300,
-                    ),
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.call,
-                        size: 14,
-                        color: PRFColorPalette.lime800,
-                      ),
-                      SizedBox(width: PRFSpacingTokens.xs / 2),
-                      Text(
-                        'Call',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: PRFColorPalette.lime800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }
@@ -421,13 +288,5 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         'Could not launch your phone dialer',
       );
     }
-  }
-
-  String _getInitials(String name) {
-    final words = name.trim().split(RegExp(r'\s+'));
-    if (words.length >= 2) {
-      return '${words[0][0]}${words[1][0]}'.toUpperCase();
-    }
-    return name.substring(0, name.length.clamp(0, 2)).toUpperCase();
   }
 }
