@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/shared_views/expenses/cubit/add_allocation_token_entry_cubit.dart';
+import 'package:leadership/models/remote/prf_allocation_entry.dart';
+import 'package:leadership/shared_views/expenses/cubit/allocation_entry_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class AddTokenViewHandset extends StatefulWidget {
@@ -200,24 +202,29 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
 
               // Submit Button
               BlocConsumer<
-                    AddAllocationTokenEntryCubit,
-                    AddAllocationTokenEntryState
+                    AllocationEntryResourceCubit,
+                    ResourceState<PRFAllocationEntry>
                   >(
                     listener: (context, state) {
-                      state.when(
-                        initial: () {},
-                        loading: () {
+                      state.maybeWhen(
+                        mutating: (items, operation) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = true;
                           });
                         },
-                        loaded: () {
+                        mutated: (items, operation, item) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = false;
                           });
                           Navigator.of(context).pop();
                         },
-                        error: (message) {
+                        error: (message, items) {
                           setState(() {
                             _isLoading = false;
                           });
@@ -225,6 +232,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                             SnackBar(content: Text(message)),
                           );
                         },
+                        orElse: () {},
                       );
                     },
                     builder: (context, state) {
@@ -348,7 +356,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
 
     final amount = double.parse(_amountController.text).round();
 
-    context.read<AddAllocationTokenEntryCubit>().addAllocationEntry(
+    context.read<AllocationEntryResourceCubit>().addAllocationTokenEntry(
       accountingEventUlid: widget.accountingEventUlid,
       entryType: PRFEntryType.credit, // Always credit for tokens
       unitCost: amount, // Use amount as unit cost

@@ -10,12 +10,14 @@ import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -323,37 +325,55 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                 const SizedBox(height: PRFSpacingTokens.xxl),
 
                 // Submit Button
-                BlocConsumer<AddEventCubit, AddEventState>(
+                BlocConsumer<EventResourceCubit, ResourceState<PRFEvent>>(
                   listener: (context, state) {
-                    state.mapOrNull(
-                      loading: (_) {
+                    state.maybeWhen(
+                      mutating: (items, operation) {
+                        if (operation != ResourceOperation.create) {
+                          return;
+                        }
                         setState(() {
                           _isLoading = true;
                         });
                       },
-                      loaded: (data) {
+                      mutated: (items, operation, item) {
+                        if (operation != ResourceOperation.create) {
+                          return;
+                        }
                         setState(() {
                           _isLoading = false;
                         });
                         Gaimon.success();
                         context.read<GetEventsCubit>().getUpcomingEvents();
 
+                        final requisition = context
+                            .read<EventResourceCubit>()
+                            .lastCreatedRequisition;
+                        if (requisition == null) {
+                          PRFSnackbar.error(
+                            context,
+                            'Event created but requisition was not found',
+                          );
+                          return;
+                        }
+
                         Navigator.of(context).pop();
                         context.router.push(
                           RequisitionDetailsRoute(
-                            requisitionUlid: data.requisition.ulid,
+                            requisitionUlid: requisition.ulid,
                           ),
                         );
 
                         PRFSnackbar.success(context, l10n.activityCreated);
                       },
-                      error: (error) {
+                      error: (message, items) {
                         setState(() {
                           _isLoading = false;
                         });
                         Gaimon.error();
-                        PRFSnackbar.error(context, error.message);
+                        PRFSnackbar.error(context, message);
                       },
+                      orElse: () {},
                     );
                   },
                   builder: (context, state) {
@@ -551,7 +571,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
       return;
     }
 
-    await context.read<AddEventCubit>().addEvent(
+    await context.read<EventResourceCubit>().addEvent(
       name: _titleController.text.trim(),
       startTime: startsAt!,
       responsibleDesk: selectedResponsibleDesk!,

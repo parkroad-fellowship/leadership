@@ -1,4 +1,5 @@
 import 'package:leadership/models/remote/mission/prf_soul.dart';
+import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
 import 'package:leadership/services/api/soul_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
@@ -17,30 +18,20 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
   }
 
   Future<void> createSoul({
-    required String missionUlid,
-    required String name,
-    String? note,
+    required PRFSoulDTO dto,
   }) {
     return create(
-      data: {
-        'mission_ulid': missionUlid,
-        'name': name,
-        if (note != null && note.isNotEmpty) 'decision_note': note,
-      },
+      data: dto.toJson(),
     );
   }
 
   Future<void> updateSoul({
     required String soulUlid,
-    required String name,
-    String? note,
+    required PRFSoulDTO dto,
   }) {
     return update(
       id: soulUlid,
-      data: {
-        'name': name,
-        if (note != null && note.isNotEmpty) 'decision_note': note,
-      },
+      data: dto.toJson(),
       matchById: (item) => item.ulid == soulUlid,
     );
   }

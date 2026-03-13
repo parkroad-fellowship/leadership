@@ -8,7 +8,8 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_media_dto.dart';
-import 'package:leadership/shared_views/expenses/cubit/edit_allocation_entry_cubit.dart';
+import 'package:leadership/shared_views/expenses/cubit/allocation_entry_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class EditExpenseViewHandset extends StatefulWidget {
@@ -331,15 +332,24 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
               const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Submit Button
-              BlocConsumer<EditAllocationEntryCubit, EditAllocationEntryState>(
+              BlocConsumer<
+                    AllocationEntryResourceCubit,
+                    ResourceState<PRFAllocationEntry>
+                  >(
                     listener: (context, state) {
-                      state.mapOrNull(
-                        loading: (_) {
+                      state.maybeWhen(
+                        mutating: (items, operation) {
+                          if (operation != ResourceOperation.update) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = true;
                           });
                         },
-                        loaded: (_) {
+                        mutated: (items, operation, item) {
+                          if (operation != ResourceOperation.update) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = false;
                           });
@@ -348,16 +358,17 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                             SnackBar(content: Text(l10n.expenseRecorded)),
                           );
                         },
-                        error: (error) {
+                        error: (message, items) {
                           setState(() {
                             _isLoading = false;
                           });
                           ScaffoldMessenger.of(
                             context,
                           ).showSnackBar(
-                            SnackBar(content: Text(error.message)),
+                            SnackBar(content: Text(message)),
                           );
                         },
+                        orElse: () {},
                       );
                     },
                     builder: (context, state) {
@@ -597,7 +608,7 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
       loaded: (mediaItems) => mediaItems,
     );
 
-    await context.read<EditAllocationEntryCubit>().updateAllocationEntry(
+    await context.read<AllocationEntryResourceCubit>().updateAllocationEntry(
       allocationEntryUlid: widget.allocationEntry.ulid,
       accountingEventUlid: widget.allocationEntry.accountingEvent!.ulid,
       expenseCategoryUlid: _selectedCategory!.ulid,

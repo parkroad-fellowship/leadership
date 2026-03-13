@@ -1,4 +1,5 @@
 import 'package:leadership/models/remote/mission/prf_mission_question.dart';
+import 'package:leadership/models/remote/mission/prf_mission_question_dto.dart';
 import 'package:leadership/services/api/mission_question_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
@@ -20,21 +21,29 @@ class MissionQuestionResourceCubit extends ResourceCubit<PRFMissionQuestion> {
     required String missionUlid,
     required String question,
   }) {
+    final dto = PRFMissionQuestionDTO(
+      missionUlid: missionUlid,
+      question: question,
+    );
+
     return create(
-      data: {
-        'mission_ulid': missionUlid,
-        'question': question,
-      },
+      data: dto.toJson(),
     );
   }
 
   Future<void> updateQuestion({
     required String questionUlid,
+    required String missionUlid,
     required String question,
   }) {
+    final dto = PRFMissionQuestionDTO(
+      missionUlid: missionUlid,
+      question: question,
+    );
+
     return update(
       id: questionUlid,
-      data: {'question': question},
+      data: dto.toJson(),
       matchById: (item) => item.ulid == questionUlid,
     );
   }

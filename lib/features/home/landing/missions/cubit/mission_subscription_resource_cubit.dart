@@ -1,4 +1,5 @@
 import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
+import 'package:leadership/models/remote/mission/prf_mission_subscription_dto.dart';
 import 'package:leadership/services/api/mission_subscription_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
@@ -25,11 +26,13 @@ class MissionSubscriptionResourceCubit
     required String missionUlid,
     required String memberUlid,
   }) {
+    final dto = PRFMissionSubscriptionDTO(
+      missionUlid: missionUlid,
+      memberUlid: memberUlid,
+    );
+
     return create(
-      data: {
-        'mission_ulid': missionUlid,
-        'member_ulid': memberUlid,
-      },
+      data: dto.toJson(),
       includes: defaultIncludes,
     );
   }

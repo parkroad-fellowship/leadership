@@ -10,10 +10,10 @@ import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/add_event_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_payment_instruction_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_ground_suggestion_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
@@ -53,12 +53,8 @@ import 'package:leadership/services/api/school_service.dart';
 import 'package:leadership/services/api/school_term_service.dart';
 import 'package:leadership/services/api/soul_service.dart';
 import 'package:leadership/services/firebase_service.dart';
-import 'package:leadership/shared_views/expenses/cubit/add_allocation_entry_cubit.dart';
-import 'package:leadership/shared_views/expenses/cubit/add_mission_refund_cubit.dart';
-import 'package:leadership/shared_views/expenses/cubit/delete_allocation_entry_cubit.dart';
-import 'package:leadership/shared_views/expenses/cubit/delete_receipt_cubit.dart';
-import 'package:leadership/shared_views/expenses/cubit/edit_allocation_entry_cubit.dart';
-import 'package:leadership/shared_views/expenses/cubit/get_allocation_entries_cubit.dart';
+import 'package:leadership/shared_views/expenses/cubit/allocation_entry_resource_cubit.dart';
+import 'package:leadership/shared_views/expenses/cubit/refund_resource_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/send_financial_report_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
@@ -164,8 +160,8 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-      BlocProvider<AddEventCubit>(
-        create: (context) => AddEventCubit(
+      BlocProvider<EventResourceCubit>(
+        create: (context) => EventResourceCubit(
           eventService: getIt<EventService>(),
           requisitionService: getIt<RequisitionService>(),
           hiveService: getIt<HiveService>(),
@@ -188,8 +184,8 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-      BlocProvider<CreatePaymentInstructionCubit>(
-        create: (context) => CreatePaymentInstructionCubit(
+      BlocProvider<PaymentInstructionResourceCubit>(
+        create: (context) => PaymentInstructionResourceCubit(
           paymentInstructionService: getIt<PaymentInstructionService>(),
         ),
       ),
@@ -262,38 +258,16 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-      BlocProvider<GetAllocationEntriesCubit>(
-        create: (context) => GetAllocationEntriesCubit(
-          allocationEntryService: getIt<AllocationEntryService>(),
-        ),
-      ),
-      BlocProvider<AddAllocationEntryCubit>(
-        create: (context) => AddAllocationEntryCubit(
+      BlocProvider<AllocationEntryResourceCubit>(
+        create: (context) => AllocationEntryResourceCubit(
           allocationEntryService: getIt<AllocationEntryService>(),
           hiveService: getIt<HiveService>(),
           mediaService: getIt<MediaService>(),
         ),
       ),
-      BlocProvider<EditAllocationEntryCubit>(
-        create: (context) => EditAllocationEntryCubit(
-          allocationEntryService: getIt<AllocationEntryService>(),
-          hiveService: getIt<HiveService>(),
-          mediaService: getIt<MediaService>(),
-        ),
-      ),
-      BlocProvider<DeleteAllocationEntryCubit>(
-        create: (context) => DeleteAllocationEntryCubit(
-          allocationEntryService: getIt<AllocationEntryService>(),
-        ),
-      ),
-      BlocProvider<AddMissionRefundCubit>(
+      BlocProvider<RefundResourceCubit>(
         create: (context) =>
-            AddMissionRefundCubit(refundService: getIt<RefundService>()),
-      ),
-      BlocProvider<DeleteReceiptCubit>(
-        create: (context) => DeleteReceiptCubit(
-          allocationEntryService: getIt<AllocationEntryService>(),
-        ),
+            RefundResourceCubit(refundService: getIt<RefundService>()),
       ),
       BlocProvider<SelectMediaCubit>(
         create: (context) => SelectMediaCubit(

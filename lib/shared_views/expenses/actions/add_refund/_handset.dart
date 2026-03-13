@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/shared_views/expenses/cubit/add_mission_refund_cubit.dart';
+import 'package:leadership/models/remote/prf_refund.dart';
+import 'package:leadership/shared_views/expenses/cubit/refund_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class AddRefundViewHandset extends StatefulWidget {
@@ -183,16 +185,21 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
               const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Submit Button
-              BlocConsumer<AddMissionRefundCubit, AddMissionRefundState>(
+              BlocConsumer<RefundResourceCubit, ResourceState<PRFRefund>>(
                     listener: (context, state) {
-                      state.when(
-                        initial: () {},
-                        loading: () {
+                      state.maybeWhen(
+                        mutating: (items, operation) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = true;
                           });
                         },
-                        loaded: (refund) {
+                        mutated: (items, operation, item) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = false;
                           });
@@ -206,7 +213,7 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                             ),
                           );
                         },
-                        error: (message) {
+                        error: (message, items) {
                           setState(() {
                             _isLoading = false;
                           });
@@ -220,6 +227,7 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                             ),
                           );
                         },
+                        orElse: () {},
                       );
                     },
                     builder: (context, state) {
@@ -276,7 +284,7 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
     final amount = double.parse(_amountController.text).round();
     final confirmationMessage = _confirmationController.text.trim();
 
-    context.read<AddMissionRefundCubit>().addMissionRefund(
+    context.read<RefundResourceCubit>().addMissionRefund(
       accountingEventUlid: widget.accountingEventUlid,
       amount: amount,
       confirmationMessage: confirmationMessage,

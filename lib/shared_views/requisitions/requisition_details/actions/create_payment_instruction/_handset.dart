@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
-import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_payment_instruction_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
+import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/shared_widgets/input/phone/phone.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -382,7 +384,7 @@ class _CreatePaymentInstructionViewHandsetState
     if (!_isFormValid) return;
 
     await context
-        .read<CreatePaymentInstructionCubit>()
+        .read<PaymentInstructionResourceCubit>()
         .createPaymentInstruction(
           requisitionUlid: widget.requisitionUlid,
           paymentMethod: selectedPaymentMethod!,
@@ -731,17 +733,23 @@ class _CreatePaymentInstructionViewHandsetState
                   flex: 2,
                   child:
                       BlocConsumer<
-                        CreatePaymentInstructionCubit,
-                        CreatePaymentInstructionState
+                        PaymentInstructionResourceCubit,
+                        ResourceState<PRFPaymentInstruction>
                       >(
                         listener: (context, state) {
-                          state.mapOrNull(
-                            loading: (_) {
+                          state.maybeWhen(
+                            mutating: (items, operation) {
+                              if (operation != ResourceOperation.create) {
+                                return;
+                              }
                               setState(() {
                                 _isLoading = true;
                               });
                             },
-                            loaded: (_) {
+                            mutated: (items, operation, item) {
+                              if (operation != ResourceOperation.create) {
+                                return;
+                              }
                               setState(() {
                                 _isLoading = false;
                               });
@@ -755,15 +763,16 @@ class _CreatePaymentInstructionViewHandsetState
                                 ),
                               );
                             },
-                            error: (errorState) {
+                            error: (message, items) {
                               setState(() {
                                 _isLoading = false;
                               });
                               Gaimon.error();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(errorState.message)),
+                                SnackBar(content: Text(message)),
                               );
                             },
+                            orElse: () {},
                           );
                         },
                         builder: (context, state) {

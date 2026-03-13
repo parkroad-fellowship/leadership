@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
+import 'package:leadership/enums/prf_soul_decision_type.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
@@ -21,7 +22,10 @@ import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/mission/prf_mission_question.dart';
 import 'package:leadership/models/remote/mission/prf_mission_session.dart';
 import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
+import 'package:leadership/models/remote/mission/prf_mission_subscription_dto.dart';
 import 'package:leadership/models/remote/mission/prf_soul.dart';
+import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
+import 'package:leadership/models/remote/prf_class_group.dart';
 import 'package:leadership/models/remote/prf_debrief_note.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
@@ -89,7 +93,6 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     super.dispose();
   }
 
-
   Future<void> _loadMissionSubdomainData() {
     return Future.wait([
       context.read<MissionQuestionResourceCubit>().loadForMission(
@@ -104,7 +107,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       context.read<MissionSubscriptionResourceCubit>().loadForMission(
         missionUlid: missionUlid,
       ),
-      context.read<MissionSessionResourceCubit>().loadForMission( // Works
+      context.read<MissionSessionResourceCubit>().loadForMission(
+        // Works
         missionUlid: missionUlid,
       ),
     ]);
@@ -127,53 +131,86 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     };
   }
 
-  Future<String?> _showSimpleTextFormSheet({
+  Future<String?> _showQuestionFormSheet({
     required String title,
-    required String label,
-    required String hintText,
-    int maxLines = 4,
-    bool isRequired = true,
     String? initialValue,
     String submitLabel = 'Save',
-  }) async {
+  }) {
     return PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: MissionSimpleTextFormSheet(
-        label: label,
-        hintText: hintText,
-        maxLines: maxLines,
-        isRequired: isRequired,
+      child: MissionQuestionFormSheet(
         initialValue: initialValue,
         submitLabel: submitLabel,
       ),
     );
   }
 
-  Future<({String name, String? note})?> _showSoulFormSheet({
+  Future<String?> _showDebriefNoteFormSheet({
     required String title,
-    required String submitLabel,
-    String? initialName,
-    String? initialNote,
+    String? initialValue,
+    String submitLabel = 'Save',
   }) {
-    return PRFBottomSheet.show<({String name, String? note})>(
+    return PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: MissionSoulFormSheet(
-        initialName: initialName,
-        initialNote: initialNote,
+      child: MissionDebriefNoteFormSheet(
+        initialValue: initialValue,
         submitLabel: submitLabel,
       ),
     );
   }
 
-  Future<String?> _showMemberSubscriptionFormSheet() {
+  List<PRFClassGroup> _availableClassGroups() {
+    final sessions = _itemsFromResourceState(
+      context.read<MissionSessionResourceCubit>().state,
+    );
+
+    final byUlid = <String, PRFClassGroup>{};
+    for (final session in sessions) {
+      final group = session.classGroup;
+      if (group == null || group.ulid.isEmpty) {
+        continue;
+      }
+      byUlid[group.ulid] = group;
+    }
+
+    final result = byUlid.values.toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+
+    return result;
+  }
+
+  Future<PRFSoulDTO?> _showSoulFormSheet({
+    required String title,
+    required String submitLabel,
+    String? initialName,
+    String? initialNote,
+    String? initialClassGroupUlid,
+    PRFSoulDecisionType initialDecisionType = PRFSoulDecisionType.salvation,
+  }) {
+    return PRFBottomSheet.show<PRFSoulDTO>(
+      context,
+      title: title,
+      child: MissionSoulFormSheet(
+        missionUlid: missionUlid,
+        classGroups: _availableClassGroups(),
+        initialName: initialName,
+        initialNote: initialNote,
+        initialClassGroupUlid: initialClassGroupUlid,
+        initialDecisionType: initialDecisionType,
+        submitLabel: submitLabel,
+      ),
+    );
+  }
+
+  Future<PRFMissionSubscriptionDTO?> _showMemberSubscriptionFormSheet() {
     context.read<GetMembersCubit>().getMembers();
 
-    return PRFBottomSheet.show<String>(
+    return PRFBottomSheet.show<PRFMissionSubscriptionDTO>(
       context,
       title: 'Subscribe Member',
-      child: const MissionMemberSubscriptionFormSheet(),
+      child: MissionMemberSubscriptionFormSheet(missionUlid: missionUlid),
     );
   }
 
@@ -205,17 +242,15 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptAddQuestion() async {
-    final questionText = await _showSimpleTextFormSheet(
+    final questionValue = await _showQuestionFormSheet(
       title: 'Add Question',
-      label: 'Question',
-      hintText: 'What did the students want to know?',
     );
-    if (!mounted || questionText == null || questionText.isEmpty) return;
+    if (!mounted || questionValue == null || questionValue.isEmpty) return;
 
     final cubit = context.read<MissionQuestionResourceCubit>();
     await cubit.createQuestion(
       missionUlid: missionUlid,
-      question: questionText,
+      question: questionValue,
     );
     if (!mounted) return;
 
@@ -258,18 +293,19 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       return;
     }
 
-    final updatedQuestion = await _showSimpleTextFormSheet(
+    final updatedQuestion = await _showQuestionFormSheet(
       title: 'Edit Question',
-      label: 'Question',
-      hintText: 'What did the students want to know?',
       initialValue: question.question,
       submitLabel: 'Update',
     );
-    if (!mounted || updatedQuestion == null || updatedQuestion.isEmpty) return;
+    if (!mounted || updatedQuestion == null || updatedQuestion.isEmpty) {
+      return;
+    }
 
     final cubit = context.read<MissionQuestionResourceCubit>();
     await cubit.updateQuestion(
       questionUlid: question.ulid,
+      missionUlid: missionUlid,
       question: updatedQuestion,
     );
     if (!mounted) return;
@@ -283,16 +319,13 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptAddDebriefNote() async {
-    final noteText = await _showSimpleTextFormSheet(
+    final noteValue = await _showDebriefNoteFormSheet(
       title: 'Add Debrief Note',
-      label: 'Debrief Note',
-      hintText: 'Capture what happened and what we learned.',
-      maxLines: 6,
     );
-    if (!mounted || noteText == null || noteText.isEmpty) return;
+    if (!mounted || noteValue == null || noteValue.isEmpty) return;
 
     final cubit = context.read<DebriefNoteResourceCubit>();
-    await cubit.createNote(missionUlid: missionUlid, note: noteText);
+    await cubit.createNote(missionUlid: missionUlid, note: noteValue);
     if (!mounted) return;
 
     final error = _resourceErrorMessage(cubit.state);
@@ -332,18 +365,19 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       return;
     }
 
-    final updatedNote = await _showSimpleTextFormSheet(
+    final updatedNote = await _showDebriefNoteFormSheet(
       title: 'Edit Debrief Note',
-      label: 'Debrief Note',
-      hintText: 'Capture what happened and what we learned.',
-      maxLines: 6,
       initialValue: note.note,
       submitLabel: 'Update',
     );
     if (!mounted || updatedNote == null || updatedNote.isEmpty) return;
 
     final cubit = context.read<DebriefNoteResourceCubit>();
-    await cubit.updateNote(noteUlid: note.ulid, note: updatedNote);
+    await cubit.updateNote(
+      noteUlid: note.ulid,
+      missionUlid: missionUlid,
+      note: updatedNote,
+    );
     if (!mounted) return;
 
     final error = _resourceErrorMessage(cubit.state);
@@ -355,18 +389,25 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptAddSoul() async {
+    final classGroups = _availableClassGroups();
+    if (classGroups.isEmpty) {
+      PRFSnackbar.error(
+        context,
+        'No class groups found. Add a mission session with class group first.',
+      );
+      return;
+    }
+
     final soulData = await _showSoulFormSheet(
       title: 'Record Soul',
       submitLabel: 'Record',
     );
-    if (!mounted || soulData == null || soulData.name.trim().isEmpty) return;
+    if (!mounted || soulData == null || soulData.fullName.trim().isEmpty) {
+      return;
+    }
 
     final cubit = context.read<SoulResourceCubit>();
-    await cubit.createSoul(
-      missionUlid: missionUlid,
-      name: soulData.name.trim(),
-      note: soulData.note,
-    );
+    await cubit.createSoul(dto: soulData);
     if (!mounted) return;
 
     final error = _resourceErrorMessage(cubit.state);
@@ -409,16 +450,19 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       submitLabel: 'Update',
       initialName: soul.fullName,
       initialNote: soul.notes,
+      initialClassGroupUlid: soul.classGroup?.ulid,
+      initialDecisionType: soul.decisionType,
     );
-    if (!mounted || updatedSoul == null || updatedSoul.name.trim().isEmpty) {
+    if (!mounted ||
+        updatedSoul == null ||
+        updatedSoul.fullName.trim().isEmpty) {
       return;
     }
 
     final cubit = context.read<SoulResourceCubit>();
     await cubit.updateSoul(
       soulUlid: soul.ulid,
-      name: updatedSoul.name.trim(),
-      note: updatedSoul.note,
+      dto: updatedSoul,
     );
     if (!mounted) return;
 
@@ -431,13 +475,13 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptSubscribeMember(PRFMission mission) async {
-    final memberUlid = await _showMemberSubscriptionFormSheet();
-    if (!mounted || memberUlid == null || memberUlid.trim().isEmpty) return;
+    final subscriptionData = await _showMemberSubscriptionFormSheet();
+    if (!mounted || subscriptionData == null) return;
 
     final cubit = context.read<MissionSubscriptionResourceCubit>();
     await cubit.subscribeMember(
       missionUlid: mission.ulid,
-      memberUlid: memberUlid.trim(),
+      memberUlid: subscriptionData.memberUlid,
     );
     if (!mounted) return;
 
@@ -1129,11 +1173,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final result = await PRFBottomSheet.show<String>(
       context,
       title: title,
-      child: MissionSimpleTextFormSheet(
-        label: 'Reason',
+      child: MissionReasonFormSheet(
         hintText: hintText,
-        maxLines: 3,
-        isRequired: false,
         submitLabel: confirmLabel,
       ),
     );

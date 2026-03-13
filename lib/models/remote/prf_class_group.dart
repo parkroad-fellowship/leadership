@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
 
 part 'prf_class_group.freezed.dart';
@@ -10,7 +11,7 @@ abstract class PRFClassGroup with _$PRFClassGroup {
     String ulid,
     String name,
     @JsonKey(name: 'institution_type') PRFInstitutionType institutionType,
-    @JsonKey(name: 'is_active') int isActive,
+    @JsonKey(name: 'is_active') @JsonEnum() PRFActiveStatus isActive,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
   ) = _PRFClassGroup;

@@ -9,6 +9,7 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared_views/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -64,10 +65,10 @@ class _RequisitionApprovalsPageHandsetState
                   actions: [
                     BlocBuilder<
                       GetApprovalRequisitionsCubit,
-                      GetApprovalRequisitionsState
+                      ResourceState<PRFRequisition>
                     >(
                       builder: (context, state) => state.maybeWhen(
-                        loading: () => const SizedBox.square(
+                        listLoading: () => const SizedBox.square(
                           dimension: 20,
                           child: PRFCircularProgressIndicator(),
                         ),
@@ -77,10 +78,10 @@ class _RequisitionApprovalsPageHandsetState
                     const SizedBox(width: PRFSpacingTokens.sm),
                     BlocBuilder<
                       GetClosedRequisitionsCubit,
-                      GetClosedRequisitionsState
+                      ResourceState<PRFRequisition>
                     >(
                       builder: (context, state) => state.maybeWhen(
-                        loading: () => const SizedBox.square(
+                        listLoading: () => const SizedBox.square(
                           dimension: 20,
                           child: PRFCircularProgressIndicator(),
                         ),
@@ -147,49 +148,26 @@ class _RequisitionApprovalsPageHandsetState
 
     return BlocBuilder<
       GetApprovalRequisitionsCubit,
-      GetApprovalRequisitionsState
+      ResourceState<PRFRequisition>
     >(
       builder: (context, state) {
         return state.maybeWhen(
-          orElse: () => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          error: (message) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          empty: () => RefreshIndicator(
-            onRefresh: () => context
-                .read<GetApprovalRequisitionsCubit>()
-                .getApprovalRequisitions(),
-            child: PRFEmptyView(
-              label: l10n.noRequisitions,
-              description: l10n.noPendingRequisitionsDesc,
-            ),
-          ),
-          loaded: (requisitions) {
+          listLoaded: (requisitions, page, hasMore) {
             // Sort requisitions by creation date for timeline
             final sortedRequisitions = List<PRFRequisition>.from(requisitions)
               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+            if (sortedRequisitions.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () => context
+                    .read<GetApprovalRequisitionsCubit>()
+                    .getApprovalRequisitions(),
+                child: PRFEmptyView(
+                  label: l10n.noRequisitions,
+                  description: l10n.noPendingRequisitionsDesc,
+                ),
+              );
+            }
 
             return RefreshIndicator(
               onRefresh: () => context
@@ -237,26 +215,7 @@ class _RequisitionApprovalsPageHandsetState
               ),
             );
           },
-        );
-      },
-    );
-  }
-
-  Widget _buildClosedRequisitions(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return BlocBuilder<GetClosedRequisitionsCubit, GetClosedRequisitionsState>(
-      builder: (context, state) {
-        return state.maybeWhen(
-          orElse: () => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          error: (message) => Center(
+          error: (message, items) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -275,20 +234,44 @@ class _RequisitionApprovalsPageHandsetState
               ],
             ),
           ),
-          empty: () => RefreshIndicator(
-            onRefresh: () => context
-                .read<GetClosedRequisitionsCubit>()
-                .getClosedRequisitions(),
-            child: PRFEmptyView(
-              label: l10n.noRequisitions,
-              description: l10n.noClosedRequisitionsDesc,
+          orElse: () => Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.primary,
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
 
-          loaded: (requisitions) {
+  Widget _buildClosedRequisitions(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return BlocBuilder<
+      GetClosedRequisitionsCubit,
+      ResourceState<PRFRequisition>
+    >(
+      builder: (context, state) {
+        return state.maybeWhen(
+          listLoaded: (requisitions, page, hasMore) {
             // Sort requisitions by creation date for timeline
             final sortedRequisitions = List<PRFRequisition>.from(requisitions)
               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+            if (sortedRequisitions.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () => context
+                    .read<GetClosedRequisitionsCubit>()
+                    .getClosedRequisitions(),
+                child: PRFEmptyView(
+                  label: l10n.noRequisitions,
+                  description: l10n.noClosedRequisitionsDesc,
+                ),
+              );
+            }
 
             return RefreshIndicator(
               onRefresh: () => context
@@ -336,26 +319,7 @@ class _RequisitionApprovalsPageHandsetState
               ),
             );
           },
-        );
-      },
-    );
-  }
-
-  Widget _buildDraftRequisitions(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return BlocBuilder<GetDraftRequisitionsCubit, GetDraftRequisitionsState>(
-      builder: (context, state) {
-        return state.maybeWhen(
-          orElse: () => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          error: (message) => Center(
+          error: (message, items) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -374,20 +338,44 @@ class _RequisitionApprovalsPageHandsetState
               ],
             ),
           ),
-          empty: () => RefreshIndicator(
-            onRefresh: () => context
-                .read<GetClosedRequisitionsCubit>()
-                .getClosedRequisitions(),
-            child: PRFEmptyView(
-              label: l10n.noRequisitions,
-              description: l10n.noDraftRequisitionsDesc,
+          orElse: () => Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.primary,
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
 
-          loaded: (requisitions) {
+  Widget _buildDraftRequisitions(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return BlocBuilder<
+      GetDraftRequisitionsCubit,
+      ResourceState<PRFRequisition>
+    >(
+      builder: (context, state) {
+        return state.maybeWhen(
+          listLoaded: (requisitions, page, hasMore) {
             // Sort requisitions by creation date for timeline
             final sortedRequisitions = List<PRFRequisition>.from(requisitions)
               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+            if (sortedRequisitions.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () => context
+                    .read<GetClosedRequisitionsCubit>()
+                    .getClosedRequisitions(),
+                child: PRFEmptyView(
+                  label: l10n.noRequisitions,
+                  description: l10n.noDraftRequisitionsDesc,
+                ),
+              );
+            }
 
             return RefreshIndicator(
               onRefresh: () => context
@@ -435,6 +423,32 @@ class _RequisitionApprovalsPageHandsetState
               ),
             );
           },
+          error: (message, items) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(height: PRFSpacingTokens.lg),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          orElse: () => Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.primary,
+              ),
+            ),
+          ),
         );
       },
     );

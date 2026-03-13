@@ -1,4 +1,5 @@
 import 'package:leadership/models/remote/prf_debrief_note.dart';
+import 'package:leadership/models/remote/prf_debrief_note_dto.dart';
 import 'package:leadership/services/api/debrief_note_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
@@ -20,21 +21,29 @@ class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
     required String missionUlid,
     required String note,
   }) {
+    final dto = PRFDebriefNoteDTO(
+      missionUlid: missionUlid,
+      note: note,
+    );
+
     return create(
-      data: {
-        'mission_ulid': missionUlid,
-        'note': note,
-      },
+      data: dto.toJson(),
     );
   }
 
   Future<void> updateNote({
     required String noteUlid,
+    required String missionUlid,
     required String note,
   }) {
+    final dto = PRFDebriefNoteDTO(
+      missionUlid: missionUlid,
+      note: note,
+    );
+
     return update(
       id: noteUlid,
-      data: {'note': note},
+      data: dto.toJson(),
       matchById: (item) => item.ulid == noteUlid,
     );
   }

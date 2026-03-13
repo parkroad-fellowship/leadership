@@ -7,9 +7,11 @@ import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_media_dto.dart';
-import 'package:leadership/shared_views/expenses/cubit/add_allocation_entry_cubit.dart';
+import 'package:leadership/shared_views/expenses/cubit/allocation_entry_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class AddExpenseViewHandset extends StatefulWidget {
@@ -313,15 +315,24 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
               const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Submit Button
-              BlocConsumer<AddAllocationEntryCubit, AddAllocationEntryState>(
+              BlocConsumer<
+                    AllocationEntryResourceCubit,
+                    ResourceState<PRFAllocationEntry>
+                  >(
                     listener: (context, state) {
-                      state.mapOrNull(
-                        loading: (_) {
+                      state.maybeWhen(
+                        mutating: (items, operation) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = true;
                           });
                         },
-                        loaded: (_) {
+                        mutated: (items, operation, item) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
                           setState(() {
                             _isLoading = false;
                           });
@@ -331,7 +342,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                             SnackBar(content: Text(l10n.expenseRecorded)),
                           );
                         },
-                        error: (error) {
+                        error: (message, items) {
                           setState(() {
                             _isLoading = false;
                           });
@@ -339,9 +350,10 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                           ScaffoldMessenger.of(
                             context,
                           ).showSnackBar(
-                            SnackBar(content: Text(error.message)),
+                            SnackBar(content: Text(message)),
                           );
                         },
+                        orElse: () {},
                       );
                     },
                     builder: (context, state) {
@@ -581,7 +593,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
       loaded: (mediaItems) => mediaItems,
     );
 
-    await context.read<AddAllocationEntryCubit>().addAllocationEntry(
+    await context.read<AllocationEntryResourceCubit>().addAllocationEntry(
       accountingEventUlid: widget.accountingEventUlid,
       expenseCategoryUlid: selectedExpenseCategory!.ulid,
       entryType: PRFEntryType.debit, // Always debit for expenses

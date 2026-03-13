@@ -47,6 +47,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   String? _endDateError;
   String? _startTimeError;
   String? _endTimeError;
+  String? _themeError;
+  String? _capacityError;
   bool _showValidation = false;
 
   bool get _isFormValid {
@@ -56,7 +58,9 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
         _startDate != null &&
         _endDate != null &&
         _startTimeController.text.trim().isNotEmpty &&
-        _endTimeController.text.trim().isNotEmpty;
+        _endTimeController.text.trim().isNotEmpty &&
+        _themeController.text.trim().isNotEmpty &&
+        ((int.tryParse(_capacityController.text.trim()) ?? 0) > 0);
   }
 
   @override
@@ -79,6 +83,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     _endDateError = null;
     _startTimeError = null;
     _endTimeError = null;
+    _themeError = null;
+    _capacityError = null;
   }
 
   bool _validateForm() {
@@ -110,6 +116,15 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     if (_endTimeController.text.trim().isEmpty) {
       _endTimeError = 'End time is required';
     }
+    if (_themeController.text.trim().isEmpty) {
+      _themeError = 'Theme is required';
+    }
+    final capacity = int.tryParse(_capacityController.text.trim());
+    if (_capacityController.text.trim().isEmpty) {
+      _capacityError = 'Capacity is required';
+    } else if (capacity == null || capacity < 1) {
+      _capacityError = 'Capacity must be at least 1';
+    }
 
     setState(() {
       _showValidation = true;
@@ -123,6 +138,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       _endDateError,
       _startTimeError,
       _endTimeError,
+      _themeError,
+      _capacityError,
     ].every((error) => error == null);
   }
 
@@ -294,26 +311,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                 ],
               ),
               const SizedBox(height: PRFSpacingTokens.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: PRFTextInput(
-                      hintText: 'YYYY-MM-DD',
-                      labelText: 'End Date',
-                      helperText: 'Select mission end date',
-                      errorText: _showValidation ? _endDateError : null,
-                      controller: _endDateController,
-                      enabled: false,
-                    ),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  IconButton.outlined(
-                    onPressed: _isLoading ? null : _selectEndDate,
-                    icon: const Icon(Icons.event_available),
-                  ),
-                ],
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
+
               Row(
                 children: [
                   Expanded(
@@ -333,6 +331,27 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                   ),
                 ],
               ),
+              const SizedBox(height: PRFSpacingTokens.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: PRFTextInput(
+                      hintText: 'YYYY-MM-DD',
+                      labelText: 'End Date',
+                      helperText: 'Select mission end date',
+                      errorText: _showValidation ? _endDateError : null,
+                      controller: _endDateController,
+                      enabled: false,
+                    ),
+                  ),
+                  const SizedBox(width: PRFSpacingTokens.sm),
+                  IconButton.outlined(
+                    onPressed: _isLoading ? null : _selectEndDate,
+                    icon: const Icon(Icons.event_available),
+                  ),
+                ],
+              ),
+
               const SizedBox(height: PRFSpacingTokens.md),
               Row(
                 children: [
@@ -365,7 +384,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
               PRFTextInput(
                 hintText: 'Mission theme',
                 labelText: l10n.theme,
-                helperText: 'Optional mission focus/theme',
+                helperText: 'Required mission focus/theme',
+                errorText: _showValidation ? _themeError : null,
                 controller: _themeController,
                 enabled: !_isLoading,
               ),
@@ -373,7 +393,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
               PRFNumberInput(
                 hintText: '0',
                 labelText: 'Capacity',
-                helperText: 'Maximum number of participants',
+                helperText: 'Required: missionaries needed',
+                errorText: _showValidation ? _capacityError : null,
                 controller: _capacityController,
                 enabled: !_isLoading,
               ),
@@ -415,31 +436,42 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           icon: Icons.calendar_view_month,
           title: 'School Term',
           isRequired: true,
-          child: DropdownButtonFormField<String>(
-            initialValue: _selectedSchoolTermUlid,
-            decoration: InputDecoration(
-              hintText: 'Select school term',
-              helperText: 'Active term this mission belongs to',
-              errorText: _showValidation ? _schoolTermError : null,
-            ),
-            items: terms
-                .map(
-                  (term) => DropdownMenuItem<String>(
-                    value: term.ulid,
-                    child: Text(term.name),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFCategoryChips<PRFSchoolTerm>(
+                categories: terms,
+                labelBuilder: (term) => term.name,
+                selectedCategory: terms.cast<PRFSchoolTerm?>().firstWhere(
+                  (term) => term?.ulid == _selectedSchoolTermUlid,
+                  orElse: () => null,
+                ),
+                showAllOption: false,
+                onCategorySelected: _isLoading
+                    ? (_) {}
+                    : (term) {
+                        if (term == null) {
+                          return;
+                        }
+                        setState(() {
+                          _selectedSchoolTermUlid = term.ulid;
+                        });
+                        if (_showValidation) {
+                          _validateForm();
+                        }
+                      },
+              ),
+              if (_showValidation && _schoolTermError != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: PRFSpacingTokens.xs),
+                  child: Text(
+                    _schoolTermError!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
-                )
-                .toList(),
-            onChanged: _isLoading
-                ? null
-                : (value) {
-                    setState(() {
-                      _selectedSchoolTermUlid = value;
-                    });
-                    if (_showValidation) {
-                      _validateForm();
-                    }
-                  },
+                ),
+            ],
           ),
         );
       },
@@ -461,31 +493,42 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           icon: Icons.category_outlined,
           title: 'Mission Type',
           isRequired: true,
-          child: DropdownButtonFormField<String>(
-            initialValue: _selectedMissionTypeUlid,
-            decoration: InputDecoration(
-              hintText: 'Select mission type',
-              helperText: 'Category used for mission planning',
-              errorText: _showValidation ? _missionTypeError : null,
-            ),
-            items: types
-                .map(
-                  (type) => DropdownMenuItem<String>(
-                    value: type.ulid,
-                    child: Text(type.name),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFCategoryChips<PRFMissionType>(
+                categories: types,
+                labelBuilder: (type) => type.name,
+                selectedCategory: types.cast<PRFMissionType?>().firstWhere(
+                  (type) => type?.ulid == _selectedMissionTypeUlid,
+                  orElse: () => null,
+                ),
+                showAllOption: false,
+                onCategorySelected: _isLoading
+                    ? (_) {}
+                    : (type) {
+                        if (type == null) {
+                          return;
+                        }
+                        setState(() {
+                          _selectedMissionTypeUlid = type.ulid;
+                        });
+                        if (_showValidation) {
+                          _validateForm();
+                        }
+                      },
+              ),
+              if (_showValidation && _missionTypeError != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: PRFSpacingTokens.xs),
+                  child: Text(
+                    _missionTypeError!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
-                )
-                .toList(),
-            onChanged: _isLoading
-                ? null
-                : (value) {
-                    setState(() {
-                      _selectedMissionTypeUlid = value;
-                    });
-                    if (_showValidation) {
-                      _validateForm();
-                    }
-                  },
+                ),
+            ],
           ),
         );
       },
@@ -507,31 +550,32 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           icon: Icons.school_outlined,
           title: 'School',
           isRequired: true,
-          child: DropdownButtonFormField<String>(
-            initialValue: _selectedSchoolUlid,
-            decoration: InputDecoration(
-              hintText: 'Select school',
-              helperText: 'Destination school for this mission',
-              errorText: _showValidation ? _schoolError : null,
-            ),
-            items: schools
+          child: DropdownMenu<String>(
+            width: double.infinity,
+            initialSelection: _selectedSchoolUlid,
+            enabled: !_isLoading,
+            enableFilter: true,
+            requestFocusOnTap: true,
+            label: const Text('School *'),
+            hintText: 'Search school',
+            helperText: 'Destination school for this mission',
+            errorText: _showValidation ? _schoolError : null,
+            dropdownMenuEntries: schools
                 .map(
-                  (school) => DropdownMenuItem<String>(
+                  (school) => DropdownMenuEntry<String>(
                     value: school.ulid,
-                    child: Text(school.name),
+                    label: school.name,
                   ),
                 )
                 .toList(),
-            onChanged: _isLoading
-                ? null
-                : (value) {
-                    setState(() {
-                      _selectedSchoolUlid = value;
-                    });
-                    if (_showValidation) {
-                      _validateForm();
-                    }
-                  },
+            onSelected: (value) {
+              setState(() {
+                _selectedSchoolUlid = value;
+              });
+              if (_showValidation) {
+                _validateForm();
+              }
+            },
           ),
         );
       },

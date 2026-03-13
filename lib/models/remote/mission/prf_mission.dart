@@ -24,8 +24,7 @@ abstract class PRFMission with _$PRFMission {
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt, {
     @JsonKey(name: 'mission_prep_notes') String? missionPrepNotes,
-    @Default('Open Topic')
-    String? theme,
+    @Default('Open Topic') String? theme,
     @JsonKey(name: 'whats_app_link') String? whatsAppLink,
     PRFSchool? school,
     @JsonKey(name: 'school_term') PRFSchoolTerm? schoolTerm,

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 
@@ -15,7 +16,7 @@ abstract class PRFSchool with _$PRFSchool {
     String address,
     double latitude,
     double longitude,
-    @JsonKey(name: 'is_active') int isActive,
+    @JsonKey(name: 'is_active') @JsonEnum() PRFActiveStatus isActive,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt, {
     @Default('N/A') String description,
