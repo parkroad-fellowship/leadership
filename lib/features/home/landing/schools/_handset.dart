@@ -215,37 +215,34 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
           Padding(
             padding: const EdgeInsets.fromLTRB(
               PRFSpacingTokens.lg,
-              PRFSpacingTokens.md,
+              0,
               PRFSpacingTokens.lg,
-              PRFSpacingTokens.xxxl,
+              PRFSpacingTokens.md,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                // Stats row
-                Row(
-                  children: [
-                    _buildStat(
-                      theme,
-                      '$schoolCount',
-                      'Schools',
-                      theme.colorScheme.secondary,
-                    ),
-                    _buildDivider(theme),
-                    _buildStat(
-                      theme,
-                      _formatNumber(totalStudents),
-                      'Students',
-                      theme.colorScheme.onPrimary,
-                    ),
-                    _buildDivider(theme),
-                    _buildStat(
-                      theme,
-                      '$totalContacts',
-                      'Contacts',
-                      theme.colorScheme.onPrimary,
-                    ),
-                  ],
+                Expanded(
+                  child: _buildHeaderStat(
+                    label: 'Schools',
+                    value: '$schoolCount',
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
+                const SizedBox(width: PRFSpacingTokens.sm),
+                Expanded(
+                  child: _buildHeaderStat(
+                    label: 'Students',
+                    value: _formatNumber(totalStudents),
+                    color: theme.colorScheme.tertiary,
+                  ),
+                ),
+                const SizedBox(width: PRFSpacingTokens.sm),
+                Expanded(
+                  child: _buildHeaderStat(
+                    label: 'Contacts',
+                    value: '$totalContacts',
+                    color: theme.colorScheme.errorContainer,
+                  ),
                 ),
               ],
             ),
@@ -293,40 +290,40 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
   // Stat helpers
   // ---------------------------------------------------------
 
-  Widget _buildStat(
-    ThemeData theme,
-    String value,
-    String label,
-    Color valueColor,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: valueColor,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        Text(
-          label,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onPrimary.withValues(alpha: 0.4),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildHeaderStat({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
 
-  Widget _buildDivider(ThemeData theme) {
     return Container(
-      width: 1,
-      height: 30,
-      margin: const EdgeInsets.symmetric(
-        horizontal: PRFSpacingTokens.lg,
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.sm,
+        vertical: PRFSpacingTokens.sm,
       ),
-      color: theme.colorScheme.onPrimary.withValues(alpha: 0.1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
