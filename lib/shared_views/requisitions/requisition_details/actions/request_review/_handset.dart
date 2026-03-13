@@ -146,35 +146,28 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                 isRequired: true,
                 child: Column(
                   children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return BlocBuilder<GetMembersCubit, GetMembersState>(
-                          builder: (context, state) {
-                            return state.maybeWhen(
-                              orElse: () => const SizedBox.shrink(),
-                              loading: () => const Center(
-                                child: LinearProgressIndicator(),
-                              ),
-                              loaded: (leaders) =>
-                                  PRFSearchableDropdown<PRFMember>(
-                                    initialSelection: selectedApprover,
-                                    hintText: l10n.selectApprover,
-                                    labelText: l10n.selectApprover,
-                                    dropdownMenuEntries: leaders
-                                        .map(
-                                          (leader) =>
-                                              DropdownMenuEntry<PRFMember>(
-                                                value: leader,
-                                                label: leader.fullName,
-                                              ),
-                                        )
-                                        .toList(),
-                                    onSelected: (member) => setState(() {
-                                      selectedApprover = member;
-                                    }),
+                    BlocBuilder<GetMembersCubit, GetMembersState>(
+                      builder: (context, state) {
+                        return state.maybeWhen(
+                          orElse: () => const SizedBox.shrink(),
+                          loading: () => const Center(
+                            child: LinearProgressIndicator(),
+                          ),
+                          loaded: (leaders) => PRFSearchableList<PRFMember>(
+                            entries: leaders
+                                .map(
+                                  (leader) => PRFSearchableListEntry<PRFMember>(
+                                    value: leader,
+                                    label: leader.fullName,
                                   ),
-                            );
-                          },
+                                )
+                                .toList(),
+                            onSelected: (member) => setState(() {
+                              selectedApprover = member;
+                            }),
+                            selection: selectedApprover,
+                            hintText: l10n.selectApprover,
+                          ),
                         );
                       },
                     ),

@@ -678,16 +678,10 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           title: 'School',
           isRequired: true,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFSearchableDropdown<String>(
-            initialSelection: _selectedSchoolUlid,
-            enabled: !_isLoading,
-            labelText: 'School *',
-            hintText: 'Search school',
-            helperText: 'Destination school for this mission',
-            errorText: _showValidation ? _schoolError : null,
-            dropdownMenuEntries: schools
+          child: PRFSearchableList<String>(
+            entries: schools
                 .map(
-                  (school) => DropdownMenuEntry<String>(
+                  (school) => PRFSearchableListEntry<String>(
                     value: school.ulid,
                     label: school.name,
                   ),
@@ -701,6 +695,9 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                 _validateForm();
               }
             },
+            selection: _selectedSchoolUlid,
+            hintText: 'Search school',
+            emptyText: 'No schools found',
           ),
         );
       },

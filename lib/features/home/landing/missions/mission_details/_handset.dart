@@ -1760,7 +1760,10 @@ class _MissionMemberSubscriptionFormBodyState
   void _submit() {
     if (!_validateSelection()) {
       Gaimon.warning();
-      PRFSnackbar.error(context, 'Please fill in all required fields');
+      PRFSnackbar.error(
+        context,
+        'Please fill in all required fields',
+      );
       return;
     }
 
@@ -1777,7 +1780,9 @@ class _MissionMemberSubscriptionFormBodyState
     final dto = await PRFBottomSheet.show<PRFMissionOfflineMemberDTO>(
       context,
       title: 'Add Missioner',
-      child: _OfflineMemberFormBody(missionUlid: widget.missionUlid),
+      child: _OfflineMemberFormBody(
+        missionUlid: widget.missionUlid,
+      ),
     );
 
     if (!mounted || dto == null) return;
@@ -1803,6 +1808,14 @@ class _MissionMemberSubscriptionFormBodyState
           error: (message) => message,
           orElse: () => null,
         );
+        final entries = members
+            .map(
+              (m) => PRFSearchableListEntry<String>(
+                value: m.ulid,
+                label: m.fullName,
+              ),
+            )
+            .toList();
 
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -1812,136 +1825,139 @@ class _MissionMemberSubscriptionFormBodyState
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  theme.colorScheme.primary.withValues(alpha: 0.05),
+                  theme.colorScheme.primary.withValues(
+                    alpha: 0.05,
+                  ),
                   theme.colorScheme.surface,
                 ],
               ),
             ),
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: PRFSpacingTokens.lg),
-                    _buildHeaderCard(theme)
-                        .animate()
-                        .slideY(begin: -0.3)
-                        .fadeIn(duration: PRFMotionTokens.enterShort),
-                    const SizedBox(height: PRFSpacingTokens.xxl),
-                    Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(
-                              PRFRadiusTokens.lg,
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.lg,
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: PRFSpacingTokens.lg),
+                  _buildHeaderCard(theme)
+                      .animate()
+                      .slideY(begin: -0.3)
+                      .fadeIn(
+                        duration: PRFMotionTokens.enterShort,
+                      ),
+                  const SizedBox(height: PRFSpacingTokens.xxl),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(
+                      PRFSpacingTokens.xl,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(
+                        PRFRadiusTokens.lg,
+                      ),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.2,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.shadow.withValues(
+                            alpha: 0.1,
+                          ),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: PRFFormSection(
+                      icon: Icons.group_add_outlined,
+                      title: 'Select Member',
+                      subtitle:
+                          'Search for a member to add '
+                          'to this mission',
+                      isRequired: true,
+                      margin: EdgeInsets.zero,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isLoading)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: PRFSpacingTokens.md,
+                              ),
+                              child: PRFCircularProgressIndicator(),
+                            )
+                          else
+                            PRFSearchableList<String>(
+                              entries: entries,
+                              onSelected: (value) {
+                                setState(() {
+                                  _selectedMemberUlid = value;
+                                  _selectionError = null;
+                                });
+                              },
+                              selection: _selectedMemberUlid,
+                              hintText: 'Search member by name',
+                              emptyText: 'No members found',
                             ),
-                            border: Border.all(
-                              color: theme.colorScheme.outline.withValues(
-                                alpha: 0.2,
+                          if (_showValidation && _selectionError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: PRFSpacingTokens.xs,
+                              ),
+                              child: Text(
+                                _selectionError!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
                               ),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.shadow.withValues(
-                                  alpha: 0.1,
-                                ),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                          if (errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: PRFSpacingTokens.sm,
                               ),
-                            ],
-                          ),
-                          child: PRFFormSection(
-                            icon: Icons.group_add_outlined,
-                            title: 'Subscription Member',
-                            subtitle: 'Choose a member to add to this mission',
-                            isRequired: true,
-                            margin: EdgeInsets.zero,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (isLoading)
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: PRFSpacingTokens.md,
-                                    ),
-                                    child: PRFCircularProgressIndicator(),
-                                  )
-                                else
-                                  PRFSearchableDropdown<String>(
-                                    initialSelection: _selectedMemberUlid,
-                                    labelText: 'Member *',
-                                    hintText: 'Search member',
-                                    helperText: 'Only active members are shown',
-                                    errorText: _showValidation
-                                        ? _selectionError
-                                        : null,
-                                    dropdownMenuEntries: members
-                                        .map(
-                                          (member) => DropdownMenuEntry<String>(
-                                            value: member.ulid,
-                                            label: member.fullName,
-                                          ),
-                                        )
-                                        .toList(),
-                                    onSelected: (value) {
-                                      setState(() {
-                                        _selectedMemberUlid = value;
-                                        _selectionError = null;
-                                      });
-                                    },
-                                  ),
-                                if (errorMessage != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: PRFSpacingTokens.sm,
-                                    ),
-                                    child: Text(
-                                      errorMessage,
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            color: theme.colorScheme.error,
-                                          ),
-                                    ),
-                                  ),
-                                if (!isLoading && members.isEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: PRFSpacingTokens.sm,
-                                    ),
-                                    child: Text(
-                                      'No members found. '
-                                      'Refresh and try again.',
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                  ),
-                                const SizedBox(
-                                  height: PRFSpacingTokens.lg,
+                              child: Text(
+                                errorMessage,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
                                 ),
-                                _buildAddMissionerButton(theme),
-                              ],
+                              ),
                             ),
+                          if (!isLoading && members.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: PRFSpacingTokens.sm,
+                              ),
+                              child: Text(
+                                'No members found. '
+                                'Refresh and try again.',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                          const SizedBox(
+                            height: PRFSpacingTokens.lg,
                           ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-                    const SizedBox(height: PRFSpacingTokens.xxl),
-                    SizedBox(
-                      width: double.infinity,
-                      child: PRFPrimaryButton(
-                        onPressed: _submit,
-                        title: 'Subscribe Member',
-                        disabled: isLoading || !_isFormValid,
-                        isLoading: isLoading,
+                          _buildAddMissionerButton(theme),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: PRFSpacingTokens.xxxl),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: PRFSpacingTokens.xxl),
+                  SizedBox(
+                    width: double.infinity,
+                    child: PRFPrimaryButton(
+                      onPressed: _submit,
+                      title: 'Subscribe Member',
+                      disabled: isLoading || !_isFormValid,
+                      isLoading: isLoading,
+                    ),
+                  ),
+                  const SizedBox(height: PRFSpacingTokens.xxxl),
+                ],
               ),
             ),
           ),
@@ -2332,7 +2348,6 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
   String? _selectedClassGroupUlid;
   late PRFSoulDecisionType _selectedDecisionType;
   String? _nameError;
-  String? _classGroupError;
   bool _showValidation = false;
 
   bool get _isFormValid {
@@ -2350,7 +2365,6 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
     setState(() {
       _showValidation = true;
       _nameError = hasName ? null : 'Name / Identifier is required';
-      _classGroupError = hasClassGroup ? null : 'Class group is required';
     });
 
     return hasName && hasClassGroup;
@@ -2482,20 +2496,10 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             margin: const EdgeInsets.only(
                               bottom: PRFSpacingTokens.md,
                             ),
-                            child: PRFSearchableDropdown<String>(
-                              initialSelection: _selectedClassGroupUlid,
-                              enabled: widget.classGroups.isNotEmpty,
-                              labelText: 'Class Group *',
-                              hintText: 'Search class group',
-                              helperText: widget.classGroups.isEmpty
-                                  ? 'No class groups found for this school type'
-                                  : 'Required',
-                              errorText: _showValidation
-                                  ? _classGroupError
-                                  : null,
-                              dropdownMenuEntries: widget.classGroups
+                            child: PRFSearchableList<String>(
+                              entries: widget.classGroups
                                   .map(
-                                    (group) => DropdownMenuEntry<String>(
+                                    (group) => PRFSearchableListEntry<String>(
                                       value: group.ulid,
                                       label: group.name,
                                     ),
@@ -2504,9 +2508,13 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                               onSelected: (value) {
                                 setState(() {
                                   _selectedClassGroupUlid = value;
-                                  _classGroupError = null;
                                 });
                               },
+                              selection: _selectedClassGroupUlid,
+                              hintText: 'Search class group',
+                              emptyText:
+                                  'No class groups found for '
+                                  'this school type',
                             ),
                           ),
                           PRFFormSection(

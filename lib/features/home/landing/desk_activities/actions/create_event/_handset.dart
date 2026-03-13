@@ -179,20 +179,25 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             icon: Icons.group_outlined,
                             title: l10n.responsibleDesk,
                             isRequired: true,
-                            child: PRFSearchableDropdown<PRFResponsibleDesk>(
-                              initialSelection: selectedResponsibleDesk,
-                              hintText: l10n.responsibleDesk,
-                              labelText: l10n.responsibleDesk,
-                              dropdownMenuEntries: _hiveService.responsibleDesks
+                            child: PRFSearchableList<PRFResponsibleDesk>(
+                              entries: _hiveService.responsibleDesks
                                   .map(
                                     (responsibleDesk) =>
-                                        DropdownMenuEntry<PRFResponsibleDesk>(
+                                        PRFSearchableListEntry<
+                                          PRFResponsibleDesk
+                                        >(
                                           value: responsibleDesk,
                                           label: responsibleDesk.name,
                                         ),
                                   )
                                   .toList(),
                               onSelected: (responsibleDesk) {
+                                if (responsibleDesk == null) {
+                                  setState(() {
+                                    selectedResponsibleDesk = null;
+                                  });
+                                  return;
+                                }
                                 setState(() {
                                   selectedResponsibleDesk = responsibleDesk;
                                 });
@@ -201,12 +206,14 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                 // desk.
                                 final groups =
                                     PRFLeadershipGroup.fromResponsibleDesk(
-                                      responsibleDesk!,
+                                      responsibleDesk,
                                     );
                                 context.read<GetMembersCubit>().getMembers(
                                   groups: groups,
                                 );
                               },
+                              selection: selectedResponsibleDesk,
+                              hintText: l10n.responsibleDesk,
                             ),
                           )
                           .animate(delay: PRFMotionTokens.stagger3)
