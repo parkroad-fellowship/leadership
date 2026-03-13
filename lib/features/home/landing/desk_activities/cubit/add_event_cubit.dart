@@ -44,8 +44,16 @@ class AddEventCubit extends Cubit<AddEventState> {
           description: name,
           startDate: startTime.toUtc().toIso8601String().split('T')[0],
           startTime: startTime.toUtc().toIso8601String().split('T')[1],
-          endDate: startTime.add(Duration(days: 3)).toUtc().toIso8601String().split('T')[0],
-          endTime: startTime.add(Duration(days: 3)).toUtc().toIso8601String().split('T')[1],
+          endDate: startTime
+              .add(const Duration(days: 3))
+              .toUtc()
+              .toIso8601String()
+              .split('T')[0],
+          endTime: startTime
+              .add(const Duration(days: 3))
+              .toUtc()
+              .toIso8601String()
+              .split('T')[1],
           responsibleDesk: responsibleDesk.apiKey,
           eventType: PRFEventType.leadership.apiKey,
           participantMemberUlids: participants.map((e) => e.ulid).toList(),

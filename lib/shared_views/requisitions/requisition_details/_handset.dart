@@ -135,69 +135,74 @@ class _RequisitionDetailsPageHandsetState
                 ),
               ),
               Expanded(
-                child: BlocBuilder<
-                  RequisitionItemResourceCubit,
-                  ResourceState<PRFRequisitionItem>
-                >(
-                  builder: (context, state) {
-                    return switch (state) {
-                      ResourceListLoaded<PRFRequisitionItem>(:final items)
-                          when items.isEmpty =>
-                        _buildEmptyState(context, l10n),
-                      ResourceListLoaded<PRFRequisitionItem>(:final items) =>
-                        _buildRequisitionItemsList(
-                          context,
-                          l10n,
-                          items,
-                          requisition,
-                        ),
-                      ResourceMutated<PRFRequisitionItem>(:final items)
-                          when items.isEmpty =>
-                        _buildEmptyState(context, l10n),
-                      ResourceMutated<PRFRequisitionItem>(:final items) =>
-                        _buildRequisitionItemsList(
-                          context,
-                          l10n,
-                          items,
-                          requisition,
-                        ),
-                      ResourceError<PRFRequisitionItem>(:final message) =>
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                size: 64,
-                                color: Theme.of(context).colorScheme.error,
+                child:
+                    BlocBuilder<
+                      RequisitionItemResourceCubit,
+                      ResourceState<PRFRequisitionItem>
+                    >(
+                      builder: (context, state) {
+                        return switch (state) {
+                          ResourceListLoaded<PRFRequisitionItem>(:final items)
+                              when items.isEmpty =>
+                            _buildEmptyState(context, l10n),
+                          ResourceListLoaded<PRFRequisitionItem>(
+                            :final items,
+                          ) =>
+                            _buildRequisitionItemsList(
+                              context,
+                              l10n,
+                              items,
+                              requisition,
+                            ),
+                          ResourceMutated<PRFRequisitionItem>(:final items)
+                              when items.isEmpty =>
+                            _buildEmptyState(context, l10n),
+                          ResourceMutated<PRFRequisitionItem>(:final items) =>
+                            _buildRequisitionItemsList(
+                              context,
+                              l10n,
+                              items,
+                              requisition,
+                            ),
+                          ResourceError<PRFRequisitionItem>(:final message) =>
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: 64,
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                  const SizedBox(height: PRFSpacingTokens.lg),
+                                  Text(
+                                    '${l10n.error}: $message',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: PRFSpacingTokens.lg),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      context
+                                          .read<RequisitionItemResourceCubit>()
+                                          .loadForRequisition(
+                                            requisitionUlid:
+                                                widget.requisitionUlid,
+                                          );
+                                    },
+                                    child: Text(l10n.retry),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: PRFSpacingTokens.lg),
-                              Text(
-                                '${l10n.error}: $message',
-                                style: Theme.of(context).textTheme.bodyLarge,
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: PRFSpacingTokens.lg),
-                              ElevatedButton(
-                                onPressed: () {
-                                  context
-                                      .read<RequisitionItemResourceCubit>()
-                                      .loadForRequisition(
-                                        requisitionUlid:
-                                            widget.requisitionUlid,
-                                      );
-                                },
-                                child: Text(l10n.retry),
-                              ),
-                            ],
+                            ),
+                          _ => const Center(
+                            child: PRFCircularProgressIndicator(),
                           ),
-                        ),
-                      _ => const Center(
-                        child: PRFCircularProgressIndicator(),
-                      ),
-                    };
-                  },
-                ),
+                        };
+                      },
+                    ),
               ),
             ],
           ),
@@ -214,15 +219,15 @@ class _RequisitionDetailsPageHandsetState
         final requisition = _currentRequisitionFromState(requisitionState);
         return requisition != null
             ? _buildEmptyStateContent(
-            context,
-            theme,
-            requisition.approvalStatus,
-          )
+                context,
+                theme,
+                requisition.approvalStatus,
+              )
             : _buildEmptyStateContent(
-            context,
-            theme,
-            PRFApprovalStatus.pending,
-          );
+                context,
+                theme,
+                PRFApprovalStatus.pending,
+              );
       },
     );
   }
@@ -419,9 +424,9 @@ class _RequisitionDetailsPageHandsetState
         isEditable && Misc.userCan(PRFPermissions.deleteRequisitionItem);
 
     return BlocListener<
-      RequisitionItemResourceCubit,
-      ResourceState<PRFRequisitionItem>
-    >(
+          RequisitionItemResourceCubit,
+          ResourceState<PRFRequisitionItem>
+        >(
           listener: (context, state) {
             if (_deletingRequisitionItemUlid != item.ulid) return;
 
@@ -788,8 +793,7 @@ class _RequisitionDetailsPageHandsetState
                                     _deletingRequisitionItemUlid == item.ulid &&
                                     state.maybeWhen(
                                       mutating: (_, operation) =>
-                                          operation ==
-                                          ResourceOperation.delete,
+                                          operation == ResourceOperation.delete,
                                       orElse: () => false,
                                     );
                                 final canDelete =
@@ -1005,10 +1009,8 @@ class _RequisitionDetailsPageHandsetState
           listener: (listenerContext, state) {
             state.maybeWhen(
               mutated: (_, operation, _) {
-                if (
-                    operation == ResourceOperation.delete &&
-                    dialogContext.mounted
-                ) {
+                if (operation == ResourceOperation.delete &&
+                    dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
                 }
               },
@@ -1021,129 +1023,129 @@ class _RequisitionDetailsPageHandsetState
             );
           },
           child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                ),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: theme.colorScheme.error,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: PRFSpacingTokens.md),
-              Expanded(
-                child: Text(
-                  'Delete Item',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Are you sure you want to delete this item?',
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.5,
-                  ),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.itemName,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: PRFSpacingTokens.xs),
-                    Text(
-                      '${NumberFormat.currency(
-                        symbol: 'KES ',
-                        decimalDigits: 0,
-                      ).format(item.totalPrice)} • Qty: ${item.quantity}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: PRFSpacingTokens.md),
-              Text(
-                'This action cannot be undone.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.error,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
             ),
-            BlocBuilder<
-              RequisitionItemResourceCubit,
-              ResourceState<PRFRequisitionItem>
-            >(
-              builder: (consumerContext, state) {
-                final isLoading =
-                    _deletingRequisitionItemUlid == item.ulid &&
-                    state.maybeWhen(
-                      mutating: (_, operation) =>
-                          operation == ResourceOperation.delete,
-                      orElse: () => false,
-                    );
-
-                if (isLoading) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(PRFSpacingTokens.sm),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+                  ),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: theme.colorScheme.error,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: PRFSpacingTokens.md),
+                Expanded(
+                  child: Text(
+                    'Delete Item',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          theme.colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Are you sure you want to delete this item?',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: PRFSpacingTokens.md),
+                Container(
+                  padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.itemName,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  );
-                }
-
-                return _buildDeleteActionButton(context, theme, item);
-              },
+                      const SizedBox(height: PRFSpacingTokens.xs),
+                      Text(
+                        '${NumberFormat.currency(
+                          symbol: 'KES ',
+                          decimalDigits: 0,
+                        ).format(item.totalPrice)} • Qty: ${item.quantity}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: PRFSpacingTokens.md),
+                Text(
+                  'This action cannot be undone.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
+              BlocBuilder<
+                RequisitionItemResourceCubit,
+                ResourceState<PRFRequisitionItem>
+              >(
+                builder: (consumerContext, state) {
+                  final isLoading =
+                      _deletingRequisitionItemUlid == item.ulid &&
+                      state.maybeWhen(
+                        mutating: (_, operation) =>
+                            operation == ResourceOperation.delete,
+                        orElse: () => false,
+                      );
+
+                  if (isLoading) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return _buildDeleteActionButton(context, theme, item);
+                },
+              ),
+            ],
           ),
         );
       },
@@ -1360,7 +1362,8 @@ class _RequisitionDetailsPageHandsetState
       BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
         builder: (context, requisitionState) {
           final requisition = _currentRequisitionFromState(requisitionState);
-          final isAppointed = requisition != null &&
+          final isAppointed =
+              requisition != null &&
               loggedInMember.ulid == requisition.appointedApprover?.ulid;
 
           if (isAppointed) {
@@ -1433,7 +1436,8 @@ class _RequisitionDetailsPageHandsetState
       BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
         builder: (context, requisitionState) {
           final requisition = _currentRequisitionFromState(requisitionState);
-          final isAppointed = requisition != null &&
+          final isAppointed =
+              requisition != null &&
               loggedInMember.ulid == requisition.appointedApprover?.ulid;
 
           if (isAppointed) {
@@ -1593,81 +1597,81 @@ class _RequisitionDetailsPageHandsetState
           final requisition = _currentRequisitionFromState(requisitionState);
           if (requisition != null) {
             return Column(
-                children: [
-                  Row(
-                    children: [
-                      if (paymentInstruction != null) ...[
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            icon: Icons.payment,
-                            label: l10n.paymentDetails,
-                            onPressed: () => _showPaymentInstructionDetails(
-                              context,
-                              paymentInstruction,
-                            ),
-                            isPrimary: true,
-                          ),
-                        ),
-                        const SizedBox(width: PRFSpacingTokens.md),
-                      ],
+              children: [
+                Row(
+                  children: [
+                    if (paymentInstruction != null) ...[
                       Expanded(
                         child: _buildActionButton(
                           context,
-                          icon: Icons.add,
-                          label: l10n.newRequisition,
-                          onPressed: () => context.router.pop(),
-                          isSecondary: true,
+                          icon: Icons.payment,
+                          label: l10n.paymentDetails,
+                          onPressed: () => _showPaymentInstructionDetails(
+                            context,
+                            paymentInstruction,
+                          ),
+                          isPrimary: true,
                         ),
                       ),
+                      const SizedBox(width: PRFSpacingTokens.md),
                     ],
-                  ),
-                  // Show recall button for requisitors
-                  if (loggedInMember.ulid == requisition.member?.ulid) ...[
-                    const SizedBox(height: PRFSpacingTokens.sm),
-                    SizedBox(
-                      width: double.infinity,
+                    Expanded(
                       child: _buildActionButton(
                         context,
-                        icon: Icons.undo,
-                        label: 'Recall',
-                        onPressed: () => _showRecallRequisitionModal(context),
-                        isOutlined: true,
+                        icon: Icons.add,
+                        label: l10n.newRequisition,
+                        onPressed: () => context.router.pop(),
+                        isSecondary: true,
                       ),
                     ),
                   ],
+                ),
+                // Show recall button for requisitors
+                if (loggedInMember.ulid == requisition.member?.ulid) ...[
+                  const SizedBox(height: PRFSpacingTokens.sm),
+                  SizedBox(
+                    width: double.infinity,
+                    child: _buildActionButton(
+                      context,
+                      icon: Icons.undo,
+                      label: 'Recall',
+                      onPressed: () => _showRecallRequisitionModal(context),
+                      isOutlined: true,
+                    ),
+                  ),
                 ],
-              );
+              ],
+            );
           }
 
           return Row(
-              children: [
-                if (paymentInstruction != null) ...[
-                  Expanded(
-                    child: _buildActionButton(
-                      context,
-                      icon: Icons.payment,
-                      label: l10n.paymentDetails,
-                      onPressed: () => _showPaymentInstructionDetails(
-                        context,
-                        paymentInstruction,
-                      ),
-                      isPrimary: true,
-                    ),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.md),
-                ],
+            children: [
+              if (paymentInstruction != null) ...[
                 Expanded(
                   child: _buildActionButton(
                     context,
-                    icon: Icons.add,
-                    label: l10n.newRequisition,
-                    onPressed: () => context.router.pop(),
-                    isSecondary: true,
+                    icon: Icons.payment,
+                    label: l10n.paymentDetails,
+                    onPressed: () => _showPaymentInstructionDetails(
+                      context,
+                      paymentInstruction,
+                    ),
+                    isPrimary: true,
                   ),
                 ),
+                const SizedBox(width: PRFSpacingTokens.md),
               ],
-            );
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  icon: Icons.add,
+                  label: l10n.newRequisition,
+                  onPressed: () => context.router.pop(),
+                  isSecondary: true,
+                ),
+              ),
+            ],
+          );
         },
       ),
     ];
@@ -1872,8 +1876,9 @@ class _RequisitionDetailsPageHandsetState
               ResourceState<PRFRequisition>
             >(
               builder: (context, requisitionState) {
-                final requisition =
-                    _currentRequisitionFromState(requisitionState);
+                final requisition = _currentRequisitionFromState(
+                  requisitionState,
+                );
                 return Column(
                   children: requisition != null
                       ? _buildStatusAwareBottomSheetActions(
@@ -2174,7 +2179,7 @@ class _RequisitionDetailsPageHandsetState
               ),
             ),
 
-                const SizedBox(height: PRFSpacingTokens.xl),
+            const SizedBox(height: PRFSpacingTokens.xl),
 
             // Recipient Details
             _buildPaymentDetailRow(
@@ -2194,7 +2199,7 @@ class _RequisitionDetailsPageHandsetState
               ),
             ],
 
-                const SizedBox(height: PRFSpacingTokens.xl),
+            const SizedBox(height: PRFSpacingTokens.xl),
 
             // Method-specific details
             ..._buildPaymentMethodSpecificDetails(

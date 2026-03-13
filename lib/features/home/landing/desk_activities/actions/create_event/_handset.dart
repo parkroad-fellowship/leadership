@@ -604,5 +604,4 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
       currentTime: DateTime.now(),
     );
   }
-
 }

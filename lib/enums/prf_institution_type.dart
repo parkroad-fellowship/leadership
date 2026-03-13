@@ -18,7 +18,6 @@ enum PRFInstitutionType {
   juniorSecondarySchool
   ;
 
-
   String get name {
     switch (this) {
       case PRFInstitutionType.highSchool:

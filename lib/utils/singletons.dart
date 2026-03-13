@@ -14,9 +14,14 @@ import 'package:leadership/features/home/landing/desk_activities/cubit/add_event
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/create_payment_instruction_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_mission_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_debrief_note_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_ground_suggestion_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_soul_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_subscription_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_type_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/school_term_resource_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
@@ -31,13 +36,20 @@ import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
 import 'package:leadership/services/api/member_service.dart';
+import 'package:leadership/services/api/mission_debrief_note_service.dart';
+import 'package:leadership/services/api/mission_ground_suggestion_service.dart';
+import 'package:leadership/services/api/mission_question_service.dart';
 import 'package:leadership/services/api/mission_service.dart';
+import 'package:leadership/services/api/mission_soul_service.dart';
+import 'package:leadership/services/api/mission_subscription_service.dart';
+import 'package:leadership/services/api/mission_type_service.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
 import 'package:leadership/services/api/refund_service.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
 import 'package:leadership/services/api/school_contact_service.dart';
 import 'package:leadership/services/api/school_service.dart';
+import 'package:leadership/services/api/school_term_service.dart';
 import 'package:leadership/services/firebase_service.dart';
 import 'package:leadership/shared_views/expenses/cubit/add_allocation_entry_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/add_mission_refund_cubit.dart';
@@ -73,6 +85,19 @@ class Singletons {
         PaymentInstructionService(),
       )
       ..registerSingleton<MissionService>(MissionService())
+      ..registerSingleton<MissionSubscriptionService>(
+        MissionSubscriptionService(),
+      )
+      ..registerSingleton<MissionTypeService>(MissionTypeService())
+      ..registerSingleton<SchoolTermService>(SchoolTermService())
+      ..registerSingleton<MissionQuestionService>(MissionQuestionService())
+      ..registerSingleton<MissionSoulService>(MissionSoulService())
+      ..registerSingleton<MissionDebriefNoteService>(
+        MissionDebriefNoteService(),
+      )
+      ..registerSingleton<MissionGroundSuggestionService>(
+        MissionGroundSuggestionService(),
+      )
       ..registerSingleton<ExpenseService>(ExpenseService())
       ..registerSingleton<MemberService>(MemberService())
       ..registerSingleton<AccountingEventService>(AccountingEventService())
@@ -163,19 +188,45 @@ class Singletons {
           paymentInstructionService: getIt<PaymentInstructionService>(),
         ),
       ),
-      BlocProvider<GetMissionsCubit>(
-        create: (context) => GetMissionsCubit(
+      BlocProvider<MissionResourceCubit>(
+        create: (context) => MissionResourceCubit(
           missionService: getIt<MissionService>(),
         ),
       ),
-      BlocProvider<GetPastMissionsCubit>(
-        create: (context) => GetPastMissionsCubit(
-          missionService: getIt<MissionService>(),
+      BlocProvider<MissionQuestionResourceCubit>(
+        create: (context) => MissionQuestionResourceCubit(
+          missionQuestionService: getIt<MissionQuestionService>(),
         ),
       ),
-      BlocProvider<GetMissionCubit>(
-        create: (context) => GetMissionCubit(
-          missionService: getIt<MissionService>(),
+      BlocProvider<MissionSubscriptionResourceCubit>(
+        create: (context) => MissionSubscriptionResourceCubit(
+          missionSubscriptionService: getIt<MissionSubscriptionService>(),
+        ),
+      ),
+      BlocProvider<MissionTypeResourceCubit>(
+        create: (context) => MissionTypeResourceCubit(
+          missionTypeService: getIt<MissionTypeService>(),
+        ),
+      ),
+      BlocProvider<SchoolTermResourceCubit>(
+        create: (context) => SchoolTermResourceCubit(
+          schoolTermService: getIt<SchoolTermService>(),
+        ),
+      ),
+      BlocProvider<MissionSoulResourceCubit>(
+        create: (context) => MissionSoulResourceCubit(
+          missionSoulService: getIt<MissionSoulService>(),
+        ),
+      ),
+      BlocProvider<MissionDebriefNoteResourceCubit>(
+        create: (context) => MissionDebriefNoteResourceCubit(
+          missionDebriefNoteService: getIt<MissionDebriefNoteService>(),
+        ),
+      ),
+      BlocProvider<MissionGroundSuggestionResourceCubit>(
+        create: (context) => MissionGroundSuggestionResourceCubit(
+          missionGroundSuggestionService:
+              getIt<MissionGroundSuggestionService>(),
         ),
       ),
       BlocProvider<GetMembersCubit>(

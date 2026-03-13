@@ -241,7 +241,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
         // Phone Number
         const PRFFormFieldLabel(
           label: 'Phone Number',
-           isRequired: true,
+          isRequired: true,
         ),
         PRFPhoneInput(
           hintText:

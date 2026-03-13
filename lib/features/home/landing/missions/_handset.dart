@@ -2,11 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
+import 'package:leadership/enums/prf_permissions.dart';
+import 'package:leadership/features/home/landing/missions/actions/create_mission/create_mission.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_mission.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:leadership/utils/debouncer.dart' as app_utils;
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -21,6 +24,11 @@ class MissionsPageHandset extends StatefulWidget {
 class _MissionsPageHandsetState extends State<MissionsPageHandset>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  final app_utils.Debouncer _debouncer = app_utils.Debouncer(
+    milliseconds: 300,
+  );
+  String _searchQuery = '';
 
   @override
   bool get wantKeepAlive => true;
@@ -29,16 +37,24 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
   void initState() {
     super.initState();
 
-    context.read<GetMissionsCubit>().getMissions();
+    context.read<MissionResourceCubit>().loadUpcomingMissions();
 
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
-        context.read<GetMissionsCubit>().getMissions();
+        context.read<MissionResourceCubit>().loadUpcomingMissions();
       } else {
-        context.read<GetPastMissionsCubit>().getPastMissions();
+        context.read<MissionResourceCubit>().loadPastMissions();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    _debouncer.dispose();
+    super.dispose();
   }
 
   @override
@@ -50,98 +66,184 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            l10n.missions,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurface,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          leading: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            margin: const EdgeInsets.only(left: PRFSpacingTokens.sm),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: theme.colorScheme.onPrimaryContainer,
-                size: 20,
-              ),
-              onPressed: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.landingRoute,
-              ),
-            ),
-          ),
-          actions: [
-            BlocBuilder<GetMissionsCubit, GetMissionsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.sm),
-            BlocBuilder<GetPastMissionsCubit, GetPastMissionsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.lg),
-          ],
-          backgroundColor: Colors.transparent,
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: [
-              Tab(text: l10n.upcoming),
-              Tab(text: l10n.past),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
+        backgroundColor: theme.colorScheme.surface,
+        body: Column(
           children: [
-            _buildMissionsTimeline(context),
-            _buildPastMissionsTimeline(context),
+            ColoredBox(
+              color: theme.colorScheme.primary,
+              child: Column(
+                children: [
+                  PRFBrandedNavBar(
+                    title: l10n.missions,
+                    onBack: () => context.router.popUntilRouteWithPath(
+                      PRFLeadershipRouter.landingRoute,
+                    ),
+                    actions: [
+                      if (Misc.userCan(PRFPermissions.createMission))
+                        GestureDetector(
+                          onTap: _showCreateMissionForm,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: PRFSpacingTokens.md,
+                              vertical: PRFSpacingTokens.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondary,
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.md,
+                              ),
+                            ),
+                            child: Text(
+                              '+ New',
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (Misc.userCan(PRFPermissions.createMission))
+                        const SizedBox(width: PRFSpacingTokens.sm),
+                      BlocBuilder<
+                        MissionResourceCubit,
+                        ResourceState<PRFMission>
+                      >(
+                        builder: (context, state) => switch (state) {
+                          ResourceListLoading<PRFMission>() =>
+                            const SizedBox.square(
+                              dimension: 24,
+                              child: PRFCircularProgressIndicator(),
+                            ),
+                          _ => const SizedBox.shrink(),
+                        },
+                      ),
+                      const SizedBox(width: PRFSpacingTokens.lg),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PRFSpacingTokens.lg,
+                      0,
+                      PRFSpacingTokens.lg,
+                      PRFSpacingTokens.sm,
+                    ),
+                    child: Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          labelColor: theme.colorScheme.onPrimary,
+                          unselectedLabelColor: theme.colorScheme.onPrimary
+                              .withValues(alpha: 0.65),
+                          indicatorColor: theme.colorScheme.secondary,
+                          dividerColor: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.2,
+                          ),
+                          labelStyle: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                          tabs: [
+                            Tab(text: l10n.upcoming),
+                            Tab(text: l10n.past),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.md,
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.sm,
+              ),
+              child: _buildSearchBar(theme),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildMissionsTimeline(context),
+                  _buildPastMissionsTimeline(context),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildSearchBar(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.35),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: PRFTextInput(
+        hintText: 'Search missions by school, type, or theme...',
+        controller: _searchController,
+        onChanged: (value) {
+          _debouncer.run(() {
+            if (!mounted) return;
+            setState(() {
+              _searchQuery = value.trim().toLowerCase();
+            });
+          });
+        },
+      ),
+    );
+  }
+
+  List<PRFMission> _filterMissions(List<PRFMission> missions) {
+    if (_searchQuery.isEmpty) {
+      return missions;
+    }
+
+    return missions
+        .where((mission) {
+          final schoolName = mission.school?.name.toLowerCase() ?? '';
+          final missionType = mission.missionType?.name.toLowerCase() ?? '';
+          final missionTheme = (mission.theme ?? '').toLowerCase();
+
+          return schoolName.contains(_searchQuery) ||
+              missionType.contains(_searchQuery) ||
+              missionTheme.contains(_searchQuery);
+        })
+        .toList(growable: false);
+  }
+
   Widget _buildMissionsTimeline(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<GetMissionsCubit, GetMissionsState>(
+    return BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
       builder: (context, state) {
-        return state.maybeWhen(
-          orElse: () => Center(
+        return switch (state) {
+          ResourceInitial<PRFMission>() ||
+          ResourceListLoading<PRFMission>() => Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
                 theme.colorScheme.primary,
               ),
             ),
           ),
-          error: (String message) => Center(
+          ResourceError<PRFMission>(:final message) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -160,33 +262,40 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
               ],
             ),
           ),
-          loaded: (List<PRFMission> missions) {
-            if (missions.isEmpty) {
+          ResourceListLoaded<PRFMission>(:final items) ||
+          ResourceMutated<PRFMission>(:final items) => (() {
+            final missions = List<PRFMission>.from(items)
+              ..sort((a, b) => a.startDate.compareTo(b.startDate));
+            final filtered = _filterMissions(missions);
+
+            if (filtered.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () => context.read<GetMissionsCubit>().getMissions(),
+                onRefresh: () =>
+                    context.read<MissionResourceCubit>().loadUpcomingMissions(),
                 child: PRFEmptyView(
-                  label: l10n.noMissions,
-                  description: l10n.pleaseWait,
+                  label: _searchQuery.isEmpty
+                      ? l10n.noMissions
+                      : 'No matching missions',
+                  description: _searchQuery.isEmpty
+                      ? l10n.pleaseWait
+                      : 'Try a different search term.',
                 ),
               );
             }
 
-            // Sort missions by start date for timeline
-            final sortedMissions = List<PRFMission>.from(missions)
-              ..sort((a, b) => a.startDate.compareTo(b.startDate));
-
             return RefreshIndicator(
-              onRefresh: () => context.read<GetMissionsCubit>().getMissions(),
+              onRefresh: () =>
+                  context.read<MissionResourceCubit>().loadUpcomingMissions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: PRFSpacingTokens.lg,
                   vertical: PRFSpacingTokens.xl,
                 ),
-                itemCount: sortedMissions.length,
+                itemCount: filtered.length,
                 itemBuilder: (context, index) {
-                  final mission = sortedMissions[index];
-                  final isLast = index == sortedMissions.length - 1;
+                  final mission = filtered[index];
+                  final isLast = index == filtered.length - 1;
 
                   return TimelineMissionCard(
                         mission: mission,
@@ -209,8 +318,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                 },
               ),
             );
-          },
-        );
+          })(),
+          _ => const SizedBox.shrink(),
+        };
       },
     );
   }
@@ -219,17 +329,18 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<GetPastMissionsCubit, GetPastMissionsState>(
+    return BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
       builder: (context, state) {
-        return state.maybeWhen(
-          orElse: () => Center(
+        return switch (state) {
+          ResourceInitial<PRFMission>() ||
+          ResourceListLoading<PRFMission>() => Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
                 theme.colorScheme.primary,
               ),
             ),
           ),
-          error: (String message) => Center(
+          ResourceError<PRFMission>(:final message) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -248,31 +359,40 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
               ],
             ),
           ),
-          loaded: (List<PRFMission> missions) {
-            if (missions.isEmpty) {
+          ResourceListLoaded<PRFMission>(:final items) ||
+          ResourceMutated<PRFMission>(:final items) => (() {
+            final missions = List<PRFMission>.from(items)
+              ..sort((a, b) => b.startDate.compareTo(a.startDate));
+            final filtered = _filterMissions(missions);
+
+            if (filtered.isEmpty) {
               return RefreshIndicator(
                 onRefresh: () =>
-                    context.read<GetPastMissionsCubit>().getPastMissions(),
+                    context.read<MissionResourceCubit>().loadPastMissions(),
                 child: PRFEmptyView(
-                  label: l10n.noMissions,
-                  description: l10n.pleaseWait,
+                  label: _searchQuery.isEmpty
+                      ? l10n.noMissions
+                      : 'No matching missions',
+                  description: _searchQuery.isEmpty
+                      ? l10n.pleaseWait
+                      : 'Try a different search term.',
                 ),
               );
             }
 
             return RefreshIndicator(
               onRefresh: () =>
-                  context.read<GetPastMissionsCubit>().getPastMissions(),
+                  context.read<MissionResourceCubit>().loadPastMissions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: PRFSpacingTokens.lg,
                   vertical: PRFSpacingTokens.xl,
                 ),
-                itemCount: missions.length,
+                itemCount: filtered.length,
                 itemBuilder: (context, index) {
-                  final mission = missions[index];
-                  final isLast = index == missions.length - 1;
+                  final mission = filtered[index];
+                  final isLast = index == filtered.length - 1;
 
                   return TimelineMissionCard(
                         mission: mission,
@@ -295,10 +415,26 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                 },
               ),
             );
-          },
-        );
+          })(),
+          _ => const SizedBox.shrink(),
+        };
       },
     );
+  }
+
+  void _showCreateMissionForm() {
+    PRFBottomSheet.show<void>(
+      context,
+      title: 'Create Mission',
+      child: const CreateMissionView(),
+    ).then((_) {
+      if (!mounted) return;
+      if (_tabController.index == 0) {
+        context.read<MissionResourceCubit>().loadUpcomingMissions();
+      } else {
+        context.read<MissionResourceCubit>().loadPastMissions();
+      }
+    });
   }
 }
 

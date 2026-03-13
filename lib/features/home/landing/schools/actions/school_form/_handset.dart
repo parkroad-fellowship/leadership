@@ -315,7 +315,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           PRFTextInput(
             hintText: 'School name',
             labelText: 'School Name',
-            
+
             helperText: 'Use the official registered name',
             errorText: _showValidation ? _nameError : null,
             controller: _nameController,
