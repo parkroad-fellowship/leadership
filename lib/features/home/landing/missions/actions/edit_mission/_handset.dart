@@ -140,41 +140,37 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
             break;
         }
       },
-      child: AnimatedPadding(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        padding: EdgeInsets.only(bottom: viewInsets.bottom),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: PRFSpacingTokens.lg,
-            ),
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: PRFSpacingTokens.sm),
-                    _buildHeader(context),
-                    const SizedBox(height: PRFSpacingTokens.lg),
-                    _buildForm(context),
-                    const SizedBox(height: PRFSpacingTokens.lg),
-                    PRFPrimaryButton(
-                          onPressed: _submit,
-                          title: 'Update Mission',
-                          disabled: !_isFormValid,
-                          isLoading: _isLoading,
-                        )
-                        .animate(delay: PRFMotionTokens.enterMedium)
-                        .slideY(begin: 0.3)
-                        .fadeIn(),
-                    const SizedBox(height: PRFSpacingTokens.lg),
-                  ],
-                ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: PRFSpacingTokens.lg,
+          ),
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.only(bottom: viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: PRFSpacingTokens.sm),
+                  _buildHeader(context),
+                  const SizedBox(height: PRFSpacingTokens.lg),
+                  _buildForm(context),
+                  const SizedBox(height: PRFSpacingTokens.lg),
+                  PRFPrimaryButton(
+                        onPressed: _submit,
+                        title: 'Update Mission',
+                        disabled: !_isFormValid,
+                        isLoading: _isLoading,
+                      )
+                      .animate(delay: PRFMotionTokens.enterMedium)
+                      .slideY(begin: 0.3)
+                      .fadeIn(),
+                  const SizedBox(height: PRFSpacingTokens.lg),
+                ],
               ),
             ),
           ),

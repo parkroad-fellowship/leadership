@@ -590,9 +590,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      PRFSpacingTokens.lg,
+                      PRFSpacingTokens.sm,
                       0,
-                      PRFSpacingTokens.lg,
+                      PRFSpacingTokens.sm,
                       PRFSpacingTokens.sm,
                     ),
                     child: Transform.translate(
@@ -605,6 +605,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                             _currentTab = value;
                           }),
                           isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          padding: EdgeInsets.zero,
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: PRFSpacingTokens.sm,
+                          ),
                           labelColor: theme.colorScheme.onPrimary,
                           unselectedLabelColor: theme.colorScheme.onPrimary
                               .withValues(alpha: 0.65),

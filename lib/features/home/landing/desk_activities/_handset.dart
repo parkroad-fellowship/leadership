@@ -108,6 +108,10 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
                         labelStyle: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
+                        padding: EdgeInsets.zero,
+                  labelPadding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.sm,
+                  ),
                         tabs: [
                           Tab(text: l10n.upcoming),
                           Tab(text: l10n.past),

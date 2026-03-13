@@ -59,6 +59,10 @@ class MissionDomainTabSection extends StatelessWidget {
                 TabBar(
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
+                  padding: EdgeInsets.zero,
+                  labelPadding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.sm,
+                  ),
                   labelColor: theme.colorScheme.onSurface,
                   unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
                   indicatorColor: theme.colorScheme.primary,
