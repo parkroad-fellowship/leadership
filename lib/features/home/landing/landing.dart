@@ -55,6 +55,8 @@ class _LandingPageState extends State<LandingPage> {
         ),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
+        isNeutralCard: true,
+        deskGroup: 'My Desk',
       ),
       LandingActionItem(
         title: l10n.viewMissions,
@@ -64,6 +66,7 @@ class _LandingPageState extends State<LandingPage> {
         ),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
+        deskGroup: 'Missions Desk',
       ),
       LandingActionItem(
         title: l10n.manageRequisitions,
@@ -73,6 +76,8 @@ class _LandingPageState extends State<LandingPage> {
         ),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
+         isNeutralCard: true,
+        deskGroup: 'My Desk',
       ),
       LandingActionItem(
         title: l10n.viewCommitteeActivities,
@@ -82,6 +87,7 @@ class _LandingPageState extends State<LandingPage> {
         ),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
+        deskGroup: 'Committee Desk',
       ),
       LandingActionItem(
         title: l10n.manageSchools,
@@ -91,6 +97,7 @@ class _LandingPageState extends State<LandingPage> {
         ),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.viewAnySchools),
+        isSettings: true,
       ),
     ];
 

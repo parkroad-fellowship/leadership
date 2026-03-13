@@ -9,16 +9,27 @@ class LandingActionTile extends StatelessWidget {
     required this.onTap,
     super.key,
     this.assetHeight = 56,
+    this.isNeutralCard = false,
   });
 
   final String title;
   final String assetPath;
   final VoidCallback onTap;
   final double assetHeight;
+  final bool isNeutralCard;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final arrowBackgroundColor = isNeutralCard
+        ? theme.colorScheme.surfaceContainerHigh
+        : theme.colorScheme.primary.withValues(alpha: 0.12);
+    final arrowIconColor = isNeutralCard
+        ? theme.colorScheme.onSurfaceVariant
+        : theme.colorScheme.primary;
+    final arrowBorderColor = isNeutralCard
+        ? theme.colorScheme.outline.withValues(alpha: 0.35)
+        : Colors.transparent;
 
     return Material(
       color: theme.colorScheme.surface,
@@ -59,13 +70,14 @@ class LandingActionTile extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                      color: arrowBackgroundColor,
                       borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
+                      border: Border.all(color: arrowBorderColor),
                     ),
                     child: Icon(
                       Icons.arrow_forward_rounded,
                       size: 16,
-                      color: theme.colorScheme.primary,
+                      color: arrowIconColor,
                     ),
                   ),
                 ),

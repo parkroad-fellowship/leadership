@@ -21,6 +21,31 @@ class LandingPageTablet extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final columns = width >= 1200 ? 3 : 2;
     final visibleActions = actions.where((action) => action.isVisible).toList();
+    final settingsActions = visibleActions
+        .where((action) => action.isSettings)
+        .toList();
+    final deskGroups = <String, List<LandingActionItem>>{};
+
+    for (final action in visibleActions.where((action) => !action.isSettings)) {
+      final group = action.deskGroup;
+      if (group == null || group.isEmpty) {
+        continue;
+      }
+      deskGroups.putIfAbsent(group, () => <LandingActionItem>[]).add(action);
+    }
+
+    final sections = <_LandingActionSection>[
+      if (settingsActions.isNotEmpty)
+        _LandingActionSection(title: 'Settings', actions: settingsActions),
+      ...deskGroups.entries
+          .where((entry) => entry.value.isNotEmpty)
+          .map(
+            (entry) => _LandingActionSection(
+              title: entry.key,
+              actions: entry.value,
+            ),
+          ),
+    ];
 
     return PopScope(
       canPop: false,
@@ -167,65 +192,10 @@ class LandingPageTablet extends StatelessWidget {
                 ),
               ),
 
-              // Title Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    PRFSpacingTokens.xxxl,
-                    PRFSpacingTokens.xxxl,
-                    PRFSpacingTokens.xxxl,
-                    PRFSpacingTokens.xxxl,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.iWantTo,
-                        style: theme.textTheme.displayMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.onSurface,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: PRFSpacingTokens.lg),
-                      Container(
-                        width: 80,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Action Cards Grid
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.xxxl,
-                ),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    crossAxisSpacing: PRFSpacingTokens.lg,
-                    mainAxisSpacing: PRFSpacingTokens.lg,
-                    childAspectRatio: 1.05,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final action = visibleActions[index];
-                      return _buildTabletActionCard(
-                        title: action.title,
-                        assetPath: action.assetPath,
-                        onTap: action.onTap,
-                        delay: action.animationDelay + (index * 30),
-                      );
-                    },
-                    childCount: visibleActions.length,
-                  ),
-                ),
+              ..._buildSectionSlivers(
+                context: context,
+                sections: sections,
+                columns: columns,
               ),
 
               // Bottom spacing
@@ -244,6 +214,7 @@ class LandingPageTablet extends StatelessWidget {
     required String assetPath,
     required VoidCallback onTap,
     required int delay,
+    bool isNeutralCard = false,
   }) {
     return Animate(
       effects: [
@@ -263,7 +234,98 @@ class LandingPageTablet extends StatelessWidget {
         assetPath: assetPath,
         onTap: onTap,
         assetHeight: 64,
+        isNeutralCard: isNeutralCard,
       ),
     );
   }
+
+  List<Widget> _buildSectionSlivers({
+    required BuildContext context,
+    required List<_LandingActionSection> sections,
+    required int columns,
+  }) {
+    final theme = Theme.of(context);
+    final slivers = <Widget>[];
+    var runningIndex = 0;
+
+    for (final section in sections) {
+      final sectionStart = runningIndex;
+      runningIndex += section.actions.length;
+
+      slivers.add(
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PRFSpacingTokens.xxxl,
+              PRFSpacingTokens.xl,
+              PRFSpacingTokens.xxxl,
+              PRFSpacingTokens.lg,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  section.title,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: PRFSpacingTokens.sm),
+                Container(
+                  width: 56,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      slivers.add(
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: PRFSpacingTokens.xxxl,
+          ),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: PRFSpacingTokens.lg,
+              mainAxisSpacing: PRFSpacingTokens.lg,
+              childAspectRatio: 1.05,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final action = section.actions[index];
+                return _buildTabletActionCard(
+                  title: action.title,
+                  assetPath: action.assetPath,
+                  onTap: action.onTap,
+                  delay: action.animationDelay + ((sectionStart + index) * 40),
+                  isNeutralCard: action.isNeutralCard,
+                );
+              },
+              childCount: section.actions.length,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return slivers;
+  }
+}
+
+class _LandingActionSection {
+  const _LandingActionSection({
+    required this.title,
+    required this.actions,
+  });
+
+  final String title;
+  final List<LandingActionItem> actions;
 }
