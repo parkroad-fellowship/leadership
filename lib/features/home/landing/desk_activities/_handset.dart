@@ -645,8 +645,8 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: PRFSpacingTokens.md,
-                              vertical: PRFSpacingTokens.xs,
+                              horizontal: PRFSpacingTokens.lg,
+                              vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -656,7 +656,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.md,
+                                PRFRadiusTokens.sm,
                               ),
                               border: Border.all(
                                 color: statusColor.withValues(alpha: 0.3),
@@ -664,6 +664,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
+                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   'View Details',
@@ -672,10 +673,10 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                     color: statusColor,
                                   ),
                                 ),
-                                const SizedBox(width: PRFSpacingTokens.sm),
+                                const SizedBox(width: PRFSpacingTokens.xs),
                                 Icon(
                                   Icons.arrow_forward_rounded,
-                                  size: 18,
+                                  size: 14,
                                   color: statusColor,
                                 ),
                               ],

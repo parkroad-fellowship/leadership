@@ -873,12 +873,13 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
+                         
                               horizontal: PRFSpacingTokens.lg,
-                              vertical: 10,
+                              vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
                               color: statusColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                               border: Border.all(
                                 color: statusColor.withValues(alpha: 0.3),
                               ),
@@ -894,7 +895,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                                     color: statusColor,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                 const SizedBox(width: PRFSpacingTokens.xs),
                                 Icon(
                                   Icons.arrow_forward_rounded,
                                   size: 14,
