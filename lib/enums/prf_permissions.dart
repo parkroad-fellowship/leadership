@@ -31,6 +31,8 @@ enum PRFPermissions {
   manageProfession,
   manageMaritalStatus,
   manageChurch,
+  manageDepartment,
+  manageGift,
   viewAnyMember
   ;
 
@@ -100,6 +102,10 @@ enum PRFPermissions {
         return 'manage marital status';
       case PRFPermissions.manageChurch:
         return 'manage church';
+      case PRFPermissions.manageDepartment:
+        return 'manage department';
+      case PRFPermissions.manageGift:
+        return 'manage gift';
       case PRFPermissions.viewAnyMember:
         return 'viewAny member';
     }

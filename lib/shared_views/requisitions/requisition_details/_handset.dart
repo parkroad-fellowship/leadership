@@ -1022,35 +1022,9 @@ class _RequisitionDetailsPageHandsetState
               orElse: () {},
             );
           },
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  ),
-                  child: Icon(
-                    Icons.delete_outline,
-                    color: theme.colorScheme.error,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: PRFSpacingTokens.md),
-                Expanded(
-                  child: Text(
-                    'Delete Item',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          child: PRFConfirmationDialog(
+            title: 'Delete Item',
+            isDestructive: true,
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1100,7 +1074,7 @@ class _RequisitionDetailsPageHandsetState
                 ),
               ],
             ),
-            actions: [
+            customActions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
                 child: Text(
@@ -2713,47 +2687,12 @@ class _RequisitionDetailsPageHandsetState
     String title,
     String notes,
   ) {
-    final theme = Theme.of(context);
-
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                title.contains('Rejection') ? Icons.cancel : Icons.check_circle,
-                color: title.contains('Rejection')
-                    ? PRFApprovalStatus.rejected.color(theme)
-                    : PRFApprovalStatus.approved.color(theme),
-                size: 24,
-              ),
-              const SizedBox(width: PRFSpacingTokens.md),
-              Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Text(
-              notes,
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
+    PRFConfirmationDialog.show(
+      context,
+      title: title,
+      message: notes,
+      confirmLabel: 'OK',
+      isDestructive: title.contains('Rejection'),
     );
   }
 

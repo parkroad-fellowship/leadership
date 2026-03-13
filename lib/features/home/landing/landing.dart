@@ -150,6 +150,26 @@ class _LandingPageState extends State<LandingPage> {
         isSettings: true,
       ),
       LandingActionItem(
+        title: l10n.manageDepartments,
+        assetPath: 'assets/svgs/events.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.departmentsRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
+        title: l10n.manageGifts,
+        assetPath: 'assets/svgs/giving.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.giftsRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
         title: l10n.manageMembers,
         assetPath: 'assets/svgs/credentials.svg',
         onTap: () => context.router.pushPath(

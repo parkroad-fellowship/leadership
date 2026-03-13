@@ -296,35 +296,24 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
     );
   }
 
-  void _confirmDelete(BuildContext context, PRFMissionType missionType) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Mission Type'),
-        content: const Text(
-          'Are you sure you want to delete this mission type?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              this.context.read<MissionTypeResourceCubit>().deleteMissionType(
-                ulid: missionType.ulid,
-              );
-            },
-            child: Text(
-              'Delete',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(
+    BuildContext context,
+    PRFMissionType missionType,
+  ) async {
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: 'Delete Mission Type',
+      message:
+          'Are you sure you want to delete "${missionType.name}"? '
+          'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
+
+    if ((confirmed ?? false) && mounted) {
+      await context.read<MissionTypeResourceCubit>().deleteMissionType(
+        ulid: missionType.ulid,
+      );
+    }
   }
 }

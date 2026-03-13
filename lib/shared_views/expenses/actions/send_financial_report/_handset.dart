@@ -156,31 +156,20 @@ class SendFinancialReportViewHandset extends StatelessWidget {
     );
   }
 
-  void _showConfirmationDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Confirm Send Report'),
-        content: const Text(
+  Future<void> _showConfirmationDialog(BuildContext context) async {
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: 'Confirm Send Report',
+      message:
           'Are you sure you want to send the financial report? '
           'This will email the report to all relevant members.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<SendFinancialReportCubit>().sendReport(
-                accountingEventUlid: accountingEventUlid,
-              );
-            },
-            child: const Text('Send Report'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Send Report',
     );
+
+    if ((confirmed ?? false) && context.mounted) {
+      context.read<SendFinancialReportCubit>().sendReport(
+        accountingEventUlid: accountingEventUlid,
+      );
+    }
   }
 }

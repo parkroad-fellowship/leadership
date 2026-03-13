@@ -11,10 +11,12 @@ import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/churches/cubit/church_resource_cubit.dart';
+import 'package:leadership/features/home/landing/departments/cubit/department_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
+import 'package:leadership/features/home/landing/gifts/cubit/gift_resource_cubit.dart';
 import 'package:leadership/features/home/landing/marital_statuses/cubit/marital_status_resource_cubit.dart';
 import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
@@ -42,9 +44,11 @@ import 'package:leadership/services/api/church_service.dart';
 import 'package:leadership/services/api/class_group_service.dart';
 import 'package:leadership/services/api/contact_type_service.dart';
 import 'package:leadership/services/api/debrief_note_service.dart';
+import 'package:leadership/services/api/department_service.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
+import 'package:leadership/services/api/gift_service.dart';
 import 'package:leadership/services/api/marital_status_service.dart';
 import 'package:leadership/services/api/member_service.dart';
 import 'package:leadership/services/api/mission_ground_suggestion_service.dart';
@@ -124,7 +128,9 @@ class Singletons {
       ..registerSingleton<ClassGroupService>(ClassGroupService())
       ..registerSingleton<ProfessionService>(ProfessionService())
       ..registerSingleton<MaritalStatusService>(MaritalStatusService())
-      ..registerSingleton<ChurchService>(ChurchService());
+      ..registerSingleton<ChurchService>(ChurchService())
+      ..registerSingleton<DepartmentService>(DepartmentService())
+      ..registerSingleton<GiftService>(GiftService());
   }
 
   static Future<void> setupDatabases() async {
@@ -345,6 +351,16 @@ class Singletons {
       BlocProvider<MemberResourceCubit>(
         create: (context) => MemberResourceCubit(
           memberService: getIt<MemberService>(),
+        ),
+      ),
+      BlocProvider<DepartmentResourceCubit>(
+        create: (context) => DepartmentResourceCubit(
+          departmentService: getIt<DepartmentService>(),
+        ),
+      ),
+      BlocProvider<GiftResourceCubit>(
+        create: (context) => GiftResourceCubit(
+          giftService: getIt<GiftService>(),
         ),
       ),
     ];

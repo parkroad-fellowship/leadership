@@ -295,35 +295,24 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
     );
   }
 
-  void _confirmDelete(BuildContext context, PRFProfession profession) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Profession'),
-        content: const Text(
-          'Are you sure you want to delete this profession?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              this.context.read<ProfessionResourceCubit>().deleteProfession(
-                ulid: profession.ulid,
-              );
-            },
-            child: Text(
-              'Delete',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(
+    BuildContext context,
+    PRFProfession profession,
+  ) async {
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: 'Delete Profession',
+      message:
+          'Are you sure you want to delete "${profession.name}"? '
+          'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
+
+    if ((confirmed ?? false) && mounted) {
+      await context.read<ProfessionResourceCubit>().deleteProfession(
+        ulid: profession.ulid,
+      );
+    }
   }
 }

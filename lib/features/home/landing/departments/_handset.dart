@@ -1,23 +1,23 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/churches/actions/church_form/_handset.dart';
-import 'package:leadership/features/home/landing/churches/cubit/church_resource_cubit.dart';
-import 'package:leadership/features/home/landing/churches/widgets/church_card.dart';
-import 'package:leadership/models/remote/prf_church.dart';
+import 'package:leadership/features/home/landing/departments/actions/department_form/_handset.dart';
+import 'package:leadership/features/home/landing/departments/cubit/department_resource_cubit.dart';
+import 'package:leadership/features/home/landing/departments/widgets/department_card.dart';
+import 'package:leadership/models/remote/prf_department.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
 
-class ChurchesPageHandset extends StatefulWidget {
-  const ChurchesPageHandset({super.key});
+class DepartmentsPageHandset extends StatefulWidget {
+  const DepartmentsPageHandset({super.key});
 
   @override
-  State<ChurchesPageHandset> createState() => _ChurchesPageHandsetState();
+  State<DepartmentsPageHandset> createState() => _DepartmentsPageHandsetState();
 }
 
-class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
+class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
   final Debouncer _debouncer = Debouncer(milliseconds: 300);
@@ -33,7 +33,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
   }
 
   void _loadData() {
-    context.read<ChurchResourceCubit>().loadAll();
+    context.read<DepartmentResourceCubit>().loadAll();
   }
 
   @override
@@ -51,37 +51,38 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       resizeToAvoidBottomInset: true,
-      body: BlocBuilder<ChurchResourceCubit, ResourceState<PRFChurch>>(
+      body: BlocBuilder<DepartmentResourceCubit, ResourceState<PRFDepartment>>(
         builder: (context, state) {
           return switch (state) {
-            ResourceListLoading<PRFChurch>() => const Center(
+            ResourceListLoading<PRFDepartment>() => const Center(
               child: PRFCircularProgressIndicator(),
             ),
-            ResourceListLoaded<PRFChurch>(:final items) when items.isEmpty =>
+            ResourceListLoaded<PRFDepartment>(:final items)
+                when items.isEmpty =>
               PRFEmptyView(
-                label: 'No Churches Yet',
+                label: 'No Departments Yet',
                 description:
-                    'Get started by adding your first church to the system',
-                icon: Icons.church_outlined,
-                actionLabel: 'Add Church',
+                    'Get started by adding your first department to the system',
+                icon: Icons.group_work_outlined,
+                actionLabel: 'Add Department',
                 onActionPressed: () => _showForm(context, null),
               ),
-            ResourceListLoaded<PRFChurch>(:final items) => _buildBody(
+            ResourceListLoaded<PRFDepartment>(:final items) => _buildBody(
               theme,
               items,
             ),
-            ResourceMutating<PRFChurch>(:final items) => _buildBody(
+            ResourceMutating<PRFDepartment>(:final items) => _buildBody(
               theme,
               items,
             ),
-            ResourceMutated<PRFChurch>(:final items) => _buildBody(
+            ResourceMutated<PRFDepartment>(:final items) => _buildBody(
               theme,
               items,
             ),
-            ResourceError<PRFChurch>(:final items) when items.isNotEmpty =>
+            ResourceError<PRFDepartment>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFChurch>(:final message) => PRFEmptyView(
-              label: 'Error Loading Churches',
+            ResourceError<PRFDepartment>(:final message) => PRFEmptyView(
+              label: 'Error Loading Departments',
               description: message,
               icon: Icons.error_outline,
               actionLabel: 'Retry',
@@ -94,7 +95,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
     );
   }
 
-  Widget _buildBody(ThemeData theme, List<PRFChurch> items) {
+  Widget _buildBody(ThemeData theme, List<PRFDepartment> items) {
     final filtered = _searchQuery.isEmpty
         ? items
         : items
@@ -129,7 +130,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No churches match your search',
+                    'No departments match your search',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -146,8 +147,8 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final item = filtered[index];
-                    return ChurchCard(
-                      church: item,
+                    return DepartmentCard(
+                      department: item,
                       index: index,
                       onTap: () => _showForm(context, item),
                       onDelete: () => _confirmDelete(context, item),
@@ -174,7 +175,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Churches',
+            title: 'Departments',
             onBack: _goBackToHome,
             actions: [
               PRFHeaderActionButton(
@@ -225,7 +226,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
         ],
       ),
       child: PRFTextInput(
-        hintText: 'Search churches...',
+        hintText: 'Search departments...',
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -283,12 +284,12 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
     context.router.replace(const LandingRoute());
   }
 
-  void _showForm(BuildContext context, PRFChurch? church) {
+  void _showForm(BuildContext context, PRFDepartment? department) {
     PRFBottomSheet.show<void>(
       context,
-      title: church == null ? 'Add Church' : 'Edit Church',
-      child: ChurchFormViewHandset(
-        church: church,
+      title: department == null ? 'Add Department' : 'Edit Department',
+      child: DepartmentFormViewHandset(
+        department: department,
         onSaved: _loadData,
       ),
     );
@@ -296,21 +297,21 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
 
   Future<void> _confirmDelete(
     BuildContext context,
-    PRFChurch church,
+    PRFDepartment department,
   ) async {
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Church',
+      title: 'Delete Department',
       message:
-          'Are you sure you want to delete "${church.name}"? '
+          'Are you sure you want to delete "${department.name}"? '
           'This action cannot be undone.',
       confirmLabel: 'Delete',
       isDestructive: true,
     );
 
     if ((confirmed ?? false) && mounted) {
-      await context.read<ChurchResourceCubit>().deleteChurch(
-        ulid: church.ulid,
+      await context.read<DepartmentResourceCubit>().deleteDepartment(
+        ulid: department.ulid,
       );
     }
   }

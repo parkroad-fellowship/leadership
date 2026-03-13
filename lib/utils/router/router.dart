@@ -33,6 +33,8 @@ class PRFLeadershipRouter extends RootStackRouter {
   static const String professionsRoute = '/professions';
   static const String maritalStatusesRoute = '/marital-statuses';
   static const String churchesRoute = '/churches';
+  static const String departmentsRoute = '/departments';
+  static const String giftsRoute = '/gifts';
 
   // Members
   static const String membersRoute = '/members';
@@ -152,6 +154,18 @@ class PRFLeadershipRouter extends RootStackRouter {
     CustomRoute<dynamic>(
       page: ChurchesRoute.page,
       path: churchesRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: DepartmentsRoute.page,
+      path: departmentsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: GiftsRoute.page,
+      path: giftsRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),

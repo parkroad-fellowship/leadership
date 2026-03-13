@@ -1155,76 +1155,30 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  void _showDeleteReceiptConfirmation(
+  Future<void> _showDeleteReceiptConfirmation(
     BuildContext context,
     String allocationEntryUlid,
     PRFMedia receipt,
-  ) {
-    final theme = Theme.of(context);
-
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                ),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: theme.colorScheme.error,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: PRFSpacingTokens.md),
-              const Text('Delete Receipt'),
-            ],
-          ),
-          content: const Text(
-            'Are you sure you want to delete this receipt? '
-            'This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: theme.colorScheme.onSurface),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                setState(() {
-                  _deletingReceiptUuid = receipt.uuid;
-                });
-                context.read<AllocationEntryResourceCubit>().deleteReceipt(
-                  allocationEntryUlid: allocationEntryUlid,
-                  mediaUuid: receipt.uuid,
-                );
-              },
-              icon: const Icon(Icons.delete_outline, size: 18),
-              label: const Text('Delete'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.error,
-                foregroundColor: theme.colorScheme.onError,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+  ) async {
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: 'Delete Receipt',
+      message:
+          'Are you sure you want to delete this receipt? '
+          'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
+
+    if ((confirmed ?? false) && mounted) {
+      setState(() {
+        _deletingReceiptUuid = receipt.uuid;
+      });
+      await context.read<AllocationEntryResourceCubit>().deleteReceipt(
+        allocationEntryUlid: allocationEntryUlid,
+        mediaUuid: receipt.uuid,
+      );
+    }
   }
 
   Widget _buildMissingReceiptAction(
@@ -1513,35 +1467,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                ),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: theme.colorScheme.error,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: PRFSpacingTokens.lg),
-              Expanded(
-                child: Text(
-                  'Delete Expense',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return PRFConfirmationDialog(
+          title: 'Delete Expense',
+          isDestructive: true,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1608,7 +1536,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               ),
             ],
           ),
-          actions: [
+          customActions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(

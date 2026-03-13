@@ -304,38 +304,24 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
     );
   }
 
-  void _confirmDelete(
+  Future<void> _confirmDelete(
     BuildContext context,
     PRFMaritalStatus maritalStatus,
-  ) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Marital Status'),
-        content: const Text(
-          'Are you sure you want to delete this marital status?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              this.context
-                  .read<MaritalStatusResourceCubit>()
-                  .deleteMaritalStatus(ulid: maritalStatus.ulid);
-            },
-            child: Text(
-              'Delete',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+  ) async {
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: 'Delete Marital Status',
+      message:
+          'Are you sure you want to delete "${maritalStatus.name}"? '
+          'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
+
+    if ((confirmed ?? false) && mounted) {
+      await context.read<MaritalStatusResourceCubit>().deleteMaritalStatus(
+        ulid: maritalStatus.ulid,
+      );
+    }
   }
 }
