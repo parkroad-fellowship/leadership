@@ -11,6 +11,7 @@ analyzer:
     avoid_catches_without_on_clauses: ignore
     document_ignores: ignore
     discarded_futures: ignore
+    lines_longer_than_80_chars: ignore
 
 linter:
   rules:

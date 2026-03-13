@@ -16,4 +16,32 @@ class SchoolTermResourceCubit extends ResourceCubit<PRFSchoolTerm> {
       limit: 200,
     );
   }
+
+  Future<void> createSchoolTerm({
+    required String name,
+    required int year,
+  }) {
+    return create(data: {'name': name, 'year': year});
+  }
+
+  Future<void> updateSchoolTerm({
+    required String ulid,
+    String? name,
+    int? year,
+    PRFActiveStatus? isActive,
+  }) {
+    return update(
+      id: ulid,
+      data: {
+        'name': ?name,
+        'year': ?year,
+        if (isActive != null) 'is_active': isActive.apiKey,
+      },
+      matchById: (st) => st.ulid == ulid,
+    );
+  }
+
+  Future<void> deleteSchoolTerm({required String ulid}) {
+    return delete(ulid: ulid, matchById: (st) => st.ulid == ulid);
+  }
 }

@@ -99,6 +99,66 @@ class _LandingPageState extends State<LandingPage> {
         isVisible: Misc.userCan(PRFPermissions.viewAnySchools),
         isSettings: true,
       ),
+      LandingActionItem(
+        title: l10n.manageMissionTypes,
+        assetPath: 'assets/svgs/missions.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.missionTypesRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
+        title: l10n.manageSchoolTerms,
+        assetPath: 'assets/svgs/schools.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.schoolTermsRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
+        title: l10n.manageProfessions,
+        assetPath: 'assets/svgs/credentials.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.professionsRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
+        title: l10n.manageMaritalStatuses,
+        assetPath: 'assets/svgs/credentials.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.maritalStatusesRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
+        title: l10n.manageChurches,
+        assetPath: 'assets/svgs/explore.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.churchesRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        isSettings: true,
+      ),
+      LandingActionItem(
+        title: l10n.manageMembers,
+        assetPath: 'assets/svgs/credentials.svg',
+        onTap: () => context.router.pushPath(
+          PRFLeadershipRouter.membersRoute,
+        ),
+        animationDelay: 700,
+        isVisible: true,
+        deskGroup: 'Organising Secretary',
+      ),
     ];
 
     return AdaptiveBuilder(

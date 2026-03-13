@@ -27,6 +27,17 @@ class PRFLeadershipRouter extends RootStackRouter {
   static const String schoolDetailsRoute = '/schools/:schoolUlid';
   static const String schoolContactsRoute = '/schools/:schoolUlid/contacts';
 
+  // Settings
+  static const String missionTypesRoute = '/mission-types';
+  static const String schoolTermsRoute = '/school-terms';
+  static const String professionsRoute = '/professions';
+  static const String maritalStatusesRoute = '/marital-statuses';
+  static const String churchesRoute = '/churches';
+
+  // Members
+  static const String membersRoute = '/members';
+  static const String memberDetailsRoute = '/members/:memberUlid';
+
   @override
   List<AutoRoute> get routes => [
     // Auth
@@ -109,6 +120,52 @@ class PRFLeadershipRouter extends RootStackRouter {
     CustomRoute<dynamic>(
       page: SchoolDetailsRoute.page,
       path: schoolDetailsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    // Settings
+    CustomRoute<dynamic>(
+      page: MissionTypesRoute.page,
+      path: missionTypesRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: SchoolTermsRoute.page,
+      path: schoolTermsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: ProfessionsRoute.page,
+      path: professionsRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: MaritalStatusesRoute.page,
+      path: maritalStatusesRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: ChurchesRoute.page,
+      path: churchesRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
+    // Members
+    CustomRoute<dynamic>(
+      page: MembersRoute.page,
+      path: membersRoute,
+      guards: [AuthGuard()],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute<dynamic>(
+      page: MemberDetailsRoute.page,
+      path: memberDetailsRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),

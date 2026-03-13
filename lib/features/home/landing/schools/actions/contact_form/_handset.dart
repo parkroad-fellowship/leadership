@@ -552,6 +552,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
 
     final cleanedName = typeName.trim();
     final cubit = context.read<ContactTypeCubit>()
+      // ignore: unawaited_futures
       ..createContactType(name: cleanedName);
     _listenForNewType(cubit, cleanedName);
   }

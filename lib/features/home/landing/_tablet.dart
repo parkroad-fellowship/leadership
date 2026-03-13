@@ -252,7 +252,7 @@ class LandingPageTablet extends StatelessWidget {
       final sectionStart = runningIndex;
       runningIndex += section.actions.length;
 
-      slivers.add(
+      slivers..add(
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -284,9 +284,9 @@ class LandingPageTablet extends StatelessWidget {
             ),
           ),
         ),
-      );
+      )
 
-      slivers.add(
+      ..add(
         SliverPadding(
           padding: const EdgeInsets.symmetric(
             horizontal: PRFSpacingTokens.xxxl,

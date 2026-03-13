@@ -242,69 +242,72 @@ class LandingPageHandset extends StatelessWidget {
       final sectionStart = runningIndex;
       runningIndex += section.actions.length;
 
-      slivers.add(
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              PRFSpacingTokens.lg,
-              PRFSpacingTokens.lg,
-              PRFSpacingTokens.lg,
-              PRFSpacingTokens.md,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  section.title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
+      slivers
+        ..add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.md,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    section.title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                const SizedBox(height: PRFSpacingTokens.xs),
-                Container(
-                  width: 36,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(2),
+                  const SizedBox(height: PRFSpacingTokens.xs),
+                  Container(
+                    width: 36,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      );
-
-      slivers.add(
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
-          sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-              crossAxisSpacing: PRFSpacingTokens.sm,
-              mainAxisSpacing: PRFSpacingTokens.sm,
-              childAspectRatio: 0.92,
+        )
+        ..add(
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final action = section.actions[index];
-                return _buildAnimatedCard(
-                  delay: action.animationDelay + ((sectionStart + index) * 40),
-                  child: LandingActionTile(
-                    title: action.title,
-                    assetPath: action.assetPath,
-                    onTap: action.onTap,
-                    assetHeight: 46,
-                    isNeutralCard: action.isNeutralCard,
-                  ),
-                );
-              },
-              childCount: section.actions.length,
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                crossAxisSpacing: PRFSpacingTokens.sm,
+                mainAxisSpacing: PRFSpacingTokens.sm,
+                childAspectRatio: 0.92,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final action = section.actions[index];
+                  return _buildAnimatedCard(
+                    delay:
+                        action.animationDelay + ((sectionStart + index) * 40),
+                    child: LandingActionTile(
+                      title: action.title,
+                      assetPath: action.assetPath,
+                      onTap: action.onTap,
+                      assetHeight: 46,
+                      isNeutralCard: action.isNeutralCard,
+                    ),
+                  );
+                },
+                childCount: section.actions.length,
+              ),
             ),
           ),
-        ),
-      );
+        );
     }
 
     return slivers;

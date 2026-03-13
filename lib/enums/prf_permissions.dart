@@ -25,7 +25,13 @@ enum PRFPermissions {
   createPaymentInstruction,
   deleteAllocationEntry,
   deleteRequisitionItem,
-  viewAnySchools
+  viewAnySchools,
+  manageMissionType,
+  manageSchoolTerm,
+  manageProfession,
+  manageMaritalStatus,
+  manageChurch,
+  viewAnyMember
   ;
 
   String get name {
@@ -84,6 +90,18 @@ enum PRFPermissions {
         return 'delete requisition item';
       case PRFPermissions.viewAnySchools:
         return 'viewAny school';
+      case PRFPermissions.manageMissionType:
+        return 'manage mission type';
+      case PRFPermissions.manageSchoolTerm:
+        return 'manage school term';
+      case PRFPermissions.manageProfession:
+        return 'manage profession';
+      case PRFPermissions.manageMaritalStatus:
+        return 'manage marital status';
+      case PRFPermissions.manageChurch:
+        return 'manage church';
+      case PRFPermissions.viewAnyMember:
+        return 'viewAny member';
     }
   }
 }

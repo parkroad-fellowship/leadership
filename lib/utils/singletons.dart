@@ -10,10 +10,13 @@ import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
+import 'package:leadership/features/home/landing/churches/cubit/church_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
+import 'package:leadership/features/home/landing/marital_statuses/cubit/marital_status_resource_cubit.dart';
+import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_ground_suggestion_resource_cubit.dart';
@@ -25,6 +28,7 @@ import 'package:leadership/features/home/landing/missions/cubit/mission_subscrip
 import 'package:leadership/features/home/landing/missions/cubit/mission_type_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/school_term_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/soul_resource_cubit.dart';
+import 'package:leadership/features/home/landing/professions/cubit/profession_resource_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
 import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
@@ -34,12 +38,14 @@ import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/accounting_event_service.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
+import 'package:leadership/services/api/church_service.dart';
 import 'package:leadership/services/api/class_group_service.dart';
 import 'package:leadership/services/api/contact_type_service.dart';
 import 'package:leadership/services/api/debrief_note_service.dart';
 import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/api/expense_service.dart';
+import 'package:leadership/services/api/marital_status_service.dart';
 import 'package:leadership/services/api/member_service.dart';
 import 'package:leadership/services/api/mission_ground_suggestion_service.dart';
 import 'package:leadership/services/api/mission_offline_member_service.dart';
@@ -49,6 +55,7 @@ import 'package:leadership/services/api/mission_session_service.dart';
 import 'package:leadership/services/api/mission_subscription_service.dart';
 import 'package:leadership/services/api/mission_type_service.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
+import 'package:leadership/services/api/profession_service.dart';
 import 'package:leadership/services/api/refund_service.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
@@ -114,7 +121,10 @@ class Singletons {
       ..registerSingleton<SchoolService>(SchoolService())
       ..registerSingleton<SchoolContactService>(SchoolContactService())
       ..registerSingleton<ContactTypeService>(ContactTypeService())
-      ..registerSingleton<ClassGroupService>(ClassGroupService());
+      ..registerSingleton<ClassGroupService>(ClassGroupService())
+      ..registerSingleton<ProfessionService>(ProfessionService())
+      ..registerSingleton<MaritalStatusService>(MaritalStatusService())
+      ..registerSingleton<ChurchService>(ChurchService());
   }
 
   static Future<void> setupDatabases() async {
@@ -315,6 +325,26 @@ class Singletons {
       BlocProvider<ContactCubit>(
         create: (context) => ContactCubit(
           schoolContactService: getIt<SchoolContactService>(),
+        ),
+      ),
+      BlocProvider<ProfessionResourceCubit>(
+        create: (context) => ProfessionResourceCubit(
+          professionService: getIt<ProfessionService>(),
+        ),
+      ),
+      BlocProvider<MaritalStatusResourceCubit>(
+        create: (context) => MaritalStatusResourceCubit(
+          maritalStatusService: getIt<MaritalStatusService>(),
+        ),
+      ),
+      BlocProvider<ChurchResourceCubit>(
+        create: (context) => ChurchResourceCubit(
+          churchService: getIt<ChurchService>(),
+        ),
+      ),
+      BlocProvider<MemberResourceCubit>(
+        create: (context) => MemberResourceCubit(
+          memberService: getIt<MemberService>(),
         ),
       ),
     ];

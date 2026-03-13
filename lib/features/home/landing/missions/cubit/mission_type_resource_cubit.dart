@@ -15,4 +15,27 @@ class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
       limit: 200,
     );
   }
+
+  Future<void> createMissionType({required String name}) {
+    return create(data: {'name': name});
+  }
+
+  Future<void> updateMissionType({
+    required String ulid,
+    String? name,
+    PRFActiveStatus? isActive,
+  }) {
+    return update(
+      id: ulid,
+      data: {
+        'name': ?name,
+        if (isActive != null) 'is_active': isActive.apiKey,
+      },
+      matchById: (mt) => mt.ulid == ulid,
+    );
+  }
+
+  Future<void> deleteMissionType({required String ulid}) {
+    return delete(ulid: ulid, matchById: (mt) => mt.ulid == ulid);
+  }
 }

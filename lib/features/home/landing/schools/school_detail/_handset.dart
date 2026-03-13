@@ -660,7 +660,6 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   PRFHeaderActionButton(
                     label: 'New',
                     icon: Icons.add,
-                    variant: PRFHeaderActionButtonVariant.primary,
                     onTap: () => _showContactForm(
                       null,
                       school,
