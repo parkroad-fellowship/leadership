@@ -7,7 +7,6 @@ import 'package:gaimon/gaimon.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
-import 'package:leadership/enums/prf_membership_type.dart';
 import 'package:leadership/enums/prf_theme_mode.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
@@ -348,17 +347,6 @@ class AccountPageTablet extends StatelessWidget {
                                   value: profile.email,
                                   icon: Icons.email_outlined,
                                 ),
-                                if (profile.member?.bio != null &&
-                                    profile.member!.bio!.isNotEmpty) ...[
-                                  const SizedBox(height: PRFSpacingTokens.xl),
-                                  _buildInfoField(
-                                    context,
-                                    label: l10n.bio,
-                                    value: profile.member!.bio!,
-                                    icon: Icons.description_outlined,
-                                    maxLines: 3,
-                                  ),
-                                ],
                               ],
                             ),
                           )
@@ -423,35 +411,6 @@ class AccountPageTablet extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: PRFSpacingTokens.xl),
-                                ...profile!.member!.memberships
-                                    .asMap()
-                                    .entries
-                                    .map(
-                                      (entry) => Padding(
-                                        padding: EdgeInsets.only(
-                                          bottom:
-                                              entry.key <
-                                                  profile
-                                                          .member!
-                                                          .memberships
-                                                          .length -
-                                                      1
-                                              ? 16
-                                              : 0,
-                                        ),
-                                        child: _buildMembershipCard(
-                                          context,
-                                          spiritualYear:
-                                              entry.value.spiritualYear!.name,
-                                          membershipType:
-                                              PRFMembershipType.fromIndex(
-                                                entry.value.type,
-                                              ).name,
-                                          isApproved: entry.value.approved,
-                                        ),
-                                      ),
-                                    ),
                               ],
                             ),
                           )
@@ -618,92 +577,6 @@ class AccountPageTablet extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMembershipCard(
-    BuildContext context, {
-    required String spiritualYear,
-    required String membershipType,
-    required bool isApproved,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.5,
-        ),
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        border: Border.all(
-          color: isApproved
-              ? theme.colorScheme.primary.withValues(alpha: 0.3)
-              : theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-            decoration: BoxDecoration(
-              color: isApproved
-                  ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                  : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-            ),
-            child: Icon(
-              isApproved ? Icons.check_circle_outline : Icons.pending_outlined,
-              color: isApproved
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: PRFSpacingTokens.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  spiritualYear,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  membershipType,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: PRFSpacingTokens.sm,
-              vertical: PRFSpacingTokens.xs,
-            ),
-            decoration: BoxDecoration(
-              color: isApproved
-                  ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                  : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-            ),
-            child: Text(
-              isApproved ? 'Approved' : 'Pending',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: isApproved
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
         ],

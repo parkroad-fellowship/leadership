@@ -7,7 +7,6 @@ import 'package:gaimon/gaimon.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
-import 'package:leadership/enums/prf_membership_type.dart';
 import 'package:leadership/enums/prf_theme_mode.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
@@ -68,8 +67,19 @@ class AccountPageHandset extends StatelessWidget {
                               ),
                             ),
                             child: IconButton(
-                              onPressed: () =>
-                                  context.read<SignOutCubit>().signOut(),
+                              onPressed: () async {
+                                final confirmed =
+                                    await PRFConfirmationDialog.show(
+                                  context,
+                                  title: l10n.signOut,
+                                  message:
+                                      'Are you sure you want to sign out?',
+                                  confirmLabel: l10n.signOut,
+                                );
+                                if (confirmed == true && context.mounted) {
+                                  await context.read<SignOutCubit>().signOut();
+                                }
+                              },
                               icon: Icon(
                                 Icons.logout_rounded,
                                 color: theme.colorScheme.onPrimary,
@@ -364,17 +374,6 @@ class AccountPageHandset extends StatelessWidget {
                                 value: profile.email,
                                 icon: Icons.email_outlined,
                               ),
-                              if (profile.member?.bio != null &&
-                                  profile.member!.bio!.isNotEmpty) ...[
-                                const SizedBox(height: PRFSpacingTokens.lg),
-                                _buildInfoField(
-                                  context,
-                                  label: l10n.bio,
-                                  value: profile.member!.bio!,
-                                  icon: Icons.description_outlined,
-                                  maxLines: 3,
-                                ),
-                              ],
                             ],
                           ),
                         )
@@ -387,218 +386,6 @@ class AccountPageHandset extends StatelessWidget {
 
           const SliverToBoxAdapter(
             child: SizedBox(height: PRFSpacingTokens.xxl),
-          ),
-
-          // Memberships Section
-          ValueListenableBuilder(
-            valueListenable: Hive.box<dynamic>(
-              PRFLeadershipConfig.instance!.values.hiveBox,
-            ).listenable(),
-            builder: (context, _, _) {
-              final profile = getIt<HiveService>().auth.retrieveProfile();
-              if (profile?.member?.memberships.isEmpty ?? true) {
-                return const SliverToBoxAdapter(child: SizedBox.shrink());
-              }
-
-              return SliverToBoxAdapter(
-                child:
-                    Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: PRFSpacingTokens.lg,
-                          ),
-                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(
-                              PRFRadiusTokens.xl,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.shadow.withValues(
-                                  alpha: 0.08,
-                                ),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.groups_outlined,
-                                    color: theme.colorScheme.primary,
-                                    size: 24,
-                                  ),
-                                  const SizedBox(width: PRFSpacingTokens.md),
-                                  Text(
-                                    l10n.memberships,
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: PRFSpacingTokens.lg),
-                              ...profile!.member!.memberships
-                                  .asMap()
-                                  .entries
-                                  .map(
-                                    (entry) => Container(
-                                      margin: EdgeInsets.only(
-                                        bottom:
-                                            entry.key <
-                                                profile
-                                                        .member!
-                                                        .memberships
-                                                        .length -
-                                                    1
-                                            ? PRFSpacingTokens.md
-                                            : 0,
-                                      ),
-                                      padding: const EdgeInsets.all(
-                                        PRFSpacingTokens.lg,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: theme
-                                            .colorScheme
-                                            .surfaceContainerHighest,
-                                        borderRadius: BorderRadius.circular(
-                                          PRFRadiusTokens.md,
-                                        ),
-                                        border: Border.all(
-                                          color: theme.colorScheme.outline
-                                              .withValues(alpha: 0.2),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(
-                                              PRFSpacingTokens.sm,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: entry.value.approved
-                                                  ? theme.colorScheme.primary
-                                                        .withValues(
-                                                          alpha: 0.1,
-                                                        )
-                                                  : theme.colorScheme.secondary
-                                                        .withValues(
-                                                          alpha: 0.1,
-                                                        ),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    PRFRadiusTokens.sm,
-                                                  ),
-                                            ),
-                                            child: Icon(
-                                              entry.value.approved
-                                                  ? Icons.verified_outlined
-                                                  : Icons.pending_outlined,
-                                              color: entry.value.approved
-                                                  ? theme.colorScheme.primary
-                                                  : theme.colorScheme.secondary,
-                                              size: 20,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            width: PRFSpacingTokens.md,
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  entry
-                                                      .value
-                                                      .spiritualYear!
-                                                      .name,
-                                                  style: theme
-                                                      .textTheme
-                                                      .bodyLarge
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: theme
-                                                            .colorScheme
-                                                            .onSurface,
-                                                      ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  PRFMembershipType.fromIndex(
-                                                    entry.value.type,
-                                                  ).name,
-                                                  style: theme
-                                                      .textTheme
-                                                      .bodyMedium
-                                                      ?.copyWith(
-                                                        color: theme
-                                                            .colorScheme
-                                                            .onSurfaceVariant,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: PRFSpacingTokens.sm,
-                                              vertical: PRFSpacingTokens.xs,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: entry.value.approved
-                                                  ? theme.colorScheme.primary
-                                                        .withValues(
-                                                          alpha: 0.1,
-                                                        )
-                                                  : theme.colorScheme.secondary
-                                                        .withValues(
-                                                          alpha: 0.1,
-                                                        ),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    PRFRadiusTokens.md,
-                                                  ),
-                                            ),
-                                            child: Text(
-                                              entry.value.approved
-                                                  ? 'Approved'
-                                                  : 'Pending',
-                                              style: theme.textTheme.labelSmall
-                                                  ?.copyWith(
-                                                    color: entry.value.approved
-                                                        ? theme
-                                                              .colorScheme
-                                                              .primary
-                                                        : theme
-                                                              .colorScheme
-                                                              .secondary,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                            ],
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger2)
-                        .fadeIn(duration: PRFMotionTokens.slow)
-                        .slideY(begin: 0.1, end: 0),
-              );
-            },
-          ),
-
-          const SliverToBoxAdapter(
-            child: SizedBox(height: PRFSpacingTokens.xxxl),
           ),
 
           // Footer Section
