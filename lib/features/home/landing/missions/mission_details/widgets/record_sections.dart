@@ -450,7 +450,10 @@ class MissionSubscriptionsSection extends StatelessWidget {
             ...subscriptions.map(
               (subscription) => MissionSubscriptionCard(
                 subscription: subscription,
-                subtitle: 'Subscribed ${formatDate(subscription.createdAt)}',
+                subtitle:
+                    '${subscription.missionRole.name} · '
+                    '${subscription.status.name} · '
+                    'Subscribed on ${formatDate(subscription.createdAt)}',
                 onView: () => onViewSubscriber(subscription),
                 onRemove: () => onUnsubscribe(subscription),
               ),
@@ -523,6 +526,14 @@ class MissionSubscriptionCard extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'Edit role & status',
+              onPressed: onView,
+              icon: Icon(
+                Icons.edit_rounded,
+                color: theme.colorScheme.primary,
               ),
             ),
             IconButton(

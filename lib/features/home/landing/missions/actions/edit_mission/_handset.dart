@@ -20,7 +20,8 @@ class EditMissionViewHandset extends StatefulWidget {
   State<EditMissionViewHandset> createState() => _EditMissionViewHandsetState();
 }
 
-class _EditMissionViewHandsetState extends State<EditMissionViewHandset> with TimezoneMixin {
+class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
+    with TimezoneMixin {
   final _themeController = TextEditingController();
   final _capacityController = TextEditingController();
   final _startDateController = TextEditingController();
@@ -56,12 +57,15 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> with Ti
     _capacityController.text = widget.mission.capacity.toString();
     _startDateController.text = DateFormat('yyyy-MM-dd').format(_startDate!);
     _endDateController.text = DateFormat('yyyy-MM-dd').format(_endDate!);
-    _startTimeController.text = Misc.formatTime(widget.mission.startTime, timezone);
+    _startTimeController.text = Misc.formatTime(
+      widget.mission.startTime,
+      timezone,
+    );
     _endTimeController.text = Misc.formatTime(widget.mission.endTime, timezone);
     _prepNotesController.text = widget.mission.missionPrepNotes ?? '';
     _whatsAppLinkController.text = widget.mission.whatsAppLink ?? '';
     _startTimeController.addListener(_onChanged);
-    _endTimeController.addListener(_onChanged); 
+    _endTimeController.addListener(_onChanged);
   }
 
   void _onChanged() => setState(() {});

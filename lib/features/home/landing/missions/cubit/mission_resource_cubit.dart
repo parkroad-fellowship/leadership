@@ -95,6 +95,7 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     );
     await _reloadContext();
   }
+
   Future<void> deleteMission({required String missionUlid}) async {
     await delete(
       ulid: missionUlid,

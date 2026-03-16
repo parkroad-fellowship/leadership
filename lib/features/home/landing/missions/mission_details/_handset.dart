@@ -4,9 +4,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
+import 'package:leadership/enums/prf_mission_role.dart';
+import 'package:leadership/enums/prf_mission_subscription_status.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_soul_decision_type.dart';
 import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/landing/missions/actions/edit_mission/edit_mission.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_offline_member_resource_cubit.dart';
@@ -34,7 +37,6 @@ import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
 import 'package:leadership/models/remote/prf_class_group.dart';
 import 'package:leadership/models/remote/prf_debrief_note.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/features/home/landing/missions/actions/edit_mission/edit_mission.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
@@ -2023,7 +2025,7 @@ class _MissionMemberSubscriptionFormBodyState
               width: PRFSpacingTokens.xs,
             ),
             Text(
-              'Add Missioner',
+              'Add Offline Missioner',
               style: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: PRFColors.limeGreen,
@@ -2710,40 +2712,175 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
   }
 }
 
-class _MissionSubscriberDetailsBody extends StatelessWidget {
+class _MissionSubscriberDetailsBody extends StatefulWidget {
   const _MissionSubscriberDetailsBody({required this.subscription});
 
   final PRFMissionSubscription subscription;
 
   @override
-  Widget build(BuildContext context) {
-    final member = subscription.member;
+  State<_MissionSubscriberDetailsBody> createState() =>
+      _MissionSubscriberDetailsBodyState();
+}
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: PRFSpacingTokens.lg),
-            _detailRow('Name', member?.fullName),
-            _detailRow('Member ULID', member?.ulid),
-            _detailRow('Email', member?.email),
-            _detailRow('Phone', member?.phoneNumber),
-            _detailRow('Residence', member?.residence),
-            _detailRow('Pastor', member?.pastor),
-            const SizedBox(height: PRFSpacingTokens.xxl),
-            SizedBox(
-              width: double.infinity,
-              child: PRFPrimaryButton(
-                onPressed: () => Navigator.of(context).pop(),
-                title: 'Done',
-                disabled: false,
+class _MissionSubscriberDetailsBodyState
+    extends State<_MissionSubscriberDetailsBody> {
+  late PRFMissionSubscriptionStatus _selectedStatus;
+  late PRFMissionRole _selectedRole;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedStatus = widget.subscription.status;
+    _selectedRole = widget.subscription.missionRole;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final member = widget.subscription.member;
+
+    return BlocListener<
+      MissionSubscriptionResourceCubit,
+      ResourceState<PRFMissionSubscription>
+    >(
+      listener: (context, state) {
+        switch (state) {
+          case ResourceMutating<PRFMissionSubscription>(:final operation)
+              when operation == ResourceOperation.update:
+            setState(() => _isLoading = true);
+          case ResourceMutated<PRFMissionSubscription>(:final operation)
+              when operation == ResourceOperation.update:
+            setState(() => _isLoading = false);
+            Gaimon.success();
+            Navigator.of(context).pop(true);
+            PRFSnackbar.success(context, 'Subscriber updated successfully');
+          case ResourceError<PRFMissionSubscription>(:final message)
+              when _isLoading:
+            setState(() => _isLoading = false);
+            Gaimon.error();
+            PRFSnackbar.error(context, message);
+          default:
+            break;
+        }
+      },
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: PRFSpacingTokens.lg),
+              _detailRow('Name', member?.fullName),
+              _detailRow('Email', member?.email),
+              _detailRow('Phone', member?.phoneNumber),
+              _detailRow('Residence', member?.residence),
+              _detailRow('Pastor', member?.pastor),
+              const SizedBox(height: PRFSpacingTokens.md),
+              _buildChipSelector<PRFMissionRole>(
+                theme: theme,
+                label: 'Role',
+                icon: Icons.badge_outlined,
+                values: PRFMissionRole.values,
+                selected: _selectedRole,
+                nameOf: (v) => v.name,
+                onSelected: (v) => setState(() => _selectedRole = v),
+              ),
+              const SizedBox(height: PRFSpacingTokens.md),
+              _buildChipSelector<PRFMissionSubscriptionStatus>(
+                theme: theme,
+                label: 'Status',
+                icon: Icons.flag_outlined,
+                values: PRFMissionSubscriptionStatus.values,
+                selected: _selectedStatus,
+                nameOf: (v) => v.name,
+                onSelected: (v) => setState(() => _selectedStatus = v),
+              ),
+              const SizedBox(height: PRFSpacingTokens.xxl),
+              SizedBox(
+                width: double.infinity,
+                child: PRFPrimaryButton(
+                  onPressed: _submit,
+                  title: 'Update Subscriber',
+                  isLoading: _isLoading,
+                  disabled:
+                      _selectedStatus == widget.subscription.status &&
+                      _selectedRole == widget.subscription.missionRole,
+                ),
+              ),
+              const SizedBox(height: PRFSpacingTokens.xxxl),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChipSelector<T>({
+    required ThemeData theme,
+    required String label,
+    required IconData icon,
+    required List<T> values,
+    required T selected,
+    required String Function(T) nameOf,
+    required ValueChanged<T> onSelected,
+  }) {
+    return PRFFormSection(
+      icon: icon,
+      title: label,
+      margin: EdgeInsets.zero,
+      child: Wrap(
+        spacing: PRFSpacingTokens.sm,
+        runSpacing: PRFSpacingTokens.sm,
+        children: values.map((value) {
+          final isSelected = value == selected;
+          return GestureDetector(
+            onTap: _isLoading ? null : () => onSelected(value),
+            child: AnimatedContainer(
+              duration: PRFMotionTokens.standard,
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.lg,
+                vertical: PRFSpacingTokens.sm,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.5,
+                      ),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
+                border: Border.all(
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outline.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                nameOf(value),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isSelected
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.onSurface,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
               ),
             ),
-            const SizedBox(height: PRFSpacingTokens.xxxl),
-          ],
-        ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    final subscription = widget.subscription;
+
+    await context.read<MissionSubscriptionResourceCubit>().updateSubscription(
+      subscriptionUlid: subscription.ulid,
+      dto: PRFMissionSubscriptionDTO(
+        missionUlid: subscription.mission?.ulid ?? '',
+        memberUlid: subscription.member?.ulid ?? '',
+        status: _selectedStatus,
+        missionRole: _selectedRole,
       ),
     );
   }
