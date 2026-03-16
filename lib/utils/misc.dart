@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart'
-    show BuildContext, MediaQuery, ScaffoldMessenger, SnackBar, Text;
+    show BuildContext, MediaQuery, ScaffoldMessenger, SnackBar, Text, TimeOfDay;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_permissions.dart';
@@ -517,6 +517,35 @@ class Misc {
     } catch (e) {
       return false;
     }
+  }
+
+  static String toApiTime(TimeOfDay value) {
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  static DateTime localDateAndTimeToUtc({
+    required DateTime date,
+    required String hhmm,
+  }) {
+    final parts = hhmm.split(':');
+    final hour = int.tryParse(parts.first) ?? 0;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    final localDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+    return localDateTime.toUtc();
+  }
+
+  static String toUtcApiTime(DateTime utcDateTime) {
+    final hour = utcDateTime.hour.toString().padLeft(2, '0');
+    final minute = utcDateTime.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 }
 

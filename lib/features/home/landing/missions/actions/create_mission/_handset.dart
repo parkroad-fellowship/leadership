@@ -13,6 +13,7 @@ import 'package:leadership/models/remote/prf_mission_dto.dart';
 import 'package:leadership/models/remote/prf_mission_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/models/remote/prf_school_term.dart';
+import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -756,7 +757,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     if (selected == null) return;
 
     setState(() {
-      _startTimeController.text = _toApiTime(selected);
+      _startTimeController.text = Misc.toApiTime(selected);
       if (_showValidation) {
         _validateForm();
       }
@@ -772,18 +773,14 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     if (selected == null) return;
 
     setState(() {
-      _endTimeController.text = _toApiTime(selected);
+      _endTimeController.text = Misc.toApiTime(selected);
       if (_showValidation) {
         _validateForm();
       }
     });
   }
 
-  String _toApiTime(TimeOfDay value) {
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
+  
 
   Future<void> _submit() async {
     if (!_validateForm()) {
@@ -792,19 +789,24 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     }
 
     final capacity = int.tryParse(_capacityController.text.trim());
-
-    // final _startDate = _startTimeController.text.trim().toUtc().toIso8601String().split('T')[0],
-    //       _startTime = _startTimeController.text.trim().toUtc().toIso8601String().split('T')[1];
+    final utcStartDateTime = Misc.localDateAndTimeToUtc(
+      date: _startDate!,
+      hhmm: _startTimeController.text.trim(),
+    );
+    final utcEndDateTime = Misc.localDateAndTimeToUtc(
+      date: _endDate!,
+      hhmm: _endTimeController.text.trim(),
+    );
 
     await context.read<MissionResourceCubit>().createMission(
       dto: PRFMissionDTO(
         schoolTermUlid: _selectedSchoolTermUlid!,
         missionTypeUlid: _selectedMissionTypeUlid!,
         schoolUlid: _selectedSchoolUlid!,
-        startDate: _startDate!,
-        endDate: _endDate!,
-        startTime: _startTimeController.text.trim(),
-        endTime: _endTimeController.text.trim(),
+        startDate: utcStartDateTime,
+        endDate: utcEndDateTime,
+        startTime: Misc.toUtcApiTime(utcStartDateTime),
+        endTime: Misc.toUtcApiTime(utcEndDateTime),
         theme: _themeController.text.trim().isEmpty
             ? null
             : _themeController.text.trim(),
