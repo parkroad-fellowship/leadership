@@ -793,6 +793,9 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
 
     final capacity = int.tryParse(_capacityController.text.trim());
 
+    // final _startDate = _startTimeController.text.trim().toUtc().toIso8601String().split('T')[0],
+    //       _startTime = _startTimeController.text.trim().toUtc().toIso8601String().split('T')[1];
+
     await context.read<MissionResourceCubit>().createMission(
       dto: PRFMissionDTO(
         schoolTermUlid: _selectedSchoolTermUlid!,

@@ -2,8 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
+import 'package:leadership/features/home/landing/churches/actions/church_form/_handset.dart';
+import 'package:leadership/features/home/landing/churches/cubit/church_resource_cubit.dart';
+import 'package:leadership/features/home/landing/marital_statuses/actions/marital_status_form/_handset.dart';
+import 'package:leadership/features/home/landing/marital_statuses/cubit/marital_status_resource_cubit.dart';
 import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
+import 'package:leadership/features/home/landing/professions/actions/profession_form/_handset.dart';
+import 'package:leadership/features/home/landing/professions/cubit/profession_resource_cubit.dart';
+import 'package:leadership/models/remote/prf_church.dart';
+import 'package:leadership/models/remote/prf_marital_status.dart';
 import 'package:leadership/models/remote/prf_member.dart';
+import 'package:leadership/models/remote/prf_member_update_dto.dart';
+import 'package:leadership/models/remote/prf_profession.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -41,6 +51,11 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   late final TextEditingController _professionInstitutionController;
   late final TextEditingController _professionLocationController;
   late final TextEditingController _professionContactController;
+
+  // ULID selections
+  String? _selectedChurchUlid;
+  String? _selectedProfessionUlid;
+  String? _selectedMaritalStatusUlid;
 
   // Demographics
   int? _selectedGender;
@@ -94,11 +109,30 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       text: member.professionContact ?? '',
     );
 
+    // ULID selections
+    _selectedChurchUlid = member.church?.ulid;
+    _selectedProfessionUlid = member.profession?.ulid;
+    _selectedMaritalStatusUlid = member.maritalStatus?.ulid;
+
     // Demographics
     _selectedGender = member.gender;
 
     _firstNameController.addListener(_onFormChanged);
     _lastNameController.addListener(_onFormChanged);
+
+    // Load entity lists for selection
+    context.read<ChurchResourceCubit>().loadAll(
+      orderBy: 'name',
+      orderDirection: 'asc',
+    );
+    context.read<ProfessionResourceCubit>().loadAll(
+      orderBy: 'name',
+      orderDirection: 'asc',
+    );
+    context.read<MaritalStatusResourceCubit>().loadAll(
+      orderBy: 'name',
+      orderDirection: 'asc',
+    );
   }
 
   void _onFormChanged() {
@@ -162,8 +196,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
     final yearText = _yearOfSalvationController.text.trim();
     final yearOfSalvation = yearText.isNotEmpty ? int.tryParse(yearText) : null;
 
-    context.read<MemberResourceCubit>().updateMember(
-      ulid: widget.member.ulid,
+    final dto = PRFMemberUpdateDTO(
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
       phoneNumber: _phoneNumberController.text.trim(),
@@ -175,10 +208,65 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       yearOfSalvation: yearOfSalvation,
       churchVolunteer: _churchVolunteer,
       pastor: _pastorController.text.trim(),
+      churchUlid: _selectedChurchUlid,
+      professionUlid: _selectedProfessionUlid,
       professionInstitution: _professionInstitutionController.text.trim(),
       professionLocation: _professionLocationController.text.trim(),
       professionContact: _professionContactController.text.trim(),
       gender: _selectedGender,
+      maritalStatusUlid: _selectedMaritalStatusUlid,
+    );
+
+    context.read<MemberResourceCubit>().updateMember(
+      ulid: widget.member.ulid,
+      dto: dto,
+    );
+  }
+
+  // --- "Add New" bottom sheet methods ---
+
+  Future<void> _promptAddChurch() async {
+    await PRFBottomSheet.show<void>(
+      context,
+      title: 'Add Church',
+      child: ChurchFormViewHandset(
+        onSaved: () {
+          context.read<ChurchResourceCubit>().loadAll(
+            orderBy: 'name',
+            orderDirection: 'asc',
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _promptAddProfession() async {
+    await PRFBottomSheet.show<void>(
+      context,
+      title: 'Add Profession',
+      child: ProfessionFormViewHandset(
+        onSaved: () {
+          context.read<ProfessionResourceCubit>().loadAll(
+            orderBy: 'name',
+            orderDirection: 'asc',
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _promptAddMaritalStatus() async {
+    await PRFBottomSheet.show<void>(
+      context,
+      title: 'Add Marital Status',
+      child: MaritalStatusFormViewHandset(
+        onSaved: () {
+          context.read<MaritalStatusResourceCubit>().loadAll(
+            orderBy: 'name',
+            orderDirection: 'asc',
+          );
+        },
+      ),
     );
   }
 
@@ -536,6 +624,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
             enabled: !isLoading,
           ),
         ),
+        _buildChurchSelection(),
       ],
     );
   }
@@ -543,6 +632,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Widget _buildProfessionalSection(bool isLoading) {
     return Column(
       children: [
+        _buildProfessionSelection(),
         PRFFormSection(
           icon: Icons.business_outlined,
           title: 'Institution',
@@ -619,7 +709,187 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                   },
           ),
         ),
+        _buildMaritalStatusSelection(),
       ],
+    );
+  }
+
+  // --- Searchable selection widgets ---
+
+  Widget _buildChurchSelection() {
+    return BlocBuilder<ChurchResourceCubit, ResourceState<PRFChurch>>(
+      builder: (context, state) {
+        final churches = state.maybeWhen(
+          listLoaded: (items, page, hasMore) => items,
+          mutating: (items, operation) => items,
+          mutated: (items, operation, item) => items,
+          error: (message, items) => items,
+          orElse: () => <PRFChurch>[],
+        );
+
+        return PRFFormSection(
+          icon: Icons.church_outlined,
+          title: 'Church',
+          subtitle: 'Optional',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFSearchableList<String>(
+                entries: churches
+                    .map(
+                      (c) => PRFSearchableListEntry<String>(
+                        value: c.ulid,
+                        label: c.name,
+                      ),
+                    )
+                    .toList(),
+                onSelected: (value) {
+                  setState(() {
+                    _selectedChurchUlid = value;
+                  });
+                },
+                selection: _selectedChurchUlid,
+                hintText: 'Search church',
+                emptyText: 'No churches found',
+              ),
+              const SizedBox(height: PRFSpacingTokens.sm),
+              _buildAddNewButton(
+                label: 'Add Church',
+                onTap: _promptAddChurch,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfessionSelection() {
+    return BlocBuilder<ProfessionResourceCubit, ResourceState<PRFProfession>>(
+      builder: (context, state) {
+        final professions = state.maybeWhen(
+          listLoaded: (items, page, hasMore) => items,
+          mutating: (items, operation) => items,
+          mutated: (items, operation, item) => items,
+          error: (message, items) => items,
+          orElse: () => <PRFProfession>[],
+        );
+
+        return PRFFormSection(
+          icon: Icons.work_outlined,
+          title: 'Profession',
+          subtitle: 'Optional',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFSearchableList<String>(
+                entries: professions
+                    .map(
+                      (p) => PRFSearchableListEntry<String>(
+                        value: p.ulid,
+                        label: p.name,
+                      ),
+                    )
+                    .toList(),
+                onSelected: (value) {
+                  setState(() {
+                    _selectedProfessionUlid = value;
+                  });
+                },
+                selection: _selectedProfessionUlid,
+                hintText: 'Search profession',
+                emptyText: 'No professions found',
+              ),
+              const SizedBox(height: PRFSpacingTokens.sm),
+              _buildAddNewButton(
+                label: 'Add Profession',
+                onTap: _promptAddProfession,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMaritalStatusSelection() {
+    return BlocBuilder<
+      MaritalStatusResourceCubit,
+      ResourceState<PRFMaritalStatus>
+    >(
+      builder: (context, state) {
+        final statuses = state.maybeWhen(
+          listLoaded: (items, page, hasMore) => items,
+          mutating: (items, operation) => items,
+          mutated: (items, operation, item) => items,
+          error: (message, items) => items,
+          orElse: () => <PRFMaritalStatus>[],
+        );
+
+        return PRFFormSection(
+          icon: Icons.favorite_outlined,
+          title: 'Marital Status',
+          subtitle: 'Optional',
+          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PRFSearchableList<String>(
+                entries: statuses
+                    .map(
+                      (ms) => PRFSearchableListEntry<String>(
+                        value: ms.ulid,
+                        label: ms.name,
+                      ),
+                    )
+                    .toList(),
+                onSelected: (value) {
+                  setState(() {
+                    _selectedMaritalStatusUlid = value;
+                  });
+                },
+                selection: _selectedMaritalStatusUlid,
+                hintText: 'Search marital status',
+                emptyText: 'No marital statuses found',
+              ),
+              const SizedBox(height: PRFSpacingTokens.sm),
+              _buildAddNewButton(
+                label: 'Add Marital Status',
+                onTap: _promptAddMaritalStatus,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAddNewButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.add_circle_outline,
+            size: 16,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: PRFSpacingTokens.xs),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
