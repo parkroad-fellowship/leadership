@@ -360,69 +360,6 @@ class AccountPageTablet extends StatelessWidget {
             const SliverToBoxAdapter(
               child: SizedBox(height: PRFSpacingTokens.xxxl),
             ),
-
-            // Memberships Section
-            ValueListenableBuilder(
-              valueListenable: Hive.box<dynamic>(
-                PRFLeadershipConfig.instance!.values.hiveBox,
-              ).listenable(),
-              builder: (context, _, _) {
-                final profile = getIt<HiveService>().auth.retrieveProfile();
-                if (profile?.member?.memberships.isEmpty ?? true) {
-                  return const SliverToBoxAdapter(child: SizedBox.shrink());
-                }
-
-                return SliverToBoxAdapter(
-                  child:
-                      Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 24),
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.groups_outlined,
-                                      color: theme.colorScheme.primary,
-                                      size: 28,
-                                    ),
-                                    const SizedBox(width: PRFSpacingTokens.lg),
-                                    Text(
-                                      l10n.memberships,
-                                      style: theme.textTheme.titleLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          )
-                          .animate(delay: PRFMotionTokens.stagger2)
-                          .fadeIn(duration: PRFMotionTokens.slow)
-                          .slideY(begin: 0.1, end: 0),
-                );
-              },
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 48)),
-
             // Footer Section
             SliverToBoxAdapter(
               child:
