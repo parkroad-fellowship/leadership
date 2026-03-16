@@ -70,12 +70,12 @@ class AccountPageHandset extends StatelessWidget {
                               onPressed: () async {
                                 final confirmed =
                                     await PRFConfirmationDialog.show(
-                                  context,
-                                  title: l10n.signOut,
-                                  message:
-                                      'Are you sure you want to sign out?',
-                                  confirmLabel: l10n.signOut,
-                                );
+                                      context,
+                                      title: l10n.signOut,
+                                      message:
+                                          'Are you sure you want to sign out?',
+                                      confirmLabel: l10n.signOut,
+                                    );
                                 if (confirmed == true && context.mounted) {
                                   await context.read<SignOutCubit>().signOut();
                                 }

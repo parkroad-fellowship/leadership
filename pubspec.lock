@@ -1416,10 +1416,11 @@ packages:
   prf_design:
     dependency: "direct main"
     description:
-      path: "../../prf_design_system"
-      relative: true
-    source: path
-    version: "0.3.0"
+      name: prf_design
+      sha256: "44a2afebe49e58b3f96cdf01875c338fb08e00d953857258001ccb2373b79c8d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
   proj4dart:
     dependency: transitive
     description:
