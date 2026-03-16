@@ -96,7 +96,7 @@ class _LandingPageState extends State<LandingPage> {
           PRFLeadershipRouter.schools,
         ),
         animationDelay: 700,
-        isVisible: Misc.userCan(PRFPermissions.viewAnySchools),
+        isVisible: Misc.userCan(PRFPermissions.viewAnySchool),
         isSettings: true,
       ),
       LandingActionItem(

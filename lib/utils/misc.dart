@@ -234,7 +234,7 @@ class Misc {
           .map((p) => p.name)
           .toSet();
 
-      return userPermissions.contains(permission.name);
+      return userPermissions.contains(permission.key);
     } catch (e) {
       return false; // Deny access on error
     }
