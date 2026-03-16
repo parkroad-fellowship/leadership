@@ -76,13 +76,13 @@ class FirebaseMessagingServiceImpl implements FirebaseMessagingService {
       Logger().i('FCM background handler registered');
 
       // Handle foreground messages
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      FirebaseMessaging.onMessage.listen((message) {
         Logger().i('Received foreground FCM message: ${message.messageId}');
         FirebaseMessagingService.handleFCMMessage(message);
       });
 
       // Handle notification taps when app is in background but not terminated
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      FirebaseMessaging.onMessageOpenedApp.listen((message) {
         Logger().i('Notification opened app from background');
         Logger().d('Message data: ${message.data}');
         // AwesomeNotifications will handle the tap action

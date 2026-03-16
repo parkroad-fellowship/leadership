@@ -167,7 +167,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
     );
 
     if ((confirmed ?? false) && context.mounted) {
-      context.read<SendFinancialReportCubit>().sendReport(
+      await context.read<SendFinancialReportCubit>().sendReport(
         accountingEventUlid: accountingEventUlid,
       );
     }

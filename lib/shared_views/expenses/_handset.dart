@@ -1466,7 +1466,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
 
     showDialog<void>(
       context: context,
-      builder: (BuildContext dialogContext) {
+      builder: (dialogContext) {
         return PRFConfirmationDialog(
           title: 'Delete Expense',
           isDestructive: true,
