@@ -219,7 +219,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
           icon: Icons.event,
           title: 'Start Date',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Row(
             children: [
@@ -245,7 +245,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
           icon: Icons.event_available,
           title: 'End Date',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Row(
             children: [
@@ -271,7 +271,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
           icon: Icons.schedule,
           title: 'Start Time',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Row(
             children: [
@@ -297,7 +297,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
           icon: Icons.schedule_send,
           title: 'End Time',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Row(
             children: [
@@ -322,7 +322,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
         PRFFormSection(
           icon: Icons.label_outline,
           title: 'Theme',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: 'Mission theme',
@@ -335,7 +335,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
         PRFFormSection(
           icon: Icons.groups_outlined,
           title: 'Capacity',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFNumberInput(
             hintText: '0',
@@ -348,7 +348,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
         PRFFormSection(
           icon: Icons.forum_outlined,
           title: 'WhatsApp Link',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: 'https://...',
@@ -361,7 +361,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
         PRFFormSection(
           icon: Icons.notes_outlined,
           title: 'Preparation Notes',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextAreaInput(
             hintText: 'Any mission preparation notes',

@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/prf_church.dart';
+import 'package:leadership/models/remote/prf_department.dart';
+import 'package:leadership/models/remote/prf_gift.dart';
 import 'package:leadership/models/remote/prf_group_member.dart';
 import 'package:leadership/models/remote/prf_marital_status.dart';
 import 'package:leadership/models/remote/prf_media.dart';
@@ -38,6 +40,8 @@ abstract class PRFMember with _$PRFMember {
     PRFChurch? church,
     @JsonKey(name: 'group_members') List<PRFGroupMember>? groupMembers,
     @Default([]) List<PRFMembership> memberships,
+    @Default([]) List<PRFGift> gifts,
+    @Default([]) List<PRFDepartment> departments,
     @JsonKey(name: 'profile_picture') PRFMedia? profilePicture,
   }) = _PRFMember;
 

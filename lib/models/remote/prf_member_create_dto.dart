@@ -1,18 +1,19 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/models/remote/prf_membership_entry_dto.dart';
 
-part 'prf_member_update_dto.freezed.dart';
-part 'prf_member_update_dto.g.dart';
+part 'prf_member_create_dto.freezed.dart';
+part 'prf_member_create_dto.g.dart';
 
 @freezed
-abstract class PRFMemberUpdateDTO with _$PRFMemberUpdateDTO {
-  factory PRFMemberUpdateDTO({
-    // Personal
-    @JsonKey(name: 'first_name', includeIfNull: false) String? firstName,
-    @JsonKey(name: 'last_name', includeIfNull: false) String? lastName,
+abstract class PRFMemberCreateDTO with _$PRFMemberCreateDTO {
+  factory PRFMemberCreateDTO({
+    // Personal — required
+    @JsonKey(name: 'first_name') required String firstName,
+    @JsonKey(name: 'last_name') required String lastName,
+    @JsonKey(name: 'personal_email') required String personalEmail,
+
+    // Personal — optional
     @JsonKey(name: 'phone_number', includeIfNull: false) String? phoneNumber,
-    @JsonKey(name: 'personal_email', includeIfNull: false)
-    String? personalEmail,
     @JsonKey(name: 'postal_address', includeIfNull: false)
     String? postalAddress,
     @JsonKey(includeIfNull: false) String? residence,
@@ -47,8 +48,8 @@ abstract class PRFMemberUpdateDTO with _$PRFMemberUpdateDTO {
     List<String>? departmentUlids,
     @JsonKey(name: 'gift_ulids', includeIfNull: false) List<String>? giftUlids,
     @JsonKey(includeIfNull: false) List<PRFMembershipEntryDTO>? memberships,
-  }) = _PRFMemberUpdateDTO;
+  }) = _PRFMemberCreateDTO;
 
-  factory PRFMemberUpdateDTO.fromJson(Map<String, dynamic> json) =>
-      _$PRFMemberUpdateDTOFromJson(json);
+  factory PRFMemberCreateDTO.fromJson(Map<String, dynamic> json) =>
+      _$PRFMemberCreateDTOFromJson(json);
 }

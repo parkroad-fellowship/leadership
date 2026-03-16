@@ -439,7 +439,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     return PRFFormSection(
       icon: Icons.forum_outlined,
       title: 'WhatsApp Link',
-      subtitle: 'Optional',
+
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: PRFTextInput(
         hintText: 'https://...',
@@ -455,7 +455,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     return PRFFormSection(
       icon: Icons.notes_outlined,
       title: 'Preparation Notes',
-      subtitle: 'Optional',
+
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: PRFTextAreaInput(
         hintText: 'Any mission preparation notes',
@@ -779,8 +779,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       }
     });
   }
-
-  
 
   Future<void> _submit() async {
     if (!_validateForm()) {

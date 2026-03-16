@@ -310,7 +310,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
           icon: Icons.calendar_today_outlined,
           title: 'Term Name',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: 'Term name',
@@ -330,7 +330,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
           icon: Icons.date_range_outlined,
           title: 'Year',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFNumberInput(
             hintText: 'e.g. ${DateTime.now().year}',

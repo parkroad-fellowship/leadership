@@ -1,10 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_permissions.dart';
+import 'package:leadership/features/home/landing/members/actions/member_form/_handset.dart';
 import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/members/widgets/member_card.dart';
 import 'package:leadership/models/remote/prf_member.dart';
+import 'package:leadership/shared_widgets/header_action_button.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:leadership/utils/misc.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -180,6 +184,25 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
           PRFBrandedNavBar(
             title: 'Members',
             onBack: _goBackToHome,
+            actions: [
+              if (Misc.userCan(PRFPermissions.createMember))
+                PRFHeaderActionButton(
+                  label: '+ New',
+                  onTap: _showCreateMemberForm,
+                ),
+              if (Misc.userCan(PRFPermissions.createMember))
+                const SizedBox(width: PRFSpacingTokens.sm),
+              BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
+                builder: (context, state) => switch (state) {
+                  ResourceListLoading<PRFMember>() => const SizedBox.square(
+                    dimension: 24,
+                    child: PRFCircularProgressIndicator(),
+                  ),
+                  _ => const SizedBox.shrink(),
+                },
+              ),
+              const SizedBox(width: PRFSpacingTokens.lg),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -285,6 +308,16 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
       return '${(n / 1000).toStringAsFixed(1)}K';
     }
     return '$n';
+  }
+
+  void _showCreateMemberForm() {
+    PRFBottomSheet.show<void>(
+      context,
+      title: 'Add Member',
+      child: MemberFormViewHandset(
+        onSaved: _loadData,
+      ),
+    );
   }
 
   void _goBackToHome() {

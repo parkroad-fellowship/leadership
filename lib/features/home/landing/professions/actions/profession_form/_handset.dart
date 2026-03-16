@@ -186,7 +186,7 @@ class _ProfessionFormViewHandsetState extends State<ProfessionFormViewHandset> {
                                 icon: Icons.work_outlined,
                                 title: 'Name',
                                 isRequired: true,
-                                subtitle: 'Required',
+
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),

@@ -103,6 +103,14 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                               _buildProfessionalSection(theme, member),
                               const SizedBox(height: PRFSpacingTokens.lg),
                               _buildDemographicsSection(theme, member),
+                              if (member.departments.isNotEmpty) ...[
+                                const SizedBox(height: PRFSpacingTokens.lg),
+                                _buildDepartmentsSection(theme, member),
+                              ],
+                              if (member.gifts.isNotEmpty) ...[
+                                const SizedBox(height: PRFSpacingTokens.lg),
+                                _buildGiftsSection(theme, member),
+                              ],
                             ],
                           ),
                         ),
@@ -325,6 +333,78 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
           ),
         if (member.maritalStatus != null)
           _infoRow(theme, 'Marital Status', member.maritalStatus!.name),
+      ],
+    );
+  }
+
+  // -----------------------------------------------------------
+  // Departments section
+  // -----------------------------------------------------------
+
+  Widget _buildDepartmentsSection(ThemeData theme, PRFMember member) {
+    return _buildSectionCard(
+      theme: theme,
+      icon: Icons.groups_outlined,
+      title: 'DEPARTMENTS',
+      children: [
+        Wrap(
+          spacing: PRFSpacingTokens.xs,
+          runSpacing: PRFSpacingTokens.xs,
+          children: member.departments
+              .map(
+                (d) => Chip(
+                  label: Text(
+                    d.name,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  backgroundColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.08,
+                  ),
+                  side: BorderSide(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  // -----------------------------------------------------------
+  // Gifts section
+  // -----------------------------------------------------------
+
+  Widget _buildGiftsSection(ThemeData theme, PRFMember member) {
+    return _buildSectionCard(
+      theme: theme,
+      icon: Icons.card_giftcard_outlined,
+      title: 'GIFTS',
+      children: [
+        Wrap(
+          spacing: PRFSpacingTokens.xs,
+          runSpacing: PRFSpacingTokens.xs,
+          children: member.gifts
+              .map(
+                (g) => Chip(
+                  label: Text(
+                    g.name,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  backgroundColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.08,
+                  ),
+                  side: BorderSide(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
       ],
     );
   }

@@ -185,7 +185,7 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                                 icon: Icons.church_outlined,
                                 title: 'Name',
                                 isRequired: true,
-                                subtitle: 'Required',
+
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),

@@ -2208,7 +2208,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                           PRFFormSection(
                             icon: Icons.person_outline,
                             title: 'Full Name',
-                            subtitle: 'Required',
+
                             isRequired: true,
                             margin: EdgeInsets.zero,
                             child: PRFTextInput(
@@ -2225,7 +2225,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                           PRFFormSection(
                             icon: Icons.phone_outlined,
                             title: 'Phone Number',
-                            subtitle: 'Required',
+
                             isRequired: true,
                             margin: EdgeInsets.zero,
                             child: PRFPhoneInput(
@@ -2476,7 +2476,7 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             icon: Icons.person_outline,
                             title: 'Name / Identifier',
                             isRequired: true,
-                            subtitle: 'Required',
+
                             margin: const EdgeInsets.only(
                               bottom: PRFSpacingTokens.md,
                             ),
@@ -2492,7 +2492,7 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             icon: Icons.class_outlined,
                             title: 'Class Group',
                             isRequired: true,
-                            subtitle: 'Required',
+
                             margin: const EdgeInsets.only(
                               bottom: PRFSpacingTokens.md,
                             ),
@@ -2600,7 +2600,7 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                           PRFFormSection(
                             icon: Icons.notes_outlined,
                             title: 'Notes',
-                            subtitle: 'Optional',
+
                             margin: EdgeInsets.zero,
                             child: PRFTextAreaInput(
                               hintText: 'Optional details for follow-up',

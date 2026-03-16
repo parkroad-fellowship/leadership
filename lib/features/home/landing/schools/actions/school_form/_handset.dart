@@ -449,7 +449,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           icon: Icons.school_outlined,
           title: 'School Name',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: 'School name',
@@ -469,7 +469,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           icon: Icons.category_outlined,
           title: 'Institution Type',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: DropdownButtonFormField<PRFInstitutionType>(
             initialValue: _selectedInstitutionType,
@@ -503,7 +503,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           icon: Icons.groups_outlined,
           title: 'Total Students',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFNumberInput(
             hintText: '0',
@@ -524,7 +524,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           icon: Icons.location_on_outlined,
           title: 'Address',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextAreaInput(
             hintText: 'Address',
@@ -566,7 +566,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           icon: Icons.pin_drop_outlined,
           title: 'Latitude',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: '0.000000',
@@ -583,7 +583,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           icon: Icons.pin_drop_outlined,
           title: 'Longitude',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: '0.000000',
@@ -606,7 +606,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
         PRFFormSection(
           icon: Icons.route_outlined,
           title: 'Directions',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextAreaInput(
             hintText: 'Directions',
@@ -621,7 +621,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
         PRFFormSection(
           icon: Icons.description_outlined,
           title: 'Description',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextAreaInput(
             hintText: 'Description',

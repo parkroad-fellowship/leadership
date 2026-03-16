@@ -192,7 +192,7 @@ class _MaritalStatusFormViewHandsetState
                                 icon: Icons.favorite_outlined,
                                 title: 'Name',
                                 isRequired: true,
-                                subtitle: 'Required',
+
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),

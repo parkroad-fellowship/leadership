@@ -184,7 +184,7 @@ class _GiftFormViewHandsetState extends State<GiftFormViewHandset> {
                                 icon: Icons.card_giftcard_outlined,
                                 title: 'Name',
                                 isRequired: true,
-                                subtitle: 'Required',
+
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),

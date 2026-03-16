@@ -362,7 +362,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           icon: Icons.badge_outlined,
           title: 'Contact Name',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: 'Enter contact name',
@@ -377,7 +377,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           icon: Icons.category_outlined,
           title: 'Contact Type',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,7 +456,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           icon: Icons.phone_outlined,
           title: 'Phone Number',
           isRequired: true,
-          subtitle: 'Required',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -483,7 +483,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
         PRFFormSection(
           icon: Icons.email_outlined,
           title: 'Email Address',
-          subtitle: 'Optional',
+
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextInput(
             hintText: 'Enter email address',
@@ -717,7 +717,7 @@ class _NewContactTypeFormBodyState extends State<_NewContactTypeFormBody> {
                       child: PRFFormSection(
                         icon: Icons.category_outlined,
                         title: 'Contact Type Name',
-                        subtitle: 'Required',
+
                         isRequired: true,
                         margin: EdgeInsets.zero,
                         child: PRFTextInput(

@@ -33,7 +33,8 @@ enum PRFPermissions {
   manageChurch,
   manageDepartment,
   manageGift,
-  viewAnyMember
+  viewAnyMember,
+  createMember
   ;
 
   String get name {
@@ -108,6 +109,8 @@ enum PRFPermissions {
         return 'manage gift';
       case PRFPermissions.viewAnyMember:
         return 'viewAny member';
+      case PRFPermissions.createMember:
+        return 'create member';
     }
   }
 }
