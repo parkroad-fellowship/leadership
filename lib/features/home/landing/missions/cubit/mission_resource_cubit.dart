@@ -23,6 +23,9 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     'missionType',
     'school.schoolContacts.contactType',
     'accountingEvent',
+    'schoolTerm',
+    'weatherForecasts',
+    'missionType',
   ];
 
   PRFMission? get currentMission {
@@ -92,19 +95,6 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     );
     await _reloadContext();
   }
-
-  Future<void> updateMissionFields({
-    required String missionUlid,
-    required Map<String, dynamic> data,
-  }) async {
-    await update(
-      id: missionUlid,
-      data: data,
-      matchById: (mission) => mission.ulid == missionUlid,
-    );
-    await _reloadContext();
-  }
-
   Future<void> deleteMission({required String missionUlid}) async {
     await delete(
       ulid: missionUlid,

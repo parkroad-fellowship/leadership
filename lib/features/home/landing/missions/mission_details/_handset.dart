@@ -34,6 +34,7 @@ import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
 import 'package:leadership/models/remote/prf_class_group.dart';
 import 'package:leadership/models/remote/prf_debrief_note.dart';
 import 'package:leadership/models/remote/prf_member.dart';
+import 'package:leadership/features/home/landing/missions/actions/edit_mission/edit_mission.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
@@ -67,6 +68,14 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     setState(() {
       _currentTab = _tabController.index;
     });
+  }
+
+  Future<void> _showEditMissionSheet(PRFMission mission) async {
+    await PRFBottomSheet.show<void>(
+      context,
+      title: 'Edit Mission',
+      child: EditMissionView(mission: mission),
+    );
   }
 
   @override
@@ -650,15 +659,34 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                               );
                             }
 
-                            return IconButton(
-                              tooltip: 'Refresh mission',
-                              onPressed: () => context
-                                  .read<MissionResourceCubit>()
-                                  .loadMission(missionUlid: missionUlid),
-                              icon: Icon(
-                                Icons.refresh_rounded,
-                                color: theme.colorScheme.onPrimary,
-                              ),
+                            final mission = context
+                                .read<MissionResourceCubit>()
+                                .currentMission;
+
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (mission != null)
+                                  IconButton(
+                                    tooltip: 'Edit mission',
+                                    onPressed: () =>
+                                        _showEditMissionSheet(mission),
+                                    icon: Icon(
+                                      Icons.edit_rounded,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  ),
+                                IconButton(
+                                  tooltip: 'Refresh mission',
+                                  onPressed: () => context
+                                      .read<MissionResourceCubit>()
+                                      .loadMission(missionUlid: missionUlid),
+                                  icon: Icon(
+                                    Icons.refresh_rounded,
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         ),

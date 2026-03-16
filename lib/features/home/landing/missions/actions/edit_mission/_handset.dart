@@ -5,7 +5,10 @@ import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/models/remote/prf_mission_dto.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:prf_design/prf_design.dart';
 
 class EditMissionViewHandset extends StatefulWidget {
@@ -17,7 +20,7 @@ class EditMissionViewHandset extends StatefulWidget {
   State<EditMissionViewHandset> createState() => _EditMissionViewHandsetState();
 }
 
-class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
+class _EditMissionViewHandsetState extends State<EditMissionViewHandset> with TimezoneMixin {
   final _themeController = TextEditingController();
   final _capacityController = TextEditingController();
   final _startDateController = TextEditingController();
@@ -53,12 +56,12 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
     _capacityController.text = widget.mission.capacity.toString();
     _startDateController.text = DateFormat('yyyy-MM-dd').format(_startDate!);
     _endDateController.text = DateFormat('yyyy-MM-dd').format(_endDate!);
-    _startTimeController.text = widget.mission.startTime;
-    _endTimeController.text = widget.mission.endTime;
+    _startTimeController.text = Misc.formatTime(widget.mission.startTime, timezone);
+    _endTimeController.text = Misc.formatTime(widget.mission.endTime, timezone);
     _prepNotesController.text = widget.mission.missionPrepNotes ?? '';
     _whatsAppLinkController.text = widget.mission.whatsAppLink ?? '';
     _startTimeController.addListener(_onChanged);
-    _endTimeController.addListener(_onChanged);
+    _endTimeController.addListener(_onChanged); 
   }
 
   void _onChanged() => setState(() {});
@@ -429,7 +432,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
     if (selected == null) return;
 
     setState(() {
-      _startTimeController.text = _toApiTime(selected);
+      _startTimeController.text = Misc.toApiTime(selected);
       if (_showValidation) {
         _validateForm();
       }
@@ -447,21 +450,15 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
     if (selected == null) return;
 
     setState(() {
-      _endTimeController.text = _toApiTime(selected);
+      _endTimeController.text = Misc.toApiTime(selected);
       if (_showValidation) {
         _validateForm();
       }
     });
   }
 
-  String _toApiTime(TimeOfDay value) {
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
-  TimeOfDay? _parseTime(String value) {
-    final parts = value.split(':');
+  TimeOfDay? _parseTime(String text) {
+    final parts = text.split(':');
     if (parts.length != 2) return null;
     final hour = int.tryParse(parts[0]);
     final minute = int.tryParse(parts[1]);
@@ -477,18 +474,36 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset> {
 
     final capacity = int.tryParse(_capacityController.text.trim());
 
-    await context.read<MissionResourceCubit>().updateMissionFields(
+    final utcStartDateTime = Misc.localDateAndTimeToUtc(
+      date: _startDate!,
+      hhmm: _startTimeController.text.trim(),
+    );
+    final utcEndDateTime = Misc.localDateAndTimeToUtc(
+      date: _endDate!,
+      hhmm: _endTimeController.text.trim(),
+    );
+
+    await context.read<MissionResourceCubit>().updateMission(
       missionUlid: widget.mission.ulid,
-      data: {
-        'start_date': _startDateController.text.trim(),
-        'end_date': _endDateController.text.trim(),
-        'start_time': _startTimeController.text.trim(),
-        'end_time': _endTimeController.text.trim(),
-        'theme': _themeController.text.trim(),
-        'capacity': capacity ?? widget.mission.capacity,
-        'mission_prep_notes': _prepNotesController.text.trim(),
-        'whats_app_link': _whatsAppLinkController.text.trim(),
-      },
+      dto: PRFMissionDTO(
+        schoolTermUlid: widget.mission.schoolTerm!.ulid,
+        missionTypeUlid: widget.mission.missionType!.ulid,
+        schoolUlid: widget.mission.school!.ulid,
+        startDate: utcStartDateTime,
+        endDate: utcEndDateTime,
+        startTime: Misc.toUtcApiTime(utcStartDateTime),
+        endTime: Misc.toUtcApiTime(utcEndDateTime),
+        theme: _themeController.text.trim().isEmpty
+            ? null
+            : _themeController.text.trim(),
+        capacity: capacity ?? widget.mission.capacity,
+        missionPrepNotes: _prepNotesController.text.trim().isEmpty
+            ? null
+            : _prepNotesController.text.trim(),
+        whatsAppLink: _whatsAppLinkController.text.trim().isEmpty
+            ? null
+            : _whatsAppLinkController.text.trim(),
+      ),
     );
   }
 }
