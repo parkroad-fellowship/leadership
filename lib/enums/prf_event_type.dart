@@ -2,17 +2,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFEventType {
   @JsonValue(1)
-  member,
+  member(1),
   @JsonValue(2)
-  leadership
+  leadership(2),
   ;
 
-  int get apiKey {
-    switch (this) {
-      case PRFEventType.member:
-        return 1;
-      case PRFEventType.leadership:
-        return 2;
-    }
-  }
+  const PRFEventType(this.apiKey);
+
+  final int apiKey;
 }

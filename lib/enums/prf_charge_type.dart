@@ -2,44 +2,21 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFChargeType {
   @JsonValue(1)
-  mpesaDefault,
+  mpesaDefault(1, '(MPESA) User/Till/Paybill'),
   @JsonValue(2)
-  mpesaOtherRegisteredUser,
+  mpesaOtherRegisteredUser(2, '(MPESA) Other Registered User'),
   @JsonValue(3)
-  mpesaAgentWithdrawal,
+  mpesaAgentWithdrawal(3, '(MPESA) Agent Withdrawal'),
   @JsonValue(4)
-  mpesaATMWithdrawal,
+  mpesaATMWithdrawal(4, '(MPESA) ATM Withdrawal'),
   @JsonValue(5)
-  cash
+  cash(5, 'Cash'),
   ;
 
-  String get name {
-    switch (this) {
-      case PRFChargeType.mpesaDefault:
-        return '(MPESA) User/Till/Paybill';
-      case PRFChargeType.mpesaOtherRegisteredUser:
-        return '(MPESA) Other Registered User';
-      case PRFChargeType.mpesaAgentWithdrawal:
-        return '(MPESA) Agent Withdrawal';
-      case PRFChargeType.mpesaATMWithdrawal:
-        return '(MPESA) ATM Withdrawal';
-      case PRFChargeType.cash:
-        return 'Cash';
-    }
-  }
+  const PRFChargeType(this.apiKey, this._label);
 
-  int get apiKey {
-    switch (this) {
-      case PRFChargeType.mpesaDefault:
-        return 1;
-      case PRFChargeType.mpesaOtherRegisteredUser:
-        return 2;
-      case PRFChargeType.mpesaAgentWithdrawal:
-        return 3;
-      case PRFChargeType.mpesaATMWithdrawal:
-        return 4;
-      case PRFChargeType.cash:
-        return 5;
-    }
-  }
+  final int apiKey;
+  final String _label;
+
+  String get name => _label;
 }

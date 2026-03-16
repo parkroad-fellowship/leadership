@@ -2,44 +2,21 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFSoulDecisionType {
   @JsonValue(1)
-  salvation,
+  salvation(1, 'Salvation'),
   @JsonValue(2)
-  rededication,
+  rededication(2, 'Rededication'),
   @JsonValue(3)
-  camp,
+  camp(3, 'Camp'),
   @JsonValue(4)
-  prayer,
+  prayer(4, 'Prayer'),
   @JsonValue(5)
-  other
+  other(5, 'Other'),
   ;
 
-  String get name {
-    switch (this) {
-      case PRFSoulDecisionType.salvation:
-        return 'Salvation';
-      case PRFSoulDecisionType.rededication:
-        return 'Rededication';
-      case PRFSoulDecisionType.camp:
-        return 'Camp';
-      case PRFSoulDecisionType.prayer:
-        return 'Prayer';
-      case PRFSoulDecisionType.other:
-        return 'Other';
-    }
-  }
+  const PRFSoulDecisionType(this.apiKey, this._label);
 
-  int get apiKey {
-    switch (this) {
-      case PRFSoulDecisionType.salvation:
-        return 1;
-      case PRFSoulDecisionType.rededication:
-        return 2;
-      case PRFSoulDecisionType.camp:
-        return 3;
-      case PRFSoulDecisionType.prayer:
-        return 4;
-      case PRFSoulDecisionType.other:
-        return 5;
-    }
-  }
+  final int apiKey;
+  final String _label;
+
+  String get name => _label;
 }

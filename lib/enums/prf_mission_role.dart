@@ -2,33 +2,22 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFMissionRole {
   @JsonValue(1)
-  member,
+  member('Member'),
   @JsonValue(2)
-  leader,
+  leader('Mission Leader'),
   @JsonValue(3)
-  assistant,
+  assistant('Assistant Mission Leader'),
   @JsonValue(4)
-  discipleshipTrainer,
+  discipleshipTrainer('Discipleship Trainer'),
   @JsonValue(5)
-  musicInstruments,
+  musicInstruments('Music Instruments'),
   @JsonValue(6)
-  transportation
+  transportation('Transportation'),
   ;
 
-  String get name {
-    switch (this) {
-      case PRFMissionRole.member:
-        return 'Member';
-      case PRFMissionRole.leader:
-        return 'Mission Leader';
-      case PRFMissionRole.assistant:
-        return 'Assistant Mission Leader';
-      case PRFMissionRole.discipleshipTrainer:
-        return 'Discipleship Trainer';
-      case PRFMissionRole.musicInstruments:
-        return 'Music Instruments';
-      case PRFMissionRole.transportation:
-        return 'Transportation';
-    }
-  }
+  const PRFMissionRole(this._label);
+
+  final String _label;
+
+  String get name => _label;
 }

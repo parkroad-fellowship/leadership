@@ -2,17 +2,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFActiveStatus {
   @JsonValue(1)
-  inactive,
+  inactive(1),
   @JsonValue(2)
-  active
+  active(2),
   ;
 
-  int get apiKey {
-    switch (this) {
-      case PRFActiveStatus.inactive:
-        return 1;
-      case PRFActiveStatus.active:
-        return 2;
-    }
-  }
+  const PRFActiveStatus(this.apiKey);
+
+  final int apiKey;
 }

@@ -2,40 +2,38 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFEvent {
   @JsonValue(1)
-  defaultEvent
+  defaultEvent('Default Event'),
   ;
 
-  String get name {
-    switch (this) {
-      case PRFEvent.defaultEvent:
-        return 'Default Event';
-    }
-  }
+  const PRFEvent(this._label);
+
+  final String _label;
+
+  String get name => _label;
 
   static PRFEvent fromIndex(int index) {
-    switch (index) {
-      default:
-        return PRFEvent.defaultEvent;
-    }
+    return PRFEvent.values.firstWhere(
+      (v) => v.index == index,
+      orElse: () => PRFEvent.defaultEvent,
+    );
   }
 }
 
 enum PRFPresenceEvent {
   @JsonValue(5)
-  defaultPresenceEvent
+  defaultPresenceEvent('Default Presence Event'),
   ;
 
-  String get name {
-    switch (this) {
-      case PRFPresenceEvent.defaultPresenceEvent:
-        return 'Default Presence Event';
-    }
-  }
+  const PRFPresenceEvent(this._label);
+
+  final String _label;
+
+  String get name => _label;
 
   static PRFPresenceEvent fromIndex(int index) {
-    switch (index) {
-      default:
-        return PRFPresenceEvent.defaultPresenceEvent;
-    }
+    return PRFPresenceEvent.values.firstWhere(
+      (v) => v.index == index,
+      orElse: () => PRFPresenceEvent.defaultPresenceEvent,
+    );
   }
 }

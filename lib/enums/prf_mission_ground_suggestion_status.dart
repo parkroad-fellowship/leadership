@@ -2,50 +2,23 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFMissionGroundSuggestionStatus {
   @JsonValue(1)
-  pending,
+  pending(1, 'Pending'),
   @JsonValue(2)
-  initiatedContact,
+  initiatedContact(2, 'Initiated Contact'),
   @JsonValue(3)
-  visitScheduled,
+  visitScheduled(3, 'Visit Scheduled'),
   @JsonValue(4)
-  missionScheduled,
+  missionScheduled(4, 'Mission Scheduled'),
   @JsonValue(5)
-  completed,
+  completed(5, 'Completed'),
   @JsonValue(6)
-  ignore
+  ignore(6, 'Ignore'),
   ;
 
-  String get name {
-    switch (this) {
-      case PRFMissionGroundSuggestionStatus.pending:
-        return 'Pending';
-      case PRFMissionGroundSuggestionStatus.initiatedContact:
-        return 'Initiated Contact';
-      case PRFMissionGroundSuggestionStatus.visitScheduled:
-        return 'Visit Scheduled';
-      case PRFMissionGroundSuggestionStatus.missionScheduled:
-        return 'Mission Scheduled';
-      case PRFMissionGroundSuggestionStatus.completed:
-        return 'Completed';
-      case PRFMissionGroundSuggestionStatus.ignore:
-        return 'Ignore';
-    }
-  }
+  const PRFMissionGroundSuggestionStatus(this.apiKey, this._label);
 
-  int get apiKey {
-    switch (this) {
-      case PRFMissionGroundSuggestionStatus.pending:
-        return 1;
-      case PRFMissionGroundSuggestionStatus.initiatedContact:
-        return 2;
-      case PRFMissionGroundSuggestionStatus.visitScheduled:
-        return 3;
-      case PRFMissionGroundSuggestionStatus.missionScheduled:
-        return 4;
-      case PRFMissionGroundSuggestionStatus.completed:
-        return 5;
-      case PRFMissionGroundSuggestionStatus.ignore:
-        return 6;
-    }
-  }
+  final int apiKey;
+  final String _label;
+
+  String get name => _label;
 }

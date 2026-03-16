@@ -3,84 +3,35 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFApprovalStatus {
   @JsonValue(1)
-  pending,
+  pending(1, 'Pending', Icons.hourglass_empty),
   @JsonValue(2)
-  underReview,
+  underReview(2, 'Under Review', Icons.hourglass_empty),
   @JsonValue(3)
-  approved,
+  approved(3, 'Approved', Icons.check_circle),
   @JsonValue(4)
-  rejected,
+  rejected(4, 'Rejected', Icons.cancel),
   @JsonValue(5)
-  recalled,
+  recalled(5, 'Recalled', Icons.undo),
   @JsonValue(99)
-  ghost
+  ghost(99, 'Zero-Based', Icons.help_outline),
   ;
 
+  const PRFApprovalStatus(this.apiKey, this._label, this.icon);
+
+  final int apiKey;
+  final String _label;
+  final IconData icon;
+
+  String get name => _label;
+
   Color color(ThemeData theme) {
-    switch (this) {
-      case PRFApprovalStatus.pending:
-        return theme.colorScheme.secondary;
-      case PRFApprovalStatus.underReview:
-        return Colors.orange;
-      case PRFApprovalStatus.approved:
-        return Colors.green;
-      case PRFApprovalStatus.rejected:
-        return theme.colorScheme.error;
-      case PRFApprovalStatus.recalled:
-        return Colors.grey;
-      case PRFApprovalStatus.ghost:
-        return Colors.transparent;
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case PRFApprovalStatus.pending:
-        return Icons.hourglass_empty;
-      case PRFApprovalStatus.underReview:
-        return Icons.hourglass_empty;
-      case PRFApprovalStatus.approved:
-        return Icons.check_circle;
-      case PRFApprovalStatus.rejected:
-        return Icons.cancel;
-      case PRFApprovalStatus.recalled:
-        return Icons.undo;
-      case PRFApprovalStatus.ghost:
-        return Icons.help_outline;
-    }
-  }
-
-  String get name {
-    switch (this) {
-      case PRFApprovalStatus.pending:
-        return 'Pending';
-      case PRFApprovalStatus.underReview:
-        return 'Under Review';
-      case PRFApprovalStatus.approved:
-        return 'Approved';
-      case PRFApprovalStatus.rejected:
-        return 'Rejected';
-      case PRFApprovalStatus.recalled:
-        return 'Recalled';
-      case PRFApprovalStatus.ghost:
-        return 'Zero-Based';
-    }
-  }
-
-  int get apiKey {
-    switch (this) {
-      case PRFApprovalStatus.pending:
-        return 1;
-      case PRFApprovalStatus.underReview:
-        return 2;
-      case PRFApprovalStatus.approved:
-        return 3;
-      case PRFApprovalStatus.rejected:
-        return 4;
-      case PRFApprovalStatus.recalled:
-        return 5;
-      case PRFApprovalStatus.ghost:
-        return 99;
-    }
+    return switch (this) {
+      pending => theme.colorScheme.secondary,
+      underReview => Colors.orange,
+      approved => Colors.green,
+      rejected => theme.colorScheme.error,
+      recalled => Colors.grey,
+      ghost => Colors.transparent,
+    };
   }
 }

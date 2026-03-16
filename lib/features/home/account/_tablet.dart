@@ -445,7 +445,7 @@ class AccountPageTablet extends StatelessWidget {
                                           spiritualYear:
                                               entry.value.spiritualYear!.name,
                                           membershipType:
-                                              PrfMembershipType.fromIndex(
+                                              PRFMembershipType.fromIndex(
                                                 entry.value.type,
                                               ).name,
                                           isApproved: entry.value.approved,

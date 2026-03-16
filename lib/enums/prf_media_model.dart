@@ -1,14 +1,9 @@
 enum PRFMediaModel {
-  memberProfilePictures,
-  allocationEntryReceipts
+  memberProfilePictures('profile-pictures'),
+  allocationEntryReceipts('allocation-entry-receipts'),
   ;
 
-  String get collection {
-    switch (this) {
-      case memberProfilePictures:
-        return 'profile-pictures';
-      case PRFMediaModel.allocationEntryReceipts:
-        return 'allocation-entry-receipts';
-    }
-  }
+  const PRFMediaModel(this.collection);
+
+  final String collection;
 }

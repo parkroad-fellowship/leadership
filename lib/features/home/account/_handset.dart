@@ -531,7 +531,7 @@ class AccountPageHandset extends StatelessWidget {
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Text(
-                                                  PrfMembershipType.fromIndex(
+                                                  PRFMembershipType.fromIndex(
                                                     entry.value.type,
                                                   ).name,
                                                   style: theme
