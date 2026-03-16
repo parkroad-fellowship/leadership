@@ -986,7 +986,7 @@
     "@requisitionDate": {},
     "requestedBy": "Requested by: ",
     "@requestedBy": {},
-    "pendingApproval": "Pending approval",
+    "pendingApproval": "Pending my approval",
     "@pendingApproval": {},
     "underReviewBy": "Under review by: ",
     "@underReviewBy": {},
