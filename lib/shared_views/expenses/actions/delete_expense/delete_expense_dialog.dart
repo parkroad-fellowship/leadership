@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
-import 'package:leadership/shared_views/expenses/cubit/delete_allocation_entry_cubit.dart';
+import 'package:leadership/shared_views/expenses/cubit/allocation_entry_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:prf_design/prf_design.dart';
 
 class DeleteExpenseDialog extends StatelessWidget {
   const DeleteExpenseDialog({
@@ -19,37 +21,11 @@ class DeleteExpenseDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.delete_outline,
-              color: theme.colorScheme.error,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              entry.entryType == PRFEntryType.credit
-                  ? 'Delete Token'
-                  : 'Delete Expense',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return PRFConfirmationDialog(
+      title: entry.entryType == PRFEntryType.credit
+          ? 'Delete Token'
+          : 'Delete Expense',
+      isDestructive: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +90,7 @@ class DeleteExpenseDialog extends StatelessWidget {
           ),
         ],
       ),
-      actions: [
+      customActions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
@@ -124,33 +100,40 @@ class DeleteExpenseDialog extends StatelessWidget {
             ),
           ),
         ),
-        BlocConsumer<DeleteAllocationEntryCubit, DeleteAllocationEntryState>(
+        BlocConsumer<
+          AllocationEntryResourceCubit,
+          ResourceState<PRFAllocationEntry>
+        >(
           listener: (context, state) {
-            state.when(
-              initial: () {},
-              loading: () {},
-              loaded: () {
-                Navigator.of(context).pop(true);
+            state.maybeWhen(
+              mutated: (items, operation, item) {
+                if (operation == ResourceOperation.delete) {
+                  Navigator.of(context).pop(true);
+                }
               },
-              error: (message) {
-                Navigator.of(context).pop(false);
-              },
+              error: (message, items) => Navigator.of(context).pop(false),
+              orElse: () {},
             );
           },
           builder: (context, state) {
-            return state.when(
-              loading: () => const Padding(
+            final isDeleting = state.maybeWhen(
+              mutating: (items, operation) =>
+                  operation == ResourceOperation.delete,
+              orElse: () => false,
+            );
+
+            if (isDeleting) {
+              return const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-              ),
-              initial: () => _buildDeleteButton(theme, context),
-              loaded: () => _buildDeleteButton(theme, context),
-              error: (message) => _buildDeleteButton(theme, context),
-            );
+              );
+            }
+
+            return _buildDeleteButton(theme, context);
           },
         ),
       ],
@@ -160,7 +143,7 @@ class DeleteExpenseDialog extends StatelessWidget {
   Widget _buildDeleteButton(ThemeData theme, BuildContext context) {
     return ElevatedButton.icon(
       onPressed: () {
-        context.read<DeleteAllocationEntryCubit>().deleteAllocationEntry(
+        context.read<AllocationEntryResourceCubit>().deleteAllocationEntry(
           allocationEntryUlid: entry.ulid,
         );
       },

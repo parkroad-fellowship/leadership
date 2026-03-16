@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/shared_views/expenses/cubit/add_mission_refund_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:leadership/models/remote/prf_refund.dart';
+import 'package:leadership/shared_views/expenses/cubit/refund_resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:prf_design/prf_design.dart';
 
 class AddRefundViewHandset extends StatefulWidget {
   const AddRefundViewHandset({
@@ -52,74 +54,78 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: PRFSpacingTokens.lg),
 
               // Header Card
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.tertiary,
-                      Theme.of(
-                        context,
-                      ).colorScheme.tertiary.withValues(alpha: 0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.tertiary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet,
-                      size: 32,
-                      color: Theme.of(context).colorScheme.onTertiary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add Refund Entry',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Theme.of(context).colorScheme.onTertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Record a new refund entry for this accounting event',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onTertiary.withValues(alpha: 0.9),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.tertiary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.tertiary.withValues(alpha: 0.8),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.tertiary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ).animate().slideY(begin: -0.3).fadeIn(duration: 600.ms),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet,
+                          size: 32,
+                          color: Theme.of(context).colorScheme.onTertiary,
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.sm),
+                        Text(
+                          'Add Refund Entry',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onTertiary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.xs),
+                        Text(
+                          'Record a new refund entry for this accounting event',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onTertiary.withValues(alpha: 0.9),
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                  .animate()
+                  .slideY(begin: -0.3)
+                  .fadeIn(duration: PRFMotionTokens.enterShort),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Form Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                   border: Border.all(
                     color: Theme.of(
                       context,
@@ -137,143 +143,110 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                 ),
                 child: Column(
                   children: [
-                    _buildFormSection(
-                      icon: Icons.attach_money,
-                      title: 'Refund Amount',
-                      isRequired: true,
-                      child: _buildNumberField(
-                        controller: _amountController,
-                        label: 'Amount',
-                        hint: 'Enter refund amount',
-                        prefix: 'KES ',
-                      ),
-                    ).animate(delay: 200.ms).slideX(begin: -0.2).fadeIn(),
-
-                    _buildFormSection(
-                      icon: Icons.description,
-                      title: 'Confirmation Message',
-                      isRequired: true,
-                      child: Column(
-                        children: [
-                          PRFTextAreaInput(
-                            hintText:
-                                'Enter confirmation message or '
-                                'reference number',
-                            controller: _confirmationController,
-                            maxLines: 3,
-                            textInputAction: TextInputAction.done,
+                    PRFFormSection(
+                          icon: Icons.attach_money,
+                          title: 'Refund Amount',
+                          isRequired: true,
+                          child: _buildNumberField(
+                            controller: _amountController,
+                            label: 'Amount',
+                            hint: 'Enter refund amount',
+                            prefix: 'KES ',
                           ),
-                        ],
-                      ),
-                    ).animate(delay: 400.ms).slideX(begin: -0.2).fadeIn(),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger2)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
+
+                    PRFFormSection(
+                          icon: Icons.description,
+                          title: 'Confirmation Message',
+                          isRequired: true,
+                          child: Column(
+                            children: [
+                              PRFTextAreaInput(
+                                hintText:
+                                    'Enter confirmation message or '
+                                    'reference number',
+                                controller: _confirmationController,
+                                maxLines: 3,
+                                textInputAction: TextInputAction.done,
+                              ),
+                            ],
+                          ),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger4)
+                        .slideX(begin: -0.2)
+                        .fadeIn(),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: PRFSpacingTokens.xxl),
 
               // Submit Button
-              BlocConsumer<AddMissionRefundCubit, AddMissionRefundState>(
-                listener: (context, state) {
-                  state.when(
-                    initial: () {},
-                    loading: () {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                    },
-                    loaded: (refund) {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Refund entry added successfully',
-                          ),
-                          duration: Duration(seconds: 2),
-                        ),
+              BlocConsumer<RefundResourceCubit, ResourceState<PRFRefund>>(
+                    listener: (context, state) {
+                      state.maybeWhen(
+                        mutating: (items, operation) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
+                          setState(() {
+                            _isLoading = true;
+                          });
+                        },
+                        mutated: (items, operation, item) {
+                          if (operation != ResourceOperation.create) {
+                            return;
+                          }
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Refund entry added successfully',
+                              ),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        error: (message, items) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: $message'),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        },
+                        orElse: () {},
                       );
                     },
-                    error: (message) {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $message'),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                          duration: const Duration(seconds: 3),
-                        ),
+                    builder: (context, state) {
+                      return PRFPrimaryButton(
+                        onPressed: _submitForm,
+                        title: 'Add Refund Entry',
+                        disabled: !_isFormValid,
+                        isLoading: _isLoading,
                       );
                     },
-                  );
-                },
-                builder: (context, state) {
-                  return PRFPrimaryButton(
-                    onPressed: _submitForm,
-                    title: 'Add Refund Entry',
-                    disabled: !_isFormValid,
-                    isLoading: _isLoading,
-                  );
-                },
-              ).animate(delay: 500.ms).slideY(begin: 0.3).fadeIn(),
+                  )
+                  .animate(delay: PRFMotionTokens.stagger5)
+                  .slideY(begin: 0.3)
+                  .fadeIn(),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: PRFSpacingTokens.xxxl),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFormSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-    bool isRequired = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.tertiary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (isRequired) ...[
-                const SizedBox(width: 4),
-                Text(
-                  '*',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
       ),
     );
   }
@@ -295,7 +268,7 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: PRFSpacingTokens.sm),
         PRFNumberInput(
           controller: controller,
           hintText: hint,
@@ -311,7 +284,7 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
     final amount = double.parse(_amountController.text).round();
     final confirmationMessage = _confirmationController.text.trim();
 
-    context.read<AddMissionRefundCubit>().addMissionRefund(
+    context.read<RefundResourceCubit>().addMissionRefund(
       accountingEventUlid: widget.accountingEventUlid,
       amount: amount,
       confirmationMessage: confirmationMessage,

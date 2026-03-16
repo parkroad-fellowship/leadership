@@ -1,30 +1,20 @@
-enum PrfMembershipType {
-  friend,
-  yearlyMember,
-  lifetimeMember
+enum PRFMembershipType {
+  friend(1, 'Friend'),
+  yearlyMember(2, 'Yearly Member'),
+  lifetimeMember(3, 'Lifetime Member'),
   ;
 
-  String get name {
-    switch (this) {
-      case PrfMembershipType.friend:
-        return 'Friend';
-      case PrfMembershipType.yearlyMember:
-        return 'Yearly Member';
-      case PrfMembershipType.lifetimeMember:
-        return 'Lifetime Member';
-    }
-  }
+  const PRFMembershipType(this.apiKey, this._label);
 
-  static PrfMembershipType fromIndex(int index) {
-    switch (index) {
-      case 1:
-        return PrfMembershipType.friend;
-      case 2:
-        return PrfMembershipType.yearlyMember;
-      case 3:
-        return PrfMembershipType.lifetimeMember;
-      default:
-        return PrfMembershipType.friend;
-    }
+  final int apiKey;
+  final String _label;
+
+  String get name => _label;
+
+  static PRFMembershipType fromIndex(int index) {
+    return PRFMembershipType.values.firstWhere(
+      (v) => v.apiKey == index,
+      orElse: () => PRFMembershipType.friend,
+    );
   }
 }

@@ -7,15 +7,14 @@ import 'package:gaimon/gaimon.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
-import 'package:leadership/enums/prf_membership_type.dart';
+import 'package:leadership/enums/prf_theme_mode.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
+import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
-import 'package:leadership/shared_widgets/progress/circular_progress_indicator.dart';
 import 'package:leadership/utils/_index.dart';
-import 'package:logger/logger.dart';
+import 'package:prf_design/prf_design.dart';
 
 class AccountPageHandset extends StatelessWidget {
   const AccountPageHandset({super.key});
@@ -25,562 +24,465 @@ class AccountPageHandset extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    Logger().d(getIt<HiveService>().retrieveMember());
-
     return Scaffold(
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Modern Navigation Bar
-            PRFNavBar(
-              title: l10n.myAccount,
-              onBack: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.landingRoute,
-              ),
-              backgroundColor: theme.colorScheme.surface,
-              actions: [
-                Animate(
-                  effects: [ShimmerEffect(duration: 1.seconds)],
-                  child: BlocListener<SignOutCubit, SignOutState>(
-                    listener: (context, state) {
-                      state.maybeWhen(
-                        orElse: () => context.router.pushPath(
-                          PRFLeadershipRouter.decisionRoute,
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: theme.colorScheme.error.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: IconButton(
-                        onPressed: () => context.read<SignOutCubit>().signOut(),
-                        icon: Icon(
-                          Icons.logout_rounded,
-                          color: theme.colorScheme.error,
-                          size: 20,
-                        ),
-                        tooltip: l10n.signOut,
-                      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: ColoredBox(
+              color: theme.colorScheme.primary,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: PRFSpacingTokens.lg),
+                  child: PRFBrandedNavBar(
+                    title: l10n.myAccount,
+                    onBack: () => context.router.popUntilRouteWithPath(
+                      PRFLeadershipRouter.landingRoute,
                     ),
+                    actions: [
+                      Animate(
+                        effects: [ShimmerEffect(duration: 1.seconds)],
+                        child: BlocListener<SignOutCubit, SignOutState>(
+                          listener: (context, state) {
+                            state.maybeWhen(
+                              loaded: () => context.router.pushPath(
+                                PRFLeadershipRouter.decisionRoute,
+                              ),
+                              orElse: () {},
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.onPrimary.withValues(
+                                alpha: 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.md,
+                              ),
+                              border: Border.all(
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.28,
+                                ),
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () async {
+                                final confirmed =
+                                    await PRFConfirmationDialog.show(
+                                      context,
+                                      title: l10n.signOut,
+                                      message:
+                                          'Are you sure you want to sign out?',
+                                      confirmLabel: l10n.signOut,
+                                    );
+                                if (confirmed == true && context.mounted) {
+                                  await context.read<SignOutCubit>().signOut();
+                                }
+                              },
+                              icon: Icon(
+                                Icons.logout_rounded,
+                                color: theme.colorScheme.onPrimary,
+                                size: 20,
+                              ),
+                              tooltip: l10n.signOut,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
+          ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: PRFSpacingTokens.xxl),
+          ),
 
-            // Profile Section
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Profile Picture
-                    Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                theme.colorScheme.primary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                theme.colorScheme.secondary.withValues(
-                                  alpha: 0.1,
-                                ),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            border: Border.all(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.3,
-                              ),
-                              width: 3,
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: ValueListenableBuilder(
-                              valueListenable: Hive.box<dynamic>(
-                                PRFLeadershipConfig.instance!.values.hiveBox,
-                              ).listenable(),
-                              builder: (context, _, _) {
-                                final profilePicture = getIt<HiveService>()
-                                    .retrieveMember()
-                                    ?.profilePicture;
-
-                                return profilePicture != null
-                                    ? Image.network(
-                                        profilePicture.temporaryURL,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Icon(
-                                                  Icons.person_rounded,
-                                                  size: 50,
-                                                  color:
-                                                      theme.colorScheme.primary,
-                                                ),
-                                      )
-                                    : Icon(
-                                        Icons.person_rounded,
-                                        size: 50,
-                                        color: theme.colorScheme.primary,
-                                      );
-                              },
-                            ),
-                          ),
+          // Profile Section
+          SliverToBoxAdapter(
+            child:
+                Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: PRFSpacingTokens.lg,
+                      ),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          PRFRadiusTokens.xl,
                         ),
-                        const ChangeProfilePictureButton(),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // User Name
-                    ValueListenableBuilder(
-                      valueListenable: Hive.box<dynamic>(
-                        PRFLeadershipConfig.instance!.values.hiveBox,
-                      ).listenable(),
-                      builder: (context, _, _) {
-                        final profile = getIt<HiveService>().auth
-                            .retrieveProfile();
-                        return Text(
-                          profile?.name ?? 'User',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.onSurface,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.shadow.withValues(
+                              alpha: 0.08,
+                            ),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                    // User Email
-                    ValueListenableBuilder(
-                      valueListenable: Hive.box<dynamic>(
-                        PRFLeadershipConfig.instance!.values.hiveBox,
-                      ).listenable(),
-                      builder: (context, _, _) {
-                        final profile = getIt<HiveService>().auth
-                            .retrieveProfile();
-                        return Text(
-                          profile?.email ?? '',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-            // Personal Information Section
-            ValueListenableBuilder(
-              valueListenable: Hive.box<dynamic>(
-                PRFLeadershipConfig.instance!.values.hiveBox,
-              ).listenable(),
-              builder: (context, _, _) {
-                final profile = getIt<HiveService>().auth.retrieveProfile();
-                if (profile == null) {
-                  return const SliverToBoxAdapter(child: SizedBox.shrink());
-                }
-                return SliverToBoxAdapter(
-                  child:
-                      Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.person_outline_rounded,
-                                      color: theme.colorScheme.primary,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Personal Information',
-                                      style: theme.textTheme.titleLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                _buildInfoField(
-                                  context,
-                                  label: l10n.name,
-                                  value: profile.name,
-                                  icon: Icons.badge_outlined,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildInfoField(
-                                  context,
-                                  label: l10n.email,
-                                  value: profile.email,
-                                  icon: Icons.email_outlined,
-                                ),
-                                if (profile.member?.bio != null &&
-                                    profile.member!.bio!.isNotEmpty) ...[
-                                  const SizedBox(height: 16),
-                                  _buildInfoField(
-                                    context,
-                                    label: l10n.bio,
-                                    value: profile.member!.bio!,
-                                    icon: Icons.description_outlined,
-                                    maxLines: 3,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          )
-                          .animate(delay: 100.ms)
-                          .fadeIn(duration: 300.ms)
-                          .slideY(begin: 0.1, end: 0),
-                );
-              },
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-            // Memberships Section
-            ValueListenableBuilder(
-              valueListenable: Hive.box<dynamic>(
-                PRFLeadershipConfig.instance!.values.hiveBox,
-              ).listenable(),
-              builder: (context, _, _) {
-                final profile = getIt<HiveService>().auth.retrieveProfile();
-                if (profile?.member?.memberships.isEmpty ?? true) {
-                  return const SliverToBoxAdapter(child: SizedBox.shrink());
-                }
-
-                return SliverToBoxAdapter(
-                  child:
-                      Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.groups_outlined,
-                                      color: theme.colorScheme.primary,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      l10n.memberships,
-                                      style: theme.textTheme.titleLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                ...profile!.member!.memberships
-                                    .asMap()
-                                    .entries
-                                    .map(
-                                      (entry) => Container(
-                                        margin: EdgeInsets.only(
-                                          bottom:
-                                              entry.key <
-                                                  profile
-                                                          .member!
-                                                          .memberships
-                                                          .length -
-                                                      1
-                                              ? 12
-                                              : 0,
-                                        ),
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: theme
-                                              .colorScheme
-                                              .surfaceContainerHighest,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: theme.colorScheme.outline
-                                                .withValues(alpha: 0.2),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: entry.value.approved
-                                                    ? theme.colorScheme.primary
-                                                          .withValues(
-                                                            alpha: 0.1,
-                                                          )
-                                                    : theme
-                                                          .colorScheme
-                                                          .secondary
-                                                          .withValues(
-                                                            alpha: 0.1,
-                                                          ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: Icon(
-                                                entry.value.approved
-                                                    ? Icons.verified_outlined
-                                                    : Icons.pending_outlined,
-                                                color: entry.value.approved
-                                                    ? theme.colorScheme.primary
-                                                    : theme
-                                                          .colorScheme
-                                                          .secondary,
-                                                size: 20,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    entry
-                                                        .value
-                                                        .spiritualYear!
-                                                        .name,
-                                                    style: theme
-                                                        .textTheme
-                                                        .bodyLarge
-                                                        ?.copyWith(
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: theme
-                                                              .colorScheme
-                                                              .onSurface,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    PrfMembershipType.fromIndex(
-                                                      entry.value.type,
-                                                    ).name,
-                                                    style: theme
-                                                        .textTheme
-                                                        .bodyMedium
-                                                        ?.copyWith(
-                                                          color: theme
-                                                              .colorScheme
-                                                              .onSurfaceVariant,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: entry.value.approved
-                                                    ? theme.colorScheme.primary
-                                                          .withValues(
-                                                            alpha: 0.1,
-                                                          )
-                                                    : theme
-                                                          .colorScheme
-                                                          .secondary
-                                                          .withValues(
-                                                            alpha: 0.1,
-                                                          ),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                entry.value.approved
-                                                    ? 'Approved'
-                                                    : 'Pending',
-                                                style: theme
-                                                    .textTheme
-                                                    .labelSmall
-                                                    ?.copyWith(
-                                                      color:
-                                                          entry.value.approved
-                                                          ? theme
-                                                                .colorScheme
-                                                                .primary
-                                                          : theme
-                                                                .colorScheme
-                                                                .secondary,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          // Profile Picture
+                          Stack(
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      theme.colorScheme.primary.withValues(
+                                        alpha: 0.1,
                                       ),
+                                      theme.colorScheme.secondary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.3,
                                     ),
-                              ],
-                            ),
-                          )
-                          .animate(delay: 200.ms)
-                          .fadeIn(duration: 300.ms)
-                          .slideY(begin: 0.1, end: 0),
-                );
-              },
-            ),
+                                    width: 3,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: ValueListenableBuilder(
+                                    valueListenable: Hive.box<dynamic>(
+                                      PRFLeadershipConfig
+                                          .instance!
+                                          .values
+                                          .hiveBox,
+                                    ).listenable(),
+                                    builder: (context, _, _) {
+                                      final profilePicture =
+                                          getIt<HiveService>()
+                                              .retrieveMember()
+                                              ?.profilePicture;
 
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-            // Footer Section
-            SliverToBoxAdapter(
-              child:
-                  Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.colorScheme.shadow.withValues(
-                                alpha: 0.08,
+                                      return profilePicture != null
+                                          ? Image.network(
+                                              profilePicture.temporaryURL,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => Icon(
+                                                    Icons.person_rounded,
+                                                    size: 50,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                            )
+                                          : Icon(
+                                              Icons.person_rounded,
+                                              size: 50,
+                                              color: theme.colorScheme.primary,
+                                            );
+                                    },
+                                  ),
+                                ),
                               ),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Text.rich(
-                              TextSpan(
-                                text: l10n.byUsing,
-                                style: theme.textTheme.bodySmall?.copyWith(
+                              const ChangeProfilePictureButton(),
+                            ],
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.lg),
+                          // User Name
+                          ValueListenableBuilder(
+                            valueListenable: Hive.box<dynamic>(
+                              PRFLeadershipConfig.instance!.values.hiveBox,
+                            ).listenable(),
+                            builder: (context, _, _) {
+                              final profile = getIt<HiveService>().auth
+                                  .retrieveProfile();
+                              return Text(
+                                profile?.name ?? 'User',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.xs),
+                          // User Email
+                          ValueListenableBuilder(
+                            valueListenable: Hive.box<dynamic>(
+                              PRFLeadershipConfig.instance!.values.hiveBox,
+                            ).listenable(),
+                            builder: (context, _, _) {
+                              final profile = getIt<HiveService>().auth
+                                  .retrieveProfile();
+                              return Text(
+                                profile?.email ?? '',
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .fadeIn(duration: PRFMotionTokens.slow)
+                    .slideY(begin: 0.1, end: 0),
+          ),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: PRFSpacingTokens.xxl),
+          ),
+
+          // Dark Mode Toggle
+          SliverToBoxAdapter(
+            child:
+                Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: PRFSpacingTokens.lg,
+                      ),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          PRFRadiusTokens.xl,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.shadow.withValues(
+                              alpha: 0.08,
+                            ),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.dark_mode_outlined,
+                            color: theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                          const SizedBox(width: PRFSpacingTokens.md),
+                          Expanded(
+                            child: Text(
+                              'Dark Mode',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          BlocBuilder<ThemeCubit, ThemeState>(
+                            builder: (context, state) {
+                              final themeCubit = context.read<ThemeCubit>();
+                              return Switch.adaptive(
+                                value: themeCubit.isDarkMode,
+                                onChanged: (value) => themeCubit.setThemeMode(
+                                  value
+                                      ? PRFThemeMode.dark
+                                      : PRFThemeMode.light,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate(delay: 50.ms)
+                    .fadeIn(duration: PRFMotionTokens.slow)
+                    .slideY(begin: 0.1, end: 0),
+          ),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: PRFSpacingTokens.xxl),
+          ),
+
+          // Personal Information Section
+          ValueListenableBuilder(
+            valueListenable: Hive.box<dynamic>(
+              PRFLeadershipConfig.instance!.values.hiveBox,
+            ).listenable(),
+            builder: (context, _, _) {
+              final profile = getIt<HiveService>().auth.retrieveProfile();
+              if (profile == null) {
+                return const SliverToBoxAdapter(child: SizedBox.shrink());
+              }
+              return SliverToBoxAdapter(
+                child:
+                    Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: PRFSpacingTokens.lg,
+                          ),
+                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(
+                              PRFRadiusTokens.xl,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.shadow.withValues(
+                                  alpha: 0.08,
+                                ),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  TextSpan(
-                                    text: l10n.terms,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () async {
-                                        final uri = Uri(
-                                          scheme: 'https',
-                                          host: 'parkroadfellowship.org',
-                                          path: '/privacy-policy',
-                                        );
-                                        await Misc.openUrl(uri);
-                                      },
+                                  Icon(
+                                    Icons.person_outline_rounded,
+                                    color: theme.colorScheme.primary,
+                                    size: 24,
                                   ),
-                                  TextSpan(
-                                    text: l10n.and,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: l10n.privacyPolicy,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.primary,
+                                  const SizedBox(width: PRFSpacingTokens.md),
+                                  Text(
+                                    'Personal Information',
+                                    style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline,
+                                      color: theme.colorScheme.onSurface,
                                     ),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () async {
-                                        final uri = Uri(
-                                          scheme: 'https',
-                                          host: 'parkroadfellowship.org',
-                                          path: 'privacy-policy',
-                                        );
-                                        await Misc.openUrl(uri);
-                                      },
                                   ),
                                 ],
                               ),
-                              textAlign: TextAlign.center,
+                              const SizedBox(height: PRFSpacingTokens.xl),
+                              _buildInfoField(
+                                context,
+                                label: l10n.name,
+                                value: profile.name,
+                                icon: Icons.badge_outlined,
+                              ),
+                              const SizedBox(height: PRFSpacingTokens.lg),
+                              _buildInfoField(
+                                context,
+                                label: l10n.email,
+                                value: profile.email,
+                                icon: Icons.email_outlined,
+                              ),
+                            ],
+                          ),
+                        )
+                        .animate(delay: PRFMotionTokens.stagger1)
+                        .fadeIn(duration: PRFMotionTokens.slow)
+                        .slideY(begin: 0.1, end: 0),
+              );
+            },
+          ),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: PRFSpacingTokens.xxl),
+          ),
+
+          // Footer Section
+          SliverToBoxAdapter(
+            child:
+                Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: PRFSpacingTokens.lg,
+                      ),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          PRFRadiusTokens.xl,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.shadow.withValues(
+                              alpha: 0.08,
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              l10n.version(Misc.getAppVersion()),
-                              style: theme.textTheme.labelMedium?.copyWith(
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              text: l10n.byUsing,
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
+                              children: [
+                                TextSpan(
+                                  text: l10n.terms,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () async {
+                                      final uri = Uri(
+                                        scheme: 'https',
+                                        host: 'parkroadfellowship.org',
+                                        path: '/privacy-policy',
+                                      );
+                                      await Misc.openUrl(uri);
+                                    },
+                                ),
+                                TextSpan(
+                                  text: l10n.and,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: l10n.privacyPolicy,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () async {
+                                      final uri = Uri(
+                                        scheme: 'https',
+                                        host: 'parkroadfellowship.org',
+                                        path: 'privacy-policy',
+                                      );
+                                      await Misc.openUrl(uri);
+                                    },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                      .animate(delay: 300.ms)
-                      .fadeIn(duration: 300.ms)
-                      .slideY(begin: 0.1, end: 0),
-            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: PRFSpacingTokens.md),
+                          Text(
+                            l10n.version(Misc.getAppVersion()),
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate(delay: PRFMotionTokens.stagger3)
+                    .fadeIn(duration: PRFMotionTokens.slow)
+                    .slideY(begin: 0.1, end: 0),
+          ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
-        ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: PRFSpacingTokens.xxxl),
+          ),
+        ],
       ),
     );
   }
@@ -595,10 +497,10 @@ class AccountPageHandset extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
           color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
@@ -607,10 +509,10 @@ class AccountPageHandset extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(PRFSpacingTokens.sm),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
             ),
             child: Icon(
               icon,
@@ -618,7 +520,7 @@ class AccountPageHandset extends StatelessWidget {
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -630,7 +532,7 @@ class AccountPageHandset extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: PRFSpacingTokens.xs),
                 Text(
                   value,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -677,7 +579,7 @@ class ChangeProfilePictureButton extends StatelessWidget {
                   mediaType: MediaType.image,
                 ),
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(PRFSpacingTokens.sm),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary,
                 shape: BoxShape.circle,

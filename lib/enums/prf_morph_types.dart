@@ -2,29 +2,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFMorphType {
   @JsonValue(1)
-  member,
+  member(1),
   @JsonValue(2)
-  student,
+  student(2),
   @JsonValue(3)
-  missionExpense,
+  missionExpense(3),
   @JsonValue(4)
-  event,
+  event(4),
   @JsonValue(5)
-  mission
+  mission(5),
   ;
 
-  int get apiKey {
-    switch (this) {
-      case PRFMorphType.member:
-        return 1;
-      case PRFMorphType.student:
-        return 2;
-      case PRFMorphType.missionExpense:
-        return 3;
-      case PRFMorphType.event:
-        return 4;
-      case PRFMorphType.mission:
-        return 5;
-    }
-  }
+  const PRFMorphType(this.apiKey);
+
+  final int apiKey;
 }

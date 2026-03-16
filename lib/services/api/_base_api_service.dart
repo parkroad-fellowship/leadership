@@ -21,6 +21,7 @@ abstract class BaseAPIService<T> {
     Map<String, dynamic>? filters,
     List<String>? includes,
     int? limit,
+    int? page,
     String? orderBy,
     String? orderDirection,
   }) async {
@@ -44,6 +45,11 @@ abstract class BaseAPIService<T> {
       // Add limit if provided
       if (limit != null) {
         queryParameters['limit'] = limit;
+      }
+
+      // Add page if provided
+      if (page != null) {
+        queryParameters['page'] = page;
       }
 
       // Add ordering if provided

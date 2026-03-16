@@ -2,15 +2,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFEntryType {
   @JsonValue(1)
-  credit,
+  credit(1),
   @JsonValue(2)
-  debit
+  debit(2),
   ;
 
-  int get apiKey {
-    return switch (this) {
-      PRFEntryType.credit => 1,
-      PRFEntryType.debit => 2,
-    };
-  }
+  const PRFEntryType(this.apiKey);
+
+  final int apiKey;
 }

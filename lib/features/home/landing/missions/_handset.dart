@@ -2,14 +2,18 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_missions_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/get_past_missions_cubit.dart';
+import 'package:leadership/enums/prf_permissions.dart';
+import 'package:leadership/features/home/landing/missions/actions/create_mission/create_mission.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:leadership/utils/debouncer.dart' as app_utils;
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
+import 'package:prf_design/prf_design.dart';
 
 class MissionsPageHandset extends StatefulWidget {
   const MissionsPageHandset({super.key});
@@ -21,6 +25,21 @@ class MissionsPageHandset extends StatefulWidget {
 class _MissionsPageHandsetState extends State<MissionsPageHandset>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  final app_utils.Debouncer _debouncer = app_utils.Debouncer(
+    milliseconds: 300,
+  );
+  String _searchQuery = '';
+
+  List<PRFMission> _missionsFromState(ResourceState<PRFMission> state) {
+    return state.maybeWhen(
+      listLoaded: (items, _, _) => items,
+      mutating: (items, _) => items,
+      mutated: (items, _, _) => items,
+      error: (_, items) => items,
+      orElse: () => const <PRFMission>[],
+    );
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -29,16 +48,24 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
   void initState() {
     super.initState();
 
-    context.read<GetMissionsCubit>().getMissions();
+    context.read<MissionResourceCubit>().loadUpcomingMissions();
 
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
-        context.read<GetMissionsCubit>().getMissions();
+        context.read<MissionResourceCubit>().loadUpcomingMissions();
       } else {
-        context.read<GetPastMissionsCubit>().getPastMissions();
+        context.read<MissionResourceCubit>().loadPastMissions();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    _debouncer.dispose();
+    super.dispose();
   }
 
   @override
@@ -50,98 +77,261 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            l10n.missions,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurface,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          leading: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            margin: const EdgeInsets.only(left: 8),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: theme.colorScheme.onPrimaryContainer,
-                size: 20,
-              ),
-              onPressed: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.landingRoute,
-              ),
-            ),
-          ),
-          actions: [
-            BlocBuilder<GetMissionsCubit, GetMissionsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: 8),
-            BlocBuilder<GetPastMissionsCubit, GetPastMissionsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: 16),
-          ],
-          backgroundColor: Colors.transparent,
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: [
-              Tab(text: l10n.upcoming),
-              Tab(text: l10n.past),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
+        backgroundColor: theme.colorScheme.surface,
+        body: Column(
           children: [
-            _buildMissionsTimeline(context),
-            _buildPastMissionsTimeline(context),
+            ColoredBox(
+              color: theme.colorScheme.primary,
+              child: Column(
+                children: [
+                  PRFBrandedNavBar(
+                    title: l10n.missions,
+                    onBack: () => context.router.popUntilRouteWithPath(
+                      PRFLeadershipRouter.landingRoute,
+                    ),
+                    actions: [
+                      if (Misc.userCan(PRFPermissions.createMission))
+                        PRFHeaderActionButton(
+                          label: '+ New',
+                          onTap: _showCreateMissionForm,
+                        ),
+                      if (Misc.userCan(PRFPermissions.createMission))
+                        const SizedBox(width: PRFSpacingTokens.sm),
+                      BlocBuilder<
+                        MissionResourceCubit,
+                        ResourceState<PRFMission>
+                      >(
+                        builder: (context, state) => switch (state) {
+                          ResourceListLoading<PRFMission>() =>
+                            const SizedBox.square(
+                              dimension: 24,
+                              child: PRFCircularProgressIndicator(),
+                            ),
+                          _ => const SizedBox.shrink(),
+                        },
+                      ),
+                      const SizedBox(width: PRFSpacingTokens.lg),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PRFSpacingTokens.lg,
+                      0,
+                      PRFSpacingTokens.lg,
+                      PRFSpacingTokens.md,
+                    ),
+                    child:
+                        BlocBuilder<
+                          MissionResourceCubit,
+                          ResourceState<PRFMission>
+                        >(
+                          builder: (context, state) {
+                            final items = _missionsFromState(state);
+                            final totalCapacity = items.fold<int>(
+                              0,
+                              (sum, mission) => sum + mission.capacity,
+                            );
+                            final openSlots = items.fold<int>(
+                              0,
+                              (sum, mission) =>
+                                  sum + mission.missionSubscriptionsNeeded,
+                            );
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: _buildHeaderStat(
+                                    label: 'Missions',
+                                    value: '${items.length}',
+                                    color: theme.colorScheme.secondary,
+                                  ),
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.sm),
+                                Expanded(
+                                  child: _buildHeaderStat(
+                                    label: 'Capacity',
+                                    value: '$totalCapacity',
+                                    color: theme.colorScheme.tertiary,
+                                  ),
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.sm),
+                                Expanded(
+                                  child: _buildHeaderStat(
+                                    label: 'Open Slots',
+                                    value: '$openSlots',
+                                    color: theme.colorScheme.errorContainer,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PRFSpacingTokens.lg,
+                      0,
+                      PRFSpacingTokens.lg,
+                      PRFSpacingTokens.sm,
+                    ),
+                    child: Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          labelColor: theme.colorScheme.onPrimary,
+                          unselectedLabelColor: theme.colorScheme.onPrimary
+                              .withValues(alpha: 0.65),
+                          indicatorColor: theme.colorScheme.secondary,
+                          dividerColor: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.2,
+                          ),
+                          labelStyle: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                          padding: EdgeInsets.zero,
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: PRFSpacingTokens.sm,
+                          ),
+                          tabs: [
+                            Tab(text: l10n.upcoming),
+                            Tab(text: l10n.past),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.md,
+                PRFSpacingTokens.lg,
+                PRFSpacingTokens.sm,
+              ),
+              child: _buildSearchBar(theme),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildMissionsTimeline(context),
+                  _buildPastMissionsTimeline(context),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildHeaderStat({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: PRFSpacingTokens.sm,
+        vertical: PRFSpacingTokens.sm,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.35),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: PRFTextInput(
+        hintText: 'Search missions by school, type, or theme...',
+        controller: _searchController,
+        onChanged: (value) {
+          _debouncer.run(() {
+            if (!mounted) return;
+            setState(() {
+              _searchQuery = value.trim().toLowerCase();
+            });
+          });
+        },
+      ),
+    );
+  }
+
+  List<PRFMission> _filterMissions(List<PRFMission> missions) {
+    if (_searchQuery.isEmpty) {
+      return missions;
+    }
+
+    return missions
+        .where((mission) {
+          final schoolName = mission.school?.name.toLowerCase() ?? '';
+          final missionType = mission.missionType?.name.toLowerCase() ?? '';
+          final missionTheme = (mission.theme ?? '').toLowerCase();
+
+          return schoolName.contains(_searchQuery) ||
+              missionType.contains(_searchQuery) ||
+              missionTheme.contains(_searchQuery);
+        })
+        .toList(growable: false);
+  }
+
   Widget _buildMissionsTimeline(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<GetMissionsCubit, GetMissionsState>(
+    return BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
       builder: (context, state) {
-        return state.maybeWhen(
-          orElse: () => Center(
+        return switch (state) {
+          ResourceInitial<PRFMission>() ||
+          ResourceListLoading<PRFMission>() => Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
                 theme.colorScheme.primary,
               ),
             ),
           ),
-          error: (String message) => Center(
+          ResourceError<PRFMission>(:final message) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -150,7 +340,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -160,33 +350,40 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
               ],
             ),
           ),
-          loaded: (List<PRFMission> missions) {
-            if (missions.isEmpty) {
+          ResourceListLoaded<PRFMission>(:final items) ||
+          ResourceMutated<PRFMission>(:final items) => (() {
+            final missions = List<PRFMission>.from(items)
+              ..sort((a, b) => a.startDate.compareTo(b.startDate));
+            final filtered = _filterMissions(missions);
+
+            if (filtered.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () => context.read<GetMissionsCubit>().getMissions(),
+                onRefresh: () =>
+                    context.read<MissionResourceCubit>().loadUpcomingMissions(),
                 child: PRFEmptyView(
-                  label: l10n.noMissions,
-                  description: l10n.pleaseWait,
+                  label: _searchQuery.isEmpty
+                      ? l10n.noMissions
+                      : 'No matching missions',
+                  description: _searchQuery.isEmpty
+                      ? l10n.pleaseWait
+                      : 'Try a different search term.',
                 ),
               );
             }
 
-            // Sort missions by start date for timeline
-            final sortedMissions = List<PRFMission>.from(missions)
-              ..sort((a, b) => a.startDate.compareTo(b.startDate));
-
             return RefreshIndicator(
-              onRefresh: () => context.read<GetMissionsCubit>().getMissions(),
+              onRefresh: () =>
+                  context.read<MissionResourceCubit>().loadUpcomingMissions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
-                itemCount: sortedMissions.length,
+                itemCount: filtered.length,
                 itemBuilder: (context, index) {
-                  final mission = sortedMissions[index];
-                  final isLast = index == sortedMissions.length - 1;
+                  final mission = filtered[index];
+                  final isLast = index == filtered.length - 1;
 
                   return TimelineMissionCard(
                         mission: mission,
@@ -199,18 +396,19 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),
             );
-          },
-        );
+          })(),
+          _ => const SizedBox.shrink(),
+        };
       },
     );
   }
@@ -219,17 +417,18 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<GetPastMissionsCubit, GetPastMissionsState>(
+    return BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
       builder: (context, state) {
-        return state.maybeWhen(
-          orElse: () => Center(
+        return switch (state) {
+          ResourceInitial<PRFMission>() ||
+          ResourceListLoading<PRFMission>() => Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
                 theme.colorScheme.primary,
               ),
             ),
           ),
-          error: (String message) => Center(
+          ResourceError<PRFMission>(:final message) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -238,7 +437,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -248,31 +447,40 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
               ],
             ),
           ),
-          loaded: (List<PRFMission> missions) {
-            if (missions.isEmpty) {
+          ResourceListLoaded<PRFMission>(:final items) ||
+          ResourceMutated<PRFMission>(:final items) => (() {
+            final missions = List<PRFMission>.from(items)
+              ..sort((a, b) => b.startDate.compareTo(a.startDate));
+            final filtered = _filterMissions(missions);
+
+            if (filtered.isEmpty) {
               return RefreshIndicator(
                 onRefresh: () =>
-                    context.read<GetPastMissionsCubit>().getPastMissions(),
+                    context.read<MissionResourceCubit>().loadPastMissions(),
                 child: PRFEmptyView(
-                  label: l10n.noMissions,
-                  description: l10n.pleaseWait,
+                  label: _searchQuery.isEmpty
+                      ? l10n.noMissions
+                      : 'No matching missions',
+                  description: _searchQuery.isEmpty
+                      ? l10n.pleaseWait
+                      : 'Try a different search term.',
                 ),
               );
             }
 
             return RefreshIndicator(
               onRefresh: () =>
-                  context.read<GetPastMissionsCubit>().getPastMissions(),
+                  context.read<MissionResourceCubit>().loadPastMissions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
-                itemCount: missions.length,
+                itemCount: filtered.length,
                 itemBuilder: (context, index) {
-                  final mission = missions[index];
-                  final isLast = index == missions.length - 1;
+                  final mission = filtered[index];
+                  final isLast = index == filtered.length - 1;
 
                   return TimelineMissionCard(
                         mission: mission,
@@ -285,20 +493,36 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),
             );
-          },
-        );
+          })(),
+          _ => const SizedBox.shrink(),
+        };
       },
     );
+  }
+
+  void _showCreateMissionForm() {
+    PRFBottomSheet.show<void>(
+      context,
+      title: 'Create Mission',
+      child: const CreateMissionView(),
+    ).then((_) {
+      if (!mounted) return;
+      if (_tabController.index == 0) {
+        context.read<MissionResourceCubit>().loadUpcomingMissions();
+      } else {
+        context.read<MissionResourceCubit>().loadPastMissions();
+      }
+    });
   }
 }
 
@@ -333,9 +557,9 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
 
     // Premium status color system
     final statusColor = isSubscribed
-        ? const Color(PRFTheme.secondaryColor)
+        ? PRFColors.limeGreen
         : isOngoing
-        ? const Color(PRFTheme.secondaryColor)
+        ? PRFColors.limeGreen
         : isUpcoming
         ? theme.colorScheme.primary
         : isPast
@@ -372,7 +596,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                       statusColor.withValues(alpha: 0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   boxShadow: [
                     BoxShadow(
                       color: statusColor.withValues(alpha: 0.3),
@@ -447,7 +671,9 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                 Container(
                   width: 2,
                   height: 60,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    vertical: PRFSpacingTokens.sm,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -464,7 +690,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
           ),
         ),
 
-        const SizedBox(width: 16),
+        const SizedBox(width: PRFSpacingTokens.lg),
 
         Expanded(
           child: GestureDetector(
@@ -473,7 +699,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
               margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 border: Border.all(
                   color: statusColor.withValues(alpha: 0.2),
                 ),
@@ -491,14 +717,14 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Premium header with gradient
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -527,15 +753,17 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: PRFSpacingTokens.sm),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: PRFSpacingTokens.sm,
+                                  vertical: PRFSpacingTokens.xs,
                                 ),
                                 decoration: BoxDecoration(
                                   color: statusColor,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.md,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: statusColor.withValues(alpha: 0.3),
@@ -555,7 +783,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                             ],
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: PRFSpacingTokens.md),
 
                           // Mission type with icon
                           Row(
@@ -564,7 +792,9 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.sm,
+                                  ),
                                 ),
                                 child: Icon(
                                   Icons.school_rounded,
@@ -572,7 +802,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                                   color: theme.colorScheme.onPrimaryContainer,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: PRFSpacingTokens.sm),
                               Expanded(
                                 child: Text(
                                   mission.missionType?.name ?? '',
@@ -592,7 +822,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
 
                     // Content section
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -612,7 +842,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                                   theme.colorScheme.primary,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: PRFSpacingTokens.sm),
                               Expanded(
                                 child: _buildInfoChip(
                                   context,
@@ -625,7 +855,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                             ],
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: PRFSpacingTokens.md),
 
                           // Date range display
                           DateRangeView(
@@ -637,18 +867,20 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                             isOngoing: isOngoing,
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: PRFSpacingTokens.md),
 
                           // Action button
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
+                              horizontal: PRFSpacingTokens.lg,
+                              vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
                               color: statusColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.sm,
+                              ),
                               border: Border.all(
                                 color: statusColor.withValues(alpha: 0.3),
                               ),
@@ -664,7 +896,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                                     color: statusColor,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: PRFSpacingTokens.xs),
                                 Icon(
                                   Icons.arrow_forward_rounded,
                                   size: 14,
@@ -695,10 +927,10 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
   ) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(PRFSpacingTokens.sm),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
         border: Border.all(
           color: color.withValues(alpha: 0.2),
         ),
@@ -715,7 +947,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                 size: 12,
                 color: color,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: PRFSpacingTokens.xs),
               Flexible(
                 child: Text(
                   label,
@@ -776,10 +1008,10 @@ class DateRangeView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(PRFSpacingTokens.md),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
           color: theme.colorScheme.outline.withValues(
             alpha: 0.2,
@@ -793,7 +1025,7 @@ class DateRangeView extends StatelessWidget {
             size: 16,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: PRFSpacingTokens.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

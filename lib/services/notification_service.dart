@@ -1,13 +1,12 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:leadership/enums/prf_notification_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/_index.dart';
-import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:logger/logger.dart';
+import 'package:prf_design/prf_design.dart';
 
 abstract class NotificationService {
   Future<void> init();
@@ -149,31 +148,15 @@ class NotificationServiceImpl implements NotificationService {
     if (context == null) return;
     final l10n = context.l10n;
 
-    await showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(l10n.getNotified),
-          content: Text(l10n.allowNotifications),
-          actions: [
-            PRFSecondaryButton(
-              onPressed: () => Navigator.of(context).pop(),
-              title: l10n.deny,
-              disabled: false,
-            ),
-            const SizedBox(height: 16),
-            PRFPrimaryButton(
-              onPressed: () {
-                userAuthorized = true;
-                Navigator.of(context).pop();
-              },
-              title: l10n.allow,
-              disabled: false,
-            ),
-          ],
-        );
-      },
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: l10n.getNotified,
+      message: l10n.allowNotifications,
+      confirmLabel: l10n.allow,
+      cancelLabel: l10n.deny,
     );
+
+    userAuthorized = confirmed ?? false;
 
     // Mark that permission has been requested
     hiveService.setPermissionRequested(requested: true);

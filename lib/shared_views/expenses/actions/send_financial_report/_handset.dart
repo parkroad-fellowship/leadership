@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/shared_views/expenses/cubit/send_financial_report_cubit.dart';
-import 'package:leadership/shared_widgets/_index.dart';
+import 'package:prf_design/prf_design.dart';
 
 class SendFinancialReportViewHandset extends StatelessWidget {
   const SendFinancialReportViewHandset({
@@ -40,7 +40,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,14 +49,14 @@ class SendFinancialReportViewHandset extends StatelessWidget {
               size: 48,
               color: theme.colorScheme.primary,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
             Text(
               'Send Financial Report',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: PRFSpacingTokens.sm),
             Text(
               'This will email a detailed financial report to all relevant '
               'parties.',
@@ -64,15 +64,15 @@ class SendFinancialReportViewHandset extends StatelessWidget {
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: PRFSpacingTokens.xxl),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(PRFSpacingTokens.lg),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primaryContainer.withValues(
                   alpha: 0.3,
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 border: Border.all(
                   color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 ),
@@ -87,7 +87,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
                         size: 20,
                         color: theme.colorScheme.primary,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: PRFSpacingTokens.sm),
                       Text(
                         'Report Contents',
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -97,7 +97,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: PRFSpacingTokens.sm),
                   _buildReportItem(context, '• Complete expense breakdown'),
                   _buildReportItem(
                     context,
@@ -118,7 +118,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: PRFSpacingTokens.lg),
             SizedBox(
               width: double.infinity,
               child: TextButton(
@@ -156,31 +156,20 @@ class SendFinancialReportViewHandset extends StatelessWidget {
     );
   }
 
-  void _showConfirmationDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Confirm Send Report'),
-        content: const Text(
+  Future<void> _showConfirmationDialog(BuildContext context) async {
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: 'Confirm Send Report',
+      message:
           'Are you sure you want to send the financial report? '
           'This will email the report to all relevant members.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<SendFinancialReportCubit>().sendReport(
-                accountingEventUlid: accountingEventUlid,
-              );
-            },
-            child: const Text('Send Report'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Send Report',
     );
+
+    if ((confirmed ?? false) && context.mounted) {
+      await context.read<SendFinancialReportCubit>().sendReport(
+        accountingEventUlid: accountingEventUlid,
+      );
+    }
   }
 }

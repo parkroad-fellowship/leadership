@@ -12,7 +12,7 @@ import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:prf_design/prf_design.dart';
 
 class DeskActivitiesHandset extends StatefulWidget {
   const DeskActivitiesHandset({super.key});
@@ -46,104 +46,85 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            l10n.activities,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurface,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          leading: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: Column(
+        children: [
+          ColoredBox(
+            color: theme.colorScheme.primary,
+            child: Column(
+              children: [
+                PRFBrandedNavBar(
+                  title: l10n.activities,
+                  onBack: () => context.router.popUntilRouteWithPath(
+                    PRFLeadershipRouter.landingRoute,
+                  ),
+                  actions: [
+                    if (Misc.userCan(PRFPermissions.createEvent))
+                      PRFHeaderActionButton(
+                        label: '+ New',
+                        onTap: _showCreateEventForm,
+                      ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    PRFSpacingTokens.lg,
+                    0,
+                    PRFSpacingTokens.lg,
+                    PRFSpacingTokens.sm,
+                  ),
+                  child: Transform.translate(
+                    offset: const Offset(0, -6),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        labelColor: theme.colorScheme.onPrimary,
+                        unselectedLabelColor: theme.colorScheme.onPrimary
+                            .withValues(alpha: 0.65),
+                        indicatorColor: theme.colorScheme.secondary,
+                        dividerColor: theme.colorScheme.onPrimary.withValues(
+                          alpha: 0.2,
+                        ),
+                        labelStyle: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        padding: EdgeInsets.zero,
+                        labelPadding: const EdgeInsets.symmetric(
+                          horizontal: PRFSpacingTokens.sm,
+                        ),
+                        tabs: [
+                          Tab(text: l10n.upcoming),
+                          Tab(text: l10n.past),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            margin: const EdgeInsets.only(left: 8),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: theme.colorScheme.onPrimaryContainer,
-                size: 20,
-              ),
-              onPressed: () => context.router.popUntilRouteWithPath(
-                PRFLeadershipRouter.landingRoute,
-              ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildEventsTimeline(context),
+                _buildPastEventTimeline(context),
+              ],
             ),
           ),
-          actions: [
-            BlocBuilder<GetEventsCubit, GetEventsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: 8),
-            BlocBuilder<GetPastEventsCubit, GetPastEventsState>(
-              builder: (context, state) => state.maybeWhen(
-                loading: () => const SizedBox.square(
-                  dimension: 24,
-                  child: PRFCircularProgressIndicator(),
-                ),
-                orElse: SizedBox.shrink,
-              ),
-            ),
-            const SizedBox(width: 16),
-          ],
-          backgroundColor: Colors.transparent,
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: [
-              Tab(text: l10n.upcoming),
-              Tab(text: l10n.past),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildEventsTimeline(context),
-            _buildPastEventTimeline(context),
-          ],
-        ),
-        floatingActionButton: Misc.userCan(PRFPermissions.createEvent)
-            ? FloatingActionButton(
-                onPressed: () => WoltModalSheet.show<void>(
-                  context: context,
-                  pageListBuilder: (modalSheetContext) {
-                    return [
-                      WoltModalSheetPage(
-                        backgroundColor: Colors.white,
-                        surfaceTintColor: Colors.white,
-                        child: SizedBox(
-                          height: MediaQuery.sizeOf(context).height * 0.8,
-                          child: const CreateEventView(),
-                        ),
-                      ),
-                    ];
-                  },
-                ),
-
-                child: const Icon(Icons.add, color: Colors.white),
-              )
-            : null,
+        ],
       ),
+    );
+  }
+
+  void _showCreateEventForm() {
+    PRFBottomSheet.show<void>(
+      context,
+      title: context.l10n.createNewActivity,
+      child: const CreateEventView(),
     );
   }
 
@@ -170,7 +151,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -198,8 +179,8 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
                 itemCount: sortedEvents.length,
                 itemBuilder: (context, index) {
@@ -217,12 +198,12 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),
@@ -256,7 +237,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   message,
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -280,8 +261,8 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
+                  horizontal: PRFSpacingTokens.lg,
+                  vertical: PRFSpacingTokens.xl,
                 ),
                 itemCount: events.length,
                 itemBuilder: (context, index) {
@@ -299,12 +280,12 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
                       .animate()
                       .fadeIn(
                         delay: Duration(milliseconds: index * 100),
-                        duration: 600.ms,
+                        duration: PRFMotionTokens.enterShort,
                       )
                       .slideX(
                         begin: 0.3,
                         end: 0,
-                        curve: Curves.easeOutCubic,
+                        curve: PRFMotionTokens.emphasized,
                       );
                 },
               ),
@@ -351,9 +332,10 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
 
     // Premium status color system
     final statusColor = isSubscribed
-        ? const Color(PRFTheme.secondaryColor)
+        ? PRFColors.limeGreen
         : isOngoing
-        ? const Color(PRFTheme.secondaryColor) // Active green
+        ? PRFColors
+              .limeGreen // Active green
         : isUpcoming
         ? theme.colorScheme.primary
         : isPast
@@ -364,13 +346,13 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 60,
+          width: 46,
           child: Column(
             children: [
               // Multi-day date badge
               Container(
-                width: 50,
-                height: isMultiDay ? 90 : 50,
+                width: 40,
+                height: isMultiDay ? 72 : 42,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -380,7 +362,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                       statusColor.withValues(alpha: 0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   boxShadow: [
                     BoxShadow(
                       color: statusColor.withValues(alpha: 0.3),
@@ -400,7 +382,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
-                          fontSize: 14,
                         ),
                       ),
                       Text(
@@ -408,7 +389,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
-                          fontSize: 8,
                         ),
                       ),
                       Container(
@@ -423,7 +403,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
-                          fontSize: 14,
                         ),
                       ),
                       Text(
@@ -431,7 +410,6 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
-                          fontSize: 8,
                         ),
                       ),
                     ] else ...[
@@ -458,8 +436,10 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
               if (!isLast)
                 Container(
                   width: 2,
-                  height: 60,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  height: 34,
+                  margin: const EdgeInsets.symmetric(
+                    vertical: PRFSpacingTokens.sm,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -476,41 +456,36 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
           ),
         ),
 
-        const SizedBox(width: 16),
+        const SizedBox(width: PRFSpacingTokens.md),
 
         Expanded(
           child: GestureDetector(
             onTap: onTap,
             child: Container(
-              margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              margin: EdgeInsets.only(bottom: isLast ? 0 : PRFSpacingTokens.sm),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 border: Border.all(
                   color: statusColor.withValues(alpha: 0.2),
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
-                  ),
-                  BoxShadow(
-                    color: statusColor.withValues(alpha: 0.05),
-                    blurRadius: 24,
-                    offset: const Offset(0, 6),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Premium header with gradient
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -539,11 +514,11 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: PRFSpacingTokens.sm),
                             ],
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: PRFSpacingTokens.sm),
 
                           // Event venue with icon
                           if (event.venue != null)
@@ -553,7 +528,9 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(
+                                      PRFRadiusTokens.sm,
+                                    ),
                                   ),
                                   child: Icon(
                                     Icons.location_on_rounded,
@@ -561,7 +538,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                     color: theme.colorScheme.onPrimaryContainer,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: PRFSpacingTokens.sm),
                                 Expanded(
                                   child: Text(
                                     event.venue!,
@@ -581,17 +558,19 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
 
                     // Event details
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Date range display
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.md,
+                              ),
                               border: Border.all(
                                 color: theme.colorScheme.outline.withValues(
                                   alpha: 0.2,
@@ -605,7 +584,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   size: 20,
                                   color: theme.colorScheme.primary,
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: PRFSpacingTokens.md),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -627,7 +606,9 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                                   theme.colorScheme.onSurface,
                                             ),
                                       ),
-                                      const SizedBox(height: 2),
+                                      const SizedBox(
+                                        height: PRFSpacingTokens.xs,
+                                      ),
                                       Text(
                                         // ignore: lines_longer_than_80_chars
                                         '${Misc.formatTime(event.startTime, timezone)} - ${Misc.formatTime(event.endTime, timezone)} daily',
@@ -645,7 +626,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                             ),
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: PRFSpacingTokens.md),
 
                           // Description preview
                           if (event.description.isNotEmpty)
@@ -654,18 +635,18 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: PRFSpacingTokens.md),
 
                           // Action button
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                              horizontal: PRFSpacingTokens.lg,
+                              vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -674,25 +655,28 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                                   statusColor.withValues(alpha: 0.05),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.sm,
+                              ),
                               border: Border.all(
                                 color: statusColor.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   'View Details',
-                                  style: theme.textTheme.titleSmall?.copyWith(
+                                  style: theme.textTheme.labelLarge?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     color: statusColor,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: PRFSpacingTokens.xs),
                                 Icon(
                                   Icons.arrow_forward_rounded,
-                                  size: 18,
+                                  size: 14,
                                   color: statusColor,
                                 ),
                               ],

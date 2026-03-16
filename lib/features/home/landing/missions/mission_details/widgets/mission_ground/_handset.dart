@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/models/remote/prf_mission.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:map_launcher/map_launcher.dart';
+import 'package:prf_design/prf_design.dart';
 
 class MissionGroundViewHandset extends StatefulWidget {
   const MissionGroundViewHandset({required this.mission, super.key});
@@ -24,6 +26,17 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final school = mission.school;
+
+    if (school == null) {
+      return Padding(
+        padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+        child: PRFEmptyView(
+          label: l10n.missionDetails,
+          description: 'Mission school details are unavailable.',
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       child: Padding(
@@ -31,7 +44,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
         child: Column(
           children: [
             // Hero Mission Card
-            _buildHeroCard(context, mission, l10n, theme),
+            _buildHeroCard(context, mission, school, l10n, theme),
             const SizedBox(height: 24),
 
             // Quick Actions Row
@@ -39,15 +52,15 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             const SizedBox(height: 24),
 
             // Mission Intelligence Grid
-            _buildIntelligenceGrid(context, mission, l10n, theme),
+            _buildIntelligenceGrid(context, mission, school, l10n, theme),
             const SizedBox(height: 24),
 
             // Contact Command Center
-            _buildContactCenter(context, mission, l10n, theme),
+            _buildContactCenter(context, school, l10n, theme),
             const SizedBox(height: 24),
 
             // Location & Navigation Hub
-            _buildLocationHub(context, mission, l10n, theme),
+            _buildLocationHub(context, mission, school, l10n, theme),
             const SizedBox(height: 24),
           ],
         ),
@@ -58,6 +71,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
   Widget _buildHeroCard(
     BuildContext context,
     PRFMission mission,
+    PRFSchool school,
     AppLocalizations l10n,
     ThemeData theme,
   ) {
@@ -123,7 +137,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  mission.school!.name.toUpperCase(),
+                  school.name.toUpperCase(),
                   style: theme.textTheme.headlineLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -175,7 +189,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
           ),
         )
         .animate()
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -240,8 +254,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ),
           ],
         )
-        .animate(delay: const Duration(milliseconds: 200))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.stagger2)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -289,6 +303,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
   Widget _buildIntelligenceGrid(
     BuildContext context,
     PRFMission mission,
+    PRFSchool school,
     AppLocalizations l10n,
     ThemeData theme,
   ) {
@@ -310,12 +325,12 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
               crossAxisSpacing: 12,
               childAspectRatio: 1.2,
               children: [
-                if (mission.school!.totalStudents != 0)
+                if (school.totalStudents != 0)
                   _buildStatCard(
                     context,
                     Icons.people_rounded,
                     l10n.population,
-                    mission.school!.totalStudents.toString(),
+                    school.totalStudents.toString(),
                     theme.colorScheme.primary,
                     theme,
                   ),
@@ -339,7 +354,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                   context,
                   Icons.route_rounded,
                   l10n.estimatedDistance,
-                  mission.school!.distance,
+                  school.distance,
                   theme.colorScheme.error,
                   theme,
                 ),
@@ -347,8 +362,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ),
           ],
         )
-        .animate(delay: const Duration(milliseconds: 400))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.stagger4)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
@@ -402,7 +417,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
 
   Widget _buildContactCenter(
     BuildContext context,
-    PRFMission mission,
+    PRFSchool school,
     AppLocalizations l10n,
     ThemeData theme,
   ) {
@@ -443,99 +458,109 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                 ],
               ),
               const SizedBox(height: 16),
-              ...mission.school!.contacts.map(
-                (contact) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: theme.colorScheme.primary.withValues(
-                            alpha: 0.1,
+              if (school.contacts.isEmpty)
+                Text(
+                  'No contact persons available for this school.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                )
+              else
+                ...school.contacts.map(
+                  (contact) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                          child: Text(
-                            contact.name.substring(0, 1).toUpperCase(),
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w700,
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: theme.colorScheme.primary
+                                .withValues(
+                                  alpha: 0.1,
+                                ),
+                            child: Text(
+                              contact.name.substring(0, 1).toUpperCase(),
+                              style: TextStyle(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                contact.name,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  contact.name,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
+                                Text(
+                                  contact.contactType!.name,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: IconButton(
+                              onPressed: () async {
+                                final uri = Uri(
+                                  scheme: 'tel',
+                                  path: contact.phone,
+                                );
+                                await Misc.openUrl(uri);
+                              },
+                              icon: const Icon(
+                                Icons.phone,
+                                color: Colors.white,
+                                size: 20,
                               ),
-                              Text(
-                                contact.contactType!.name,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
+                            ),
+                          ).animate(
+                            effects: const [
+                              ShakeEffect(
+                                duration: Duration(seconds: 2),
+                                delay: PRFMotionTokens.stagger5,
                               ),
                             ],
                           ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: IconButton(
-                            onPressed: () async {
-                              final uri = Uri(
-                                scheme: 'tel',
-                                path: contact.phone,
-                              );
-                              await Misc.openUrl(uri);
-                            },
-                            icon: const Icon(
-                              Icons.phone,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ).animate(
-                          effects: const [
-                            ShakeEffect(
-                              duration: Duration(seconds: 2),
-                              delay: Duration(milliseconds: 500),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         )
-        .animate(delay: const Duration(milliseconds: 600))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.enterShort)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 
   Widget _buildLocationHub(
     BuildContext context,
     PRFMission mission,
+    PRFSchool school,
     AppLocalizations l10n,
     ThemeData theme,
   ) {
@@ -599,7 +624,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                     effects: const [
                       ShakeEffect(
                         duration: Duration(seconds: 2),
-                        delay: Duration(milliseconds: 500),
+                        delay: PRFMotionTokens.stagger5,
                       ),
                     ],
                   ),
@@ -616,15 +641,15 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      mission.school!.address,
+                      school.address,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    if (mission.school!.directions.isNotEmpty) ...[
+                    if (school.directions.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
-                        mission.school!.directions,
+                        school.directions,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -641,7 +666,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                       context,
                       Icons.straighten_rounded,
                       l10n.estimatedDistance,
-                      mission.school!.distance,
+                      school.distance,
                       theme,
                     ),
                   ),
@@ -651,7 +676,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                       context,
                       Icons.schedule_rounded,
                       'Travel Time',
-                      mission.school!.staticDuration,
+                      school.staticDuration,
                       theme,
                     ),
                   ),
@@ -686,8 +711,8 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ],
           ),
         )
-        .animate(delay: const Duration(milliseconds: 800))
-        .fadeIn(duration: const Duration(milliseconds: 600))
+        .animate(delay: PRFMotionTokens.enterMedium)
+        .fadeIn(duration: PRFMotionTokens.enterShort)
         .slideY(begin: 0.3, end: 0);
   }
 

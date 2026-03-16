@@ -6,11 +6,8 @@ import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/shared_views/expenses/expenses.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition/create_requisition.dart';
 import 'package:leadership/shared_views/requisitions/requisitions.dart';
-import 'package:leadership/shared_widgets/empty_state.dart';
-import 'package:leadership/shared_widgets/navbar/navbar.dart';
 import 'package:leadership/utils/_index.dart';
-import 'package:logger/logger.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:prf_design/prf_design.dart';
 
 class DeskEventDetailsPageHandset extends StatefulWidget {
   const DeskEventDetailsPageHandset({required this.event, super.key});
@@ -55,87 +52,113 @@ class _DeskEventDetailsPageHandsetState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: DefaultTabController(
         length: tabCount,
-        child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              PRFNavBar(
-                title: l10n.activityDetails,
-                onBack: () => context.router.popUntilRouteWithPath(
-                  PRFLeadershipRouter.deskActivitiesRoute,
-                ),
-              ),
-
-              SliverToBoxAdapter(
-                child: TabBar(
-                  controller: _tabController,
-                  onTap: (value) => setState(() {
-                    Logger().d(value);
-                    _currentTab = value;
-                  }),
-                  isScrollable: true,
-                  tabs: [
-                    Tab(text: l10n.requisitions),
-                    Tab(text: l10n.expenses),
-                  ],
-                ),
-              ),
-              SliverFillRemaining(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    if (event.accountingEvent != null)
-                      RequisitionsView(
-                        event: event,
-                        accountingEvent: event.accountingEvent!,
-                      )
-                    else
-                      PRFEmptyView(
-                        label: l10n.requisitionUnavailable,
-                        description: l10n.requisitionUnavailableDesc,
+        child: Column(
+          children: [
+            ColoredBox(
+              color: theme.colorScheme.primary,
+              child: Column(
+                children: [
+                  PRFBrandedNavBar(
+                    title: l10n.activityDetails,
+                    onBack: () => context.router.popUntilRouteWithPath(
+                      PRFLeadershipRouter.deskActivitiesRoute,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PRFSpacingTokens.lg,
+                      0,
+                      PRFSpacingTokens.lg,
+                      PRFSpacingTokens.sm,
+                    ),
+                    child: Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TabBar(
+                          controller: _tabController,
+                          onTap: (value) => setState(() => _currentTab = value),
+                          isScrollable: true,
+                          labelColor: theme.colorScheme.onPrimary,
+                          unselectedLabelColor: theme.colorScheme.onPrimary
+                              .withValues(alpha: 0.65),
+                          indicatorColor: theme.colorScheme.secondary,
+                          dividerColor: theme.colorScheme.onPrimary.withValues(
+                            alpha: 0.2,
+                          ),
+                          labelStyle: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                          padding: EdgeInsets.zero,
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: PRFSpacingTokens.sm,
+                          ),
+                          tabs: [
+                            Tab(text: l10n.requisitions),
+                            Tab(text: l10n.expenses),
+                          ],
+                        ),
                       ),
-                    if (event.accountingEvent != null)
-                      ExpensesView(
-                        accountingEventUlid: event.accountingEvent!.ulid,
-                        showFinancialReport: true,
-                      )
-                    else
-                      PRFEmptyView(
-                        label: l10n.expensesUnavailable,
-                        description: l10n.expensesUnavailableDesc,
-                      ),
-                  ],
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  if (event.accountingEvent != null)
+                    RequisitionsView(
+                      event: event,
+                      accountingEvent: event.accountingEvent!,
+                    )
+                  else
+                    PRFEmptyView(
+                      label: l10n.requisitionUnavailable,
+                      description: l10n.requisitionUnavailableDesc,
+                    ),
+                  if (event.accountingEvent != null)
+                    ExpensesView(
+                      accountingEventUlid: event.accountingEvent!.ulid,
+                      showFinancialReport: true,
+                    )
+                  else
+                    PRFEmptyView(
+                      label: l10n.expensesUnavailable,
+                      description: l10n.expensesUnavailableDesc,
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: switch (_currentTab) {
         0 =>
           Misc.userCan(PRFPermissions.createRequisition)
               ? FloatingActionButton.extended(
+                  backgroundColor: PRFColorPalette.lime300,
+                  foregroundColor: PRFColorPalette.navy900,
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     if (event.accountingEvent != null) {
-                      WoltModalSheet.show<void>(
-                        context: context,
-                        pageListBuilder: (modalSheetContext) {
-                          return [
-                            WoltModalSheetPage(
-                              child: CreateRequisitionView(
-                                accountingEvent: event.accountingEvent!,
-                              ),
-                            ),
-                          ];
-                        },
+                      PRFBottomSheet.show<void>(
+                        context,
+                        title: l10n.createRequisition,
+                        child: CreateRequisitionView(
+                          accountingEvent: event.accountingEvent!,
+                        ),
                       );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.requisitionUnavailable)),
+                      PRFSnackbar.error(
+                        context,
+                        l10n.requisitionUnavailable,
                       );
                     }
                   },
