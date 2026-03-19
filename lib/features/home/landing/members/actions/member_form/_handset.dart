@@ -21,7 +21,6 @@ import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/models/remote/prf_member_create_dto.dart';
 import 'package:leadership/models/remote/prf_member_update_dto.dart';
 import 'package:leadership/models/remote/prf_profession.dart';
-import 'package:leadership/shared_widgets/input/phone/phone.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:prf_design/prf_design.dart';
