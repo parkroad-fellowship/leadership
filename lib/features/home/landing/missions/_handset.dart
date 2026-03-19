@@ -6,6 +6,7 @@ import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/missions/actions/create_mission/create_mission.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
@@ -30,6 +31,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     milliseconds: 300,
   );
   String _searchQuery = '';
+  bool _isExporting = false;
 
   List<PRFMission> _missionsFromState(ResourceState<PRFMission> state) {
     return state.maybeWhen(
@@ -68,6 +70,27 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     super.dispose();
   }
 
+  Future<void> _exportAndShareSchedule() async {
+    setState(() => _isExporting = true);
+    try {
+      await Misc.exportAndSharePdf(
+        endpoint: '/missions/export-schedule',
+        filename: 'missions_schedule',
+      );
+    } on Failure catch (e) {
+      if (!mounted) return;
+      PRFSnackbar.error(
+        context,
+        e.statusCode == 404 ? 'No scheduled missions to export' : e.message,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      PRFSnackbar.error(context, 'Failed to export schedule');
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -78,6 +101,18 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       length: 2,
       child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
+        floatingActionButton: FloatingActionButton.extended(
+          backgroundColor: PRFColorPalette.lime300,
+          foregroundColor: PRFColorPalette.navy900,
+          icon: _isExporting
+              ? const SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.ios_share),
+          label: Text(_isExporting ? 'Exporting...' : 'Share Schedule'),
+          onPressed: _isExporting ? null : _exportAndShareSchedule,
+        ),
         body: Column(
           children: [
             ColoredBox(

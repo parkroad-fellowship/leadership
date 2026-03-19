@@ -476,6 +476,33 @@ class NetworkUtil {
     }
   }
 
+  /// GET request that returns raw bytes (for file downloads like PDFs)
+  Future<List<int>> getBytes(
+    String url, {
+    String apiVersion = 'v1',
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _getHttpClient(apiVersion: apiVersion)
+          .get<List<int>>(
+            url,
+            queryParameters: queryParameters,
+            options: Options(
+              responseType: ResponseType.bytes,
+              headers: {'Accept': '*/*'},
+            ),
+          );
+
+      return response.data!;
+    } on SocketException catch (_) {
+      throw Failure(message: 'No internet connection');
+    } on TimeoutException catch (_) {
+      throw Failure(message: 'Download timeout');
+    } on DioException catch (err) {
+      _handleError(err, 'GET_BYTES', url);
+    }
+  }
+
   /// Download file with progress tracking
   Future<void> downloadFile(
     String url,

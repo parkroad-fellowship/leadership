@@ -13,6 +13,8 @@ import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/slugify.dart' as slugify;
 import 'package:leadership/versioning/build_version.dart';
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -437,6 +439,25 @@ class Misc {
       'Dec',
     ];
     return months[month - 1];
+  }
+
+  static Future<void> exportAndSharePdf({
+    required String endpoint,
+    required String filename,
+  }) async {
+    final tempDir = await getTemporaryDirectory();
+    final savePath =
+        '${tempDir.path}/${filename}_'
+        '${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+    final bytes = await NetworkUtil().getBytes(endpoint);
+    await File(savePath).writeAsBytes(bytes);
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(savePath, mimeType: 'application/pdf')],
+      ),
+    );
   }
 
   // Static variable to track last back press across all instances
