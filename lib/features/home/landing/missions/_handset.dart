@@ -81,9 +81,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       if (!mounted) return;
       PRFSnackbar.error(
         context,
-        e.statusCode == 404
-            ? 'No scheduled missions to export'
-            : e.message,
+        e.statusCode == 404 ? 'No scheduled missions to export' : e.message,
       );
     } catch (e) {
       if (!mounted) return;
