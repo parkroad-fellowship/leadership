@@ -24,6 +24,7 @@ Future<void> main() async {
       appId: 'prf_leadership_01khyfcbxn1mrwvg1yte0e7hq0',
       appSecret:
           'BqXB5apC9dXm5PyLhmFeD9Q8seKdDxGYljqDXisW0sX8m83QnBA2IUv1ygJ10cKM',
+      hiveEncryptionKey: 'random_stg',
     ),
   );
 

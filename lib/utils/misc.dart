@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -11,9 +10,9 @@ import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_supported_platform.dart';
 import 'package:leadership/services/_index.dart';
-import 'package:leadership/utils/multiplatform/file_download/download_bytes.dart'
-  as file_download;
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/multiplatform/file_download/download_bytes.dart'
+    as file_download;
 import 'package:leadership/utils/slugify.dart' as slugify;
 import 'package:leadership/versioning/build_version.dart';
 import 'package:logger/logger.dart';
@@ -463,7 +462,8 @@ class Misc {
   }) async {
     final bytes = await NetworkUtil().getBytes(endpoint);
     final pdfBytes = Uint8List.fromList(bytes);
-    final pdfFileName = '${filename}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final pdfFileName =
+        '${filename}_${DateTime.now().millisecondsSinceEpoch}.pdf';
 
     if (kIsWeb) {
       await _sharePdfOnWeb(bytes: pdfBytes, fileName: pdfFileName);
