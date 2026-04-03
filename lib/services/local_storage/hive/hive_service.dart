@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:crypto/crypto.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/models/local/adapters.dart';
@@ -21,6 +25,16 @@ class HiveService {
   DataHiveService get data => _data;
   SettingsHiveService get settings => _settings;
 
+  HiveAesCipher? get _encryptionCipher {
+    final key = PRFLeadershipConfig.instance!.values.hiveEncryptionKey;
+    if (key.isEmpty) {
+      return null;
+    }
+
+    final hashedKey = sha256.convert(utf8.encode(key)).bytes;
+    return HiveAesCipher(Uint8List.fromList(hashedKey));
+  }
+
   Future<void> initBoxes() async {
     await Hive.initFlutter();
 
@@ -30,9 +44,13 @@ class HiveService {
       ..registerAdapter(PRFExpenseCategoryResponseAdapter());
 
     // Open boxes
-    await Hive.openBox<dynamic>(PRFLeadershipConfig.instance!.values.hiveBox);
+    await Hive.openBox<dynamic>(
+      PRFLeadershipConfig.instance!.values.hiveBox,
+      encryptionCipher: _encryptionCipher,
+    );
     await Hive.openBox<dynamic>(
       PRFLeadershipConfig.instance!.values.globalHiveAuthBox,
+      encryptionCipher: _encryptionCipher,
     );
 
     // Initialize services & sub-services

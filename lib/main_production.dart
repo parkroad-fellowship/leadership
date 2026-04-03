@@ -12,18 +12,17 @@ Future<void> main() async {
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
       environment: PRFEnvironment.production,
-      hiveBox: 'prf-leadership',
-      baseDomain: 'api.parkroadfellowship.org',
+      hiveBox: 'prf-leadership-v2',
+      baseDomain: Misc.requiredDefine('BASE_DOMAIN'),
       urlScheme: 'https',
-      socketDomain: 'ws.parkroadfellowship.org',
-      socketKey: 'yvnlkaqadqiadutrs9sa',
+      socketDomain: Misc.requiredDefine('SOCKET_DOMAIN'),
+      socketKey: Misc.requiredDefine('SOCKET_KEY'),
       socketScheme: 'wss',
       socketPort: 443,
-      azureConnString:
-          'DefaultEndpointsProtocol=https;AccountName=prfcorestorage;AccountKey=oizfzMYG6gsjQWTfix8V/50Jh40qCg93DzNiFok/DxJjDOhffzM0TA4TNOV4TYqU1QONfaQOrrs7+ASteXMXPA==;EndpointSuffix=core.windows.net',
-      appId: 'prf_leadership_01khyfcbxn1mrwvg1yte0e7hq0',
-      appSecret:
-          'BqXB5apC9dXm5PyLhmFeD9Q8seKdDxGYljqDXisW0sX8m83QnBA2IUv1ygJ10cKM',
+      azureConnString: Misc.requiredDefine('AZURE_CONN_STRING'),
+      appId: Misc.requiredDefine('APP_ID'),
+      appSecret: Misc.requiredDefine('APP_SECRET'),
+      hiveEncryptionKey: Misc.requiredDefine('HIVE_ENCRYPTION_KEY'),
     ),
   );
 

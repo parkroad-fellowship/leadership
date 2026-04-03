@@ -56,12 +56,27 @@ jobs:
                   echo "keyAlias=${{ secrets.RELEASE_KEYSTORE_ALIAS }}" >> android/key.properties
 
             - name: Build AAB
+              env:
+                  APP_ID: ${{ secrets.PROD_APP_ID }}
+                  APP_SECRET: ${{ secrets.PROD_APP_SECRET }}
+                  BASE_DOMAIN: ${{ secrets.PROD_BASE_DOMAIN }}
+                  SOCKET_DOMAIN: ${{ secrets.PROD_SOCKET_DOMAIN }}
+                  SOCKET_KEY: ${{ secrets.PROD_SOCKET_KEY }}
+                  AZURE_CONN_STRING: ${{ secrets.PROD_AZURE_CONN_STRING }}
+                  HIVE_ENCRYPTION_KEY: ${{ secrets.PROD_HIVE_ENCRYPTION_KEY }}
               run: |
                   flutter build appbundle \
                     --flavor production \
                     --target lib/main_production.dart \
                     --obfuscate \
-                    --split-debug-info=debug-symbols
+                    --split-debug-info=debug-symbols \
+                    --dart-define=APP_ID="$APP_ID" \
+                    --dart-define=APP_SECRET="$APP_SECRET" \
+                    --dart-define=BASE_DOMAIN="$BASE_DOMAIN" \
+                    --dart-define=SOCKET_DOMAIN="$SOCKET_DOMAIN" \
+                    --dart-define=SOCKET_KEY="$SOCKET_KEY" \
+                    --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
+                    --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
 
             - name: Upload AAB to Firebase App Distribution
               uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -120,7 +135,25 @@ jobs:
                   skip-analysis: "true"
 
             - name: Build Web
-              run: flutter build web --target lib/main_production.dart --release
+              env:
+                  APP_ID: ${{ secrets.PROD_APP_ID }}
+                  APP_SECRET: ${{ secrets.PROD_APP_SECRET }}
+                  BASE_DOMAIN: ${{ secrets.PROD_BASE_DOMAIN }}
+                  SOCKET_DOMAIN: ${{ secrets.PROD_SOCKET_DOMAIN }}
+                  SOCKET_KEY: ${{ secrets.PROD_SOCKET_KEY }}
+                  AZURE_CONN_STRING: ${{ secrets.PROD_AZURE_CONN_STRING }}
+                  HIVE_ENCRYPTION_KEY: ${{ secrets.PROD_HIVE_ENCRYPTION_KEY }}
+              run: |
+                  flutter build web \
+                    --target lib/main_production.dart \
+                    --release \
+                    --dart-define=APP_ID="$APP_ID" \
+                    --dart-define=APP_SECRET="$APP_SECRET" \
+                    --dart-define=BASE_DOMAIN="$BASE_DOMAIN" \
+                    --dart-define=SOCKET_DOMAIN="$SOCKET_DOMAIN" \
+                    --dart-define=SOCKET_KEY="$SOCKET_KEY" \
+                    --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
+                    --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
 
             - name: Deploy to Firebase Hosting (Live)
               uses: FirebaseExtended/action-hosting-deploy@v0

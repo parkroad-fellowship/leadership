@@ -568,6 +568,14 @@ class Misc {
     final minute = utcDateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
+
+  static String requiredDefine(String key) {
+    final value = String.fromEnvironment(key);
+    if (value.isEmpty) {
+      throw StateError('Missing required --dart-define=$key for production.');
+    }
+    return value;
+  }
 }
 
 /// Device type enumeration
