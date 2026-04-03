@@ -7,6 +7,11 @@ on:
                 description: "Release notes for this development build"
                 required: false
                 default: "Development build"
+            bust-cache:
+              description: "Bust web cache on deploy"
+              required: false
+              default: false
+              type: boolean
 
 permissions:
     checks: write
@@ -76,6 +81,12 @@ jobs:
 
             - name: Build Web
               run: flutter build web --target lib/main_development.dart --release
+
+            - name: Bust web cache
+              if: ${{ github.event.inputs.bust-cache == 'true' }}
+              run: |
+                  echo "<!-- cache-bust:${{ github.run_id }} -->" >> build/web/index.html
+                  echo "Cache bust marker appended to build/web/index.html"
 
             - name: Deploy to Firebase Hosting Staging Channel
               uses: FirebaseExtended/action-hosting-deploy@v0

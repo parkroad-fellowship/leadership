@@ -17,6 +17,11 @@ on:
                 description: "Release notes"
                 required: false
                 default: "Production release"
+            bust-cache:
+              description: "Bust web cache on deploy"
+              required: false
+              default: false
+              type: boolean
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -154,6 +159,12 @@ jobs:
                     --dart-define=SOCKET_KEY="$SOCKET_KEY" \
                     --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
                     --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
+
+            - name: Bust web cache
+              if: ${{ github.event.inputs.bust-cache == 'true' }}
+              run: |
+                  echo "<!-- cache-bust:${{ github.run_id }} -->" >> build/web/index.html
+                  echo "Cache bust marker appended to build/web/index.html"
 
             - name: Deploy to Firebase Hosting (Live)
               uses: FirebaseExtended/action-hosting-deploy@v0
