@@ -5,7 +5,6 @@ import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:leadership/firebase_options.dart';
 import 'package:leadership/models/remote/auth.dart';
@@ -14,6 +13,7 @@ import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/firebase_service.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/http/request_signer.dart';
+import 'package:leadership/utils/multiplatform/url_strategy/url_strategy_app.dart';
 import 'package:logger/logger.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 
@@ -36,13 +36,6 @@ class AppBlocObserver extends BlocObserver {
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   try {
     Bloc.observer = const AppBlocObserver();
-
-    LicenseRegistry.addLicense(() async* {
-      final license = await rootBundle.loadString(
-        'packages/prf_design/assets/google_fonts/lato/OFL.txt',
-      );
-      yield LicenseEntryWithLineBreaks(['google_fonts'], license);
-    });
 
     tz_data.initializeTimeZones();
 
@@ -107,6 +100,11 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       } catch (e) {
         Logger().e('Firebase Messaging init error: $e');
       }
+    }
+
+    // Check if the platform is web and update the URLPath Strategy
+    if (kIsWeb) {
+      updatePathStrategy();
     }
 
     runApp(await builder());
