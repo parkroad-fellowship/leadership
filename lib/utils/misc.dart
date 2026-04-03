@@ -211,7 +211,7 @@ class Misc {
   static String getAppVersion() {
     try {
       final version = packageVersion.trim();
-      return version.length > 7 ? version.substring(0, 7) : version;
+      return version.length > 7 ? version.split('+')[0] : version;
     } catch (e) {
       return '0.0.0';
     }
