@@ -53,7 +53,7 @@ jobs:
               with:
                   appId: ${{ secrets.FIREBASE_STG_APP_ID }}
                   serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-                  groups: internal-staging
+                  groups: dev-team
                   releaseNotes: ${{ github.event.inputs.notes }}
                   file: build/app/outputs/flutter-apk/app-staging-release.apk
 
