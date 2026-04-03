@@ -43,45 +43,85 @@ class FirebaseServiceImpl implements FirebaseService {
       await _auth.signOut();
       await _googleSignIn.signOut();
 
-      final googleSignInAccount = await _googleSignIn.authenticate(
-        scopeHint: _googleAuthScopes,
-      );
-      final googleSignInAuthentication = googleSignInAccount.authentication;
-      final googleClientAuthorization =
-          await googleSignInAccount.authorizationClient.authorizationForScopes(
-            _googleAuthScopes,
-          ) ??
-          await googleSignInAccount.authorizationClient.authorizeScopes(
-            _googleAuthScopes,
-          );
-
-      if (googleSignInAuthentication.idToken == null) {
-        throw Exception('Google sign-in did not return an ID token');
+      // Web requires a different authentication flow
+      if (kIsWeb) {
+        return _signInWithGoogleWeb();
+      } else {
+        return _signInWithGoogleMobile();
       }
+    } catch (e) {
+      log(e.toString(), error: e);
+      rethrow;
+    }
+  }
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleSignInAuthentication.idToken,
+  Future<SocialAuthDTO> _signInWithGoogleMobile() async {
+    final googleSignInAccount = await _googleSignIn.authenticate(
+      scopeHint: _googleAuthScopes,
+    );
+    final googleSignInAuthentication = googleSignInAccount.authentication;
+    final googleClientAuthorization =
+        await googleSignInAccount.authorizationClient.authorizationForScopes(
+          _googleAuthScopes,
+        ) ??
+        await googleSignInAccount.authorizationClient.authorizeScopes(
+          _googleAuthScopes,
+        );
+
+    if (googleSignInAuthentication.idToken == null) {
+      throw Exception('Google sign-in did not return an ID token');
+    }
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      idToken: googleSignInAuthentication.idToken,
+      accessToken: googleClientAuthorization.accessToken,
+    );
+
+    final authResult = await _auth.signInWithCredential(credential);
+
+    final user = authResult.user;
+
+    if (user != null) {
+      assert(!user.isAnonymous, 'User must not be anonymous');
+
+      return SocialAuthDTO(
+        provider: 'google',
         accessToken: googleClientAuthorization.accessToken,
       );
+    } else {
+      throw Exception('An error occurred');
+    }
+  }
 
-      final authResult = await _auth.signInWithCredential(credential);
+  Future<SocialAuthDTO> _signInWithGoogleWeb() async {
+    // On web, use Firebase's signInWithPopup with GoogleAuthProvider
+    final googleProvider = GoogleAuthProvider();
 
-      final user = authResult.user;
+    try {
+      final userCredential = await _auth.signInWithPopup(googleProvider);
+
+      final user = userCredential.user;
 
       if (user != null) {
         assert(!user.isAnonymous, 'User must not be anonymous');
 
-        return Future.value(
-          SocialAuthDTO(
-            provider: 'google',
-            accessToken: googleClientAuthorization.accessToken,
-          ),
+        // Extract access token from the credential
+        final credential = userCredential.credential;
+        var accessToken = '';
+        
+        if (credential is OAuthCredential) {
+          accessToken = credential.accessToken ?? '';
+        }
+
+        return SocialAuthDTO(
+          provider: 'google',
+          accessToken: accessToken,
         );
       } else {
-        return throw Exception('An error occured');
+        throw Exception('An error occurred');
       }
     } catch (e) {
-      log(e.toString(), error: e);
+      log('Web sign-in error: $e', error: e);
       rethrow;
     }
   }
