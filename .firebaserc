@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "parkroad-fellowship"
+  },
+  "targets": {
+    "parkroad-fellowship": {
+      "hosting": {
+        "leadership": [
+          "prf-leadership"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

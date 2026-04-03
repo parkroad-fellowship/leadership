@@ -82,3 +82,4 @@ jobs:
                   firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
                   projectId: parkroad-fellowship
                   channelId: staging
+                  target: leadership
