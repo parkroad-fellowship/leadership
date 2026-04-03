@@ -41,13 +41,13 @@ flutter pub get
 
 # Configure Flutter project for release mode
 if [ "$app_env" = "production" ]; then
-  : "${APP_ID:?Missing APP_ID for production build}"
-  : "${APP_SECRET:?Missing APP_SECRET for production build}"
-  : "${BASE_DOMAIN:?Missing BASE_DOMAIN for production build}"
-  : "${SOCKET_DOMAIN:?Missing SOCKET_DOMAIN for production build}"
-  : "${SOCKET_KEY:?Missing SOCKET_KEY for production build}"
-  : "${AZURE_CONN_STRING:?Missing AZURE_CONN_STRING for production build}"
-  : "${HIVE_ENCRYPTION_KEY:?Missing HIVE_ENCRYPTION_KEY for production build}"
+  : "${PROD_APP_ID:?Missing APP_ID for production build}"
+  : "${PROD_APP_SECRET:?Missing APP_SECRET for production build}"
+  : "${PROD_BASE_DOMAIN:?Missing BASE_DOMAIN for production build}"
+  : "${PROD_SOCKET_DOMAIN:?Missing SOCKET_DOMAIN for production build}"
+  : "${PROD_SOCKET_KEY:?Missing SOCKET_KEY for production build}"
+  : "${PROD_AZURE_CONN_STRING:?Missing AZURE_CONN_STRING for production build}"
+  : "${PROD_HIVE_ENCRYPTION_KEY:?Missing HIVE_ENCRYPTION_KEY for production build}"
 
   flutter build ios --config-only --release --flavor production -t lib/main.dart \
     --dart-define=APP_ID="$PROD_APP_ID" \
