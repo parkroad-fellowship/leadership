@@ -123,3 +123,4 @@ lib/l10n/gen/
 lib/versioning/build_version.dart
 
 /.superpowers/
+macos/Podfile.lock
