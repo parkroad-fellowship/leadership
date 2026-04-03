@@ -151,6 +151,7 @@ jobs:
               run: |
                   flutter build web \
                     --target lib/main_production.dart \
+                    --debug \
                     --dart-define=APP_ID="$APP_ID" \
                     --dart-define=APP_SECRET="$APP_SECRET" \
                     --dart-define=BASE_DOMAIN="$BASE_DOMAIN" \
