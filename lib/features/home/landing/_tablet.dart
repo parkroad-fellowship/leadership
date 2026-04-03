@@ -35,8 +35,6 @@ class LandingPageTablet extends StatelessWidget {
     }
 
     final sections = <_LandingActionSection>[
-      if (settingsActions.isNotEmpty)
-        _LandingActionSection(title: 'Settings', actions: settingsActions),
       ...deskGroups.entries
           .where((entry) => entry.value.isNotEmpty)
           .map(
@@ -45,6 +43,8 @@ class LandingPageTablet extends StatelessWidget {
               actions: entry.value,
             ),
           ),
+      if (settingsActions.isNotEmpty)
+        _LandingActionSection(title: 'Settings', actions: settingsActions),
     ];
 
     return PopScope(
