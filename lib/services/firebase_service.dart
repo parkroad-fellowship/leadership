@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/remote_config.dart';
@@ -62,7 +63,30 @@ class FirebaseServiceImpl implements FirebaseService {
 
   @override
   Future<void> initRemoteConfig() async {
-    await remoteConfig.fetchAndActivate();
+    try {
+      await remoteConfig.fetchAndActivate();
+    } on FirebaseException catch (error, stackTrace) {
+      final message = error.message ?? '';
+      final isIosInstallationsKeychainIssue =
+          defaultTargetPlatform == TargetPlatform.iOS &&
+          (message.contains('SecItemAdd (-34018)') ||
+              message.contains('Failed to get installations token'));
+
+      if (isIosInstallationsKeychainIssue) {
+        Logger().w(
+          'Skipping Remote Config fetch due to iOS keychain access issue '
+          '(SecItemAdd -34018).',
+        );
+        return;
+      }
+
+      log(
+        'Remote Config init failed: ${error.code}',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   @override

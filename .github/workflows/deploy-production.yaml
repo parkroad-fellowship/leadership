@@ -1,0 +1,132 @@
+name: Deploy Production
+
+on:
+    workflow_dispatch:
+        inputs:
+            play-store-track:
+                description: "Play Store track"
+                required: true
+                default: "production"
+                type: choice
+                options:
+                    - internal
+                    - alpha
+                    - beta
+                    - production
+            notes:
+                description: "Release notes"
+                required: false
+                default: "Production release"
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    build-aab:
+        name: Build & Release AAB (Production)
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  ref: main
+
+            - name: Flutter Setup
+              uses: ./.github/actions/flutter-setup
+              with:
+                  skip-analysis: "true"
+
+            - name: Accept Android licenses
+              run: yes | flutter doctor --android-licenses
+
+            - name: Download Android keystore
+              id: android_keystore
+              uses: timheuer/base64-to-file@v1.2
+              with:
+                  fileName: key.jks
+                  encodedString: ${{ secrets.RELEASE_KEYSTORE }}
+
+            - name: Create key.properties
+              run: |
+                  echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
+                  echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSPHRASE }}" >> android/key.properties
+                  echo "keyPassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
+                  echo "keyAlias=${{ secrets.RELEASE_KEYSTORE_ALIAS }}" >> android/key.properties
+
+            - name: Build AAB
+              run: |
+                  flutter build appbundle \
+                    --flavor production \
+                    --target lib/main_production.dart \
+                    --obfuscate \
+                    --split-debug-info=debug-symbols
+
+            - name: Upload AAB to Firebase App Distribution
+              uses: wzieba/Firebase-Distribution-Github-Action@v1
+              with:
+                  appId: ${{ secrets.FIREBASE_PROD_APP_ID }}
+                  serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+                  groups: internal-production
+                  releaseNotes: ${{ github.event.inputs.notes }}
+                  file: build/app/outputs/bundle/productionRelease/app-production-release.aab
+
+            - name: Upload debug symbols to Firebase Crashlytics
+              env:
+                  FIREBASE_CRED: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+                  FIREBASE_APP: ${{ secrets.FIREBASE_PROD_APP_ID }}
+              run: |
+                  echo "$FIREBASE_CRED" > /tmp/firebase-credentials.json
+                  export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json
+                  zip -r debug-symbols.zip debug-symbols
+                  curl -sL https://firebase.tools | bash
+                  firebase crashlytics:symbols:upload --app="$FIREBASE_APP" debug-symbols.zip
+
+            - name: Setup Ruby
+              uses: ruby/setup-ruby@v1
+              with:
+                  ruby-version: "3.2"
+                  bundler-cache: true
+
+            - name: Install Fastlane
+              run: |
+                  gem install bundler:2.0.2
+                  bundle install
+
+            - name: Release to Google Play
+              env:
+                  SUPPLY_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+                  SUPPLY_JSON_KEY_DATA: ${{ secrets.PLAY_STORE_CREDENTIALS }}
+                  PLAY_TRACK: ${{ github.event.inputs.play-store-track }}
+              run: |
+                  bundle exec fastlane supply \
+                    --aab build/app/outputs/bundle/productionRelease/app-production-release.aab \
+                    --track "$PLAY_TRACK"
+
+    build-web:
+        name: Build & Deploy Web (Production)
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  ref: main
+
+            - name: Flutter Setup
+              uses: ./.github/actions/flutter-setup
+              with:
+                  skip-analysis: "true"
+
+            - name: Build Web
+              run: flutter build web --target lib/main_production.dart --release
+
+            - name: Deploy to Firebase Hosting (Live)
+              uses: FirebaseExtended/action-hosting-deploy@v0
+              with:
+                  repoToken: ${{ secrets.GITHUB_TOKEN }}
+                  firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+                  channelId: live
+                  projectId: parkroad-fellowship
+                  target: leadership

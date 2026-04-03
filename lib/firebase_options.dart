@@ -16,10 +16,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -27,15 +24,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -63,11 +54,42 @@ class DefaultFirebaseOptions {
     projectId: 'parkroad-fellowship',
     storageBucket: 'parkroad-fellowship.firebasestorage.app',
     androidClientId:
-        '899177334428-87dmvgp8mcha8bkr0p3r7iq0isr7bjfo.apps'
-        '.googleusercontent.com',
+        '899177334428-87dmvgp8mcha8bkr0p3r7iq0isr7bjfo.apps.googleusercontent.com',
     iosClientId:
-        '899177334428-6u0v3t7apkn0atkmfi55ht03bbu06s4i.apps'
-        '.googleusercontent.com',
+        '899177334428-6u0v3t7apkn0atkmfi55ht03bbu06s4i.apps.googleusercontent.com',
     iosBundleId: 'leadership.parkroadfellowship.org',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyA6A7EgDkjbV3a0olvtBmB1BvC24svSrsk',
+    appId: '1:899177334428:web:47ced23ded66506eb18f59',
+    messagingSenderId: '899177334428',
+    projectId: 'parkroad-fellowship',
+    authDomain: 'parkroad-fellowship.firebaseapp.com',
+    storageBucket: 'parkroad-fellowship.firebasestorage.app',
+    measurementId: 'G-9QJT4TGNEN',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyD4GCdn77Z79Z7lxkNbaUImu7iVYGDBSw4',
+    appId: '1:899177334428:ios:68d95725c1cca395b18f59',
+    messagingSenderId: '899177334428',
+    projectId: 'parkroad-fellowship',
+    storageBucket: 'parkroad-fellowship.firebasestorage.app',
+    androidClientId:
+        '899177334428-87dmvgp8mcha8bkr0p3r7iq0isr7bjfo.apps.googleusercontent.com',
+    iosClientId:
+        '899177334428-umroi5p4um5f44ksmg6tbl0l73soontr.apps.googleusercontent.com',
+    iosBundleId: 'org.parkroadfellowship.leadership',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyA6A7EgDkjbV3a0olvtBmB1BvC24svSrsk',
+    appId: '1:899177334428:web:47ced23ded66506eb18f59',
+    messagingSenderId: '899177334428',
+    projectId: 'parkroad-fellowship',
+    authDomain: 'parkroad-fellowship.firebaseapp.com',
+    storageBucket: 'parkroad-fellowship.firebasestorage.app',
+    measurementId: 'G-9QJT4TGNEN',
   );
 }

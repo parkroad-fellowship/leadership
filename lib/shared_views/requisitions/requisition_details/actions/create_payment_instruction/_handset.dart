@@ -4,7 +4,6 @@ import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
-import 'package:leadership/shared_widgets/input/phone/phone.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:prf_design/prf_design.dart';
