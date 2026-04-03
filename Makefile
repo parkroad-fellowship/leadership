@@ -31,23 +31,8 @@ build: 	# Run the app on a new computer with Flutter 2.3 installed
 ipa:
 		flutter build ipa  --flavor production --target lib/main_production.dart -vv
 
-build_web_dev:
-		flutter build web --target lib/main_development.dart
-
-run_web:
-		flutter run  --flavor production --target lib/main_production.dart -d chrome
-
-staging_web:
-		flutter run  --flavor staging --target lib/main_staging.dart -d chrome
-
-deploy-staging:
-		firebase deploy --only hosting:onspace-staging
-
-deploy-prod:
-		firebase deploy
-
 web:
-		flutter build web --target lib/main_production.dart
+		flutter build web --target lib/main_development.dart
 
 base64:
 		cat path/to/file.png | openssl base64 | tr -d '\n' | pbcopy

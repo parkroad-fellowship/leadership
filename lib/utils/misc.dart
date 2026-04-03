@@ -18,13 +18,17 @@ import 'package:share_plus/share_plus.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:url_launcher/url_launcher.dart';
 
-const _baseDomainDefine = String.fromEnvironment('BASE_DOMAIN');
-const _socketDomainDefine = String.fromEnvironment('SOCKET_DOMAIN');
-const _socketKeyDefine = String.fromEnvironment('SOCKET_KEY');
-const _azureConnStringDefine = String.fromEnvironment('AZURE_CONN_STRING');
-const _appIdDefine = String.fromEnvironment('APP_ID');
-const _appSecretDefine = String.fromEnvironment('APP_SECRET');
-const _hiveEncryptionKeyDefine = String.fromEnvironment('HIVE_ENCRYPTION_KEY');
+const _baseDomainDefine = String.fromEnvironment(DefineKeys.baseDomain);
+const _socketDomainDefine = String.fromEnvironment(DefineKeys.socketDomain);
+const _socketKeyDefine = String.fromEnvironment(DefineKeys.socketKey);
+const _azureConnStringDefine = String.fromEnvironment(
+  DefineKeys.azureConnString,
+);
+const _appIdDefine = String.fromEnvironment(DefineKeys.appId);
+const _appSecretDefine = String.fromEnvironment(DefineKeys.appSecret);
+const _hiveEncryptionKeyDefine = String.fromEnvironment(
+  DefineKeys.hiveEncryptionKey,
+);
 
 class Misc {
   // Private constructor to prevent instantiation
@@ -579,19 +583,19 @@ class Misc {
 
   static String requiredDefine(String key) {
     switch (key) {
-      case 'BASE_DOMAIN':
+      case DefineKeys.baseDomain:
         return _requiredConstDefine(key, _baseDomainDefine);
-      case 'SOCKET_DOMAIN':
+      case DefineKeys.socketDomain:
         return _requiredConstDefine(key, _socketDomainDefine);
-      case 'SOCKET_KEY':
+      case DefineKeys.socketKey:
         return _requiredConstDefine(key, _socketKeyDefine);
-      case 'AZURE_CONN_STRING':
+      case DefineKeys.azureConnString:
         return _requiredConstDefine(key, _azureConnStringDefine);
-      case 'APP_ID':
+      case DefineKeys.appId:
         return _requiredConstDefine(key, _appIdDefine);
-      case 'APP_SECRET':
+      case DefineKeys.appSecret:
         return _requiredConstDefine(key, _appSecretDefine);
-      case 'HIVE_ENCRYPTION_KEY':
+      case DefineKeys.hiveEncryptionKey:
         return _requiredConstDefine(key, _hiveEncryptionKeyDefine);
       default:
         throw ArgumentError('Unsupported --dart-define key: $key');
@@ -623,19 +627,19 @@ class Misc {
 
   static String _lookupDefine(String key) {
     switch (key) {
-      case 'BASE_DOMAIN':
+      case DefineKeys.baseDomain:
         return _baseDomainDefine;
-      case 'SOCKET_DOMAIN':
+      case DefineKeys.socketDomain:
         return _socketDomainDefine;
-      case 'SOCKET_KEY':
+      case DefineKeys.socketKey:
         return _socketKeyDefine;
-      case 'AZURE_CONN_STRING':
+      case DefineKeys.azureConnString:
         return _azureConnStringDefine;
-      case 'APP_ID':
+      case DefineKeys.appId:
         return _appIdDefine;
-      case 'APP_SECRET':
+      case DefineKeys.appSecret:
         return _appSecretDefine;
-      case 'HIVE_ENCRYPTION_KEY':
+      case DefineKeys.hiveEncryptionKey:
         return _hiveEncryptionKeyDefine;
       default:
         throw ArgumentError('Unsupported --dart-define key: $key');

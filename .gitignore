@@ -125,3 +125,4 @@ lib/versioning/build_version.dart
 /.superpowers/
 macos/Podfile.lock
 lib/main_debug.dart
+Makefile.local

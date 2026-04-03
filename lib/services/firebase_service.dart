@@ -108,7 +108,7 @@ class FirebaseServiceImpl implements FirebaseService {
         // Extract access token from the credential
         final credential = userCredential.credential;
         var accessToken = '';
-        
+
         if (credential is OAuthCredential) {
           accessToken = credential.accessToken ?? '';
         }
