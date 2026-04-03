@@ -55,7 +55,7 @@ fi
 # dart format --set-exit-if-changed lib test
 
 # Run code gen
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 # Activate FlutterFire CLI globally to ensure 'flutterfire' command is available
 # This is crucial for build phases that use flutterfire, like Crashlytics symbol uploads.

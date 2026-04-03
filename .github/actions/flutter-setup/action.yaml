@@ -40,7 +40,7 @@ runs:
 
     - name: Code Generation
       shell: bash
-      run: dart run build_runner build --delete-conflicting-outputs
+      run: dart run build_runner build
 
     - name: Analyze
       if: inputs.skip-analysis == 'false'
