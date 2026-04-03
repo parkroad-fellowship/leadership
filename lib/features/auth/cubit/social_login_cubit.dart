@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:logger/logger.dart';
 
 part 'social_login_state.dart';
 part 'social_login_cubit.freezed.dart';
@@ -35,9 +36,14 @@ class SocialLoginCubit extends Cubit<SocialLoginState> {
       emit(const SocialLoginState.loaded());
     } on Failure catch (e) {
       emit(SocialLoginState.error(e.message));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      Logger().e(
+        'Unexpected error during social login',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(
-        SocialLoginState.error('Login with ${socialAuthDTO.provider}  failed'),
+        SocialLoginState.error('Login with ${socialAuthDTO.provider} failed'),
       );
     }
   }
