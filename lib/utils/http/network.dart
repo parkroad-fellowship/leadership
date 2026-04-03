@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-// import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/http/request_signer.dart';
 import 'package:leadership/utils/http/retry_interceptor.dart';
+import 'package:leadership/utils/multiplatform/http_client_config/http_client_config.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -108,11 +108,10 @@ class NetworkUtil {
       );
     }
 
-    // // Certificate handling for development
-    // if (kDebugMode) {
-    //   (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () =>
-    //       HttpClient()..badCertificateCallback = (_, _, _) => true;
-    // }
+    // Certificate handling for development
+    if (kDebugMode) {
+      configureCertificateBypass(dio);
+    }
 
     _dioCache[cacheKey] = dio;
     return dio;

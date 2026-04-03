@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart'
     show BuildContext, MediaQuery, ScaffoldMessenger, SnackBar, Text, TimeOfDay;
 import 'package:flutter/services.dart';
@@ -9,6 +11,8 @@ import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_supported_platform.dart';
 import 'package:leadership/services/_index.dart';
+import 'package:leadership/utils/multiplatform/file_download/download_bytes.dart'
+  as file_download;
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/slugify.dart' as slugify;
 import 'package:leadership/versioning/build_version.dart';
@@ -457,19 +461,58 @@ class Misc {
     required String endpoint,
     required String filename,
   }) async {
-    final tempDir = await getTemporaryDirectory();
-    final savePath =
-        '${tempDir.path}/${filename}_'
-        '${DateTime.now().millisecondsSinceEpoch}.pdf';
-
     final bytes = await NetworkUtil().getBytes(endpoint);
-    await File(savePath).writeAsBytes(bytes);
+    final pdfBytes = Uint8List.fromList(bytes);
+    final pdfFileName = '${filename}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+    if (kIsWeb) {
+      await _sharePdfOnWeb(bytes: pdfBytes, fileName: pdfFileName);
+      return;
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final savePath = '${tempDir.path}/$pdfFileName';
+    await File(savePath).writeAsBytes(pdfBytes);
 
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(savePath, mimeType: 'application/pdf')],
       ),
     );
+  }
+
+  static Future<void> _sharePdfOnWeb({
+    required Uint8List bytes,
+    required String fileName,
+  }) async {
+    final xFile = XFile.fromData(
+      bytes,
+      mimeType: 'application/pdf',
+      name: fileName,
+    );
+
+    try {
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [xFile],
+          fileNameOverrides: [fileName],
+        ),
+      );
+
+      if (result.status == ShareResultStatus.unavailable) {
+        file_download.downloadBytes(
+          bytes: bytes,
+          fileName: fileName,
+          mimeType: 'application/pdf',
+        );
+      }
+    } catch (_) {
+      file_download.downloadBytes(
+        bytes: bytes,
+        fileName: fileName,
+        mimeType: 'application/pdf',
+      );
+    }
   }
 
   // Static variable to track last back press across all instances
