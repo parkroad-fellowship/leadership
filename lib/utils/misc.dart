@@ -18,6 +18,14 @@ import 'package:share_plus/share_plus.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:url_launcher/url_launcher.dart';
 
+const _baseDomainDefine = String.fromEnvironment('BASE_DOMAIN');
+const _socketDomainDefine = String.fromEnvironment('SOCKET_DOMAIN');
+const _socketKeyDefine = String.fromEnvironment('SOCKET_KEY');
+const _azureConnStringDefine = String.fromEnvironment('AZURE_CONN_STRING');
+const _appIdDefine = String.fromEnvironment('APP_ID');
+const _appSecretDefine = String.fromEnvironment('APP_SECRET');
+const _hiveEncryptionKeyDefine = String.fromEnvironment('HIVE_ENCRYPTION_KEY');
+
 class Misc {
   // Private constructor to prevent instantiation
   Misc._();
@@ -570,19 +578,31 @@ class Misc {
   }
 
   static String requiredDefine(String key) {
-    final value = String.fromEnvironment(key);
-    if (value.isEmpty) {
-      throw StateError('Missing required --dart-define=$key for production.');
+    switch (key) {
+      case 'BASE_DOMAIN':
+        return _requiredConstDefine(key, _baseDomainDefine);
+      case 'SOCKET_DOMAIN':
+        return _requiredConstDefine(key, _socketDomainDefine);
+      case 'SOCKET_KEY':
+        return _requiredConstDefine(key, _socketKeyDefine);
+      case 'AZURE_CONN_STRING':
+        return _requiredConstDefine(key, _azureConnStringDefine);
+      case 'APP_ID':
+        return _requiredConstDefine(key, _appIdDefine);
+      case 'APP_SECRET':
+        return _requiredConstDefine(key, _appSecretDefine);
+      case 'HIVE_ENCRYPTION_KEY':
+        return _requiredConstDefine(key, _hiveEncryptionKeyDefine);
+      default:
+        throw ArgumentError('Unsupported --dart-define key: $key');
     }
-    return value;
   }
 
   static void ensureRequiredDefines(Iterable<String> keys) {
     final missingKeys = <String>[];
 
     for (final key in keys) {
-      final value = String.fromEnvironment(key);
-      if (value.isEmpty) {
+      if (_lookupDefine(key).isEmpty) {
         missingKeys.add(key);
       }
     }
@@ -591,6 +611,34 @@ class Misc {
       throw StateError(
         'Missing required --dart-define keys: ${missingKeys.join(', ')}',
       );
+    }
+  }
+
+  static String _requiredConstDefine(String key, String value) {
+    if (value.isEmpty) {
+      throw StateError('Missing required --dart-define=$key for production.');
+    }
+    return value;
+  }
+
+  static String _lookupDefine(String key) {
+    switch (key) {
+      case 'BASE_DOMAIN':
+        return _baseDomainDefine;
+      case 'SOCKET_DOMAIN':
+        return _socketDomainDefine;
+      case 'SOCKET_KEY':
+        return _socketKeyDefine;
+      case 'AZURE_CONN_STRING':
+        return _azureConnStringDefine;
+      case 'APP_ID':
+        return _appIdDefine;
+      case 'APP_SECRET':
+        return _appSecretDefine;
+      case 'HIVE_ENCRYPTION_KEY':
+        return _hiveEncryptionKeyDefine;
+      default:
+        throw ArgumentError('Unsupported --dart-define key: $key');
     }
   }
 }
