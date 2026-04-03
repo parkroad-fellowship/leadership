@@ -21,22 +21,47 @@ class FirebaseServiceImpl implements FirebaseService {
   final FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['profile', 'email']);
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  Future<void>? _googleSignInInitialization;
+
+  static const List<String> _googleAuthScopes = [
+    'profile',
+    'email',
+    'openid',
+  ];
+
+  Future<void> _ensureGoogleSignInInitialized() {
+    return _googleSignInInitialization ??= _googleSignIn.initialize();
+  }
 
   @override
   Future<SocialAuthDTO> signInWithGoogle() async {
     try {
+      await _ensureGoogleSignInInitialized();
+
       // Clear any existing session
       await _auth.signOut();
       await _googleSignIn.signOut();
 
-      final googleSignInAccount = await _googleSignIn.signIn();
-      final googleSignInAuthentication =
-          await googleSignInAccount?.authentication;
+      final googleSignInAccount = await _googleSignIn.authenticate(
+        scopeHint: _googleAuthScopes,
+      );
+      final googleSignInAuthentication = googleSignInAccount.authentication;
+      final googleClientAuthorization =
+          await googleSignInAccount.authorizationClient.authorizationForScopes(
+            _googleAuthScopes,
+          ) ??
+          await googleSignInAccount.authorizationClient.authorizeScopes(
+            _googleAuthScopes,
+          );
+
+      if (googleSignInAuthentication.idToken == null) {
+        throw Exception('Google sign-in did not return an ID token');
+      }
 
       final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleSignInAuthentication?.idToken,
-        accessToken: googleSignInAuthentication?.accessToken,
+        idToken: googleSignInAuthentication.idToken,
+        accessToken: googleClientAuthorization.accessToken,
       );
 
       final authResult = await _auth.signInWithCredential(credential);
@@ -49,7 +74,7 @@ class FirebaseServiceImpl implements FirebaseService {
         return Future.value(
           SocialAuthDTO(
             provider: 'google',
-            accessToken: googleSignInAuthentication?.accessToken ?? '',
+            accessToken: googleClientAuthorization.accessToken,
           ),
         );
       } else {
