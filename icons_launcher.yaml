@@ -4,5 +4,7 @@ icons_launcher:
     android:
       enable: false
     ios:
+      enable: false
+    web:
       enable: true
   
