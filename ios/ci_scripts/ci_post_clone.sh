@@ -50,13 +50,13 @@ if [ "$app_env" = "production" ]; then
   : "${HIVE_ENCRYPTION_KEY:?Missing HIVE_ENCRYPTION_KEY for production build}"
 
   flutter build ios --config-only --release --flavor production -t lib/main.dart \
-    --dart-define=APP_ID="$APP_ID" \
-    --dart-define=APP_SECRET="$APP_SECRET" \
-    --dart-define=BASE_DOMAIN="$BASE_DOMAIN" \
-    --dart-define=SOCKET_DOMAIN="$SOCKET_DOMAIN" \
-    --dart-define=SOCKET_KEY="$SOCKET_KEY" \
-    --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
-    --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
+    --dart-define=APP_ID="$PROD_APP_ID" \
+    --dart-define=APP_SECRET="$PROD_APP_SECRET" \
+    --dart-define=BASE_DOMAIN="$PROD_BASE_DOMAIN" \
+    --dart-define=SOCKET_DOMAIN="$PROD_SOCKET_DOMAIN" \
+    --dart-define=SOCKET_KEY="$PROD_SOCKET_KEY" \
+    --dart-define=AZURE_CONN_STRING="$PROD_AZURE_CONN_STRING" \
+    --dart-define=HIVE_ENCRYPTION_KEY="$PROD_HIVE_ENCRYPTION_KEY"
 elif [ "$app_env" = "staging" ]; then
   flutter build ios --config-only --release --flavor staging -t lib/main.dart
 elif [ "$app_env" = "development" ]; then
