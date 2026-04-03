@@ -25,14 +25,33 @@ class HiveService {
   DataHiveService get data => _data;
   SettingsHiveService get settings => _settings;
 
-  HiveAesCipher? get _encryptionCipher {
+  HiveAesCipher? _buildCipher() {
     final key = PRFLeadershipConfig.instance!.values.hiveEncryptionKey;
     if (key.isEmpty) {
       return null;
     }
 
+    try {
+      final decodedKey = base64Decode(key);
+      return HiveAesCipher(Uint8List.fromList(decodedKey));
+    } catch (_) {
+      // Fallback for plain-text keys: derive a stable 32-byte key.
+    }
+
     final hashedKey = sha256.convert(utf8.encode(key)).bytes;
     return HiveAesCipher(Uint8List.fromList(hashedKey));
+  }
+
+  Future<Box<dynamic>> _openBoxSafe(
+    String name, {
+    HiveAesCipher? cipher,
+  }) async {
+    try {
+      return await Hive.openBox<dynamic>(name, encryptionCipher: cipher);
+    } catch (_) {
+      await Hive.deleteBoxFromDisk(name);
+      return Hive.openBox<dynamic>(name, encryptionCipher: cipher);
+    }
   }
 
   Future<void> initBoxes() async {
@@ -43,14 +62,16 @@ class HiveService {
       ..registerAdapter(PRFUserAdapter())
       ..registerAdapter(PRFExpenseCategoryResponseAdapter());
 
+    final cipher = _buildCipher();
+
     // Open boxes
-    await Hive.openBox<dynamic>(
+    await _openBoxSafe(
       PRFLeadershipConfig.instance!.values.hiveBox,
-      encryptionCipher: _encryptionCipher,
+      cipher: cipher,
     );
-    await Hive.openBox<dynamic>(
+    await _openBoxSafe(
       PRFLeadershipConfig.instance!.values.globalHiveAuthBox,
-      encryptionCipher: _encryptionCipher,
+      cipher: cipher,
     );
 
     // Initialize services & sub-services
