@@ -36,6 +36,7 @@ class MemberCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final profileUrl = member.profilePicture?.temporaryURL;
 
     return GestureDetector(
@@ -45,10 +46,10 @@ class MemberCard extends StatelessWidget {
               horizontal: PRFSpacingTokens.lg,
               vertical: PRFSpacingTokens.sm,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: PRFColors.gray100,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
             ),
@@ -57,7 +58,7 @@ class MemberCard extends StatelessWidget {
                 // Circle avatar with profile picture or initials
                 CircleAvatar(
                   radius: 23,
-                  backgroundColor: theme.colorScheme.primary.withValues(
+                  backgroundColor: colorScheme.primary.withValues(
                     alpha: 0.15,
                   ),
                   backgroundImage: profileUrl != null
@@ -67,7 +68,7 @@ class MemberCard extends StatelessWidget {
                       ? Text(
                           _initials,
                           style: theme.textTheme.labelLarge?.copyWith(
-                            color: theme.colorScheme.primary,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         )
@@ -85,7 +86,7 @@ class MemberCard extends StatelessWidget {
                         member.fullName,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: PRFColors.gray900,
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -95,7 +96,7 @@ class MemberCard extends StatelessWidget {
                         Text(
                           _subtitle!,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: PRFColors.gray500,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -114,7 +115,7 @@ class MemberCard extends StatelessWidget {
                     child: Text(
                       member.profession!.name,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
+                        color: colorScheme.primary,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
