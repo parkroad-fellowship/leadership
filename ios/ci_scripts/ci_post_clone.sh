@@ -41,7 +41,22 @@ flutter pub get
 
 # Configure Flutter project for release mode
 if [ "$app_env" = "production" ]; then
-  flutter build ios --config-only --release --flavor production -t lib/main.dart
+  : "${APP_ID:?Missing APP_ID for production build}"
+  : "${APP_SECRET:?Missing APP_SECRET for production build}"
+  : "${BASE_DOMAIN:?Missing BASE_DOMAIN for production build}"
+  : "${SOCKET_DOMAIN:?Missing SOCKET_DOMAIN for production build}"
+  : "${SOCKET_KEY:?Missing SOCKET_KEY for production build}"
+  : "${AZURE_CONN_STRING:?Missing AZURE_CONN_STRING for production build}"
+  : "${HIVE_ENCRYPTION_KEY:?Missing HIVE_ENCRYPTION_KEY for production build}"
+
+  flutter build ios --config-only --release --flavor production -t lib/main.dart \
+    --dart-define=APP_ID="$APP_ID" \
+    --dart-define=APP_SECRET="$APP_SECRET" \
+    --dart-define=BASE_DOMAIN="$BASE_DOMAIN" \
+    --dart-define=SOCKET_DOMAIN="$SOCKET_DOMAIN" \
+    --dart-define=SOCKET_KEY="$SOCKET_KEY" \
+    --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
+    --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
 elif [ "$app_env" = "staging" ]; then
   flutter build ios --config-only --release --flavor staging -t lib/main.dart
 elif [ "$app_env" = "development" ]; then
