@@ -60,6 +60,29 @@ jobs:
                   echo "keyPassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
                   echo "keyAlias=${{ secrets.RELEASE_KEYSTORE_ALIAS }}" >> android/key.properties
 
+            - name: Validate production defines
+              env:
+                  APP_ID: ${{ secrets.PROD_APP_ID }}
+                  APP_SECRET: ${{ secrets.PROD_APP_SECRET }}
+                  BASE_DOMAIN: ${{ secrets.PROD_BASE_DOMAIN }}
+                  SOCKET_DOMAIN: ${{ secrets.PROD_SOCKET_DOMAIN }}
+                  SOCKET_KEY: ${{ secrets.PROD_SOCKET_KEY }}
+                  AZURE_CONN_STRING: ${{ secrets.PROD_AZURE_CONN_STRING }}
+                  HIVE_ENCRYPTION_KEY: ${{ secrets.PROD_HIVE_ENCRYPTION_KEY }}
+              run: |
+                  missing=""
+                  for key in APP_ID APP_SECRET BASE_DOMAIN SOCKET_DOMAIN SOCKET_KEY AZURE_CONN_STRING HIVE_ENCRYPTION_KEY; do
+                    value="${!key}"
+                    if [ -z "$value" ]; then
+                      missing="$missing $key"
+                    fi
+                  done
+
+                  if [ -n "$missing" ]; then
+                    echo "Missing required production secrets:$missing"
+                    exit 1
+                  fi
+
             - name: Build AAB
               env:
                   APP_ID: ${{ secrets.PROD_APP_ID }}
@@ -139,6 +162,29 @@ jobs:
               with:
                   skip-analysis: "true"
 
+            - name: Validate production defines
+              env:
+                  APP_ID: ${{ secrets.PROD_APP_ID }}
+                  APP_SECRET: ${{ secrets.PROD_APP_SECRET }}
+                  BASE_DOMAIN: ${{ secrets.PROD_BASE_DOMAIN }}
+                  SOCKET_DOMAIN: ${{ secrets.PROD_SOCKET_DOMAIN }}
+                  SOCKET_KEY: ${{ secrets.PROD_SOCKET_KEY }}
+                  AZURE_CONN_STRING: ${{ secrets.PROD_AZURE_CONN_STRING }}
+                  HIVE_ENCRYPTION_KEY: ${{ secrets.PROD_HIVE_ENCRYPTION_KEY }}
+              run: |
+                  missing=""
+                  for key in APP_ID APP_SECRET BASE_DOMAIN SOCKET_DOMAIN SOCKET_KEY AZURE_CONN_STRING HIVE_ENCRYPTION_KEY; do
+                    value="${!key}"
+                    if [ -z "$value" ]; then
+                      missing="$missing $key"
+                    fi
+                  done
+
+                  if [ -n "$missing" ]; then
+                    echo "Missing required production secrets:$missing"
+                    exit 1
+                  fi
+
             - name: Build Web
               env:
                   APP_ID: ${{ secrets.PROD_APP_ID }}
@@ -151,7 +197,8 @@ jobs:
               run: |
                   flutter build web \
                     --target lib/main_production.dart \
-                    --debug \
+                    --release \
+                    --source-maps \
                     --dart-define=APP_ID="$APP_ID" \
                     --dart-define=APP_SECRET="$APP_SECRET" \
                     --dart-define=BASE_DOMAIN="$BASE_DOMAIN" \
