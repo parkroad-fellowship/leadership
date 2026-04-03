@@ -1,6 +1,6 @@
 name: leadership
 description: A PRF application for leadership management.
-version: 2.00.006+200006
+version: 2.00.007+200007
 publish_to: none
 
 environment:
