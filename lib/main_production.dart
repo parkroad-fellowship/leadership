@@ -9,6 +9,16 @@ import 'package:leadership/utils/_index.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  Misc.ensureRequiredDefines(const [
+    'BASE_DOMAIN',
+    'SOCKET_DOMAIN',
+    'SOCKET_KEY',
+    'AZURE_CONN_STRING',
+    'APP_ID',
+    'APP_SECRET',
+    'HIVE_ENCRYPTION_KEY',
+  ]);
+
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
       environment: PRFEnvironment.production,

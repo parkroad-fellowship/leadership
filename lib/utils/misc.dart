@@ -576,6 +576,23 @@ class Misc {
     }
     return value;
   }
+
+  static void ensureRequiredDefines(Iterable<String> keys) {
+    final missingKeys = <String>[];
+
+    for (final key in keys) {
+      final value = String.fromEnvironment(key);
+      if (value.isEmpty) {
+        missingKeys.add(key);
+      }
+    }
+
+    if (missingKeys.isNotEmpty) {
+      throw StateError(
+        'Missing required --dart-define keys: ${missingKeys.join(', ')}',
+      );
+    }
+  }
 }
 
 /// Device type enumeration
