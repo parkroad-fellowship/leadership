@@ -64,6 +64,8 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
                 description:
                     'Get started by adding your first profession to the system',
                 icon: Icons.work_outlined,
+                navBarTitle: 'Professions',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add Profession',
                 onActionPressed: () => _showForm(context, null),
               ),
@@ -85,6 +87,8 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
               label: 'Error Loading Professions',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'Professions',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),

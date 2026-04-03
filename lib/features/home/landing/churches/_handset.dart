@@ -63,6 +63,8 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
                 description:
                     'Get started by adding your first church to the system',
                 icon: Icons.church_outlined,
+                navBarTitle: 'Churches',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add Church',
                 onActionPressed: () => _showForm(context, null),
               ),
@@ -84,6 +86,8 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
               label: 'Error Loading Churches',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'Churches',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),

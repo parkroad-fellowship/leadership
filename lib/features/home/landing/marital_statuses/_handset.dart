@@ -69,6 +69,8 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                     description:
                         'Get started by adding your first marital status to the system',
                     icon: Icons.favorite_outlined,
+                    navBarTitle: 'Marital Statuses',
+                    onBackPressed: _goBackToHome,
                     actionLabel: 'Add Marital Status',
                     onActionPressed: () => _showForm(context, null),
                   ),
@@ -92,6 +94,8 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                   label: 'Error Loading Marital Statuses',
                   description: message,
                   icon: Icons.error_outline,
+                  navBarTitle: 'Marital Statuses',
+                  onBackPressed: _goBackToHome,
                   actionLabel: 'Retry',
                   onActionPressed: _loadData,
                 ),

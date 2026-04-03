@@ -64,6 +64,8 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
                 description:
                     'Get started by adding your first school term to the system',
                 icon: Icons.calendar_today_outlined,
+                navBarTitle: 'School Terms',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add School Term',
                 onActionPressed: () => _showForm(context, null),
               ),
@@ -85,6 +87,8 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
               label: 'Error Loading School Terms',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'School Terms',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),

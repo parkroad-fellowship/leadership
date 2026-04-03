@@ -65,6 +65,8 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
                 description:
                     'Get started by adding your first mission type to the system',
                 icon: Icons.category_outlined,
+                navBarTitle: 'Mission Types',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add Mission Type',
                 onActionPressed: () => _showForm(context, null),
               ),
@@ -86,6 +88,8 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
               label: 'Error Loading Mission Types',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'Mission Types',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),

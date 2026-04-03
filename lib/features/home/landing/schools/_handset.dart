@@ -65,6 +65,8 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 description:
                     'Get started by adding your first school to the system',
                 icon: Icons.school_outlined,
+                navBarTitle: 'Schools',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add School',
                 onActionPressed: () => _showSchoolForm(context, null),
               ),
@@ -86,6 +88,8 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
               label: 'Error Loading Schools',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'Schools',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),

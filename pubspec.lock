@@ -1425,10 +1425,10 @@ packages:
     dependency: "direct main"
     description:
       name: prf_design
-      sha256: "2330d138e9f227044154b3f6ca30af36c519579bf87839b3a7e6dd1595b3d198"
+      sha256: ff39a91da24eb6b46346d93b30b1da74e2f429b39f9d6642bb4bb06c79466f87
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.0"
+    version: "0.8.1"
   proj4dart:
     dependency: transitive
     description:

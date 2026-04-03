@@ -64,6 +64,8 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
                 description:
                     'Get started by adding your first department to the system',
                 icon: Icons.group_work_outlined,
+                navBarTitle: 'Departments',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add Department',
                 onActionPressed: () => _showForm(context, null),
               ),
@@ -85,6 +87,8 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
               label: 'Error Loading Departments',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'Departments',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),

@@ -60,7 +60,9 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
               child: PRFCircularProgressIndicator(),
             ),
             ResourceListLoaded<PRFMember>(:final items) when items.isEmpty =>
-              const PRFEmptyView(
+              PRFEmptyView(
+                navBarTitle: 'Members',
+                onBackPressed: _goBackToHome,
                 label: 'No Members Yet',
                 description:
                     'There are no members registered in the system yet',
@@ -86,6 +88,8 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
               icon: Icons.error_outline,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
+              navBarTitle: 'Members',
+              onBackPressed: _goBackToHome,
             ),
             _ => const SizedBox.shrink(),
           };

@@ -63,6 +63,8 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
                 description:
                     'Get started by adding your first gift to the system',
                 icon: Icons.card_giftcard_outlined,
+                navBarTitle: 'Gifts',
+                onBackPressed: _goBackToHome,
                 actionLabel: 'Add Gift',
                 onActionPressed: () => _showForm(context, null),
               ),
@@ -84,6 +86,8 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
               label: 'Error Loading Gifts',
               description: message,
               icon: Icons.error_outline,
+              navBarTitle: 'Gifts',
+              onBackPressed: _goBackToHome,
               actionLabel: 'Retry',
               onActionPressed: _loadData,
             ),
