@@ -27,6 +27,9 @@ class SchoolCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final mode = theme.brightness == Brightness.dark
+        ? ThemeMode.dark
+        : ThemeMode.light;
 
     return GestureDetector(
       onTap: onTap,
@@ -77,7 +80,7 @@ class SchoolCard extends StatelessWidget {
                     school.name,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: PRFColors.gray900,
+                      color: mode == ThemeMode.dark ? PRFColors.gray100 : PRFColors.gray900,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

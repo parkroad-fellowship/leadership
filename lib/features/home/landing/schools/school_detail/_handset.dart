@@ -273,7 +273,12 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     PRFSchool school,
   ) {
     final initials = _getInitials(school.name);
-    final onPrimary = theme.colorScheme.onPrimary;
+    final mode = theme.brightness == Brightness.dark
+        ? ThemeMode.dark
+        : ThemeMode.light;
+    final onPrimary = mode == ThemeMode.dark
+        ? PRFColors.gray100
+        : theme.colorScheme.onPrimary;
 
     return Container(
       width: double.infinity,
@@ -358,7 +363,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   child: Text(
                     school.institutionType.name,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.secondary,
+                      color: mode == ThemeMode.dark
+                          ? PRFColors.gray100
+                          : theme.colorScheme.secondary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -493,6 +500,10 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     ThemeData theme,
     PRFSchool school,
   ) {
+    final mode = theme.brightness == Brightness.dark
+        ? ThemeMode.dark
+        : ThemeMode.light;
+
     return _buildSectionCard(
       theme: theme,
       padding: const EdgeInsets.all(PRFSpacingTokens.md),
@@ -523,20 +534,24 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'View on Map',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: PRFColors.gray900,
+                      color: mode == ThemeMode.dark
+                          ? PRFColors.gray100
+                          : PRFColors.gray900,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     _coordsText(school),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: PRFColors.gray500,
+                      color: mode == ThemeMode.dark
+                          ? PRFColors.gray500
+                          : PRFColors.gray500,
                     ),
                   ),
                 ],
