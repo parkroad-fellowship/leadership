@@ -315,13 +315,12 @@ class MediaServiceImpl implements MediaService {
     try {
       // FilePicker uses SAF (Storage Access Framework)
       // which doesn't require permissions
-      final result = await FilePicker.platform
-          .pickFiles(
+      final result =
+          await FilePicker.pickFiles(
             allowMultiple: true,
             type: FileType.custom,
             allowedExtensions: ['mp3', 'aac', 'ogg', 'mp4', 'wav', 'flac'],
-          )
-          .catchError((dynamic error) {
+          ).catchError((dynamic error) {
             if (error is PlatformException &&
                 error.code == 'multiple_request') {
               throw Failure(message: 'Another file selection is in progress');
@@ -365,7 +364,7 @@ class MediaServiceImpl implements MediaService {
     } catch (e) {
       rethrow;
     } finally {
-      await FilePicker.platform.clearTemporaryFiles();
+      await FilePicker.clearTemporaryFiles();
     }
   }
 
@@ -377,7 +376,7 @@ class MediaServiceImpl implements MediaService {
     try {
       // FilePicker uses SAF (Storage Access Framework)
       // which doesn't require permissions
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         allowMultiple: true,
         type: FileType.custom,
         allowedExtensions: ['pdf'],
