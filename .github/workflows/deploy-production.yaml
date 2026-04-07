@@ -106,14 +106,14 @@ jobs:
                     --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
                     --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
 
-            - name: Upload AAB to Firebase App Distribution
-              uses: wzieba/Firebase-Distribution-Github-Action@v1
-              with:
-                  appId: ${{ secrets.FIREBASE_PROD_APP_ID }}
-                  serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-                  groups: dev-team
-                  releaseNotes: ${{ github.event.inputs.notes }}
-                  file: build/app/outputs/bundle/productionRelease/app-production-release.aab
+            # - name: Upload AAB to Firebase App Distribution
+            #   uses: wzieba/Firebase-Distribution-Github-Action@v1
+            #   with:
+            #       appId: ${{ secrets.FIREBASE_PROD_APP_ID }}
+            #       serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+            #       groups: dev-team
+            #       releaseNotes: ${{ github.event.inputs.notes }}
+            #       file: build/app/outputs/bundle/productionRelease/app-production-release.aab
 
             - name: Upload debug symbols to Firebase Crashlytics
               env:
