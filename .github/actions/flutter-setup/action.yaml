@@ -1,0 +1,48 @@
+name: "Flutter Setup"
+description: "Set up JDK, Flutter, install dependencies, check formatting, run codegen, and analyze"
+
+inputs:
+  flutter-version:
+    description: "Flutter version to use"
+    required: false
+    default: "3.41.4"
+  java-version:
+    description: "JDK version"
+    required: false
+    default: "21"
+  skip-analysis:
+    description: "Skip format check and analysis (for when code already passed PR checks)"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK ${{ inputs.java-version }}
+      uses: actions/setup-java@v5
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: "adopt"
+
+    - name: Setup Flutter ${{ inputs.flutter-version }}
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ inputs.flutter-version }}
+
+    - name: Install Dependencies
+      shell: bash
+      run: flutter pub get
+
+    - name: Check Formatting
+      if: inputs.skip-analysis == 'false'
+      shell: bash
+      run: dart format --set-exit-if-changed lib test
+
+    - name: Code Generation
+      shell: bash
+      run: dart run build_runner build
+
+    - name: Analyze
+      if: inputs.skip-analysis == 'false'
+      shell: bash
+      run: flutter analyze lib

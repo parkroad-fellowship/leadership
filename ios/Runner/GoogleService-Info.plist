@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>899177334428-6u0v3t7apkn0atkmfi55ht03bbu06s4i.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.899177334428-6u0v3t7apkn0atkmfi55ht03bbu06s4i</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>899177334428-87dmvgp8mcha8bkr0p3r7iq0isr7bjfo.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyD4GCdn77Z79Z7lxkNbaUImu7iVYGDBSw4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>899177334428</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>leadership.parkroadfellowship.org</string>
+	<key>PROJECT_ID</key>
+	<string>parkroad-fellowship</string>
+	<key>STORAGE_BUCKET</key>
+	<string>parkroad-fellowship.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:899177334428:ios:91b02f222e70d5a1b18f59</string>
+</dict>
+</plist>

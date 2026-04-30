@@ -1,0 +1,87 @@
+{
+  "hosting": [
+    {
+      "target": "leadership",
+      "public": "build/web",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "headers": [
+        {
+          "source": "**/index.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "**/flutter_service_worker.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "**/version.json",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "parkroad-fellowship",
+          "appId": "1:899177334428:android:01ca7ba7fc513e69b18f59",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "parkroad-fellowship",
+          "appId": "1:899177334428:ios:91b02f222e70d5a1b18f59",
+          "uploadDebugSymbols": true,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "parkroad-fellowship",
+          "configurations": {
+            "android": "1:899177334428:android:01ca7ba7fc513e69b18f59",
+            "ios": "1:899177334428:ios:91b02f222e70d5a1b18f59",
+            "macos": "1:899177334428:ios:68d95725c1cca395b18f59",
+            "web": "1:899177334428:web:47ced23ded66506eb18f59",
+            "windows": "1:899177334428:web:47ced23ded66506eb18f59"
+          }
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "parkroad-fellowship",
+          "appId": "1:899177334428:ios:68d95725c1cca395b18f59",
+          "uploadDebugSymbols": true,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "project_info": {
+    "project_number": "899177334428",
+    "project_id": "parkroad-fellowship",
+    "storage_bucket": "parkroad-fellowship.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:0c399ecc63460bc4b18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-f5s6jicejvusrm5clppm2lkt81fmo41b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.app",
+            "certificate_hash": "e22a058138e6356324b553f5047c14af86bcb0aa"
+          }
+        },
+        {
+          "client_id": "899177334428-g7ag4so5im547t8f8reiqqc1nkh4b969.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.app",
+            "certificate_hash": "164f4b522a4065a0af57a3027704b6760fe6432b"
+          }
+        },
+        {
+          "client_id": "899177334428-i6i9dkqp987sdd0isvpfmaknbqe87s78.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.app",
+            "certificate_hash": "d0b687bed7a8bba21ba631b345a9bf94bf11267c"
+          }
+        },
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:0b10ed9873cc24d1b18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.app.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:01ca7ba7fc513e69b18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.leadership"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-a7eoo9u4pukf89jpcbhatv9osb1j7278.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.leadership",
+            "certificate_hash": "a06b749db404115f5ab1cf5e0cda1607b1abbeb0"
+          }
+        },
+        {
+          "client_id": "899177334428-lsdmdprd1dkt28proau0krp4obrlu2th.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.leadership",
+            "certificate_hash": "e7449f6c5cd1b16b7b9e8ad156a8667dfdd5ed08"
+          }
+        },
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:c611302b2a8c0e74b18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.leadership.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-kutc6tkgvh4tvjbuo5sofkdmafcqmfue.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.leadership.dev",
+            "certificate_hash": "a06b749db404115f5ab1cf5e0cda1607b1abbeb0"
+          }
+        },
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:83d9d74c8d82618ab18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.leadership.stg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-87dmvgp8mcha8bkr0p3r7iq0isr7bjfo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.parkroadfellowship.leadership.stg",
+            "certificate_hash": "a06b749db404115f5ab1cf5e0cda1607b1abbeb0"
+          }
+        },
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:0d5acfee3007e6b6b18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.stg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:60dddd9a7ffb45abb18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.students"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899177334428:android:fe364319b04f188bb18f59",
+        "android_client_info": {
+          "package_name": "org.parkroadfellowship.students.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899177334428-uki7dklg44onv8e8718e4freb3s3p8nn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPRptZXBum6K_NdaTF5alei7Z9H55kIfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899177334428-j11jrvcpevup45n8qcslspehm0ljcdic.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "899177334428-2u8vvf9drhncq874nv6e4k1n97cet6ev.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.parkroadfellowship.leadership.stg"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

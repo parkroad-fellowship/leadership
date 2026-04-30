@@ -1,0 +1,98 @@
+name: Deploy Development
+
+on:
+    workflow_dispatch:
+        inputs:
+            notes:
+                description: "Release notes for this development build"
+                required: false
+                default: "Development build"
+            bust-cache:
+              description: "Bust web cache on deploy"
+              required: false
+              default: false
+              type: boolean
+
+permissions:
+    checks: write
+    contents: read
+    pull-requests: write
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build-apk:
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        name: Build & Distribute APK (Dev)
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Flutter Setup & Analysis
+              uses: ./.github/actions/flutter-setup
+
+            - name: Accept Android licenses
+              run: yes | flutter doctor --android-licenses
+
+            - name: Download Android keystore
+              id: android_keystore
+              uses: timheuer/base64-to-file@v1.2
+              with:
+                  fileName: key.jks
+                  encodedString: ${{ secrets.RELEASE_KEYSTORE }}
+
+            - name: Create key.properties
+              run: |
+                  echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
+                  echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSPHRASE }}" >> android/key.properties
+                  echo "keyPassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
+                  echo "keyAlias=${{ secrets.RELEASE_KEYSTORE_ALIAS }}" >> android/key.properties
+
+            - name: Build APK
+              run: flutter build apk --flavor development --target lib/main_development.dart
+
+            - name: Upload APK to Firebase App Distribution
+              uses: wzieba/Firebase-Distribution-Github-Action@v1
+              with:
+                  appId: ${{ secrets.FIREBASE_DEV_APP_ID }}
+                  serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+                  groups: dev-team
+                  releaseNotes: ${{ github.event.inputs.notes }}
+                  file: build/app/outputs/flutter-apk/app-development-release.apk
+
+    build-web:
+        name: Build & Preview Web (Development)
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  ref: main
+
+            - name: Flutter Setup
+              uses: ./.github/actions/flutter-setup
+              with:
+                  skip-analysis: "true"
+
+            - name: Build Web
+              run: flutter build web --target lib/main_development.dart --release
+
+            - name: Bust web cache
+              if: ${{ github.event.inputs.bust-cache == 'true' }}
+              run: |
+                  echo "<!-- cache-bust:${{ github.run_id }} -->" >> build/web/index.html
+                  echo "Cache bust marker appended to build/web/index.html"
+
+            - name: Deploy to Firebase Hosting Staging Channel
+              uses: FirebaseExtended/action-hosting-deploy@v0
+              with:
+                  repoToken: ${{ secrets.GITHUB_TOKEN }}
+                  firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+                  projectId: parkroad-fellowship
+                  channelId: staging
+                  target: leadership
