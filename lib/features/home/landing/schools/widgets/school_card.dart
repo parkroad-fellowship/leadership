@@ -80,7 +80,9 @@ class SchoolCard extends StatelessWidget {
                     school.name,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: mode == ThemeMode.dark ? PRFColors.gray100 : PRFColors.gray900,
+                      color: mode == ThemeMode.dark
+                          ? PRFColors.gray100
+                          : PRFColors.gray900,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

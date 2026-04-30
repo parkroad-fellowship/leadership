@@ -1,23 +1,32 @@
 <!--
   Thanks for contributing!
-
-  Provide a description of your changes below and a general summary in the title
-
-  Please look at the following checklist to ensure that your PR can be accepted quickly:
+  Provide a concise summary in the title and details below.
 -->
 
 ## Description
 
-<!--- Describe your changes in detail -->
+<!-- Describe what changed and why -->
 
 ## Type of Change
 
-<!--- Put an `x` in all the boxes that apply: -->
-
-- [ ] ✨ New feature (non-breaking change which adds functionality)
-- [ ] 🛠️ Bug fix (non-breaking change which fixes an issue)
-- [ ] ❌ Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] ✨ New feature
+- [ ] 🛠️ Bug fix
+- [ ] ❌ Breaking change
 - [ ] 🧹 Code refactor
-- [ ] ✅ Build configuration change
+- [ ] ✅ Build/CI configuration change
 - [ ] 📝 Documentation
 - [ ] 🗑️ Chore
+
+## Validation
+
+- [ ] `dart format .`
+- [ ] `flutter analyze`
+- [ ] Screenshots/recording added for UI changes (if applicable)
+
+Build the APK via an action and download the APK from Firebase App Distribution via the following link: https://appdistribution.firebase.dev/i/0d8820b0a1f93d92
+
+## Release Notes
+
+- [ ] Environment or flavor changes included
+- [ ] No secrets/credentials committed
+- [ ] Related issue linked (`Closes #...`)

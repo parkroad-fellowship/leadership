@@ -45,3 +45,17 @@ pods:
 
 gallery-cert:
 		keytool -export -rfc -keystore upload-keystore.jks -alias upload -file upload_certificate.pem
+
+pub:
+	# 1. Get the latest from the public world
+	git fetch public
+	# 2. Create/Reset the local branch to match the public main EXACTLY
+	git checkout -B public-deploy public/main
+	# 3. Overwrite the files with your private main's state
+	git checkout main -- .
+	# 4. Commit and push
+	git add .
+	git commit -m "Automated sync from private repo"
+	git push public public-deploy:main
+	# 5. Back to main
+	git checkout main
