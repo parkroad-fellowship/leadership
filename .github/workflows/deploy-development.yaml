@@ -7,11 +7,6 @@ on:
                 description: "Release notes for this development build"
                 required: false
                 default: "Development build"
-            bust-cache:
-              description: "Bust web cache on deploy"
-              required: false
-              default: false
-              type: boolean
 
 permissions:
     checks: write
@@ -64,35 +59,35 @@ jobs:
                   releaseNotes: ${{ github.event.inputs.notes }}
                   file: build/app/outputs/flutter-apk/app-development-release.apk
 
-    build-web:
-        name: Build & Preview Web (Development)
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v6
-              with:
-                  ref: main
+    # build-web:
+    #     name: Build & Preview Web (Development)
+    #     runs-on: ubuntu-latest
+    #     timeout-minutes: 20
+    #     steps:
+    #         - name: Checkout
+    #           uses: actions/checkout@v6
+    #           with:
+    #               ref: main
 
-            - name: Flutter Setup
-              uses: ./.github/actions/flutter-setup
-              with:
-                  skip-analysis: "true"
+    #         - name: Flutter Setup
+    #           uses: ./.github/actions/flutter-setup
+    #           with:
+    #               skip-analysis: "true"
 
-            - name: Build Web
-              run: flutter build web --target lib/main_development.dart --release
+    #         - name: Build Web
+    #           run: flutter build web --target lib/main_development.dart --release
 
-            - name: Bust web cache
-              if: ${{ github.event.inputs.bust-cache == 'true' }}
-              run: |
-                  echo "<!-- cache-bust:${{ github.run_id }} -->" >> build/web/index.html
-                  echo "Cache bust marker appended to build/web/index.html"
+    #         - name: Bust web cache
+    #           if: ${{ github.event.inputs.bust-cache == 'true' }}
+    #           run: |
+    #               echo "<!-- cache-bust:${{ github.run_id }} -->" >> build/web/index.html
+    #               echo "Cache bust marker appended to build/web/index.html"
 
-            - name: Deploy to Firebase Hosting Staging Channel
-              uses: FirebaseExtended/action-hosting-deploy@v0
-              with:
-                  repoToken: ${{ secrets.GITHUB_TOKEN }}
-                  firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-                  projectId: parkroad-fellowship
-                  channelId: staging
-                  target: leadership
+    #         - name: Deploy to Firebase Hosting Staging Channel
+    #           uses: FirebaseExtended/action-hosting-deploy@v0
+    #           with:
+    #               repoToken: ${{ secrets.GITHUB_TOKEN }}
+    #               firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    #               projectId: parkroad-fellowship
+    #               channelId: staging
+    #               target: leadership
