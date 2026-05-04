@@ -1,6 +1,6 @@
 name: leadership
 description: A PRF application for leadership management.
-version: 2.00.012+200012
+version: 2.00.013+200013
 publish_to: none
 
 environment:
@@ -78,7 +78,7 @@ dev_dependencies:
     sdk: flutter
   freezed: ^3.2.5
   icons_launcher: ^3.1.0
-  json_serializable: ^6.13.1
+  json_serializable: ^6.13.2
   mocktail: ^1.0.5
   very_good_analysis: ^10.2.0
 
