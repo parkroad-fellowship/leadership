@@ -5,9 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:leadership/enums/prf_environment.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/remote_config.dart';
-import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
 
 abstract class FirebaseService {
@@ -173,10 +174,14 @@ class FirebaseServiceImpl implements FirebaseService {
 
     // Check if current platform and version is in review
     return reviewConfig.reviewConfigs.any(
-      (config) =>
-          config.isInReview &&
-          config.appVersion == currentVersion &&
-          (config.appStore == currentPlatform.name),
-    );
+          (config) =>
+              config.isInReview &&
+              config.appVersion == currentVersion &&
+              (config.appStore == currentPlatform.name),
+        ) ||
+        ([
+          PRFEnvironment.staging,
+          PRFEnvironment.development,
+        ].contains(PRFLeadershipConfig.instance?.values.environment));
   }
 }
