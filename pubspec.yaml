@@ -20,7 +20,7 @@ dependencies:
   dio: ^5.9.2
   extended_image: ^10.0.1
   file_picker: ^11.0.2
-  firebase_analytics: ^12.3.0
+  firebase_analytics: ^12.4.0
   firebase_auth: ^6.4.0
   firebase_core: ^4.7.0
   firebase_crashlytics: ^5.2.0
