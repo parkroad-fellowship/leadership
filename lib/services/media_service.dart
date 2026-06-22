@@ -317,7 +317,6 @@ class MediaServiceImpl implements MediaService {
       // which doesn't require permissions
       final result =
           await FilePicker.pickFiles(
-            allowMultiple: true,
             type: FileType.custom,
             allowedExtensions: ['mp3', 'aac', 'ogg', 'mp4', 'wav', 'flac'],
           ).catchError((dynamic error) {
@@ -377,7 +376,6 @@ class MediaServiceImpl implements MediaService {
       // FilePicker uses SAF (Storage Access Framework)
       // which doesn't require permissions
       final result = await FilePicker.pickFiles(
-        allowMultiple: true,
         type: FileType.custom,
         allowedExtensions: ['pdf'],
       );
