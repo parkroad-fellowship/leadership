@@ -66,7 +66,7 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
     );
 
     try {
-      await getIt<FirebaseService>().initRemoteConfig();
+      await getIt<PRFFirebaseService>().initRemoteConfig();
     } catch (e) {
       Logger().e(e);
     }

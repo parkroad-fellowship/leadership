@@ -10,12 +10,12 @@ part 'google_sign_in_cubit.freezed.dart';
 part 'google_sign_in_state.dart';
 
 class GoogleSignInCubit extends Cubit<GoogleSignInState> {
-  GoogleSignInCubit({required FirebaseService firebaseService})
+  GoogleSignInCubit({required PRFFirebaseService firebaseService})
     : super(const GoogleSignInState.initial()) {
     _firebaseService = firebaseService;
   }
 
-  late FirebaseService _firebaseService;
+  late PRFFirebaseService _firebaseService;
 
   Future<void> signInwithGoogle() async {
     emit(const GoogleSignInState.loading());

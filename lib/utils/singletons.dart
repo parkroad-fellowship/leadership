@@ -82,7 +82,7 @@ class Singletons {
     getIt
       ..registerSingleton<PRFLeadershipRouter>(PRFLeadershipRouter())
       ..registerSingleton<HiveService>(HiveService())
-      ..registerSingleton<FirebaseService>(FirebaseServiceImpl())
+      ..registerSingleton<PRFFirebaseService>(FirebaseServiceImpl())
       ..registerSingleton<FirebaseMessagingService>(
         FirebaseMessagingServiceImpl(),
       )
@@ -158,7 +158,7 @@ class Singletons {
       ),
       BlocProvider<GoogleSignInCubit>(
         create: (context) => GoogleSignInCubit(
-          firebaseService: getIt<FirebaseService>(),
+          firebaseService: getIt<PRFFirebaseService>(),
         ),
       ),
       BlocProvider<ChangeProfilePictureCubit>(

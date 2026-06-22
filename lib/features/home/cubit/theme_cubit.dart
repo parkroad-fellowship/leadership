@@ -7,9 +7,7 @@ part 'theme_state.dart';
 part 'theme_cubit.freezed.dart';
 
 class ThemeCubit extends Cubit<ThemeState> {
-  ThemeCubit({required HiveService hiveService})
-    : _hiveService = hiveService,
-      super(const ThemeState.initial()) {
+  ThemeCubit({required this._hiveService}) : super(const ThemeState.initial()) {
     _loadSavedTheme();
   }
 

@@ -190,7 +190,7 @@ class _SignInTabletState extends State<SignInTablet> {
             const SizedBox(height: 48),
 
             FutureBuilder(
-              future: getIt<FirebaseService>().canShowAuth(),
+              future: getIt<PRFFirebaseService>().canShowAuth(),
               builder: (context, snapshot) {
                 final canShowAuth = snapshot.data ?? false;
                 return Column(

@@ -2,8 +2,7 @@ import 'package:leadership/enums/prf_responsible_desk.dart';
 
 enum PRFLeadershipGroup {
   executiveCommittee,
-  campCommittee
-  ;
+  campCommittee;
 
   String get apiKey {
     return switch (this) {

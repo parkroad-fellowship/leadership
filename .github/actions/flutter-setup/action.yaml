@@ -5,7 +5,7 @@ inputs:
   flutter-version:
     description: "Flutter version to use"
     required: false
-    default: "3.41.4"
+    default: "3.44.2"
   java-version:
     description: "JDK version"
     required: false

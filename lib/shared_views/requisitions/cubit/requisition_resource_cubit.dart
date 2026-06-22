@@ -10,9 +10,8 @@ import 'package:leadership/utils/crud/resource_state.dart';
 class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   RequisitionResourceCubit({
     required RequisitionService requisitionService,
-    required HiveService hiveService,
+    required this._hiveService,
   }) : _requisitionService = requisitionService,
-       _hiveService = hiveService,
        super(service: requisitionService);
 
   final RequisitionService _requisitionService;

@@ -140,7 +140,15 @@ class FirebaseMessagingServiceImpl implements FirebaseMessagingService {
         Logger().i(
           'Notifications not enabled/requested; skipping iOS permission prompt',
         );
-        return '';
+        final result = await AwesomeNotifications()
+            .requestPermissionToSendNotifications();
+        Logger().i('Notification permission request result: $result');
+        if (!result) {
+          Logger().w(
+            'Notification permissions not granted; returning empty token',
+          );
+          return '';
+        }
       }
 
       final currentSettings = await _firebaseMessaging

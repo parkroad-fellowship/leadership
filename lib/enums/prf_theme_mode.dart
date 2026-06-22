@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 enum PRFThemeMode {
   system,
   light,
-  dark
-  ;
+  dark;
 
   ThemeMode toFlutterThemeMode() {
     return switch (this) {
