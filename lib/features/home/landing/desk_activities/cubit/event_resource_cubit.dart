@@ -15,11 +15,9 @@ import 'package:leadership/utils/crud/resource_state.dart';
 class EventResourceCubit extends ResourceCubit<PRFEvent> {
   EventResourceCubit({
     required EventService eventService,
-    required RequisitionService requisitionService,
-    required HiveService hiveService,
+    required this._requisitionService,
+    required this._hiveService,
   }) : _eventService = eventService,
-       _requisitionService = requisitionService,
-       _hiveService = hiveService,
        super(service: eventService);
 
   final EventService _eventService;

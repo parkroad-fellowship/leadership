@@ -12,9 +12,7 @@ import 'package:logger/logger.dart';
 ///   2. Optionally override [defaultIncludes], [defaultFilters], etc.
 ///   3. Add resource-specific convenience methods (e.g. `createSchool(...)`).
 class ResourceCubit<T> extends Cubit<ResourceState<T>> {
-  ResourceCubit({required BaseAPIService<T> service})
-    : _service = service,
-      super(ResourceState<T>.initial());
+  ResourceCubit({required this._service}) : super(ResourceState<T>.initial());
 
   final BaseAPIService<T> _service;
 

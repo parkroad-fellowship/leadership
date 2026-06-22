@@ -10,8 +10,7 @@ import 'package:http_parser/http_parser.dart' as http_parser;
 enum BlobType {
   blockBlob('BlockBlob'),
   appendBlob('AppendBlob'),
-  pageBlob('PageBlob')
-  ;
+  pageBlob('PageBlob');
 
   const BlobType(this.displayName);
 
@@ -22,8 +21,7 @@ enum BlobType {
 enum AccessTier {
   hot('Hot'),
   cool('Cool'),
-  archive('Archive')
-  ;
+  archive('Archive');
 
   const AccessTier(this.value);
 
