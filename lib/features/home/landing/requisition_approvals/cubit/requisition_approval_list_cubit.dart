@@ -7,9 +7,8 @@ abstract class RequisitionApprovalListCubit
     extends ResourceCubit<PRFRequisition> {
   RequisitionApprovalListCubit({
     required RequisitionService requisitionService,
-    required HiveService hiveService,
-  }) : _hiveService = hiveService,
-       super(service: requisitionService);
+    required this._hiveService,
+  }) : super(service: requisitionService);
 
   final HiveService _hiveService;
 
