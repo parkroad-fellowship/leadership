@@ -6,6 +6,7 @@ import 'package:leadership/models/remote/prf_allocation_entry_dto.dart';
 import 'package:leadership/models/remote/prf_media_dto.dart';
 import 'package:leadership/services/_index.dart';
 import 'package:leadership/services/api/allocation_entry_service.dart';
+import 'package:leadership/services/local_storage/hive/db/allocation_entry_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 
@@ -14,12 +15,20 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
     required AllocationEntryService allocationEntryService,
     required this._hiveService,
     required this._mediaService,
+    required AllocationEntryHiveDbService hiveDbService,
   }) : _allocationEntryService = allocationEntryService,
-       super(service: allocationEntryService);
+       super(service: allocationEntryService, dbService: hiveDbService);
 
   final AllocationEntryService _allocationEntryService;
   final HiveService _hiveService;
   final MediaService _mediaService;
+
+  @override
+  Future<List<PRFAllocationEntry>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> addAllocationEntry({
     required String accountingEventUlid,

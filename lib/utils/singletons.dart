@@ -5,22 +5,20 @@ import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/features/home/account/cubit/change_profile_picture_cubit.dart';
 import 'package:leadership/features/home/account/cubit/sign_out_cubit.dart';
-import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
-import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/cubit/expense_categories_resource_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/features/home/cubit/theme_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/features/home/landing/churches/cubit/church_resource_cubit.dart';
 import 'package:leadership/features/home/landing/departments/cubit/department_resource_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
 import 'package:leadership/features/home/landing/gifts/cubit/gift_resource_cubit.dart';
 import 'package:leadership/features/home/landing/marital_statuses/cubit/marital_status_resource_cubit.dart';
 import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_detail_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_ground_suggestion_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_offline_member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
@@ -31,9 +29,7 @@ import 'package:leadership/features/home/landing/missions/cubit/mission_type_res
 import 'package:leadership/features/home/landing/missions/cubit/school_term_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/soul_resource_cubit.dart';
 import 'package:leadership/features/home/landing/professions/cubit/profession_resource_cubit.dart';
-import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
+
 import 'package:leadership/features/home/landing/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/home/landing/schools/cubit/school_cubit.dart';
@@ -68,9 +64,38 @@ import 'package:leadership/services/api/school_service.dart';
 import 'package:leadership/services/api/school_term_service.dart';
 import 'package:leadership/services/api/soul_service.dart';
 import 'package:leadership/services/firebase_service.dart';
+import 'package:leadership/services/local_storage/hive/db/allocation_entry_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/church_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/class_group_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/contact_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/contact_type_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/debrief_note_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/department_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/event_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/expense_category_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/gift_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/marital_status_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/member_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_ground_suggestion_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_offline_member_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_question_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_session_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_subscription_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_type_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/payment_instruction_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/profession_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/refund_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/requisition_item_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_term_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/soul_hive_db_service.dart';
 import 'package:leadership/shared_views/expenses/cubit/allocation_entry_resource_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/refund_resource_cubit.dart';
 import 'package:leadership/shared_views/expenses/cubit/send_financial_report_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_detail_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_item_detail_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/utils/router/router.dart';
@@ -172,124 +197,104 @@ class Singletons {
           hiveService: getIt<HiveService>(),
         ),
       ),
-      BlocProvider<GetEventsCubit>(
-        create: (context) => GetEventsCubit(
-          eventService: getIt<EventService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<GetPastEventsCubit>(
-        create: (context) => GetPastEventsCubit(
-          eventService: getIt<EventService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
       BlocProvider<EventResourceCubit>(
         create: (context) => EventResourceCubit(
           eventService: getIt<EventService>(),
           requisitionService: getIt<RequisitionService>(),
           hiveService: getIt<HiveService>(),
+          hiveDbService: getIt<EventHiveDbService>(),
         ),
       ),
       BlocProvider<RequisitionResourceCubit>(
         create: (context) => RequisitionResourceCubit(
           requisitionService: getIt<RequisitionService>(),
           hiveService: getIt<HiveService>(),
+          hiveDbService: getIt<RequisitionHiveDbService>(),
         ),
       ),
       BlocProvider<RequisitionItemResourceCubit>(
         create: (context) => RequisitionItemResourceCubit(
           requisitionItemService: getIt<RequisitionItemService>(),
+          hiveDbService: getIt<RequisitionItemHiveDbService>(),
         ),
       ),
-      BlocProvider<GetExpenseCategoriesCubit>(
-        create: (context) => GetExpenseCategoriesCubit(
+      BlocProvider<ExpenseCategoriesResourceCubit>(
+        create: (context) => ExpenseCategoriesResourceCubit(
           expenseCategoriesService: getIt<ExpenseCategoriesService>(),
-          hiveService: getIt<HiveService>(),
+          hiveDbService: getIt<ExpenseCategoryHiveDbService>(),
         ),
       ),
       BlocProvider<PaymentInstructionResourceCubit>(
         create: (context) => PaymentInstructionResourceCubit(
           paymentInstructionService: getIt<PaymentInstructionService>(),
+          hiveDbService: getIt<PaymentInstructionHiveDbService>(),
         ),
       ),
       BlocProvider<MissionResourceCubit>(
         create: (context) => MissionResourceCubit(
           missionService: getIt<MissionService>(),
+          hiveDbService: getIt<MissionHiveDbService>(),
         ),
       ),
       BlocProvider<MissionQuestionResourceCubit>(
         create: (context) => MissionQuestionResourceCubit(
           missionQuestionService: getIt<MissionQuestionService>(),
+          hiveDbService: getIt<MissionQuestionHiveDbService>(),
         ),
       ),
       BlocProvider<MissionSubscriptionResourceCubit>(
         create: (context) => MissionSubscriptionResourceCubit(
           missionSubscriptionService: getIt<MissionSubscriptionService>(),
+          hiveDbService: getIt<MissionSubscriptionHiveDbService>(),
         ),
       ),
       BlocProvider<MissionOfflineMemberResourceCubit>(
         create: (context) => MissionOfflineMemberResourceCubit(
           missionOfflineMemberService: getIt<MissionOfflineMemberService>(),
+          hiveDbService: getIt<MissionOfflineMemberHiveDbService>(),
         ),
       ),
       BlocProvider<MissionSessionResourceCubit>(
         create: (context) => MissionSessionResourceCubit(
           missionSessionService: getIt<MissionSessionService>(),
+          hiveDbService: getIt<MissionSessionHiveDbService>(),
         ),
       ),
       BlocProvider<MissionTypeResourceCubit>(
         create: (context) => MissionTypeResourceCubit(
           missionTypeService: getIt<MissionTypeService>(),
+          hiveDbService: getIt<MissionTypeHiveDbService>(),
         ),
       ),
       BlocProvider<SchoolTermResourceCubit>(
         create: (context) => SchoolTermResourceCubit(
           schoolTermService: getIt<SchoolTermService>(),
+          hiveDbService: getIt<SchoolTermHiveDbService>(),
         ),
       ),
       BlocProvider<ClassGroupResourceCubit>(
         create: (context) => ClassGroupResourceCubit(
           classGroupService: getIt<ClassGroupService>(),
+          hiveDbService: getIt<ClassGroupHiveDbService>(),
         ),
       ),
       BlocProvider<SoulResourceCubit>(
         create: (context) => SoulResourceCubit(
           missionSoulService: getIt<MissionSoulService>(),
+          hiveDbService: getIt<SoulHiveDbService>(),
         ),
       ),
       BlocProvider<DebriefNoteResourceCubit>(
         create: (context) => DebriefNoteResourceCubit(
           missionDebriefNoteService: getIt<DebriefNoteService>(),
+          hiveDbService: getIt<DebriefNoteHiveDbService>(),
         ),
       ),
       BlocProvider<MissionGroundSuggestionResourceCubit>(
         create: (context) => MissionGroundSuggestionResourceCubit(
           missionGroundSuggestionService:
               getIt<MissionGroundSuggestionService>(),
-        ),
-      ),
-      BlocProvider<GetMembersCubit>(
-        create: (context) => GetMembersCubit(
-          memberService: getIt<MemberService>(),
-        ),
-      ),
-      BlocProvider<GetApprovalRequisitionsCubit>(
-        create: (context) => GetApprovalRequisitionsCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<GetClosedRequisitionsCubit>(
-        create: (context) => GetClosedRequisitionsCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
-        ),
-      ),
-      BlocProvider<GetDraftRequisitionsCubit>(
-        create: (context) => GetDraftRequisitionsCubit(
-          requisitionService: getIt<RequisitionService>(),
-          hiveService: getIt<HiveService>(),
+          hiveDbService: getIt<MissionGroundSuggestionHiveDbService>(),
         ),
       ),
       BlocProvider<AllocationEntryResourceCubit>(
@@ -297,11 +302,14 @@ class Singletons {
           allocationEntryService: getIt<AllocationEntryService>(),
           hiveService: getIt<HiveService>(),
           mediaService: getIt<MediaService>(),
+          hiveDbService: getIt<AllocationEntryHiveDbService>(),
         ),
       ),
       BlocProvider<RefundResourceCubit>(
-        create: (context) =>
-            RefundResourceCubit(refundService: getIt<RefundService>()),
+        create: (context) => RefundResourceCubit(
+          refundService: getIt<RefundService>(),
+          hiveDbService: getIt<RefundHiveDbService>(),
+        ),
       ),
       BlocProvider<SelectMediaCubit>(
         create: (context) => SelectMediaCubit(
@@ -321,46 +329,74 @@ class Singletons {
       BlocProvider<SchoolCubit>(
         create: (context) => SchoolCubit(
           schoolService: getIt<SchoolService>(),
+          hiveDbService: getIt<SchoolHiveDbService>(),
         ),
       ),
       BlocProvider<ContactTypeCubit>(
         create: (context) => ContactTypeCubit(
           contactTypeService: getIt<ContactTypeService>(),
+          hiveDbService: getIt<ContactTypeHiveDbService>(),
         ),
       ),
       BlocProvider<ContactCubit>(
         create: (context) => ContactCubit(
           schoolContactService: getIt<SchoolContactService>(),
+          hiveDbService: getIt<ContactHiveDbService>(),
         ),
       ),
       BlocProvider<ProfessionResourceCubit>(
         create: (context) => ProfessionResourceCubit(
           professionService: getIt<ProfessionService>(),
+          hiveDbService: getIt<ProfessionHiveDbService>(),
         ),
       ),
       BlocProvider<MaritalStatusResourceCubit>(
         create: (context) => MaritalStatusResourceCubit(
           maritalStatusService: getIt<MaritalStatusService>(),
+          hiveDbService: getIt<MaritalStatusHiveDbService>(),
         ),
       ),
       BlocProvider<ChurchResourceCubit>(
         create: (context) => ChurchResourceCubit(
           churchService: getIt<ChurchService>(),
+          hiveDbService: getIt<ChurchHiveDbService>(),
         ),
       ),
       BlocProvider<MemberResourceCubit>(
         create: (context) => MemberResourceCubit(
           memberService: getIt<MemberService>(),
+          hiveDbService: getIt<MemberHiveDbService>(),
         ),
       ),
       BlocProvider<DepartmentResourceCubit>(
         create: (context) => DepartmentResourceCubit(
           departmentService: getIt<DepartmentService>(),
+          hiveDbService: getIt<DepartmentHiveDbService>(),
         ),
       ),
       BlocProvider<GiftResourceCubit>(
         create: (context) => GiftResourceCubit(
           giftService: getIt<GiftService>(),
+          hiveDbService: getIt<GiftHiveDbService>(),
+        ),
+      ),
+      BlocProvider<MissionDetailCubit>(
+        create: (context) => MissionDetailCubit(
+          missionService: getIt<MissionService>(),
+          hiveDbService: getIt<MissionHiveDbService>(),
+        ),
+      ),
+      BlocProvider<RequisitionDetailCubit>(
+        create: (context) => RequisitionDetailCubit(
+          requisitionService: getIt<RequisitionService>(),
+          hiveDbService: getIt<RequisitionHiveDbService>(),
+          hiveService: getIt<HiveService>(),
+        ),
+      ),
+      BlocProvider<RequisitionItemDetailCubit>(
+        create: (context) => RequisitionItemDetailCubit(
+          requisitionItemService: getIt<RequisitionItemService>(),
+          hiveDbService: getIt<RequisitionItemHiveDbService>(),
         ),
       ),
     ];

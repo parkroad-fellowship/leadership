@@ -9,9 +9,8 @@ import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
-import 'package:leadership/features/home/cubit/get_members_cubit.dart';
 import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
+import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_event.dart';
 import 'package:leadership/models/remote/prf_member.dart';
@@ -208,7 +207,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                     PRFLeadershipGroup.fromResponsibleDesk(
                                       responsibleDesk,
                                     );
-                                context.read<GetMembersCubit>().getMembers(
+                                context.read<MemberResourceCubit>().getMembers(
                                   groups: groups,
                                 );
                               },
@@ -254,11 +253,12 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             icon: Icons.group_outlined,
                             title: l10n.participants,
                             child:
-                                BlocBuilder<GetMembersCubit, GetMembersState>(
+                                BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
                                   builder: (context, state) {
                                     return state.maybeWhen(
-                                      loaded: _buildParticipantsMultiSelect,
-                                      loading: () => Container(
+                                      listLoaded: (members, _, _) =>
+                                          _buildParticipantsMultiSelect(members),
+                                      listLoading: () => Container(
                                         height: 60,
                                         decoration: BoxDecoration(
                                           border: Border.all(
@@ -344,7 +344,6 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                           _isLoading = false;
                         });
                         Gaimon.success();
-                        context.read<GetEventsCubit>().getUpcomingEvents();
 
                         final requisition = context
                             .read<EventResourceCubit>()

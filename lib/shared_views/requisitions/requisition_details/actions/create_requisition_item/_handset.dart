@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
-import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/cubit/expense_categories_resource_cubit.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
@@ -56,8 +56,7 @@ class _CreateRequisitionItemViewHandsetState
   @override
   void initState() {
     super.initState();
-    // Get expense categories when widget initializes
-    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
+    context.read<ExpenseCategoriesResourceCubit>().loadAll(limit: 100);
 
     // Add listeners to calculate total
     _unitPriceController.addListener(_calculateTotal);
@@ -193,42 +192,41 @@ class _CreateRequisitionItemViewHandsetState
                           isRequired: true,
                           child:
                               BlocBuilder<
-                                GetExpenseCategoriesCubit,
-                                GetExpenseCategoriesState
+                                ExpenseCategoriesResourceCubit,
+                                ResourceState<PRFExpenseCategory>
                               >(
                                 builder: (context, state) {
-                                  return state.when(
-                                    initial: () =>
+                                  return state.maybeWhen(
+                                    orElse: () =>
                                         const PRFCircularProgressIndicator(),
-                                    loading: () =>
-                                        const PRFCircularProgressIndicator(),
-                                    loaded: (expenseCategories) => Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildCategorySelector(
-                                          expenseCategories,
+                                    listLoaded: (expenseCategories, _, _) =>
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildCategorySelector(
+                                              expenseCategories,
+                                            ),
+                                            if (_showValidation &&
+                                                _categoryError != null) ...[
+                                              const SizedBox(
+                                                height: PRFSpacingTokens.xs,
+                                              ),
+                                              Text(
+                                                _categoryError!,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).colorScheme.error,
+                                                    ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
-                                        if (_showValidation &&
-                                            _categoryError != null) ...[
-                                          const SizedBox(
-                                            height: PRFSpacingTokens.xs,
-                                          ),
-                                          Text(
-                                            _categoryError!,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).colorScheme.error,
-                                                ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                    error: (message) => Text(
+                                    error: (message, _) => Text(
                                       'Error loading categories: $message',
                                       style: TextStyle(
                                         color: Theme.of(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_charge_type.dart';
-import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/cubit/expense_categories_resource_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
@@ -39,6 +39,7 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
   @override
   void initState() {
     super.initState();
+    context.read<ExpenseCategoriesResourceCubit>().loadAll(limit: 100);
     _initializeFields();
     context.read<SelectMediaCubit>().clearMedia();
     _unitCostController.addListener(_calculateTotal);
@@ -222,15 +223,15 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                           isRequired: true,
                           child:
                               BlocBuilder<
-                                GetExpenseCategoriesCubit,
-                                GetExpenseCategoriesState
+                                ExpenseCategoriesResourceCubit,
+                                ResourceState<PRFExpenseCategory>
                               >(
                                 builder: (context, state) {
                                   return state.maybeWhen(
                                     orElse: () => const SizedBox.shrink(),
-                                    loading: () =>
+                                    listLoading: () =>
                                         const PRFLinearProgressIndicator(),
-                                    loaded: (expenseCategories) =>
+                                    listLoaded: (expenseCategories, _, _) =>
                                         _buildCategorySelector(
                                           expenseCategories,
                                           Theme.of(context),

@@ -1,12 +1,19 @@
 import 'package:leadership/models/remote/mission/prf_soul.dart';
 import 'package:leadership/models/remote/mission/prf_soul_dto.dart';
 import 'package:leadership/services/api/soul_service.dart';
+import 'package:leadership/services/local_storage/hive/db/soul_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class SoulResourceCubit extends ResourceCubit<PRFSoul> {
   SoulResourceCubit({
     required MissionSoulService missionSoulService,
-  }) : super(service: missionSoulService);
+    required SoulHiveDbService hiveDbService,
+  }) : super(service: missionSoulService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFSoul>> loadCachedList({Map<String, dynamic>? filters}) async {
+    return dbService.list();
+  }
 
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(

@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/_handset.dart';
 import 'package:leadership/features/home/landing/_tablet.dart';
@@ -23,7 +22,6 @@ class _LandingPageState extends State<LandingPage> {
   @override
   void initState() {
     super.initState();
-
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeNotifications();

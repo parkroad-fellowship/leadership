@@ -2,13 +2,22 @@ import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_payment_instruction_dto.dart';
 import 'package:leadership/services/api/payment_instruction_service.dart';
+import 'package:leadership/services/local_storage/hive/db/payment_instruction_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class PaymentInstructionResourceCubit
     extends ResourceCubit<PRFPaymentInstruction> {
   PaymentInstructionResourceCubit({
     required PaymentInstructionService paymentInstructionService,
-  }) : super(service: paymentInstructionService);
+    required PaymentInstructionHiveDbService hiveDbService,
+  }) : super(service: paymentInstructionService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFPaymentInstruction>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> createPaymentInstruction({
     required String requisitionUlid,

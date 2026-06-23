@@ -1,12 +1,21 @@
 import 'package:leadership/models/remote/prf_debrief_note.dart';
 import 'package:leadership/models/remote/prf_debrief_note_dto.dart';
 import 'package:leadership/services/api/debrief_note_service.dart';
+import 'package:leadership/services/local_storage/hive/db/debrief_note_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
   DebriefNoteResourceCubit({
     required DebriefNoteService missionDebriefNoteService,
-  }) : super(service: missionDebriefNoteService);
+    required DebriefNoteHiveDbService hiveDbService,
+  }) : super(service: missionDebriefNoteService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFDebriefNote>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(

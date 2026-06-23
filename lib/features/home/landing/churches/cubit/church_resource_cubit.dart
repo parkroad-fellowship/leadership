@@ -1,11 +1,21 @@
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/models/remote/prf_church.dart';
 import 'package:leadership/services/api/church_service.dart';
+import 'package:leadership/services/local_storage/hive/db/church_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class ChurchResourceCubit extends ResourceCubit<PRFChurch> {
-  ChurchResourceCubit({required ChurchService churchService})
-    : super(service: churchService);
+  ChurchResourceCubit({
+    required ChurchService churchService,
+    required ChurchHiveDbService hiveDbService,
+  }) : super(service: churchService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFChurch>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> createChurch({required String name}) {
     return create(data: {'name': name});

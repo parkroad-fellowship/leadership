@@ -1,11 +1,21 @@
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/models/remote/prf_school_term.dart';
 import 'package:leadership/services/api/school_term_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_term_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class SchoolTermResourceCubit extends ResourceCubit<PRFSchoolTerm> {
-  SchoolTermResourceCubit({required SchoolTermService schoolTermService})
-    : super(service: schoolTermService);
+  SchoolTermResourceCubit({
+    required SchoolTermService schoolTermService,
+    required SchoolTermHiveDbService hiveDbService,
+  }) : super(service: schoolTermService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFSchoolTerm>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadActive() {
     return loadAll(

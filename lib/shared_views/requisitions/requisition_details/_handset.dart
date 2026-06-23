@@ -10,8 +10,8 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_detail_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
-import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/approval_requisition/_handset.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_payment_instruction/create_payment_instruction.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_requisition_item/create_requisition_item.dart';
@@ -46,8 +46,9 @@ class _RequisitionDetailsPageHandsetState
   void initState() {
     super.initState();
 
-    context.read<RequisitionResourceCubit>().loadRequisition(
-      requisitionUlid: widget.requisitionUlid,
+    context.read<RequisitionDetailCubit>().loadOne(
+      id: widget.requisitionUlid,
+      matchById: (item) => item.ulid == widget.requisitionUlid,
     );
 
     context.read<RequisitionItemResourceCubit>().loadForRequisition(
@@ -59,17 +60,16 @@ class _RequisitionDetailsPageHandsetState
     ResourceState<PRFRequisition> state,
   ) {
     return switch (state) {
-      ResourceListLoaded<PRFRequisition>(:final items) when items.isNotEmpty =>
-        items.first,
-      ResourceMutated<PRFRequisition>(:final items) when items.isNotEmpty =>
-        items.first,
+      ResourceItemLoaded<PRFRequisition>(:final item) => item,
       _ => null,
     };
   }
 
   void _reloadRequisition() {
-    context.read<RequisitionResourceCubit>().loadRequisition(
-      requisitionUlid: widget.requisitionUlid,
+    context.read<RequisitionDetailCubit>().loadOne(
+      id: widget.requisitionUlid,
+      matchById: (item) => item.ulid == widget.requisitionUlid,
+      refresh: true,
     );
   }
 
@@ -78,7 +78,7 @@ class _RequisitionDetailsPageHandsetState
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
+    return BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
       builder: (context, requisitionState) {
         final requisition = _currentRequisitionFromState(requisitionState);
         return Scaffold(
@@ -214,7 +214,7 @@ class _RequisitionDetailsPageHandsetState
 
   Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
-    return BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
+    return BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
       builder: (context, requisitionState) {
         final requisition = _currentRequisitionFromState(requisitionState);
         return requisition != null
@@ -1190,7 +1190,7 @@ class _RequisitionDetailsPageHandsetState
   Widget _buildBottomActionBar(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
-    return BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
+    return BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
       builder: (context, requisitionState) {
         final requisition = _currentRequisitionFromState(requisitionState);
         return Container(
@@ -1333,7 +1333,7 @@ class _RequisitionDetailsPageHandsetState
     final statusColor = PRFApprovalStatus.underReview.color(theme);
 
     return [
-      BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
+      BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
         builder: (context, requisitionState) {
           final requisition = _currentRequisitionFromState(requisitionState);
           final isAppointed =
@@ -1407,7 +1407,7 @@ class _RequisitionDetailsPageHandsetState
           );
         },
       ),
-      BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
+      BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
         builder: (context, requisitionState) {
           final requisition = _currentRequisitionFromState(requisitionState);
           final isAppointed =
@@ -1566,7 +1566,7 @@ class _RequisitionDetailsPageHandsetState
         ),
       ),
       // Approved Actions
-      BlocBuilder<RequisitionResourceCubit, ResourceState<PRFRequisition>>(
+      BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
         builder: (context, requisitionState) {
           final requisition = _currentRequisitionFromState(requisitionState);
           if (requisition != null) {
@@ -1845,10 +1845,7 @@ class _RequisitionDetailsPageHandsetState
           children: [
             const SizedBox(height: PRFSpacingTokens.lg),
             // Status-aware Action Items
-            BlocBuilder<
-              RequisitionResourceCubit,
-              ResourceState<PRFRequisition>
-            >(
+            BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
               builder: (context, requisitionState) {
                 final requisition = _currentRequisitionFromState(
                   requisitionState,

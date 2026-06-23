@@ -4,12 +4,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/desk_activities/actions/create_event/create_event.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/get_events_cubit.dart';
-import 'package:leadership/features/home/landing/desk_activities/cubit/get_past_events_cubit.dart';
+import 'package:leadership/features/home/landing/desk_activities/cubit/event_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_event.dart';
+import 'package:leadership/services/api/event_service.dart';
+import 'package:leadership/services/api/requisition_service.dart';
+import 'package:leadership/services/local_storage/hive/db/event_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/shared_widgets/_index.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -24,21 +28,42 @@ class DeskActivitiesHandset extends StatefulWidget {
 class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late final EventResourceCubit _upcomingCubit;
+  late final EventResourceCubit _pastCubit;
 
   @override
   void initState() {
     super.initState();
 
-    context.read<GetEventsCubit>().getUpcomingEvents();
+    _upcomingCubit = EventResourceCubit(
+      eventService: getIt<EventService>(),
+      requisitionService: getIt<RequisitionService>(),
+      hiveService: getIt<HiveService>(),
+      hiveDbService: getIt<EventHiveDbService>(),
+    )..loadUpcomingEvents();
+
+    _pastCubit = EventResourceCubit(
+      eventService: getIt<EventService>(),
+      requisitionService: getIt<RequisitionService>(),
+      hiveService: getIt<HiveService>(),
+      hiveDbService: getIt<EventHiveDbService>(),
+    )..loadPastEvents();
 
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
-        context.read<GetEventsCubit>().getUpcomingEvents();
+        _upcomingCubit.loadUpcomingEvents();
       } else {
-        context.read<GetPastEventsCubit>().getPastEvents();
+        _pastCubit.loadPastEvents();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _upcomingCubit.close();
+    _pastCubit.close();
+    super.dispose();
   }
 
   @override
@@ -110,8 +135,14 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildEventsTimeline(context),
-                _buildPastEventTimeline(context),
+                BlocProvider.value(
+                  value: _upcomingCubit,
+                  child: _buildEventsTimeline(context),
+                ),
+                BlocProvider.value(
+                  value: _pastCubit,
+                  child: _buildPastEventTimeline(context),
+                ),
               ],
             ),
           ),
@@ -132,7 +163,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<GetEventsCubit, GetEventsState>(
+    return BlocBuilder<EventResourceCubit, ResourceState<PRFEvent>>(
       builder: (context, state) {
         return state.maybeWhen(
           orElse: () => Center(
@@ -142,7 +173,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
               ),
             ),
           ),
-          error: (message) => Center(
+          error: (message, _) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -161,21 +192,24 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
               ],
             ),
           ),
-          empty: () => RefreshIndicator(
-            onRefresh: () => context.read<GetEventsCubit>().getUpcomingEvents(),
-            child: PRFEmptyView(
-              label: l10n.noActivities,
-              description: l10n.createActivity,
-            ),
-          ),
-          loaded: (events) {
+          listLoaded: (events, _, _) {
+            if (events.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () =>
+                    context.read<EventResourceCubit>().loadUpcomingEvents(),
+                child: PRFEmptyView(
+                  label: l10n.noActivities,
+                  description: l10n.createActivity,
+                ),
+              );
+            }
             // Sort events by start date for timeline
             final sortedEvents = List<PRFEvent>.from(events)
               ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
             return RefreshIndicator(
               onRefresh: () =>
-                  context.read<GetEventsCubit>().getUpcomingEvents(),
+                  context.read<EventResourceCubit>().loadUpcomingEvents(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
@@ -218,7 +252,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocBuilder<GetPastEventsCubit, GetPastEventsState>(
+    return BlocBuilder<EventResourceCubit, ResourceState<PRFEvent>>(
       builder: (context, state) {
         return state.maybeWhen(
           orElse: () => Center(
@@ -228,7 +262,7 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
               ),
             ),
           ),
-          error: (message) => Center(
+          error: (message, _) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -247,17 +281,20 @@ class _DeskActivitiesHandsetState extends State<DeskActivitiesHandset>
               ],
             ),
           ),
-          empty: () => RefreshIndicator(
-            onRefresh: () => context.read<GetPastEventsCubit>().getPastEvents(),
-            child: PRFEmptyView(
-              label: l10n.noActivities,
-              description: l10n.createActivity,
-            ),
-          ),
-          loaded: (events) {
+          listLoaded: (events, _, _) {
+            if (events.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () =>
+                    context.read<EventResourceCubit>().loadPastEvents(),
+                child: PRFEmptyView(
+                  label: l10n.noActivities,
+                  description: l10n.createActivity,
+                ),
+              );
+            }
             return RefreshIndicator(
               onRefresh: () =>
-                  context.read<GetPastEventsCubit>().getPastEvents(),
+                  context.read<EventResourceCubit>().loadPastEvents(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(

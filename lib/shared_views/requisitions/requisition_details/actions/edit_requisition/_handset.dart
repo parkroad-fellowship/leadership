@@ -8,7 +8,7 @@ import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
-import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_detail_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -44,8 +44,9 @@ class _EditRequisitionViewHandsetState
     _requisitionDateController.addListener(() => setState(() {}));
 
     // Load the requisition data
-    context.read<RequisitionResourceCubit>().loadRequisition(
-      requisitionUlid: widget.requisitionUlid,
+    context.read<RequisitionDetailCubit>().loadOne(
+      id: widget.requisitionUlid,
+      matchById: (item) => item.ulid == widget.requisitionUlid,
     );
   }
 
@@ -87,41 +88,34 @@ class _EditRequisitionViewHandsetState
         child: SingleChildScrollView(
           child:
               BlocListener<
-                RequisitionResourceCubit,
+                RequisitionDetailCubit,
                 ResourceState<PRFRequisition>
               >(
                 listener: (context, state) {
                   switch (state) {
-                    case ResourceListLoaded<PRFRequisition>(:final items)
-                        when items.isNotEmpty:
-                      _populateForm(items.first);
-                    case ResourceMutated<PRFRequisition>(:final items)
-                        when items.isNotEmpty:
-                      _populateForm(items.first);
-                    case ResourceMutating<PRFRequisition>(:final operation)
-                        when operation == ResourceOperation.update:
-                      setState(() {
-                        _isLoading = true;
-                      });
-                    case ResourceMutated<PRFRequisition>(:final operation)
-                        when operation == ResourceOperation.update:
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.requisitionUpdated)),
-                      );
-                      Gaimon.success();
-                      Navigator.of(context).pop(true);
-                    case ResourceError<PRFRequisition>(:final message)
-                        when _isLoading:
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $message')),
-                      );
-                      Gaimon.error();
+                    case ResourceItemLoaded<PRFRequisition>(:final item):
+                      if (_isLoading) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.requisitionUpdated)),
+                        );
+                        Gaimon.success();
+                        Navigator.of(context).pop(true);
+                      } else {
+                        _populateForm(item);
+                      }
+                    case ResourceItemError<PRFRequisition>(:final message):
+                      if (_isLoading) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $message')),
+                        );
+                        Gaimon.error();
+                      }
                     default:
                       break;
                   }
@@ -201,16 +195,15 @@ class _EditRequisitionViewHandsetState
 
                     // Form Card
                     BlocBuilder<
-                      RequisitionResourceCubit,
+                      RequisitionDetailCubit,
                       ResourceState<PRFRequisition>
                     >(
                       builder: (context, state) {
                         return switch (state) {
-                          ResourceListLoading<PRFRequisition>() => const Center(
+                          ResourceItemLoading<PRFRequisition>() => const Center(
                             child: CircularProgressIndicator(),
                           ),
-                          ResourceListLoaded<PRFRequisition>(:final items)
-                              when items.isNotEmpty =>
+                          ResourceItemLoaded<PRFRequisition>() =>
                             Container(
                               padding: const EdgeInsets.all(
                                 PRFSpacingTokens.xl,
@@ -274,7 +267,7 @@ class _EditRequisitionViewHandsetState
                                 ],
                               ),
                             ),
-                          ResourceError<PRFRequisition>(:final message) =>
+                          ResourceItemError<PRFRequisition>(:final message) =>
                             Center(
                               child: Text(
                                 'Error loading requisition: $message',
@@ -331,11 +324,16 @@ class _EditRequisitionViewHandsetState
       return;
     }
 
-    await context.read<RequisitionResourceCubit>().updateRequisition(
-      accountingEvent: requisition!.accountingEvent!,
-      requisitionUlid: widget.requisitionUlid,
-      requisitionDate: requisitionDate!,
-      remarks: _remarksController.text.trim(),
+    setState(() {
+      _isLoading = true;
+    });
+
+    await context.read<RequisitionDetailCubit>().update(
+      id: widget.requisitionUlid,
+      data: {
+        'requisition_date': requisitionDate!.toIso8601String(),
+        'remarks': _remarksController.text.trim(),
+      },
     );
   }
 

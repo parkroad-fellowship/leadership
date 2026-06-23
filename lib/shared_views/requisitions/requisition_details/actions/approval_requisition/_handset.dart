@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
-import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_detail_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -163,31 +163,27 @@ class _ApproveRequisitionViewHandsetState
 
               // Action Buttons
               BlocListener<
-                RequisitionResourceCubit,
+                RequisitionDetailCubit,
                 ResourceState<PRFRequisition>
               >(
                 listener: (context, state) {
                   switch (state) {
-                    case ResourceMutating<PRFRequisition>(:final operation):
-                      if (operation == ResourceOperation.update) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                      }
-                    case ResourceMutated<PRFRequisition>(:final operation):
-                      if (operation == ResourceOperation.update) {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        Navigator.of(context).pop();
-                        PRFSnackbar.success(
-                          context,
-                          _isRejecting
-                              ? 'Requisition rejected successfully'
-                              : 'Requisition approved successfully',
-                        );
-                      }
-                    case ResourceError<PRFRequisition>(:final message):
+                    case ResourceItemLoading<PRFRequisition>():
+                      setState(() {
+                        _isLoading = true;
+                      });
+                    case ResourceItemLoaded<PRFRequisition>():
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      Navigator.of(context).pop();
+                      PRFSnackbar.success(
+                        context,
+                        _isRejecting
+                            ? 'Requisition rejected successfully'
+                            : 'Requisition approved successfully',
+                      );
+                    case ResourceItemError<PRFRequisition>(:final message):
                       setState(() {
                         _isLoading = false;
                       });
@@ -238,7 +234,7 @@ class _ApproveRequisitionViewHandsetState
       _isRejecting = false;
     });
 
-    await context.read<RequisitionResourceCubit>().approveRequisition(
+    await context.read<RequisitionDetailCubit>().approveRequisition(
       requisitionUlid: widget.requisitionUlid,
       approvalNotes: _notesController.text.trim().isEmpty
           ? null
@@ -263,7 +259,7 @@ class _ApproveRequisitionViewHandsetState
       _isRejecting = true;
     });
 
-    await context.read<RequisitionResourceCubit>().rejectRequisition(
+    await context.read<RequisitionDetailCubit>().rejectRequisition(
       requisitionUlid: widget.requisitionUlid,
       approvalNotes: notes,
     );

@@ -2,18 +2,19 @@ import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_mission_dto.dart';
 import 'package:leadership/services/api/mission_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
-import 'package:logger/logger.dart';
 
 class MissionResourceCubit extends ResourceCubit<PRFMission> {
-  MissionResourceCubit({required MissionService missionService})
-    : _missionService = missionService,
-      super(service: missionService);
+  MissionResourceCubit({
+    required MissionService missionService,
+    required MissionHiveDbService hiveDbService,
+  }) : _missionService = missionService,
+       super(service: missionService, dbService: hiveDbService);
 
   final MissionService _missionService;
 
-  String? _lastMissionUlid;
   Map<String, dynamic>? _lastListFilters;
   String? _lastOrderDirection;
 
@@ -28,15 +29,14 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     'missionType',
   ];
 
-  PRFMission? get currentMission {
-    if (currentItems.isEmpty) {
-      return null;
-    }
-    return currentItems.first;
+  @override
+  Future<List<PRFMission>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
   }
 
   Future<void> loadUpcomingMissions() {
-    _lastMissionUlid = null;
     _lastListFilters = {'upcoming': true};
     _lastOrderDirection = 'asc';
     return loadAll(
@@ -47,7 +47,6 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
   }
 
   Future<void> loadPastMissions() {
-    _lastMissionUlid = null;
     _lastListFilters = {'past': true};
     _lastOrderDirection = 'desc';
     return loadAll(
@@ -57,31 +56,9 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     );
   }
 
-  Future<void> loadMission({required String missionUlid}) async {
-    _lastMissionUlid = missionUlid;
-    _lastListFilters = null;
-
-    emit(const ResourceState<PRFMission>.listLoading());
-    try {
-      final mission = await _missionService.get(
-        ulid: missionUlid,
-        includes: [
-          ...defaultIncludes,
-        ],
-      );
-      emit(ResourceState<PRFMission>.listLoaded(items: [mission]));
-    } on Failure catch (e, s) {
-      Logger().e('Error loading mission', error: e, stackTrace: s);
-      emit(ResourceState<PRFMission>.error(message: e.message));
-    } catch (e, s) {
-      Logger().e('Error loading mission', error: e, stackTrace: s);
-      emit(ResourceState<PRFMission>.error(message: e.toString()));
-    }
-  }
-
   Future<void> createMission({required PRFMissionDTO dto}) async {
     await create(data: dto.toJson());
-    await _reloadContext();
+    await _reloadListContext();
   }
 
   Future<void> updateMission({
@@ -93,7 +70,7 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
       data: dto.toJson(),
       matchById: (mission) => mission.ulid == missionUlid,
     );
-    await _reloadContext();
+    await _reloadListContext();
   }
 
   Future<void> deleteMission({required String missionUlid}) async {
@@ -101,12 +78,11 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
       ulid: missionUlid,
       matchById: (mission) => mission.ulid == missionUlid,
     );
-    await _reloadContext();
+    await _reloadListContext();
   }
 
   Future<void> approveMission({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.approveMission(ulid: missionUlid),
     );
   }
@@ -116,7 +92,6 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     String? reason,
   }) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.rejectMission(
         ulid: missionUlid,
         reason: reason,
@@ -129,7 +104,6 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     String? reason,
   }) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.cancelMission(
         ulid: missionUlid,
         reason: reason,
@@ -139,55 +113,47 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
 
   Future<void> completeMission({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.completeMission(ulid: missionUlid),
     );
   }
 
   Future<void> notifySchool({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.notifySchool(ulid: missionUlid),
     );
   }
 
   Future<void> requestSchoolFeedback({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.requestSchoolFeedback(ulid: missionUlid),
     );
   }
 
   Future<void> notifyWhatsappGroup({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.notifyWhatsappGroup(ulid: missionUlid),
     );
   }
 
   Future<void> generateSummary({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.generateSummary(ulid: missionUlid),
     );
   }
 
   Future<void> uploadMediaToDrive({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.uploadMediaToDrive(ulid: missionUlid),
     );
   }
 
   Future<void> makeZeroRequisition({required String missionUlid}) {
     return _runAction(
-      missionUlid: missionUlid,
       action: () => _missionService.makeZeroRequisition(ulid: missionUlid),
     );
   }
 
   Future<void> _runAction({
-    required String missionUlid,
     required Future<bool> Function() action,
   }) async {
     emit(
@@ -198,7 +164,6 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     );
 
     try {
-      _lastMissionUlid = missionUlid;
       await action();
 
       emit(
@@ -208,7 +173,7 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
         ),
       );
 
-      await _reloadContext();
+      await _reloadListContext();
     } on Failure catch (e) {
       emit(
         ResourceState<PRFMission>.error(
@@ -226,12 +191,7 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     }
   }
 
-  Future<void> _reloadContext() async {
-    if (_lastMissionUlid != null) {
-      await loadMission(missionUlid: _lastMissionUlid!);
-      return;
-    }
-
+  Future<void> _reloadListContext() async {
     if (_lastListFilters != null) {
       await loadAll(
         filters: _lastListFilters,

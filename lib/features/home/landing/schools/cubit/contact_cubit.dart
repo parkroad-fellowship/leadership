@@ -1,10 +1,20 @@
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/services/api/school_contact_service.dart';
+import 'package:leadership/services/local_storage/hive/db/contact_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class ContactCubit extends ResourceCubit<PRFContact> {
-  ContactCubit({required SchoolContactService schoolContactService})
-    : super(service: schoolContactService);
+  ContactCubit({
+    required SchoolContactService schoolContactService,
+    required ContactHiveDbService hiveDbService,
+  }) : super(service: schoolContactService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFContact>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   @override
   List<String> get defaultIncludes => ['contactType'];

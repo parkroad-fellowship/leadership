@@ -2,11 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_approval_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_closed_requisitions_cubit.dart';
-import 'package:leadership/features/home/landing/requisition_approvals/cubit/get_draft_requisitions_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/requisition_service.dart';
+import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_service.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/shared_views/requisitions/widgets/timeline_requisitions_card.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
@@ -25,23 +26,50 @@ class _RequisitionApprovalsPageHandsetState
     extends State<RequisitionApprovalsPageHandset>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late final RequisitionResourceCubit _approvalCubit;
+  late final RequisitionResourceCubit _closedCubit;
+  late final RequisitionResourceCubit _draftCubit;
 
   @override
   void initState() {
     super.initState();
 
-    context.read<GetApprovalRequisitionsCubit>().getApprovalRequisitions();
+    _approvalCubit = RequisitionResourceCubit(
+      requisitionService: getIt<RequisitionService>(),
+      hiveService: getIt<HiveService>(),
+      hiveDbService: getIt<RequisitionHiveDbService>(),
+    )..loadApprovalRequisitions();
+
+    _closedCubit = RequisitionResourceCubit(
+      requisitionService: getIt<RequisitionService>(),
+      hiveService: getIt<HiveService>(),
+      hiveDbService: getIt<RequisitionHiveDbService>(),
+    )..loadClosedRequisitions();
+
+    _draftCubit = RequisitionResourceCubit(
+      requisitionService: getIt<RequisitionService>(),
+      hiveService: getIt<HiveService>(),
+      hiveDbService: getIt<RequisitionHiveDbService>(),
+    )..loadDraftRequisitions();
 
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
-        context.read<GetApprovalRequisitionsCubit>().getApprovalRequisitions();
+        _approvalCubit.loadApprovalRequisitions();
       } else if (_tabController.index == 1) {
-        context.read<GetClosedRequisitionsCubit>().getClosedRequisitions();
+        _closedCubit.loadClosedRequisitions();
       } else {
-        context.read<GetDraftRequisitionsCubit>().getDraftRequisitions();
+        _draftCubit.loadDraftRequisitions();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _approvalCubit.close();
+    _closedCubit.close();
+    _draftCubit.close();
+    super.dispose();
   }
 
   @override
@@ -64,9 +92,10 @@ class _RequisitionApprovalsPageHandsetState
                   ),
                   actions: [
                     BlocBuilder<
-                      GetApprovalRequisitionsCubit,
+                      RequisitionResourceCubit,
                       ResourceState<PRFRequisition>
                     >(
+                      bloc: _approvalCubit,
                       builder: (context, state) => state.maybeWhen(
                         listLoading: () => const SizedBox.square(
                           dimension: 20,
@@ -77,9 +106,24 @@ class _RequisitionApprovalsPageHandsetState
                     ),
                     const SizedBox(width: PRFSpacingTokens.sm),
                     BlocBuilder<
-                      GetClosedRequisitionsCubit,
+                      RequisitionResourceCubit,
                       ResourceState<PRFRequisition>
                     >(
+                      bloc: _closedCubit,
+                      builder: (context, state) => state.maybeWhen(
+                        listLoading: () => const SizedBox.square(
+                          dimension: 20,
+                          child: PRFCircularProgressIndicator(),
+                        ),
+                        orElse: SizedBox.shrink,
+                      ),
+                    ),
+                    const SizedBox(width: PRFSpacingTokens.sm),
+                    BlocBuilder<
+                      RequisitionResourceCubit,
+                      ResourceState<PRFRequisition>
+                    >(
+                      bloc: _draftCubit,
                       builder: (context, state) => state.maybeWhen(
                         listLoading: () => const SizedBox.square(
                           dimension: 20,
@@ -135,9 +179,18 @@ class _RequisitionApprovalsPageHandsetState
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildApprovalRequisitions(context),
-                _buildClosedRequisitions(context),
-                _buildDraftRequisitions(context),
+                BlocProvider.value(
+                  value: _approvalCubit,
+                  child: _buildApprovalRequisitions(context),
+                ),
+                BlocProvider.value(
+                  value: _closedCubit,
+                  child: _buildClosedRequisitions(context),
+                ),
+                BlocProvider.value(
+                  value: _draftCubit,
+                  child: _buildDraftRequisitions(context),
+                ),
               ],
             ),
           ),
@@ -151,7 +204,7 @@ class _RequisitionApprovalsPageHandsetState
     final theme = Theme.of(context);
 
     return BlocBuilder<
-      GetApprovalRequisitionsCubit,
+      RequisitionResourceCubit,
       ResourceState<PRFRequisition>
     >(
       builder: (context, state) {
@@ -161,23 +214,23 @@ class _RequisitionApprovalsPageHandsetState
             final sortedRequisitions = List<PRFRequisition>.from(requisitions)
               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-            if (sortedRequisitions.isEmpty) {
+              if (sortedRequisitions.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: () => context
+                      .read<RequisitionResourceCubit>()
+                      .loadApprovalRequisitions(),
+                  child: PRFEmptyView(
+                    label: l10n.noRequisitions,
+                    description: l10n.noPendingRequisitionsDesc,
+                  ),
+                );
+              }
+
               return RefreshIndicator(
                 onRefresh: () => context
-                    .read<GetApprovalRequisitionsCubit>()
-                    .getApprovalRequisitions(),
-                child: PRFEmptyView(
-                  label: l10n.noRequisitions,
-                  description: l10n.noPendingRequisitionsDesc,
-                ),
-              );
-            }
-
-            return RefreshIndicator(
-              onRefresh: () => context
-                  .read<GetClosedRequisitionsCubit>()
-                  .getClosedRequisitions(),
-              child: ListView.builder(
+                    .read<RequisitionResourceCubit>()
+                    .loadApprovalRequisitions(),
+                child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: PRFSpacingTokens.lg,
@@ -201,8 +254,8 @@ class _RequisitionApprovalsPageHandsetState
                             .then((_) {
                               // ignore: use_build_context_synchronously
                               context
-                                  .read<GetApprovalRequisitionsCubit>()
-                                  .getApprovalRequisitions();
+                                  .read<RequisitionResourceCubit>()
+                                  .loadApprovalRequisitions();
                             }),
                       )
                       .animate()
@@ -255,7 +308,7 @@ class _RequisitionApprovalsPageHandsetState
     final theme = Theme.of(context);
 
     return BlocBuilder<
-      GetClosedRequisitionsCubit,
+      RequisitionResourceCubit,
       ResourceState<PRFRequisition>
     >(
       builder: (context, state) {
@@ -268,8 +321,8 @@ class _RequisitionApprovalsPageHandsetState
             if (sortedRequisitions.isEmpty) {
               return RefreshIndicator(
                 onRefresh: () => context
-                    .read<GetClosedRequisitionsCubit>()
-                    .getClosedRequisitions(),
+                    .read<RequisitionResourceCubit>()
+                    .loadClosedRequisitions(),
                 child: PRFEmptyView(
                   label: l10n.noRequisitions,
                   description: l10n.noClosedRequisitionsDesc,
@@ -279,8 +332,8 @@ class _RequisitionApprovalsPageHandsetState
 
             return RefreshIndicator(
               onRefresh: () => context
-                  .read<GetDraftRequisitionsCubit>()
-                  .getDraftRequisitions(),
+                  .read<RequisitionResourceCubit>()
+                  .loadClosedRequisitions(),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
@@ -305,8 +358,8 @@ class _RequisitionApprovalsPageHandsetState
                             .then((_) {
                               // ignore: use_build_context_synchronously
                               context
-                                  .read<GetApprovalRequisitionsCubit>()
-                                  .getApprovalRequisitions();
+                                  .read<RequisitionResourceCubit>()
+                                  .loadDraftRequisitions();
                             }),
                       )
                       .animate()
@@ -319,98 +372,98 @@ class _RequisitionApprovalsPageHandsetState
                         end: 0,
                         curve: PRFMotionTokens.emphasized,
                       );
-                },
-              ),
-            );
-          },
-          error: (message, items) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          orElse: () => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+                 },
+               ),
+             );
+           },
+           error: (message, items) => Center(
+             child: Column(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 Icon(
+                   Icons.error_outline,
+                   size: 48,
+                   color: theme.colorScheme.error,
+                 ),
+                 const SizedBox(height: PRFSpacingTokens.lg),
+                 Text(
+                   message,
+                   style: theme.textTheme.bodyLarge?.copyWith(
+                     color: theme.colorScheme.error,
+                   ),
+                 ),
+               ],
+             ),
+           ),
+           orElse: () => Center(
+             child: CircularProgressIndicator(
+               valueColor: AlwaysStoppedAnimation<Color>(
+                 theme.colorScheme.primary,
+               ),
+             ),
+           ),
+         );
+       },
+     );
+   }
+ 
+   Widget _buildDraftRequisitions(BuildContext context) {
+     final l10n = context.l10n;
+     final theme = Theme.of(context);
+ 
+     return BlocBuilder<
+       RequisitionResourceCubit,
+       ResourceState<PRFRequisition>
+     >(
+       builder: (context, state) {
+         return state.maybeWhen(
+           listLoaded: (requisitions, page, hasMore) {
+             // Sort requisitions by creation date for timeline
+             final sortedRequisitions = List<PRFRequisition>.from(requisitions)
+               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+ 
+             if (sortedRequisitions.isEmpty) {
+               return RefreshIndicator(
+                 onRefresh: () => context
+                     .read<RequisitionResourceCubit>()
+                     .loadDraftRequisitions(),
+                 child: PRFEmptyView(
+                   label: l10n.noRequisitions,
+                   description: l10n.noDraftRequisitionsDesc,
+                 ),
+               );
+             }
+ 
+             return RefreshIndicator(
+               onRefresh: () => context
+                   .read<RequisitionResourceCubit>()
+                    .loadDraftRequisitions(),
+                child: ListView.builder(
+                 physics: const AlwaysScrollableScrollPhysics(),
+                 padding: const EdgeInsets.symmetric(
+                   horizontal: PRFSpacingTokens.lg,
+                   vertical: PRFSpacingTokens.xl,
+                 ),
+                 itemCount: sortedRequisitions.length,
+                 itemBuilder: (context, index) {
+                   final requisition = sortedRequisitions[index];
+                   final isLast = index == sortedRequisitions.length - 1;
 
-  Widget _buildDraftRequisitions(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return BlocBuilder<
-      GetDraftRequisitionsCubit,
-      ResourceState<PRFRequisition>
-    >(
-      builder: (context, state) {
-        return state.maybeWhen(
-          listLoaded: (requisitions, page, hasMore) {
-            // Sort requisitions by creation date for timeline
-            final sortedRequisitions = List<PRFRequisition>.from(requisitions)
-              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-            if (sortedRequisitions.isEmpty) {
-              return RefreshIndicator(
-                onRefresh: () => context
-                    .read<GetClosedRequisitionsCubit>()
-                    .getClosedRequisitions(),
-                child: PRFEmptyView(
-                  label: l10n.noRequisitions,
-                  description: l10n.noDraftRequisitionsDesc,
-                ),
-              );
-            }
-
-            return RefreshIndicator(
-              onRefresh: () => context
-                  .read<GetApprovalRequisitionsCubit>()
-                  .getApprovalRequisitions(),
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                  vertical: PRFSpacingTokens.xl,
-                ),
-                itemCount: sortedRequisitions.length,
-                itemBuilder: (context, index) {
-                  final requisition = sortedRequisitions[index];
-                  final isLast = index == sortedRequisitions.length - 1;
-
-                  return TimelineRequisitionCard(
-                        requisition: requisition,
-                        isLast: isLast,
-                        index: index,
-                        onTap: () => context.router
-                            .push(
-                              RequisitionDetailsRoute(
-                                requisitionUlid: requisition.ulid,
-                              ),
-                            )
-                            .then((_) {
-                              // ignore: use_build_context_synchronously
-                              context
-                                  .read<GetApprovalRequisitionsCubit>()
-                                  .getApprovalRequisitions();
+                   return TimelineRequisitionCard(
+                         requisition: requisition,
+                         isLast: isLast,
+                         index: index,
+                         onTap: () => context.router
+                             .push(
+                               RequisitionDetailsRoute(
+                                 requisitionUlid: requisition.ulid,
+                               ),
+                             )
+                             .then((_) {
+                               // ignore: use_build_context_synchronously
+                               context
+                                   .read<RequisitionResourceCubit>()
+                                   .loadDraftRequisitions();
                             }),
                       )
                       .animate()

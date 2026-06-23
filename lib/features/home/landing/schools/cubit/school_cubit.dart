@@ -1,11 +1,21 @@
 import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/services/api/school_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class SchoolCubit extends ResourceCubit<PRFSchool> {
-  SchoolCubit({required SchoolService schoolService})
-    : super(service: schoolService);
+  SchoolCubit({
+    required SchoolService schoolService,
+    required SchoolHiveDbService hiveDbService,
+  }) : super(service: schoolService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFSchool>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   @override
   List<String> get defaultIncludes => ['schoolContacts.contactType'];

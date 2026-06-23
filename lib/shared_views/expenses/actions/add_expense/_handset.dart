@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_charge_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
+import 'package:leadership/features/home/cubit/expense_categories_resource_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
@@ -46,6 +47,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
   @override
   void initState() {
     super.initState();
+    context.read<ExpenseCategoriesResourceCubit>().loadAll(limit: 100);
     _unitCostController.addListener(_calculateTotal);
     _quantityController.addListener(_calculateTotal);
     _chargeController.addListener(_calculateTotal);
@@ -292,41 +294,42 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                           isRequired: true,
                           child:
                               BlocBuilder<
-                                GetExpenseCategoriesCubit,
-                                GetExpenseCategoriesState
+                                ExpenseCategoriesResourceCubit,
+                                ResourceState<PRFExpenseCategory>
                               >(
                                 builder: (context, state) {
                                   return state.maybeWhen(
                                     orElse: () => const SizedBox.shrink(),
-                                    loading: () =>
+                                    listLoading: () =>
                                         const PRFLinearProgressIndicator(),
-                                    loaded: (expenseCategories) => Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildCategorySelector(
-                                          expenseCategories,
-                                          Theme.of(context),
+                                    listLoaded: (expenseCategories, _, _) =>
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildCategorySelector(
+                                              expenseCategories,
+                                              Theme.of(context),
+                                            ),
+                                            if (_showValidation &&
+                                                _categoryError != null) ...[
+                                              const SizedBox(
+                                                height: PRFSpacingTokens.xs,
+                                              ),
+                                              Text(
+                                                _categoryError!,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).colorScheme.error,
+                                                    ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
-                                        if (_showValidation &&
-                                            _categoryError != null) ...[
-                                          const SizedBox(
-                                            height: PRFSpacingTokens.xs,
-                                          ),
-                                          Text(
-                                            _categoryError!,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).colorScheme.error,
-                                                ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
                                   );
                                 },
                               ),

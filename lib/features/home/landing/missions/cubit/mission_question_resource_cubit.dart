@@ -1,12 +1,21 @@
 import 'package:leadership/models/remote/mission/prf_mission_question.dart';
 import 'package:leadership/models/remote/mission/prf_mission_question_dto.dart';
 import 'package:leadership/services/api/mission_question_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_question_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class MissionQuestionResourceCubit extends ResourceCubit<PRFMissionQuestion> {
   MissionQuestionResourceCubit({
     required MissionQuestionService missionQuestionService,
-  }) : super(service: missionQuestionService);
+    required MissionQuestionHiveDbService hiveDbService,
+  }) : super(service: missionQuestionService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFMissionQuestion>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(

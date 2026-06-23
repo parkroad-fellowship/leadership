@@ -8,13 +8,13 @@ import 'package:leadership/enums/prf_mission_role.dart';
 import 'package:leadership/enums/prf_mission_subscription_status.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_soul_decision_type.dart';
-import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/actions/edit_mission/edit_mission.dart';
 import 'package:leadership/features/home/landing/missions/cubit/class_group_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/debrief_note_resource_cubit.dart';
+import 'package:leadership/features/home/landing/missions/cubit/mission_detail_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_offline_member_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_question_resource_cubit.dart';
-import 'package:leadership/features/home/landing/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_session_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/mission_subscription_resource_cubit.dart';
 import 'package:leadership/features/home/landing/missions/cubit/soul_resource_cubit.dart';
@@ -84,7 +84,10 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     super.initState();
 
     // Fetch mission data
-    context.read<MissionResourceCubit>().loadMission(missionUlid: missionUlid);
+    context.read<MissionDetailCubit>().loadOne(
+      id: missionUlid,
+      matchById: (m) => m.ulid == missionUlid,
+    );
     _loadMissionSubdomainData();
 
     _tabController = TabController(length: tabCount, vsync: this);
@@ -92,17 +95,10 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   PRFMission? _currentMissionFromState(ResourceState<PRFMission> state) {
-    return switch (state) {
-      ResourceListLoaded<PRFMission>(:final items) when items.isNotEmpty =>
-        items.first,
-      ResourceMutating<PRFMission>(:final items) when items.isNotEmpty =>
-        items.first,
-      ResourceMutated<PRFMission>(:final items) when items.isNotEmpty =>
-        items.first,
-      ResourceError<PRFMission>(:final items) when items.isNotEmpty =>
-        items.first,
-      _ => null,
-    };
+    return state.mapOrNull(
+      itemLoaded: (s) => s.item,
+      itemError: (s) => s.item,
+    );
   }
 
   @override
@@ -218,7 +214,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
   List<PRFClassGroup> _availableClassGroups() {
     final mission = _currentMissionFromState(
-      context.read<MissionResourceCubit>().state,
+      context.read<MissionDetailCubit>().state,
     );
     final missionInstitutionType = mission?.school?.institutionType;
     final classGroups = _itemsFromResourceState(
@@ -263,7 +259,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<Object?> _showMemberSubscriptionFormSheet() {
-    context.read<GetMembersCubit>().getMembers();
+    context.read<MemberResourceCubit>().getMembers();
 
     return PRFBottomSheet.show<Object>(
       context,
@@ -548,8 +544,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         return;
       }
 
-      await context.read<MissionResourceCubit>().loadMission(
-        missionUlid: mission.ulid,
+      await context.read<MissionDetailCubit>().loadOne(
+        id: mission.ulid,
+        matchById: (m) => m.ulid == mission.ulid,
       );
       if (!mounted) return;
 
@@ -569,8 +566,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         return;
       }
 
-      await context.read<MissionResourceCubit>().loadMission(
-        missionUlid: mission.ulid,
+      await context.read<MissionDetailCubit>().loadOne(
+        id: mission.ulid,
+        matchById: (m) => m.ulid == mission.ulid,
       );
       if (!mounted) return;
 
@@ -602,8 +600,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       return;
     }
 
-    await context.read<MissionResourceCubit>().loadMission(
-      missionUlid: mission.ulid,
+    await context.read<MissionDetailCubit>().loadOne(
+      id: mission.ulid,
+      matchById: (m) => m.ulid == mission.ulid,
     );
     if (!mounted) return;
 
@@ -623,7 +622,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return BlocListener<MissionResourceCubit, ResourceState<PRFMission>>(
+    return BlocListener<MissionDetailCubit, ResourceState<PRFMission>>(
       listener: (context, state) {
         final mission = _currentMissionFromState(state);
         if (mission != null) {
@@ -647,12 +646,12 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                       ),
                       actions: [
                         BlocBuilder<
-                          MissionResourceCubit,
+                          MissionDetailCubit,
                           ResourceState<PRFMission>
                         >(
                           builder: (context, state) {
                             final isBusy =
-                                state is ResourceMutating<PRFMission>;
+                                state is ResourceItemLoading<PRFMission>;
                             if (isBusy) {
                               return const SizedBox.square(
                                 dimension: 20,
@@ -661,8 +660,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                             }
 
                             final mission = context
-                                .read<MissionResourceCubit>()
-                                .currentMission;
+                                .read<MissionDetailCubit>()
+                                .currentItem;
 
                             return Row(
                               mainAxisSize: MainAxisSize.min,
@@ -680,8 +679,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                                 IconButton(
                                   tooltip: 'Refresh mission',
                                   onPressed: () => context
-                                      .read<MissionResourceCubit>()
-                                      .loadMission(missionUlid: missionUlid),
+                                      .read<MissionDetailCubit>()
+                                      .loadOne(
+                                        id: missionUlid,
+                                        matchById: (m) => m.ulid == missionUlid,
+                                      ),
                                   icon: Icon(
                                     Icons.refresh_rounded,
                                     color: theme.colorScheme.onPrimary,
@@ -742,14 +744,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
               ),
               Expanded(
                 child:
-                    BlocBuilder<
-                      MissionResourceCubit,
-                      ResourceState<PRFMission>
-                    >(
+                    BlocBuilder<MissionDetailCubit, ResourceState<PRFMission>>(
                       builder: (context, state) {
                         final mission = _currentMissionFromState(state);
 
-                        if (state is ResourceListLoading<PRFMission> &&
+                        if (state is ResourceItemLoading<PRFMission> &&
                             mission == null) {
                           return const Center(
                             child: CircularProgressIndicator(),
@@ -757,7 +756,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                         }
 
                         if (mission == null &&
-                            state is ResourceError<PRFMission>) {
+                            state is ResourceItemError<PRFMission>) {
                           final message = state.message;
                           return Center(
                             child: Column(
@@ -821,7 +820,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
           ),
         ),
         floatingActionButton:
-            BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
+            BlocBuilder<MissionDetailCubit, ResourceState<PRFMission>>(
               builder: (context, state) {
                 final mission = _currentMissionFromState(state);
                 if (mission == null) {
@@ -1082,8 +1081,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       return;
     }
 
-    await context.read<MissionResourceCubit>().loadMission(
-      missionUlid: mission.ulid,
+    await context.read<MissionDetailCubit>().loadOne(
+      id: mission.ulid,
+      matchById: (m) => m.ulid == mission.ulid,
     );
     if (!mounted) return;
 
@@ -1098,7 +1098,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         subtitle: 'Mark mission as approved',
         onTap: () => _runMissionAction(
           successMessage: 'Mission approved successfully',
-          action: () => context.read<MissionResourceCubit>().approveMission(
+          action: () => context.read<MissionDetailCubit>().approveMission(
             missionUlid: mission.ulid,
           ),
         ),
@@ -1127,7 +1127,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         subtitle: 'Send mission notification to school',
         onTap: () => _runMissionAction(
           successMessage: 'School notified successfully',
-          action: () => context.read<MissionResourceCubit>().notifySchool(
+          action: () => context.read<MissionDetailCubit>().notifySchool(
             missionUlid: mission.ulid,
           ),
         ),
@@ -1139,7 +1139,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         onTap: () => _runMissionAction(
           successMessage: 'Feedback requested successfully',
           action: () => context
-              .read<MissionResourceCubit>()
+              .read<MissionDetailCubit>()
               .requestSchoolFeedback(missionUlid: mission.ulid),
         ),
       ),
@@ -1149,9 +1149,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         subtitle: 'Send mission update to WhatsApp group',
         onTap: () => _runMissionAction(
           successMessage: 'WhatsApp group notified successfully',
-          action: () => context
-              .read<MissionResourceCubit>()
-              .notifyWhatsappGroup(missionUlid: mission.ulid),
+          action: () => context.read<MissionDetailCubit>().notifyWhatsappGroup(
+            missionUlid: mission.ulid,
+          ),
         ),
       ),
       _operationTile(
@@ -1160,7 +1160,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         subtitle: 'Generate mission summary',
         onTap: () => _runMissionAction(
           successMessage: 'Mission summary generated successfully',
-          action: () => context.read<MissionResourceCubit>().generateSummary(
+          action: () => context.read<MissionDetailCubit>().generateSummary(
             missionUlid: mission.ulid,
           ),
         ),
@@ -1171,7 +1171,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         subtitle: 'Upload mission media to Google Drive',
         onTap: () => _runMissionAction(
           successMessage: 'Mission media upload started',
-          action: () => context.read<MissionResourceCubit>().uploadMediaToDrive(
+          action: () => context.read<MissionDetailCubit>().uploadMediaToDrive(
             missionUlid: mission.ulid,
           ),
         ),
@@ -1249,8 +1249,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
     if (!mounted) return;
 
-    final state = context.read<MissionResourceCubit>().state;
-    if (state case ResourceError<PRFMission>(:final message)) {
+    final state = context.read<MissionDetailCubit>().state;
+    if (state case ResourceItemError<PRFMission>(:final message)) {
       PRFSnackbar.error(context, message);
       return;
     }
@@ -1271,7 +1271,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
     await _runMissionAction(
       successMessage: 'Mission completed successfully',
-      action: () => context.read<MissionResourceCubit>().completeMission(
+      action: () => context.read<MissionDetailCubit>().completeMission(
         missionUlid: mission.ulid,
       ),
     );
@@ -1290,7 +1290,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
     await _runMissionAction(
       successMessage: 'Zero requisition created successfully',
-      action: () => context.read<MissionResourceCubit>().makeZeroRequisition(
+      action: () => context.read<MissionDetailCubit>().makeZeroRequisition(
         missionUlid: mission.ulid,
       ),
     );
@@ -1310,8 +1310,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   bool get _isMissionMutating {
-    return context.read<MissionResourceCubit>().state
-        is ResourceMutating<PRFMission>;
+    return context.read<MissionDetailCubit>().state
+        is ResourceItemLoading<PRFMission>;
   }
 
   Future<void> _rejectMission(PRFMission mission) async {
@@ -1324,7 +1324,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
     await _runMissionAction(
       successMessage: 'Mission rejected successfully',
-      action: () => context.read<MissionResourceCubit>().rejectMission(
+      action: () => context.read<MissionDetailCubit>().rejectMission(
         missionUlid: mission.ulid,
         reason: reason,
       ),
@@ -1341,7 +1341,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
     await _runMissionAction(
       successMessage: 'Mission cancelled successfully',
-      action: () => context.read<MissionResourceCubit>().cancelMission(
+      action: () => context.read<MissionDetailCubit>().cancelMission(
         missionUlid: mission.ulid,
         reason: reason,
       ),
@@ -1822,19 +1822,19 @@ class _MissionMemberSubscriptionFormBodyState
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GetMembersCubit, GetMembersState>(
+    return BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
       builder: (context, state) {
         final theme = Theme.of(context);
         final members = state.maybeWhen(
-          loaded: (members) => members,
+          listLoaded: (members, _, _) => members,
           orElse: () => <PRFMember>[],
         );
         final isLoading = state.maybeWhen(
-          loading: () => true,
+          listLoading: () => true,
           orElse: () => false,
         );
         final errorMessage = state.maybeWhen(
-          error: (message) => message,
+          error: (message, _) => message,
           orElse: () => null,
         );
         final entries = members

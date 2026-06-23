@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
-import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_detail_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -193,26 +193,22 @@ class _RecallRequisitionViewHandsetState
 
               // Action Buttons
               BlocListener<
-                RequisitionResourceCubit,
+                RequisitionDetailCubit,
                 ResourceState<PRFRequisition>
               >(
                 listener: (context, state) {
                   switch (state) {
-                    case ResourceMutating<PRFRequisition>(:final operation):
-                      if (operation == ResourceOperation.update) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                      }
-                    case ResourceMutated<PRFRequisition>(:final operation):
-                      if (operation == ResourceOperation.update) {
-                        Navigator.of(context).pop();
-                        PRFSnackbar.success(
-                          context,
-                          'Requisition recalled successfully',
-                        );
-                      }
-                    case ResourceError<PRFRequisition>(:final message):
+                    case ResourceItemLoading<PRFRequisition>():
+                      setState(() {
+                        _isLoading = true;
+                      });
+                    case ResourceItemLoaded<PRFRequisition>():
+                      Navigator.of(context).pop();
+                      PRFSnackbar.success(
+                        context,
+                        'Requisition recalled successfully',
+                      );
+                    case ResourceItemError<PRFRequisition>(:final message):
                       setState(() {
                         _isLoading = false;
                       });
@@ -258,7 +254,7 @@ class _RecallRequisitionViewHandsetState
   }
 
   Future<void> _recallRequisition() async {
-    await context.read<RequisitionResourceCubit>().recallRequisition(
+    await context.read<RequisitionDetailCubit>().recallRequisition(
       requisitionUlid: widget.requisitionUlid,
       approvalNotes: _notesController.text.trim().isEmpty
           ? 'Requisition recalled by the requisitor'

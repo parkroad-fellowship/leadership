@@ -1,12 +1,21 @@
 import 'package:leadership/models/remote/mission/prf_mission_ground_suggestion.dart';
 import 'package:leadership/services/api/mission_ground_suggestion_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_ground_suggestion_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class MissionGroundSuggestionResourceCubit
     extends ResourceCubit<PRFMissionGroundSuggestion> {
   MissionGroundSuggestionResourceCubit({
     required MissionGroundSuggestionService missionGroundSuggestionService,
-  }) : super(service: missionGroundSuggestionService);
+    required MissionGroundSuggestionHiveDbService hiveDbService,
+  }) : super(service: missionGroundSuggestionService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFMissionGroundSuggestion>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(

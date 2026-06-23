@@ -1,11 +1,21 @@
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/models/remote/prf_mission_type.dart';
 import 'package:leadership/services/api/mission_type_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_type_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
-  MissionTypeResourceCubit({required MissionTypeService missionTypeService})
-    : super(service: missionTypeService);
+  MissionTypeResourceCubit({
+    required MissionTypeService missionTypeService,
+    required MissionTypeHiveDbService hiveDbService,
+  }) : super(service: missionTypeService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFMissionType>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadActive() {
     return loadAll(

@@ -1,40 +1,97 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/api/_base_api_service.dart';
+import 'package:leadership/services/local_storage/hive/db/_base_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:logger/logger.dart';
 
-/// A single cubit that handles list, create, update, and delete
-/// for any resource backed by a [BaseAPIService<T>].
-///
-/// Subclasses only need to:
-///   1. Pass the service via super constructor.
-///   2. Optionally override [defaultIncludes], [defaultFilters], etc.
-///   3. Add resource-specific convenience methods (e.g. `createSchool(...)`).
-class ResourceCubit<T> extends Cubit<ResourceState<T>> {
-  ResourceCubit({required this._service}) : super(ResourceState<T>.initial());
+abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
+  ResourceCubit({
+    required this._service,
+    required this.dbService,
+  }) : super(const ResourceState.initial());
 
-  final BaseAPIService<T> _service;
+  final BaseAPIService<TRemote> _service;
+  final BaseHiveDbService<TRemote> dbService;
+  final _logger = Logger();
 
-  /// Override these in subclasses for resource-specific defaults.
+  Map<String, dynamic>? _lastFilters;
+  Map<String, dynamic>? get lastFilters => _lastFilters;
+
+  StreamSubscription<List<TRemote>>? _dbStreamSubscription;
+
+  int _requestSequence = 0;
+  int _activeRequestId = 0;
+  int _currentPage = 1;
+  bool _hasMore = false;
+
+  void subscribeToDbUpdates() {
+    _dbStreamSubscription?.cancel();
+    _dbStreamSubscription = dbService.stream.listen((_) async {
+      if (!isClosed) {
+        try {
+          final hiveItems = await loadCachedList(filters: _lastFilters);
+          _emitIfOpen(
+            ResourceState.listLoaded(
+              items: hiveItems,
+              page: _currentPage,
+              hasMore: _hasMore,
+            ),
+          );
+        } catch (e, s) {
+          _logger.e(
+            'Error syncing cached list from DB stream',
+            error: e,
+            stackTrace: s,
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _dbStreamSubscription?.cancel();
+    return super.close();
+  }
+
   List<String> get defaultIncludes => [];
   Map<String, dynamic> get defaultFilters => {};
-  int? get defaultLimit => null;
-  String? get defaultOrderBy => null;
-  String? get defaultOrderDirection => null;
+  int get defaultLimit => 15;
+  String? get defaultSortBy => null;
 
-  /// Extracts the current list from whatever state we are in.
-  List<T> get currentItems {
+  List<TRemote> get currentItems {
     return state.maybeWhen(
+      itemLoading: (items, _) => items,
+      listLoading: () => [],
       listLoaded: (items, _, _) => items,
+      itemLoaded: (_, items) => items,
       mutating: (items, _) => items,
       mutated: (items, _, _) => items,
       error: (_, items) => items,
+      itemError: (_, items, _) => items,
       orElse: () => [],
     );
   }
 
-  /// Fetch the full list of resources.
+  TRemote? get currentItem {
+    return state.maybeWhen(
+      itemLoading: (_, item) => item,
+      itemLoaded: (item, _) => item,
+      itemError: (_, _, item) => item,
+      listLoaded: (items, _, _) => items.isNotEmpty ? items.first : null,
+      mutated: (items, _, item) =>
+          item ?? (items.isNotEmpty ? items.first : null),
+      orElse: () => null,
+    );
+  }
+
+  Future<List<TRemote>> loadCachedList({
+    Map<String, dynamic>? filters,
+  });
+
   Future<void> loadAll({
     Map<String, dynamic>? filters,
     List<String>? includes,
@@ -42,74 +99,254 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
     int? page,
     String? orderBy,
     String? orderDirection,
+    bool refreshInBackground = true,
   }) async {
-    emit(ResourceState<T>.listLoading());
+    _emitIfOpen(ResourceState.listLoading());
+
+    final mergedFilters = {...defaultFilters, ...?filters};
+    _lastFilters = mergedFilters;
+    final startPage = page ?? 1;
+    final resolvedLimit = limit ?? defaultLimit;
+    final requestId = _nextRequestId();
+
+    if (_dbStreamSubscription == null) {
+      subscribeToDbUpdates();
+    }
+
     try {
-      final items = await _service.list(
-        filters: {...defaultFilters, ...?filters},
-        includes: includes ?? defaultIncludes,
-        limit: limit ?? defaultLimit,
-        page: page,
-        orderBy: orderBy ?? defaultOrderBy,
-        orderDirection: orderDirection ?? defaultOrderDirection,
+      final cached = await loadCachedList(filters: mergedFilters);
+      _currentPage = startPage;
+      _hasMore = cached.length == resolvedLimit;
+      _emitIfOpen(
+        ResourceState.listLoaded(
+          items: cached,
+          page: _currentPage,
+          hasMore: _hasMore,
+        ),
       );
-      emit(ResourceState.listLoaded(items: items, page: page ?? 1));
-    } on Failure catch (e) {
-      emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
-      Logger().e('Error loading resources', stackTrace: s);
-      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      _logger.e(
+        'Error loading cached list before background refresh',
+        error: e,
+        stackTrace: s,
+      );
+      _currentPage = startPage;
+      _hasMore = false;
+      _emitIfOpen(
+        ResourceState.listLoaded(
+          items: currentItems,
+          page: _currentPage,
+          hasMore: _hasMore,
+        ),
+      );
+    }
+
+    if (!refreshInBackground) return;
+
+    unawaited(
+      _refreshAllInBackground(
+        requestId: requestId,
+        mergedFilters: mergedFilters,
+        includes: includes,
+        resolvedLimit: resolvedLimit,
+        startPage: startPage,
+        orderBy: orderBy,
+      ),
+    );
+  }
+
+  Future<void> _refreshAllInBackground({
+    required int requestId,
+    required Map<String, dynamic> mergedFilters,
+    required List<String>? includes,
+    required int resolvedLimit,
+    required int startPage,
+    required String? orderBy,
+  }) async {
+    try {
+      final result = await _service.list(
+        filters: mergedFilters,
+        includes: includes ?? defaultIncludes,
+        limit: resolvedLimit,
+        page: startPage,
+        sortBy: orderBy ?? defaultSortBy,
+      );
+
+      if (!_isLatestRequest(requestId)) return;
+
+      _currentPage = result.pagination.currentPage ?? 1;
+      _hasMore = result.pagination.hasNext;
+
+      await dbService.persistEntities(result.data);
+
+      if (_hasMore) {
+        await _loadRemainingPagesInBackground(
+          requestId: requestId,
+          startFromPage: _currentPage + 1,
+          mergedFilters: mergedFilters,
+          includes: includes,
+          resolvedLimit: resolvedLimit,
+          orderBy: orderBy,
+        );
+      }
+    } on Failure catch (e) {
+      _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
+    } catch (e, s) {
+      _logger.e('Error loading resources', error: e, stackTrace: s);
+      _emitIfOpen(
+        ResourceState.error(message: e.toString(), items: currentItems),
+      );
     }
   }
 
-  /// Append the next page of results to the current list.
+  Future<void> _loadRemainingPagesInBackground({
+    required int requestId,
+    required int startFromPage,
+    required Map<String, dynamic> mergedFilters,
+    required List<String>? includes,
+    required int resolvedLimit,
+    required String? orderBy,
+  }) async {
+    var nextPage = startFromPage;
+
+    while (_hasMore && _isLatestRequest(requestId)) {
+      final result = await _service.list(
+        filters: mergedFilters,
+        includes: includes ?? defaultIncludes,
+        limit: resolvedLimit,
+        page: nextPage,
+        sortBy: orderBy ?? defaultSortBy,
+      );
+
+      if (!_isLatestRequest(requestId)) return;
+
+      _currentPage = result.pagination.currentPage ?? 1;
+      _hasMore = result.pagination.hasNext;
+
+      await dbService.persistEntities(result.data);
+      nextPage += 1;
+    }
+  }
+
   Future<void> loadMore({
     required int page,
     Map<String, dynamic>? filters,
     List<String>? includes,
     int? limit,
     String? orderBy,
-    String? orderDirection,
+    bool loadUntilDone = false,
   }) async {
+    final mergedFilters = {...defaultFilters, ...?filters};
+    _lastFilters = mergedFilters;
+    final resolvedLimit = limit ?? defaultLimit;
+    final requestId = _nextRequestId();
+
+    if (_dbStreamSubscription == null) {
+      subscribeToDbUpdates();
+    }
+
     try {
-      final newItems = await _service.list(
-        filters: {...defaultFilters, ...?filters},
+      final result = await _service.list(
+        filters: mergedFilters,
         includes: includes ?? defaultIncludes,
-        limit: limit ?? defaultLimit,
+        limit: resolvedLimit,
         page: page,
-        orderBy: orderBy ?? defaultOrderBy,
-        orderDirection: orderDirection ?? defaultOrderDirection,
+        sortBy: orderBy ?? defaultSortBy,
       );
-      emit(
-        ResourceState.listLoaded(
-          items: [...currentItems, ...newItems],
-          page: page,
-          hasMore: newItems.isNotEmpty,
-        ),
-      );
+
+      if (!_isLatestRequest(requestId)) return;
+
+      _currentPage = result.pagination.currentPage ?? 1;
+      _hasMore = result.pagination.hasNext;
+
+      await dbService.persistEntities(result.data);
+
+      if (loadUntilDone && _hasMore) {
+        await _loadRemainingPagesInBackground(
+          requestId: requestId,
+          startFromPage: _currentPage + 1,
+          mergedFilters: mergedFilters,
+          includes: includes,
+          resolvedLimit: resolvedLimit,
+          orderBy: orderBy,
+        );
+      }
     } on Failure catch (e) {
-      emit(ResourceState.error(message: e.message, items: currentItems));
+      _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
-      Logger().e('Error loading more resources', error: e, stackTrace: s);
-      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      _logger.e('Error loading more resources', error: e, stackTrace: s);
+      _emitIfOpen(
+        ResourceState.error(message: e.toString(), items: currentItems),
+      );
     }
   }
 
-  /// Create a new resource and prepend it to the in-memory list.
+  Future<void> loadOne({
+    required String id,
+    List<String>? includes,
+  }) async {
+    final existing = currentItem;
+    _emitIfOpen(ResourceState.itemLoading(item: existing));
+
+    try {
+      final cached = await dbService.get(id);
+      if (cached != null) {
+        _emitIfOpen(ResourceState.itemLoaded(item: cached));
+      }
+
+      final item = await _service.get(
+        ulid: id,
+        includes: includes ?? defaultIncludes,
+      );
+      await dbService.persistEntity(item);
+
+      final persisted = await dbService.get(id);
+      _emitIfOpen(
+        ResourceState.itemLoaded(item: persisted ?? item),
+      );
+    } on Failure catch (e) {
+      final cached = await dbService.get(id);
+      if (cached != null) {
+        _emitIfOpen(ResourceState.itemLoaded(item: cached));
+        return;
+      }
+      _emitIfOpen(
+        ResourceState.itemError(message: e.message, item: existing),
+      );
+    } catch (e, s) {
+      final cached = await dbService.get(id);
+      if (cached != null) {
+        _emitIfOpen(ResourceState.itemLoaded(item: cached));
+        return;
+      }
+      _logger.e('Error loading single resource', error: e, stackTrace: s);
+      _emitIfOpen(
+        ResourceState.itemError(
+          message: e.toString(),
+          item: existing,
+        ),
+      );
+    }
+  }
+
   Future<void> create({
     required Map<String, dynamic> data,
     List<String>? includes,
   }) async {
-    emit(
+    _emitIfOpen(
       ResourceState.mutating(
         items: currentItems,
         operation: ResourceOperation.create,
       ),
     );
     try {
-      final item = await _service.create(data: data, includes: includes);
+      final item = await _service.create(
+        data: data,
+        includes: includes ?? defaultIncludes,
+      );
+      await dbService.persistEntity(item);
       final updated = [item, ...currentItems];
-      emit(
+      _emitIfOpen(
         ResourceState.mutated(
           items: updated,
           operation: ResourceOperation.create,
@@ -117,21 +354,22 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
         ),
       );
     } on Failure catch (e) {
-      emit(ResourceState.error(message: e.message, items: currentItems));
+      _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
-      Logger().e('Error creating resource', error: e, stackTrace: s);
-      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      _logger.e('Error creating resource', error: e, stackTrace: s);
+      _emitIfOpen(
+        ResourceState.error(message: e.toString(), items: currentItems),
+      );
     }
   }
 
-  /// Update an existing resource and replace it in the in-memory list.
   Future<void> update({
     required String id,
     required Map<String, dynamic> data,
-    required bool Function(T item) matchById,
+    required bool Function(TRemote item) matchById,
     List<String>? includes,
   }) async {
-    emit(
+    _emitIfOpen(
       ResourceState.mutating(
         items: currentItems,
         operation: ResourceOperation.update,
@@ -141,12 +379,13 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
       final item = await _service.update(
         id: id,
         data: data,
-        includes: includes,
+        includes: includes ?? defaultIncludes,
       );
+      await dbService.persistEntity(item);
       final updated = currentItems.map((existing) {
         return matchById(existing) ? item : existing;
       }).toList();
-      emit(
+      _emitIfOpen(
         ResourceState.mutated(
           items: updated,
           operation: ResourceOperation.update,
@@ -154,19 +393,20 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
         ),
       );
     } on Failure catch (e) {
-      emit(ResourceState.error(message: e.message, items: currentItems));
+      _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
-      Logger().e('Error updating resource', error: e, stackTrace: s);
-      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      _logger.e('Error updating resource', error: e, stackTrace: s);
+      _emitIfOpen(
+        ResourceState.error(message: e.toString(), items: currentItems),
+      );
     }
   }
 
-  /// Delete a resource and remove it from the in-memory list.
   Future<void> delete({
     required String ulid,
-    required bool Function(T item) matchById,
+    required bool Function(TRemote item) matchById,
   }) async {
-    emit(
+    _emitIfOpen(
       ResourceState.mutating(
         items: currentItems,
         operation: ResourceOperation.delete,
@@ -174,21 +414,35 @@ class ResourceCubit<T> extends Cubit<ResourceState<T>> {
     );
     try {
       await _service.delete(ulid: ulid);
+      await dbService.deleteByKey(ulid);
       final updated = currentItems.where((item) => !matchById(item)).toList();
-      emit(
+      _emitIfOpen(
         ResourceState.mutated(
           items: updated,
           operation: ResourceOperation.delete,
         ),
       );
     } on Failure catch (e) {
-      emit(ResourceState.error(message: e.message, items: currentItems));
+      _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
-      Logger().e('Error deleting resource', error: e, stackTrace: s);
-      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      _logger.e('Error deleting resource', error: e, stackTrace: s);
+      _emitIfOpen(
+        ResourceState.error(message: e.toString(), items: currentItems),
+      );
     }
   }
 
-  /// Reset to initial state.
-  void reset() => emit(ResourceState<T>.initial());
+  void reset() => _emitIfOpen(const ResourceState.initial());
+
+  void _emitIfOpen(ResourceState<TRemote> nextState) {
+    if (isClosed) return;
+    emit(nextState);
+  }
+
+  int _nextRequestId() {
+    _requestSequence += 1;
+    return _activeRequestId = _requestSequence;
+  }
+
+  bool _isLatestRequest(int requestId) => requestId == _activeRequestId;
 }

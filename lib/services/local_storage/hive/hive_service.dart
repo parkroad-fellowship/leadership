@@ -3,15 +3,37 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:leadership/hive/hive_registrar.g.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
-import 'package:leadership/models/local/adapters.dart';
+import 'package:leadership/hive/hive_registrar.g.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/services/api/expense_categories_service.dart';
 import 'package:leadership/services/local_storage/hive/db/_base_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/allocation_entry_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/church_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/class_group_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/contact_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/contact_type_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/debrief_note_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/department_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/event_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/expense_category_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/gift_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/marital_status_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/member_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_ground_suggestion_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_offline_member_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_question_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_session_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_subscription_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_type_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/payment_instruction_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/profession_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/refund_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/requisition_item_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_term_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/soul_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/kv/auth_hive_service.dart';
 import 'package:leadership/services/local_storage/hive/kv/settings_hive_service.dart';
 import 'package:leadership/utils/_index.dart';
@@ -30,21 +52,70 @@ class HiveService {
   late final AuthHiveService _auth;
   late final SettingsHiveService _settings;
 
-    // ----- Entity CRUD services -----
+  // ----- Entity CRUD services -----
 
   late final AllocationEntryHiveDbService _allocationEntries;
+  late final ChurchHiveDbService _churches;
+  late final ClassGroupHiveDbService _classGroups;
+  late final ContactHiveDbService _contacts;
+  late final ContactTypeHiveDbService _contactTypes;
+  late final DebriefNoteHiveDbService _debriefNotes;
+  late final DepartmentHiveDbService _departments;
+  late final EventHiveDbService _events;
   late final ExpenseCategoryHiveDbService _expenseCategories;
+  late final GiftHiveDbService _gifts;
+  late final MaritalStatusHiveDbService _maritalStatuses;
+  late final MemberHiveDbService _members;
+  late final MissionGroundSuggestionHiveDbService _missionGroundSuggestions;
+  late final MissionHiveDbService _missions;
+  late final MissionOfflineMemberHiveDbService _missionOfflineMembers;
+  late final MissionQuestionHiveDbService _missionQuestions;
+  late final MissionSessionHiveDbService _missionSessions;
+  late final MissionSubscriptionHiveDbService _missionSubscriptions;
+  late final MissionTypeHiveDbService _missionTypes;
+  late final PaymentInstructionHiveDbService _paymentInstructions;
+  late final ProfessionHiveDbService _professions;
+  late final RefundHiveDbService _refunds;
   late final RequisitionHiveDbService _requisitions;
-
+  late final RequisitionItemHiveDbService _requisitionItems;
+  late final SchoolHiveDbService _schools;
+  late final SchoolTermHiveDbService _schoolTerms;
+  late final SoulHiveDbService _souls;
 
   AuthHiveService get auth => _auth;
   SettingsHiveService get settings => _settings;
 
   AllocationEntryHiveDbService get allocationEntries => _allocationEntries;
+  ChurchHiveDbService get churches => _churches;
+  ClassGroupHiveDbService get classGroups => _classGroups;
+  ContactHiveDbService get contacts => _contacts;
+  ContactTypeHiveDbService get contactTypes => _contactTypes;
+  DebriefNoteHiveDbService get debriefNotes => _debriefNotes;
+  DepartmentHiveDbService get departments => _departments;
+  EventHiveDbService get events => _events;
   ExpenseCategoryHiveDbService get expenseCategories => _expenseCategories;
+  GiftHiveDbService get gifts => _gifts;
+  MaritalStatusHiveDbService get maritalStatuses => _maritalStatuses;
+  MemberHiveDbService get members => _members;
+  MissionGroundSuggestionHiveDbService get missionGroundSuggestions =>
+      _missionGroundSuggestions;
+  MissionHiveDbService get missions => _missions;
+  MissionOfflineMemberHiveDbService get missionOfflineMembers =>
+      _missionOfflineMembers;
+  MissionQuestionHiveDbService get missionQuestions => _missionQuestions;
+  MissionSessionHiveDbService get missionSessions => _missionSessions;
+  MissionSubscriptionHiveDbService get missionSubscriptions =>
+      _missionSubscriptions;
+  MissionTypeHiveDbService get missionTypes => _missionTypes;
+  PaymentInstructionHiveDbService get paymentInstructions =>
+      _paymentInstructions;
+  ProfessionHiveDbService get professions => _professions;
+  RefundHiveDbService get refunds => _refunds;
   RequisitionHiveDbService get requisitions => _requisitions;
-
-
+  RequisitionItemHiveDbService get requisitionItems => _requisitionItems;
+  SchoolHiveDbService get schools => _schools;
+  SchoolTermHiveDbService get schoolTerms => _schoolTerms;
+  SoulHiveDbService get souls => _souls;
 
   // ----- Initialisation -----
 
@@ -75,15 +146,62 @@ class HiveService {
 
     // Instantiate entity CRUD services.
     _allocationEntries = AllocationEntryHiveDbService();
+    _churches = ChurchHiveDbService();
+    _classGroups = ClassGroupHiveDbService();
+    _contacts = ContactHiveDbService();
+    _contactTypes = ContactTypeHiveDbService();
+    _debriefNotes = DebriefNoteHiveDbService();
+    _departments = DepartmentHiveDbService();
+    _events = EventHiveDbService();
     _expenseCategories = ExpenseCategoryHiveDbService();
+    _gifts = GiftHiveDbService();
+    _maritalStatuses = MaritalStatusHiveDbService();
+    _members = MemberHiveDbService();
+    _missionGroundSuggestions = MissionGroundSuggestionHiveDbService();
+    _missions = MissionHiveDbService();
+    _missionOfflineMembers = MissionOfflineMemberHiveDbService();
+    _missionQuestions = MissionQuestionHiveDbService();
+    _missionSessions = MissionSessionHiveDbService();
+    _missionSubscriptions = MissionSubscriptionHiveDbService();
+    _missionTypes = MissionTypeHiveDbService();
+    _paymentInstructions = PaymentInstructionHiveDbService();
+    _professions = ProfessionHiveDbService();
+    _refunds = RefundHiveDbService();
     _requisitions = RequisitionHiveDbService();
+    _requisitionItems = RequisitionItemHiveDbService();
+    _schools = SchoolHiveDbService();
+    _schoolTerms = SchoolTermHiveDbService();
+    _souls = SoulHiveDbService();
 
     // Open all entity boxes with the shared cipher.
     final entityBoxNames = [
       _allocationEntries.boxName,
+      _churches.boxName,
+      _classGroups.boxName,
+      _contacts.boxName,
+      _contactTypes.boxName,
+      _debriefNotes.boxName,
+      _departments.boxName,
+      _events.boxName,
       _expenseCategories.boxName,
+      _gifts.boxName,
+      _maritalStatuses.boxName,
+      _members.boxName,
+      _missionGroundSuggestions.boxName,
+      _missions.boxName,
+      _missionOfflineMembers.boxName,
+      _missionQuestions.boxName,
+      _missionSessions.boxName,
+      _missionSubscriptions.boxName,
+      _missionTypes.boxName,
+      _paymentInstructions.boxName,
+      _professions.boxName,
+      _refunds.boxName,
       _requisitions.boxName,
-
+      _requisitionItems.boxName,
+      _schools.boxName,
+      _schoolTerms.boxName,
+      _souls.boxName,
     ];
 
     for (final name in entityBoxNames) {
@@ -148,9 +266,36 @@ class HiveService {
 
   // ----- Entity table management -----
 
-  /// Wipes all entity boxes. Called on sign-out to clear user data.
   Future<void> clearAllTables() async {
-    final services = <BaseHiveDbService<dynamic>>[];
+    final services = <BaseHiveDbService<dynamic>>[
+      _allocationEntries,
+      _churches,
+      _classGroups,
+      _contacts,
+      _contactTypes,
+      _debriefNotes,
+      _departments,
+      _events,
+      _expenseCategories,
+      _gifts,
+      _maritalStatuses,
+      _members,
+      _missionGroundSuggestions,
+      _missions,
+      _missionOfflineMembers,
+      _missionQuestions,
+      _missionSessions,
+      _missionSubscriptions,
+      _missionTypes,
+      _paymentInstructions,
+      _professions,
+      _refunds,
+      _requisitions,
+      _requisitionItems,
+      _schools,
+      _schoolTerms,
+      _souls,
+    ];
     for (final s in services) {
       await s.clearAll();
     }

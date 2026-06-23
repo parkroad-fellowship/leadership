@@ -1,17 +1,21 @@
-import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
 import 'package:leadership/models/remote/prf_requisition_item_dto.dart';
 import 'package:leadership/services/api/requisition_item_service.dart';
+import 'package:leadership/services/local_storage/hive/db/requisition_item_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
-import 'package:leadership/utils/crud/resource_state.dart';
 
 class RequisitionItemResourceCubit extends ResourceCubit<PRFRequisitionItem> {
   RequisitionItemResourceCubit({
     required RequisitionItemService requisitionItemService,
-  }) : _requisitionItemService = requisitionItemService,
-       super(service: requisitionItemService);
+    required RequisitionItemHiveDbService hiveDbService,
+  }) : super(service: requisitionItemService, dbService: hiveDbService);
 
-  final RequisitionItemService _requisitionItemService;
+  @override
+  Future<List<PRFRequisitionItem>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadForRequisition({required String requisitionUlid}) {
     return loadAll(
@@ -38,38 +42,6 @@ class RequisitionItemResourceCubit extends ResourceCubit<PRFRequisitionItem> {
         quantity: quantity,
       ).toJson(),
     );
-  }
-
-  Future<void> loadRequisitionItem({
-    required String requisitionItemUlid,
-  }) async {
-    emit(const ResourceState<PRFRequisitionItem>.listLoading());
-
-    try {
-      final requisitionItem = await _requisitionItemService.get(
-        ulid: requisitionItemUlid,
-        includes: ['expenseCategory', 'requisition'],
-      );
-      emit(
-        ResourceState<PRFRequisitionItem>.listLoaded(
-          items: [requisitionItem],
-        ),
-      );
-    } on Failure catch (e) {
-      emit(
-        ResourceState<PRFRequisitionItem>.error(
-          message: e.message,
-          items: currentItems,
-        ),
-      );
-    } catch (e) {
-      emit(
-        ResourceState<PRFRequisitionItem>.error(
-          message: e.toString(),
-          items: currentItems,
-        ),
-      );
-    }
   }
 
   Future<void> updateRequisitionItem({

@@ -1,13 +1,22 @@
 import 'package:leadership/models/remote/mission/prf_mission_offline_member.dart';
 import 'package:leadership/models/remote/mission/prf_mission_offline_member_dto.dart';
 import 'package:leadership/services/api/mission_offline_member_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_offline_member_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class MissionOfflineMemberResourceCubit
     extends ResourceCubit<PRFMissionOfflineMember> {
   MissionOfflineMemberResourceCubit({
     required MissionOfflineMemberService missionOfflineMemberService,
-  }) : super(service: missionOfflineMemberService);
+    required MissionOfflineMemberHiveDbService hiveDbService,
+  }) : super(service: missionOfflineMemberService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFMissionOfflineMember>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(

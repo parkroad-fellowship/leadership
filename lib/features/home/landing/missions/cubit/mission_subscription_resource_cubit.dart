@@ -3,13 +3,22 @@ import 'package:leadership/enums/prf_mission_subscription_status.dart';
 import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
 import 'package:leadership/models/remote/mission/prf_mission_subscription_dto.dart';
 import 'package:leadership/services/api/mission_subscription_service.dart';
+import 'package:leadership/services/local_storage/hive/db/mission_subscription_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class MissionSubscriptionResourceCubit
     extends ResourceCubit<PRFMissionSubscription> {
   MissionSubscriptionResourceCubit({
     required MissionSubscriptionService missionSubscriptionService,
-  }) : super(service: missionSubscriptionService);
+    required MissionSubscriptionHiveDbService hiveDbService,
+  }) : super(service: missionSubscriptionService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFMissionSubscription>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   @override
   List<String> get defaultIncludes => ['member', 'mission'];

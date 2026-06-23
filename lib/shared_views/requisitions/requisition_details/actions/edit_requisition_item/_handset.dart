@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
-import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
+import 'package:leadership/features/home/cubit/expense_categories_resource_cubit.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_item_detail_cubit.dart';
 import 'package:leadership/shared_views/requisitions/cubit/requisition_item_resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
@@ -44,10 +45,10 @@ class _EditRequisitionItemViewHandsetState
   @override
   void initState() {
     super.initState();
-    // Get expense categories and requisition item when widget initializes
-    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
-    context.read<RequisitionItemResourceCubit>().loadRequisitionItem(
-      requisitionItemUlid: widget.requisitionItemUlid,
+    context.read<ExpenseCategoriesResourceCubit>().loadAll(limit: 100);
+    context.read<RequisitionItemDetailCubit>().loadOne(
+      id: widget.requisitionItemUlid,
+      matchById: (item) => item.ulid == widget.requisitionItemUlid,
     );
 
     // Add listeners to calculate total
@@ -89,176 +90,195 @@ class _EditRequisitionItemViewHandsetState
   @override
   Widget build(BuildContext context) {
     return BlocListener<
-      RequisitionItemResourceCubit,
+      RequisitionItemDetailCubit,
       ResourceState<PRFRequisitionItem>
     >(
       listener: (context, state) {
         state.maybeWhen(
-          listLoaded: (items, _, _) {
-            if (items.isNotEmpty) {
-              _populateForm(items.first);
-            }
-          },
-          mutating: (_, operation) {
-            if (operation == ResourceOperation.update) {
-              setState(() {
-                _isLoading = true;
-              });
-            }
-          },
-          mutated: (_, operation, item) {
-            if (operation == ResourceOperation.update) {
-              setState(() {
-                _isLoading = false;
-              });
-              if (item != null) {
-                _populateForm(item);
-              }
-              Gaimon.success();
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Requisition item updated successfully'),
-                ),
-              );
-            }
-          },
-          error: (message, _) {
-            if (_isLoading) {
-              setState(() {
-                _isLoading = false;
-              });
-              Gaimon.error();
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(message)));
-            }
+          itemLoaded: (item, _) {
+            _populateForm(item);
           },
           orElse: () {},
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-              Theme.of(context).colorScheme.surface,
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: PRFSpacingTokens.lg),
-
-                // Header Card
-                Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.8),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+      child:
+          BlocListener<
+            RequisitionItemResourceCubit,
+            ResourceState<PRFRequisitionItem>
+          >(
+            listener: (context, state) {
+              state.maybeWhen(
+                mutating: (_, operation) {
+                  if (operation == ResourceOperation.update) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                  }
+                },
+                mutated: (_, operation, item) {
+                  if (operation == ResourceOperation.update) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (item != null) {
+                      _populateForm(item);
+                    }
+                    Gaimon.success();
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Requisition item updated successfully'),
                       ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 32,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                          const SizedBox(height: PRFSpacingTokens.sm),
-                          Text(
-                            'Edit Requisition Item',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
+                    );
+                  }
+                },
+                error: (message, _) {
+                  if (_isLoading) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    Gaimon.error();
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(message)));
+                  }
+                },
+                orElse: () {},
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.05),
+                    Theme.of(context).colorScheme.surface,
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PRFSpacingTokens.lg,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: PRFSpacingTokens.lg),
+
+                      // Header Card
+                      Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).colorScheme.primary,
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.lg,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.edit_outlined,
+                                  size: 32,
                                   color: Theme.of(
                                     context,
                                   ).colorScheme.onPrimary,
-                                  fontWeight: FontWeight.bold,
                                 ),
-                          ),
-                          const SizedBox(height: PRFSpacingTokens.xs),
-                          Text(
-                            'Update the details of this requisition item',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimary.withValues(
-                                        alpha: 0.9,
+                                const SizedBox(height: PRFSpacingTokens.sm),
+                                Text(
+                                  'Edit Requisition Item',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimary,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                 ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    )
-                    .animate()
-                    .slideY(begin: -0.3)
-                    .fadeIn(duration: PRFMotionTokens.enterShort),
-
-                const SizedBox(height: PRFSpacingTokens.xxl),
-
-                // Loading state for requisition item
-                BlocBuilder<
-                  RequisitionItemResourceCubit,
-                  ResourceState<PRFRequisitionItem>
-                >(
-                  builder: (context, state) {
-                    return switch (state) {
-                      ResourceInitial<PRFRequisitionItem>() ||
-                      ResourceListLoading<PRFRequisitionItem>() =>
-                        const PRFCircularProgressIndicator(),
-                      ResourceListLoaded<PRFRequisitionItem>() ||
-                      ResourceMutating<PRFRequisitionItem>() ||
-                      ResourceMutated<PRFRequisitionItem>() =>
-                        _buildFormContent(),
-                      ResourceError<PRFRequisitionItem>(
-                        :final message,
-                        :final items,
-                      ) =>
-                        items.isNotEmpty
-                            ? _buildFormContent()
-                            : Center(
-                                child: Text(
-                                  'Error loading requisition item: $message',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
+                                const SizedBox(height: PRFSpacingTokens.xs),
+                                Text(
+                                  'Update the details of this requisition item',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                      ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                      _ => const PRFCircularProgressIndicator(),
-                    };
-                  },
-                ),
+                              ],
+                            ),
+                          )
+                          .animate()
+                          .slideY(begin: -0.3)
+                          .fadeIn(duration: PRFMotionTokens.enterShort),
 
-                const SizedBox(height: PRFSpacingTokens.xxxl),
-              ],
+                      const SizedBox(height: PRFSpacingTokens.xxl),
+
+                      // Loading state for requisition item
+                      BlocBuilder<
+                        RequisitionItemDetailCubit,
+                        ResourceState<PRFRequisitionItem>
+                      >(
+                        builder: (context, state) {
+                          return switch (state) {
+                            ResourceInitial<PRFRequisitionItem>() ||
+                            ResourceItemLoading<PRFRequisitionItem>() =>
+                              const PRFCircularProgressIndicator(),
+                            ResourceItemLoaded<PRFRequisitionItem>() =>
+                              _buildFormContent(),
+                            ResourceItemError<PRFRequisitionItem>(
+                              :final message,
+                              :final item,
+                            ) =>
+                              item != null
+                                  ? _buildFormContent()
+                                  : Center(
+                                      child: Text(
+                                        'Error loading requisition item: $message',
+                                        style: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.error,
+                                        ),
+                                      ),
+                                    ),
+                            _ => const PRFCircularProgressIndicator(),
+                          };
+                        },
+                      ),
+
+                      const SizedBox(height: PRFSpacingTokens.xxxl),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -295,17 +315,16 @@ class _EditRequisitionItemViewHandsetState
                     isRequired: true,
                     child:
                         BlocBuilder<
-                          GetExpenseCategoriesCubit,
-                          GetExpenseCategoriesState
+                          ExpenseCategoriesResourceCubit,
+                          ResourceState<PRFExpenseCategory>
                         >(
                           builder: (context, state) {
-                            return state.when(
-                              initial: () =>
+                            return state.maybeWhen(
+                              orElse: () =>
                                   const PRFCircularProgressIndicator(),
-                              loading: () =>
-                                  const PRFCircularProgressIndicator(),
-                              loaded: _buildCategorySelector,
-                              error: (message) => Text(
+                              listLoaded: (expenseCategories, _, _) =>
+                                  _buildCategorySelector(expenseCategories),
+                              error: (message, _) => Text(
                                 'Error loading categories: $message',
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.error,

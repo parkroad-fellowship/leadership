@@ -1,12 +1,21 @@
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/models/remote/prf_marital_status.dart';
 import 'package:leadership/services/api/marital_status_service.dart';
+import 'package:leadership/services/local_storage/hive/db/marital_status_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 
 class MaritalStatusResourceCubit extends ResourceCubit<PRFMaritalStatus> {
   MaritalStatusResourceCubit({
     required MaritalStatusService maritalStatusService,
-  }) : super(service: maritalStatusService);
+    required MaritalStatusHiveDbService hiveDbService,
+  }) : super(service: maritalStatusService, dbService: hiveDbService);
+
+  @override
+  Future<List<PRFMaritalStatus>> loadCachedList({
+    Map<String, dynamic>? filters,
+  }) async {
+    return dbService.list();
+  }
 
   Future<void> createMaritalStatus({required String name}) {
     return create(data: {'name': name});

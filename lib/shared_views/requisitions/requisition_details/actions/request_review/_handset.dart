@@ -3,11 +3,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_leadership_group.dart';
-import 'package:leadership/features/home/cubit/get_members_cubit.dart';
+import 'package:leadership/features/home/landing/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
-import 'package:leadership/shared_views/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/shared_views/requisitions/cubit/requisition_detail_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -29,7 +29,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
 
   @override
   void initState() {
-    context.read<GetMembersCubit>().getMembers(
+    context.read<MemberResourceCubit>().getMembers(
       groups: [PRFLeadershipGroup.executiveCommittee],
     );
     super.initState();
@@ -146,14 +146,15 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                 isRequired: true,
                 child: Column(
                   children: [
-                    BlocBuilder<GetMembersCubit, GetMembersState>(
+                    BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
                       builder: (context, state) {
                         return state.maybeWhen(
                           orElse: () => const SizedBox.shrink(),
-                          loading: () => const Center(
+                          listLoading: () => const Center(
                             child: LinearProgressIndicator(),
                           ),
-                          loaded: (leaders) => PRFSearchableList<PRFMember>(
+                          listLoaded: (leaders, _, _) =>
+                              PRFSearchableList<PRFMember>(
                             entries: leaders
                                 .map(
                                   (leader) => PRFSearchableListEntry<PRFMember>(
@@ -177,32 +178,21 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
             ),
             const SizedBox(height: PRFSpacingTokens.xxl),
             // Submit Button
-            BlocConsumer<
-                  RequisitionResourceCubit,
-                  ResourceState<PRFRequisition>
-                >(
+            BlocConsumer<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
                   listener: (context, state) {
                     switch (state) {
-                      case ResourceMutating<PRFRequisition>(
-                        :final operation,
-                      ):
-                        if (operation == ResourceOperation.update) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                        }
-                      case ResourceMutated<PRFRequisition>(
-                        :final operation,
-                      ):
-                        if (operation == ResourceOperation.update) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Gaimon.success();
-                          Navigator.of(context).pop();
-                          PRFSnackbar.success(context, l10n.activityCreated);
-                        }
-                      case ResourceError<PRFRequisition>(:final message):
+                      case ResourceItemLoading<PRFRequisition>():
+                        setState(() {
+                          _isLoading = true;
+                        });
+                      case ResourceItemLoaded<PRFRequisition>():
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Gaimon.success();
+                        Navigator.of(context).pop();
+                        PRFSnackbar.success(context, l10n.activityCreated);
+                      case ResourceItemError<PRFRequisition>(:final message):
                         setState(() {
                           _isLoading = false;
                         });
@@ -243,7 +233,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
       return;
     }
 
-    await context.read<RequisitionResourceCubit>().requestReview(
+    await context.read<RequisitionDetailCubit>().requestReview(
       requisitionUlid: requisitionUlid,
       approverUlid: selectedApprover!.ulid,
     );
