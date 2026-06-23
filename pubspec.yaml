@@ -39,10 +39,8 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   freezed_annotation: ^3.1.0
-  full_screen_image: ^2.0.0
   gaimon: ^1.4.3
   get_it: ^9.2.1
-  google_fonts: ^8.1.0
   google_sign_in: ^7.2.0
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
@@ -50,13 +48,11 @@ dependencies:
   http_parser: ^4.1.2
   image_picker: ^1.2.2
   intl: ^0.20.2
-  json_annotation: ^4.12.0
   latlong2: ^0.9.1
   logger: ^2.7.0
   map_launcher: ^4.5.0
   mime: ^2.0.0
   path_provider: ^2.1.6
-  pdfx: ^2.9.2
   permission_handler: ^12.0.3
   phone_form_field: ^10.0.17
   pretty_dio_logger: ^1.4.0
