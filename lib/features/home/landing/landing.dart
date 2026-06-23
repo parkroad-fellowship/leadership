@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
-import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/landing/_handset.dart';
 import 'package:leadership/features/home/landing/_tablet.dart';
 import 'package:leadership/features/home/landing/models/landing_action_item.dart';
@@ -25,7 +24,6 @@ class _LandingPageState extends State<LandingPage> {
   void initState() {
     super.initState();
 
-    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeNotifications();

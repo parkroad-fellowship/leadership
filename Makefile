@@ -5,7 +5,7 @@ splash:
 		dart run flutter_native_splash:create
 
 gen:
-		dart run build_runner build --delete-conflicting-outputs
+		dart run build_runner build
 
 fmt:
 		dart fix --apply && dart format lib test

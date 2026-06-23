@@ -1,6 +1,6 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
-abstract class BaseHiveService {
+abstract class BaseHiveKVService {
   // Abstract property that subclasses must define
   String get boxName;
 

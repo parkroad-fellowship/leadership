@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
-import 'package:leadership/features/home/cubit/get_expense_categories_cubit.dart';
 import 'package:leadership/features/home/cubit/select_media_cubit.dart';
 import 'package:leadership/features/home/cubit/upload_media_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
@@ -56,7 +55,6 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   }
 
   void _loadData() {
-    context.read<GetExpenseCategoriesCubit>().getExpenseCategories();
     context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
       accountingEventUlid: accountingEventUlid,
     );

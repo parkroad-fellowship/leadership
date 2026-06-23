@@ -1,8 +1,8 @@
 import 'package:leadership/enums/prf_theme_mode.dart';
-import 'package:leadership/services/local_storage/hive/_base_hive_service.dart';
+import 'package:leadership/services/local_storage/hive/kv/_base_hive_kv_service.dart';
 import 'package:leadership/utils/_index.dart';
 
-class SettingsHiveService extends BaseHiveService {
+class SettingsHiveService extends BaseHiveKVService {
   @override
   String get boxName => PRFLeadershipConfig.instance!.values.globalHiveAuthBox;
 

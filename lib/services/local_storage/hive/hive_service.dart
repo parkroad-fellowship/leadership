@@ -3,12 +3,17 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:leadership/hive/hive_registrar.g.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/models/local/adapters.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/services/local_storage/hive/auth_hive_service.dart';
-import 'package:leadership/services/local_storage/hive/data_hive_service.dart';
-import 'package:leadership/services/local_storage/hive/settings_hive_service.dart';
+import 'package:leadership/services/api/expense_categories_service.dart';
+import 'package:leadership/services/local_storage/hive/db/_base_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/allocation_entry_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/expense_category_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/kv/auth_hive_service.dart';
+import 'package:leadership/services/local_storage/hive/kv/settings_hive_service.dart';
 import 'package:leadership/utils/_index.dart';
 
 class HiveService {
@@ -16,14 +21,75 @@ class HiveService {
   HiveService._();
 
   static HiveService? instance;
+  static const String _binaryAdapterMigrationMarker =
+      'hive_binary_adapter_migration_v1';
+  static const String _migrationMetaBoxName = 'hive_migration_meta';
+
+  // ----- Auth / settings boxes -----
 
   late final AuthHiveService _auth;
-  late final DataHiveService _data;
   late final SettingsHiveService _settings;
 
+    // ----- Entity CRUD services -----
+
+  late final AllocationEntryHiveDbService _allocationEntries;
+  late final ExpenseCategoryHiveDbService _expenseCategories;
+  late final RequisitionHiveDbService _requisitions;
+
+
   AuthHiveService get auth => _auth;
-  DataHiveService get data => _data;
   SettingsHiveService get settings => _settings;
+
+  AllocationEntryHiveDbService get allocationEntries => _allocationEntries;
+  ExpenseCategoryHiveDbService get expenseCategories => _expenseCategories;
+  RequisitionHiveDbService get requisitions => _requisitions;
+
+
+
+  // ----- Initialisation -----
+
+  Future<void> initBoxes() async {
+    await Hive.initFlutter();
+
+    // Register generated adapters.
+    Hive.registerAdapters();
+
+    final appBoxName = PRFLeadershipConfig.instance!.values.hiveBox;
+    final globalAuthBoxName =
+        PRFLeadershipConfig.instance!.values.globalHiveAuthBox;
+
+    final cipher = _buildCipher();
+
+    await _runLegacyAdapterMigrationIfNeeded(
+      appBoxName: appBoxName,
+      globalAuthBoxName: globalAuthBoxName,
+    );
+
+    // Open auth/settings boxes.
+    await _openBoxSafe(appBoxName, cipher: cipher);
+    await _openBoxSafe(globalAuthBoxName, cipher: cipher);
+
+    // Initialize auth/settings sub-services.
+    _auth = AuthHiveService();
+    _settings = SettingsHiveService();
+
+    // Instantiate entity CRUD services.
+    _allocationEntries = AllocationEntryHiveDbService();
+    _expenseCategories = ExpenseCategoryHiveDbService();
+    _requisitions = RequisitionHiveDbService();
+
+    // Open all entity boxes with the shared cipher.
+    final entityBoxNames = [
+      _allocationEntries.boxName,
+      _expenseCategories.boxName,
+      _requisitions.boxName,
+
+    ];
+
+    for (final name in entityBoxNames) {
+      await _openBoxSafe(name, cipher: cipher);
+    }
+  }
 
   HiveAesCipher? _buildCipher() {
     final key = PRFLeadershipConfig.instance!.values.hiveEncryptionKey;
@@ -54,55 +120,54 @@ class HiveService {
     }
   }
 
-  Future<void> initBoxes() async {
-    await Hive.initFlutter();
+  Future<void> _runLegacyAdapterMigrationIfNeeded({
+    required String appBoxName,
+    required String globalAuthBoxName,
+  }) async {
+    final migrationBox = await _openBoxSafe(_migrationMetaBoxName);
+    final hasMigrated =
+        migrationBox.get(_binaryAdapterMigrationMarker) as bool? ?? false;
+    if (hasMigrated) {
+      await migrationBox.close();
+      return;
+    }
 
-    // Register adapters
-    Hive
-      ..registerAdapter(PRFUserAdapter())
-      ..registerAdapter(PRFExpenseCategoryResponseAdapter());
+    // Legacy adapters used JSON-string payloads. Generated adapters use
+    // binary fields, so reset once before opening app/global boxes.
+    if (await Hive.boxExists(appBoxName)) {
+      await Hive.deleteBoxFromDisk(appBoxName);
+    }
 
-    final cipher = _buildCipher();
+    if (await Hive.boxExists(globalAuthBoxName)) {
+      await Hive.deleteBoxFromDisk(globalAuthBoxName);
+    }
 
-    // Open boxes
-    await _openBoxSafe(
-      PRFLeadershipConfig.instance!.values.hiveBox,
-      cipher: cipher,
-    );
-    await _openBoxSafe(
-      PRFLeadershipConfig.instance!.values.globalHiveAuthBox,
-      cipher: cipher,
-    );
+    await migrationBox.put(_binaryAdapterMigrationMarker, true);
+    await migrationBox.close();
+  }
 
-    // Initialize services & sub-services
-    _auth = AuthHiveService();
-    _settings = SettingsHiveService();
+  // ----- Entity table management -----
 
-    _data = DataHiveService();
-    _data.initialize();
+  /// Wipes all entity boxes. Called on sign-out to clear user data.
+  Future<void> clearAllTables() async {
+    final services = <BaseHiveDbService<dynamic>>[];
+    for (final s in services) {
+      await s.clearAll();
+    }
   }
 
   // Convenience methods that delegate to appropriate services
   void clearPrefs() {
     _auth.clearAuthData();
-    _data.clearDataCache();
   }
 
   void clearBox() {
     _auth.clear();
-    _data.clear();
   }
 
   // Member-related convenience methods
   PRFMember? retrieveMember() {
     return _auth.retrieveProfile()?.member;
-  }
-
-  List<String> retrieveMemberGroupUlids() {
-    return retrieveMember()!.groupMembers
-            ?.map((groupMember) => groupMember.group!.ulid)
-            .toList() ??
-        [];
   }
 
   List<String> get memberRoles {

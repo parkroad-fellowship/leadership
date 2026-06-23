@@ -1,10 +1,10 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/models/remote/auth.dart';
-import 'package:leadership/services/local_storage/hive/_base_hive_service.dart';
+import 'package:leadership/services/local_storage/hive/kv/_base_hive_kv_service.dart';
 import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
 
-class AuthHiveService extends BaseHiveService {
+class AuthHiveService extends BaseHiveKVService {
   @override
   String get boxName => PRFLeadershipConfig.instance!.values.hiveBox;
 
