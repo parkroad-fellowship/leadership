@@ -44,37 +44,43 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
 
   Future<void> loadApprovalRequisitions() {
     final member = _hiveService.retrieveMember()!;
-    return loadAll(filters: {
-      'appointed_approver_ulid': member.ulid,
-      'approval_status': PRFApprovalStatus.underReview.apiKey,
-    });
+    return loadAll(
+      filters: {
+        'appointed_approver_ulid': member.ulid,
+        'approval_status': PRFApprovalStatus.underReview.apiKey,
+      },
+    );
   }
 
   Future<void> loadClosedRequisitions() {
     final member = _hiveService.retrieveMember()!;
-    return loadAll(filters: {
-      'appointed_approver_ulid': member.ulid,
-      'responsible_desks': _hiveService.responsibleDesks
-          .map((desk) => desk.apiKey)
-          .toList()
-          .join(','),
-      'approval_statuses': [
-        PRFApprovalStatus.approved.apiKey,
-        PRFApprovalStatus.rejected.apiKey,
-      ].join(','),
-    });
+    return loadAll(
+      filters: {
+        'appointed_approver_ulid': member.ulid,
+        'responsible_desks': _hiveService.responsibleDesks
+            .map((desk) => desk.apiKey)
+            .toList()
+            .join(','),
+        'approval_statuses': [
+          PRFApprovalStatus.approved.apiKey,
+          PRFApprovalStatus.rejected.apiKey,
+        ].join(','),
+      },
+    );
   }
 
   Future<void> loadDraftRequisitions() {
-    return loadAll(filters: {
-      'responsible_desks': _hiveService.responsibleDesks
-          .map((desk) => desk.apiKey)
-          .toList()
-          .join(','),
-      'approval_statuses': [
-        PRFApprovalStatus.pending.apiKey,
-      ].join(','),
-    });
+    return loadAll(
+      filters: {
+        'responsible_desks': _hiveService.responsibleDesks
+            .map((desk) => desk.apiKey)
+            .toList()
+            .join(','),
+        'approval_statuses': [
+          PRFApprovalStatus.pending.apiKey,
+        ].join(','),
+      },
+    );
   }
 
   Future<void> createRequisition({

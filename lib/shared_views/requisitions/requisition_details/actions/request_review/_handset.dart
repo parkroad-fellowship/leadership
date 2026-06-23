@@ -155,20 +155,21 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                           ),
                           listLoaded: (leaders, _, _) =>
                               PRFSearchableList<PRFMember>(
-                            entries: leaders
-                                .map(
-                                  (leader) => PRFSearchableListEntry<PRFMember>(
-                                    value: leader,
-                                    label: leader.fullName,
-                                  ),
-                                )
-                                .toList(),
-                            onSelected: (member) => setState(() {
-                              selectedApprover = member;
-                            }),
-                            selection: selectedApprover,
-                            hintText: l10n.selectApprover,
-                          ),
+                                entries: leaders
+                                    .map(
+                                      (leader) =>
+                                          PRFSearchableListEntry<PRFMember>(
+                                            value: leader,
+                                            label: leader.fullName,
+                                          ),
+                                    )
+                                    .toList(),
+                                onSelected: (member) => setState(() {
+                                  selectedApprover = member;
+                                }),
+                                selection: selectedApprover,
+                                hintText: l10n.selectApprover,
+                              ),
                         );
                       },
                     ),

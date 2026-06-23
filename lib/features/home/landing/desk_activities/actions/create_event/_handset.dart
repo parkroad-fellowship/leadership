@@ -253,11 +253,16 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             icon: Icons.group_outlined,
                             title: l10n.participants,
                             child:
-                                BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
+                                BlocBuilder<
+                                  MemberResourceCubit,
+                                  ResourceState<PRFMember>
+                                >(
                                   builder: (context, state) {
                                     return state.maybeWhen(
                                       listLoaded: (members, _, _) =>
-                                          _buildParticipantsMultiSelect(members),
+                                          _buildParticipantsMultiSelect(
+                                            members,
+                                          ),
                                       listLoading: () => Container(
                                         height: 60,
                                         decoration: BoxDecoration(

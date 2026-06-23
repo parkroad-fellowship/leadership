@@ -203,70 +203,69 @@ class _EditRequisitionViewHandsetState
                           ResourceItemLoading<PRFRequisition>() => const Center(
                             child: CircularProgressIndicator(),
                           ),
-                          ResourceItemLoaded<PRFRequisition>() =>
-                            Container(
-                              padding: const EdgeInsets.all(
-                                PRFSpacingTokens.xl,
+                          ResourceItemLoaded<PRFRequisition>() => Container(
+                            padding: const EdgeInsets.all(
+                              PRFSpacingTokens.xl,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(
+                                PRFRadiusTokens.lg,
                               ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(
-                                  PRFRadiusTokens.lg,
-                                ),
-                                border: Border.all(
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outline.withValues(alpha: 0.2),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.outline.withValues(alpha: 0.2),
+                                  ).colorScheme.shadow.withValues(alpha: 0.1),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.shadow.withValues(alpha: 0.1),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  PRFFormSection(
-                                        icon: Icons.schedule_outlined,
-                                        title: 'Requisition Date',
-                                        isRequired: true,
-                                        child: GestureDetector(
-                                          onTap: _selectRequisitionDate,
-                                          child: AbsorbPointer(
-                                            child: PRFTextInput(
-                                              hintText: 'Select date',
-                                              controller:
-                                                  _requisitionDateController,
-                                              enabled: false,
-                                            ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                PRFFormSection(
+                                      icon: Icons.schedule_outlined,
+                                      title: 'Requisition Date',
+                                      isRequired: true,
+                                      child: GestureDetector(
+                                        onTap: _selectRequisitionDate,
+                                        child: AbsorbPointer(
+                                          child: PRFTextInput(
+                                            hintText: 'Select date',
+                                            controller:
+                                                _requisitionDateController,
+                                            enabled: false,
                                           ),
                                         ),
-                                      )
-                                      .animate(delay: PRFMotionTokens.stagger4)
-                                      .slideX(begin: -0.2)
-                                      .fadeIn(),
+                                      ),
+                                    )
+                                    .animate(delay: PRFMotionTokens.stagger4)
+                                    .slideX(begin: -0.2)
+                                    .fadeIn(),
 
-                                  PRFFormSection(
-                                        icon: Icons.notes_outlined,
-                                        title: l10n.purpose,
-                                        isRequired: true,
-                                        child: PRFTextAreaInput(
-                                          hintText: l10n.purpose,
-                                          controller: _remarksController,
-                                        ),
-                                      )
-                                      .animate(
-                                        delay: PRFMotionTokens.enterShort,
-                                      )
-                                      .slideX(begin: -0.2)
-                                      .fadeIn(),
-                                ],
-                              ),
+                                PRFFormSection(
+                                      icon: Icons.notes_outlined,
+                                      title: l10n.purpose,
+                                      isRequired: true,
+                                      child: PRFTextAreaInput(
+                                        hintText: l10n.purpose,
+                                        controller: _remarksController,
+                                      ),
+                                    )
+                                    .animate(
+                                      delay: PRFMotionTokens.enterShort,
+                                    )
+                                    .slideX(begin: -0.2)
+                                    .fadeIn(),
+                              ],
                             ),
+                          ),
                           ResourceItemError<PRFRequisition>(:final message) =>
                             Center(
                               child: Text(
