@@ -1433,10 +1433,10 @@ packages:
     dependency: "direct main"
     description:
       name: prf_design
-      sha256: "6dd4e75708516a77ce81c37acf7beb5a26077469ba5488758fe74e8a698ee645"
+      sha256: b84ea4837f7fce44d30a60bf985a5f043b7d593f85ff8acde7a3b6427f1d5f9a
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.4"
+    version: "0.8.5"
   proj4dart:
     dependency: transitive
     description:
@@ -1702,10 +1702,10 @@ packages:
     dependency: "direct main"
     description:
       name: timezone
-      sha256: "784a5e34d2eb62e1326f24d6f600aaaee452eb8ca8ef2f384a59244e292d158b"
+      sha256: "981d1020d6ef8fe1e7b3de5054e5b25579ae7c403d7734adc508ffc47668e9cb"
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.0"
+    version: "0.11.1"
   typed_data:
     dependency: transitive
     description:
@@ -1972,4 +1972,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.12.2 <4.0.0"
-  flutter: "3.44.2"
+  flutter: ">=3.44.2"
