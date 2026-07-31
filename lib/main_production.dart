@@ -18,14 +18,20 @@ Future<void> main() async {
       hiveBox: 'prf-leadership-v2',
       baseDomain: EncryptionHelper.requiredDefine(EncryptionHelper.baseDomain),
       urlScheme: 'https',
-      socketDomain: EncryptionHelper.requiredDefine(EncryptionHelper.socketDomain),
+      socketDomain: EncryptionHelper.requiredDefine(
+        EncryptionHelper.socketDomain,
+      ),
       socketKey: EncryptionHelper.requiredDefine(EncryptionHelper.socketKey),
       socketScheme: 'wss',
       socketPort: 443,
-      azureConnString: EncryptionHelper.requiredDefine(EncryptionHelper.azureConnString),
+      azureConnString: EncryptionHelper.requiredDefine(
+        EncryptionHelper.azureConnString,
+      ),
       appId: EncryptionHelper.requiredDefine(EncryptionHelper.appId),
       appSecret: EncryptionHelper.requiredDefine(EncryptionHelper.appSecret),
-      hiveEncryptionKey: EncryptionHelper.requiredDefine(EncryptionHelper.hiveEncryptionKey),
+      hiveEncryptionKey: EncryptionHelper.requiredDefine(
+        EncryptionHelper.hiveEncryptionKey,
+      ),
       tenantUlid: EncryptionHelper.requiredDefine(EncryptionHelper.tenantUlid),
     ),
   );

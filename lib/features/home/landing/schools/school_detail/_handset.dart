@@ -570,7 +570,16 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   Future<void> _openSchoolInMaps(
     PRFSchool school,
   ) async {
-    final availableMaps = await MapLauncher.installedMaps;
+    final mapTypes = [MapApp.google, MapApp.googleGo, MapApp.apple];
+
+    final availableMaps = await MapLauncher.marker(
+      LocationCoords(
+        school.latitude,
+        school.longitude,
+        title: school.name,
+      ),
+    ).getSupportedMaps(mapTypes);
+
     if (availableMaps.isEmpty) {
       if (!mounted) return;
       PRFSnackbar.error(
@@ -581,13 +590,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     }
 
     if (availableMaps.length == 1) {
-      await availableMaps.first.showMarker(
-        coords: Coords(
-          school.latitude,
-          school.longitude,
-        ),
-        title: school.name,
-      );
+      await availableMaps.first.show();
       return;
     }
 
@@ -604,15 +607,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                       Navigator.pop(
                         bottomSheetContext,
                       );
-                      map.showMarker(
-                        coords: Coords(
-                          school.latitude,
-                          school.longitude,
-                        ),
-                        title: school.name,
-                      );
+                      map.show();
                     },
-                    title: Text(map.mapName),
+                    title: Text(map.name),
                     leading: const Icon(Icons.map),
                   ),
                 )

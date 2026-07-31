@@ -80,7 +80,6 @@ class RequestSigner {
       'X-PRF-App-ID': appId,
       'X-PRF-Timestamp': timestamp,
       'X-PRF-Signature': signature,
-
     };
   }
 }
