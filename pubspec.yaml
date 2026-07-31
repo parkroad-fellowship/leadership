@@ -42,7 +42,7 @@ dependencies:
   full_screen_image: ^2.0.0
   gaimon: ^1.4.3
   get_it: ^9.2.1
-  google_fonts: ^8.1.0
+  google_fonts: ^8.2.0
   google_sign_in: ^7.2.0
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
