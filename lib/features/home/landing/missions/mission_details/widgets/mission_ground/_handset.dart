@@ -815,18 +815,14 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
   Future<void> _openMap(PRFMission mission) async {
     final school = mission.school!;
 
-    final mapTypes = [MapType.google, MapType.googleGo, MapType.apple];
+    final mapTypes = [MapApp.google, MapApp.googleGo, MapApp.apple];
 
     for (final mapType in mapTypes) {
-      final isAvailable = await MapLauncher.isMapAvailable(mapType);
-      if (isAvailable) {
-        await MapLauncher.showMarker(
-          mapType: mapType,
-          coords: Coords(school.latitude, school.longitude),
-          title: school.name,
-        );
-        return;
-      }
+      // Discover available maps (pass the maps your app supports)
+      final maps = await MapLauncher.marker(
+        LocationCoords(school.latitude, school.longitude),
+      ).getSupportedMaps([mapType]);
+      await maps.first.show();
     }
   }
 }

@@ -5,26 +5,34 @@ import 'package:leadership/app/app.dart';
 import 'package:leadership/bootstrap.dart';
 import 'package:leadership/enums/prf_environment.dart';
 import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/encryption_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Misc.ensureRequiredDefines(DefineKeys.requiredProduction);
+  EncryptionHelper.ensureRequiredDefines(EncryptionHelper.requiredProduction);
 
   PRFLeadershipConfig(
     values: PRFLeadershipValues(
       environment: PRFEnvironment.production,
       hiveBox: 'prf-leadership-v2',
-      baseDomain: Misc.requiredDefine(DefineKeys.baseDomain),
+      baseDomain: EncryptionHelper.requiredDefine(EncryptionHelper.baseDomain),
       urlScheme: 'https',
-      socketDomain: Misc.requiredDefine(DefineKeys.socketDomain),
-      socketKey: Misc.requiredDefine(DefineKeys.socketKey),
+      socketDomain: EncryptionHelper.requiredDefine(
+        EncryptionHelper.socketDomain,
+      ),
+      socketKey: EncryptionHelper.requiredDefine(EncryptionHelper.socketKey),
       socketScheme: 'wss',
       socketPort: 443,
-      azureConnString: Misc.requiredDefine(DefineKeys.azureConnString),
-      appId: Misc.requiredDefine(DefineKeys.appId),
-      appSecret: Misc.requiredDefine(DefineKeys.appSecret),
-      hiveEncryptionKey: Misc.requiredDefine(DefineKeys.hiveEncryptionKey),
+      azureConnString: EncryptionHelper.requiredDefine(
+        EncryptionHelper.azureConnString,
+      ),
+      appId: EncryptionHelper.requiredDefine(EncryptionHelper.appId),
+      appSecret: EncryptionHelper.requiredDefine(EncryptionHelper.appSecret),
+      hiveEncryptionKey: EncryptionHelper.requiredDefine(
+        EncryptionHelper.hiveEncryptionKey,
+      ),
+      tenantUlid: EncryptionHelper.requiredDefine(EncryptionHelper.tenantUlid),
     ),
   );
 

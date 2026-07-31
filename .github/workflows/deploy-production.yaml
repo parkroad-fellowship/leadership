@@ -34,7 +34,7 @@ jobs:
         timeout-minutes: 40
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
               with:
                   ref: main
 
@@ -69,9 +69,10 @@ jobs:
                   SOCKET_KEY: ${{ secrets.PROD_SOCKET_KEY }}
                   AZURE_CONN_STRING: ${{ secrets.PROD_AZURE_CONN_STRING }}
                   HIVE_ENCRYPTION_KEY: ${{ secrets.PROD_HIVE_ENCRYPTION_KEY }}
+                  TENANT_ULID: ${{ secrets.PROD_TENANT_ULID }}
               run: |
                   missing=""
-                  for key in APP_ID APP_SECRET BASE_DOMAIN SOCKET_DOMAIN SOCKET_KEY AZURE_CONN_STRING HIVE_ENCRYPTION_KEY; do
+                  for key in APP_ID APP_SECRET BASE_DOMAIN SOCKET_DOMAIN SOCKET_KEY AZURE_CONN_STRING HIVE_ENCRYPTION_KEY TENANT_ULID; do
                     value="${!key}"
                     if [ -z "$value" ]; then
                       missing="$missing $key"
@@ -92,6 +93,7 @@ jobs:
                   SOCKET_KEY: ${{ secrets.PROD_SOCKET_KEY }}
                   AZURE_CONN_STRING: ${{ secrets.PROD_AZURE_CONN_STRING }}
                   HIVE_ENCRYPTION_KEY: ${{ secrets.PROD_HIVE_ENCRYPTION_KEY }}
+                  TENANT_ULID: ${{ secrets.PROD_TENANT_ULID }}
               run: |
                   flutter build appbundle \
                     --flavor production \
@@ -104,7 +106,8 @@ jobs:
                     --dart-define=SOCKET_DOMAIN="$SOCKET_DOMAIN" \
                     --dart-define=SOCKET_KEY="$SOCKET_KEY" \
                     --dart-define=AZURE_CONN_STRING="$AZURE_CONN_STRING" \
-                    --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY"
+                    --dart-define=HIVE_ENCRYPTION_KEY="$HIVE_ENCRYPTION_KEY" \
+                    --dart-define=TENANT_ULID="$TENANT_ULID"
 
             - name: Upload AAB to Firebase App Distribution
               uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -153,7 +156,7 @@ jobs:
         timeout-minutes: 20
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
               with:
                   ref: main
 
