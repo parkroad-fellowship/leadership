@@ -25,6 +25,7 @@ Future<void> main() async {
       appSecret:
           'BqXB5apC9dXm5PyLhmFeD9Q8seKdDxGYljqDXisW0sX8m83QnBA2IUv1ygJ10cKM',
       hiveEncryptionKey: 'random_stg',
+      tenantUlid: 'random_stg',
     ),
   );
 

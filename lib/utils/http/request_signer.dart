@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:leadership/utils/_index.dart';
 import 'package:logger/logger.dart';
 
 class RequestSigner {
@@ -17,6 +18,12 @@ class RequestSigner {
         BaseOptions(
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
+          headers: <String, dynamic>{
+            'Accept': 'application/json',
+            'X-App-Version': Misc.getFullAppVersion(),
+            'X-PRF-App': 'PRF-Leadership-${Misc.getFullAppVersion()}',
+            'X-Tenant': PRFLeadershipConfig.instance!.values.tenantUlid,
+          },
         ),
       );
       final deviceTimeBefore = DateTime.now().millisecondsSinceEpoch;
@@ -73,6 +80,7 @@ class RequestSigner {
       'X-PRF-App-ID': appId,
       'X-PRF-Timestamp': timestamp,
       'X-PRF-Signature': signature,
+
     };
   }
 }
