@@ -40,6 +40,7 @@ class NetworkUtil {
           'Accept': 'application/json',
           'X-App-Version': Misc.getFullAppVersion(),
           'X-PRF-App': 'PRF-Leadership-${Misc.getFullAppVersion()}',
+          'X-Tenant': PRFLeadershipConfig.instance!.values.tenantUlid,
         },
         // Fixed timeout configuration
         connectTimeout: const Duration(seconds: 30),
@@ -195,6 +196,8 @@ class NetworkUtil {
             throw Failure(message: 'Bad SSL certificate');
           case DioExceptionType.cancel:
             throw Failure(message: 'Request was cancelled');
+          case DioExceptionType.transformTimeout:
+            throw Failure(message: 'Response transformation timeout');
         }
     }
   }
