@@ -821,14 +821,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
-  google_fonts:
-    dependency: transitive
-    description:
-      name: google_fonts
-      sha256: e3cb3ee6b47fd2472c23de6da5744796a4da195137759ddb3fbcc9467b7b3c7d
-      url: "https://pub.dev"
-    source: hosted
-    version: "8.2.1"
   google_identity_services_web:
     dependency: transitive
     description:
@@ -1481,10 +1473,10 @@ packages:
     dependency: "direct main"
     description:
       name: prf_design
-      sha256: b84ea4837f7fce44d30a60bf985a5f043b7d593f85ff8acde7a3b6427f1d5f9a
+      sha256: bc2023a04a9cc5c438909ab8b5c774d76b99b5a10323d769f0d44972e957dbf2
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.5"
+    version: "1.0.2"
   proj4dart:
     dependency: transitive
     description:
