@@ -8,7 +8,7 @@ import Foundation
 import awesome_notifications
 import awesome_notifications_core
 import device_info_plus
-import file_picker
+import file_picker_darwin
 import file_selector_macos
 import firebase_analytics
 import firebase_auth
