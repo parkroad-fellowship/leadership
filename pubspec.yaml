@@ -1,11 +1,11 @@
 name: leadership
 description: A PRF application for leadership management.
-version: 3.00.001+300001
+version: 3.00.002+300002
 publish_to: none
 
 environment:
   sdk: ^3.12.2
-  flutter: 3.44.2
+  flutter: 3.47.0
 
 dependencies:
   auto_route: ^11.1.0
@@ -54,7 +54,7 @@ dependencies:
   map_launcher: ^6.0.0
   mime: ^2.0.0
   path_provider: ^2.1.6
-  pdfx: ^2.9.2
+  pdfx: ^2.11.0
   permission_handler: ^13.0.1
   phone_form_field: ^10.0.18
   pretty_dio_logger: ^1.4.0
