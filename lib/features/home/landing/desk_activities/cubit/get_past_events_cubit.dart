@@ -40,9 +40,9 @@ class GetPastEventsCubit extends Cubit<GetPastEventsState> {
         orderDirection: 'desc',
         filters: {
           'responsible_desks': responsibleDesks,
-          // Select camp team by default
-          if (responsibleDesks.contains(PRFResponsibleDesk.followUp.apiKey))
-            PRFLeadershipGroup.campCommittee.apiKey: true,
+          // // Select camp team by default
+          // if (responsibleDesks.contains(PRFResponsibleDesk.followUp.apiKey))
+          //   PRFLeadershipGroup.campCommittee.apiKey: true,
           'past': true,
         },
       );
