@@ -27,18 +27,20 @@ class GetEventsCubit extends Cubit<GetEventsState> {
   Future<void> getUpcomingEvents() async {
     emit(const GetEventsState.loading());
     try {
+      final responsibleDesks = PRFResponsibleDesk.apiKeys(
+        PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
+      );
+
       final events = await _eventService.list(
         includes: [
           'posters',
           'accountingEvent',
         ],
         filters: {
-          'responsible_desks': PRFResponsibleDesk.apiKeys(
-            PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
-          ),
-          // Select camp team by default
-          if (Misc.userCan(PRFPermissions.viewAnyCommitteeItem))
-            PRFLeadershipGroup.campCommittee.apiKey: true,
+          'responsible_desks': responsibleDesks,
+          // // Select camp team by default
+          // if (responsibleDesks.contains(PRFResponsibleDesk.followUp.apiKey))
+          //   PRFLeadershipGroup.campCommittee.apiKey: true,
           'upcoming': true,
         },
       );
