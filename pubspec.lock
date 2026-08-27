@@ -442,13 +442,13 @@ packages:
     source: hosted
     version: "12.1.1"
   file_picker_darwin:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: file_picker_darwin
-      sha256: "5d87d156c1d63920447a662b7117d3498c67e3444a44d2cb01ed955d6efa62ef"
+      sha256: bdcba9c830f90ecba26020159e6bb90bce862ec58fabf1c41edb9db43e2f0eae
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.3"
   file_picker_linux:
     dependency: transitive
     description:
