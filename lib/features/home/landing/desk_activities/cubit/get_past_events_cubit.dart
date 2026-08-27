@@ -27,6 +27,10 @@ class GetPastEventsCubit extends Cubit<GetPastEventsState> {
   Future<void> getPastEvents() async {
     emit(const GetPastEventsState.loading());
     try {
+      final responsibleDesks = PRFResponsibleDesk.apiKeys(
+        PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
+      );
+
       final events = await _eventService.list(
         includes: [
           'posters',
@@ -35,11 +39,9 @@ class GetPastEventsCubit extends Cubit<GetPastEventsState> {
         orderBy: 'start_date',
         orderDirection: 'desc',
         filters: {
-          'responsible_desks': PRFResponsibleDesk.apiKeys(
-            PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
-          ),
+          'responsible_desks': responsibleDesks,
           // Select camp team by default
-          if (Misc.userCan(PRFPermissions.viewAnyCommitteeItem))
+          if (responsibleDesks.contains(PRFResponsibleDesk.followUp.apiKey))
             PRFLeadershipGroup.campCommittee.apiKey: true,
           'past': true,
         },
