@@ -10,6 +10,7 @@ import 'package:leadership/features/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/mission_session_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/mission_subscription_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/mission_type_resource_cubit.dart';
+import 'package:leadership/features/missions/cubit/past_mission_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/school_term_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/soul_resource_cubit.dart';
 import 'package:leadership/services/api/class_group_service.dart';
@@ -21,6 +22,7 @@ import 'package:leadership/services/api/mission_service.dart';
 import 'package:leadership/services/api/mission_session_service.dart';
 import 'package:leadership/services/api/mission_subscription_service.dart';
 import 'package:leadership/services/api/mission_type_service.dart';
+import 'package:leadership/services/api/school_service.dart';
 import 'package:leadership/services/api/school_term_service.dart';
 import 'package:leadership/services/api/soul_service.dart';
 import 'package:leadership/services/local_storage/hive/db/class_group_hive_db_service.dart';
@@ -32,6 +34,7 @@ import 'package:leadership/services/local_storage/hive/db/mission_question_hive_
 import 'package:leadership/services/local_storage/hive/db/mission_session_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/mission_subscription_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/mission_type_hive_db_service.dart';
+import 'package:leadership/services/local_storage/hive/db/school_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/school_term_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/db/soul_hive_db_service.dart';
 
@@ -109,6 +112,12 @@ class MissionsModule {
           missionGroundSuggestionService:
               getIt<MissionGroundSuggestionService>(),
           hiveDbService: getIt<MissionGroundSuggestionHiveDbService>(),
+        ),
+      ),
+      BlocProvider<PastMissionResourceCubit>(
+        create: (context) => PastMissionResourceCubit(
+          schoolService: getIt<SchoolService>(),
+          hiveDbService: getIt<SchoolHiveDbService>(),
         ),
       ),
     ];

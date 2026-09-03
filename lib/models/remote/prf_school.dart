@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
+import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 
 part 'prf_school.freezed.dart';
@@ -24,6 +25,7 @@ abstract class PRFSchool with _$PRFSchool {
     @Default('N/A') String distance,
     @Default('N/A') @JsonKey(name: 'static_duration') String staticDuration,
     @Default([]) @JsonKey(name: 'school_contacts') List<PRFContact> contacts,
+    @Default([]) List<PRFMission> missions,
   }) = _PRFSchool;
 
   factory PRFSchool.fromJson(Map<String, dynamic> json) =>

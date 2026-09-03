@@ -443,7 +443,7 @@ types:
         index: 4
   PRFSchool:
     typeId: 26
-    nextIndex: 15
+    nextIndex: 16
     fields:
       ulid:
         index: 0
@@ -475,6 +475,8 @@ types:
         index: 13
       contacts:
         index: 14
+      missions:
+        index: 15
   PRFSchoolTerm:
     typeId: 27
     nextIndex: 6

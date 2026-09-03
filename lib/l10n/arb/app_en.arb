@@ -104,6 +104,8 @@
     "@past": {},
     "noPastMissions": "No past missions",
     "@noPastMissions": {},
+    "bySchool": "By School",
+    "@bySchool": {},
     "theme": "Theme/Topic",
     "@theme": {},
     "souls": "Souls",

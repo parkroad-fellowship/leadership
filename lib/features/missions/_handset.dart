@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/missions/actions/create_mission/create_mission.dart';
 import 'package:leadership/features/missions/cubit/mission_resource_cubit.dart';
+import 'package:leadership/features/missions/cubit/past_mission_resource_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
+import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/shared_widgets/header_action_button.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/debouncer.dart' as app_utils;
@@ -52,12 +54,14 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
 
     context.read<MissionResourceCubit>().loadUpcomingMissions();
 
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
         context.read<MissionResourceCubit>().loadUpcomingMissions();
-      } else {
+      } else if (_tabController.index == 1) {
         context.read<MissionResourceCubit>().loadPastMissions();
+      } else {
+        context.read<PastMissionResourceCubit>().loadAll(filters: _schoolsFilters());
       }
     });
   }
@@ -233,6 +237,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                           tabs: [
                             Tab(text: l10n.upcoming),
                             Tab(text: l10n.past),
+                            Tab(text: l10n.bySchool),
                           ],
                         ),
                       ),
@@ -256,6 +261,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                 children: [
                   _buildMissionsTimeline(context),
                   _buildPastMissionsTimeline(context),
+                  _buildSchoolsTimeline(context),
                 ],
               ),
             ),
@@ -545,6 +551,94 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     );
   }
 
+  Widget _buildSchoolsTimeline(BuildContext context) {
+    final l10n = context.l10n;
+
+    return BlocBuilder<PastMissionResourceCubit, ResourceState<PRFSchool>>(
+      builder: (context, state) {
+        final schools = context.read<PastMissionResourceCubit>().currentItems;
+        final showInitialLoader =
+            state is ResourceListLoading<PRFSchool> && schools.isEmpty;
+
+        if (showInitialLoader) {
+          return const Center(
+            child: PRFCircularProgressIndicator(),
+          );
+        }
+
+        final filtered = _filterSchools(schools);
+
+        if (filtered.isEmpty) {
+          return RefreshIndicator(
+            onRefresh: () async => context
+                .read<PastMissionResourceCubit>()
+                .loadAll(filters: _schoolsFilters()),
+            child: PRFEmptyView(
+              label: _searchQuery.isEmpty
+                  ? l10n.noPastMissions
+                  : 'No matching schools',
+              description: state.maybeWhen(
+                error: (message, _) => message,
+                itemError: (message, _, _) => message,
+                orElse: () => l10n.pleaseWait,
+              ),
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async => context
+              .read<PastMissionResourceCubit>()
+              .loadAll(filters: _schoolsFilters()),
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(
+              horizontal: PRFSpacingTokens.lg,
+              vertical: PRFSpacingTokens.xl,
+            ),
+            itemCount: filtered.length,
+            itemBuilder: (context, index) {
+              final school = filtered[index];
+              final missionCount = school.missions.length;
+
+              return PRFSchoolCard(
+                schoolName: school.name,
+                address: school.address,
+                missionCount: missionCount > 0 ? missionCount : null,
+                onTap: () => context.router.push(
+                  SchoolPastMissionsRoute(schoolUlid: school.ulid),
+                ),
+              )
+                  .animate()
+                  .fadeIn(
+                    delay: Duration(milliseconds: index * 100),
+                    duration: PRFMotionTokens.enterShort,
+                  )
+                  .slideX(
+                    begin: 0.3,
+                    end: 0,
+                    curve: PRFMotionTokens.emphasized,
+                  );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  List<PRFSchool> _filterSchools(List<PRFSchool> schools) {
+    if (_searchQuery.isEmpty) return schools;
+    final query = _searchQuery.toLowerCase();
+    return schools
+        .where((school) => school.name.toLowerCase().contains(query))
+        .toList(growable: false);
+  }
+
+  Map<String, dynamic> _schoolsFilters() {
+    if (_searchQuery.isEmpty) return const {};
+    return {'search': _searchQuery};
+  }
+
   void _showCreateMissionForm() {
     PRFBottomSheet.show<void>(
       context,
@@ -556,6 +650,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         context.read<MissionResourceCubit>().loadUpcomingMissions();
       } else {
         context.read<MissionResourceCubit>().loadPastMissions();
+        context
+            .read<PastMissionResourceCubit>()
+            .loadAll(filters: _schoolsFilters());
       }
     });
   }
