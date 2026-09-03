@@ -372,7 +372,7 @@ workflows:
             android/.gradle
     triggers:
       push:
-      - branch: main
+      - branch: feature/hotfixes
 meta:
   bitrise.io:
     stack: osx-xcode-26.6.x
