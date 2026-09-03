@@ -10,7 +10,7 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
     required SoulHiveDbService hiveDbService,
   }) : super(service: missionSoulService, dbService: hiveDbService);
 
- @override
+  @override
   List<String> get defaultIncludes => ['classGroup'];
 
   @override

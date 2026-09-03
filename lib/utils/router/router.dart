@@ -17,7 +17,8 @@ class PRFLeadershipRouter extends RootStackRouter {
 
   static const String missionsRoute = '/missions';
   static const String missionDetailsRoute = '/missions/:ulid';
-  static const String schoolPastMissionsRoute = '/schools/:schoolUlid/past-missions';
+  static const String schoolPastMissionsRoute =
+      '/schools/:schoolUlid/past-missions';
 
   static const String requisitionRoute =
       '/desk-activities/:ulid/requisitions/:ulid';

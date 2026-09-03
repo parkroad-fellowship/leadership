@@ -61,7 +61,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       } else if (_tabController.index == 1) {
         context.read<MissionResourceCubit>().loadPastMissions();
       } else {
-        context.read<PastMissionResourceCubit>().loadAll(filters: _schoolsFilters());
+        context.read<PastMissionResourceCubit>().loadAll(
+          filters: _schoolsFilters(),
+        );
       }
     });
   }
@@ -602,13 +604,13 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
               final missionCount = school.missions.length;
 
               return PRFSchoolCard(
-                schoolName: school.name,
-                address: school.address,
-                missionCount: missionCount > 0 ? missionCount : null,
-                onTap: () => context.router.push(
-                  SchoolPastMissionsRoute(schoolUlid: school.ulid),
-                ),
-              )
+                    schoolName: school.name,
+                    address: school.address,
+                    missionCount: missionCount > 0 ? missionCount : null,
+                    onTap: () => context.router.push(
+                      SchoolPastMissionsRoute(schoolUlid: school.ulid),
+                    ),
+                  )
                   .animate()
                   .fadeIn(
                     delay: Duration(milliseconds: index * 100),
@@ -650,9 +652,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         context.read<MissionResourceCubit>().loadUpcomingMissions();
       } else {
         context.read<MissionResourceCubit>().loadPastMissions();
-        context
-            .read<PastMissionResourceCubit>()
-            .loadAll(filters: _schoolsFilters());
+        context.read<PastMissionResourceCubit>().loadAll(
+          filters: _schoolsFilters(),
+        );
       }
     });
   }

@@ -28,7 +28,9 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
     final cubit = context.read<PastMissionResourceCubit>();
     // The schools tab normally loads the cubit before navigation, but ensure
     // the data is present when arriving via a deep link or direct navigation.
-    final hasSchool = cubit.currentItems.any((s) => s.ulid == widget.schoolUlid);
+    final hasSchool = cubit.currentItems.any(
+      (s) => s.ulid == widget.schoolUlid,
+    );
     if (!hasSchool) {
       cubit.loadAll();
     }
