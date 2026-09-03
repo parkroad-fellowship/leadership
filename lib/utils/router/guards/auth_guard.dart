@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:leadership/services/_index.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/di/di_container.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 
 class AuthGuard extends AutoRouteGuard {

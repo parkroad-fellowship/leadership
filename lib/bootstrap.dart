@@ -3,15 +3,19 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/firebase_options.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/socket_config.dart';
-import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/auth_service.dart';
+import 'package:leadership/services/errors/unified_error_reporting_service.dart';
+import 'package:leadership/services/firebase_messaging_service.dart';
 import 'package:leadership/services/firebase_service.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/services/socket_service.dart';
+import 'package:leadership/utils/constants.dart';
 import 'package:leadership/utils/http/request_signer.dart';
 import 'package:leadership/utils/multiplatform/url_strategy/url_strategy_app.dart';
 import 'package:logger/logger.dart';
@@ -47,19 +51,15 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
     // Ensure timezone data is loaded
     await Future<dynamic>.delayed(const Duration(milliseconds: 100));
 
+    DIContainer.setup();
+    await DIContainer.initializeDatabases();
+
     // Report errors to Crashlytics in release mode only
     if (kReleaseMode) {
-      FlutterError.onError =
-          FirebaseCrashlytics.instance.recordFlutterFatalError;
-
-      PlatformDispatcher.instance.onError = (error, stack) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        return true;
-      };
+      getIt<UnifiedErrorReportingService>()
+        ..registerFlutterErrorHandlers()
+        ..registerPlatformErrorHandler();
     }
-
-    Singletons.setup();
-    await Singletons.setupDatabases();
 
     await RequestSigner.syncWithServer(
       PRFLeadershipConfig.instance!.values.baseUrl,

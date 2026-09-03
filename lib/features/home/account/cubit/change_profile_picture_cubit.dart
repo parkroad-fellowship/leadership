@@ -4,7 +4,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/models/remote/failure.dart';
-import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/services/media_service.dart';
 
 part 'change_profile_picture_state.dart';
 part 'change_profile_picture_cubit.freezed.dart';

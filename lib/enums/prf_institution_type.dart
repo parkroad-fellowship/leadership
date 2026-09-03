@@ -28,8 +28,8 @@ enum PRFInstitutionType {
   List<Color> get gradientColors {
     return switch (this) {
       primarySchool || community => [
-        PRFColorPalette.navy500,
-        PRFColorPalette.navy400,
+        PRFColors.navy500,
+        PRFColors.navy400,
       ],
       highSchool || juniorSecondarySchool => [
         const Color(0xFF2563EB),

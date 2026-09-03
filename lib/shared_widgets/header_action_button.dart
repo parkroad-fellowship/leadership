@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:leadership/enums/prf_header_action_button_variant.dart';
 import 'package:prf_design/prf_design.dart';
-
-enum PRFHeaderActionButtonVariant {
-  primary,
-  neutral,
-}
 
 class PRFHeaderActionButton extends StatelessWidget {
   const PRFHeaderActionButton({

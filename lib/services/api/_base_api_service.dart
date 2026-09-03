@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:leadership/utils/crud/paginated_response.dart';
 import 'package:leadership/utils/http/network.dart';
 
 abstract class BaseAPIService<T> {
@@ -16,14 +17,27 @@ abstract class BaseAPIService<T> {
   // Abstract factory method for creating list from response
   List<T> createListFromResponse(Map<String, dynamic> response);
 
-  // Method that uses the endpoint and type from the subclass
-  Future<List<T>> list({
+  /// Factory hook for creating a paginated list from response.
+  ///
+  /// Child services can override if their endpoint has a non-standard
+  /// pagination payload, but default parsing supports `links` + `meta`.
+  PaginatedResponse<T> createPaginatedListFromResponse(
+    Map<String, dynamic> response,
+  ) {
+    return PaginatedResponse<T>.fromMap(
+      data: createListFromResponse(response),
+      payload: response,
+    );
+  }
+
+  // Method that uses the endpoint and type from the subclass and keeps
+  // pagination metadata.
+  Future<PaginatedResponse<T>> list({
     Map<String, dynamic>? filters,
     List<String>? includes,
     int? limit,
     int? page,
-    String? orderBy,
-    String? orderDirection,
+    String? sortBy,
   }) async {
     try {
       final queryParameters = <String, dynamic>{};
@@ -53,11 +67,8 @@ abstract class BaseAPIService<T> {
       }
 
       // Add ordering if provided
-      if (orderBy != null) {
-        queryParameters['order_by'] = orderBy;
-      }
-      if (orderDirection != null) {
-        queryParameters['order_direction'] = orderDirection;
+      if (sortBy != null) {
+        queryParameters['sort'] = sortBy;
       }
 
       final res = await _networkUtil.get(
@@ -65,8 +76,8 @@ abstract class BaseAPIService<T> {
         queryParameters: queryParameters,
       );
 
-      // Use the subclass factory method to parse the response
-      return createListFromResponse(res);
+      // Use the subclass factory method to parse list and pagination metadata.
+      return createPaginatedListFromResponse(res);
     } catch (e) {
       rethrow;
     }
@@ -238,10 +249,12 @@ abstract class BaseAPIService<T> {
     required String parentId,
     required String childPath,
     required String childId,
+    required String apiVersion,
   }) async {
     try {
       await _networkUtil.delete(
         '$endpoint/$parentId/$childPath/$childId',
+        apiVersion: apiVersion,
       );
     } catch (e) {
       rethrow;

@@ -2,11 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/features/home/landing/models/landing_action_item.dart';
 import 'package:leadership/features/home/landing/widgets/landing_action_tile.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/services/_index.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/utils/constants.dart';
+import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/router/router.dart';
 import 'package:prf_design/prf_design.dart';
 
 class LandingPageHandset extends StatelessWidget {
@@ -18,8 +21,7 @@ class LandingPageHandset extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final width = MediaQuery.sizeOf(context).width;
-    final columns = width >= 430 ? 3 : 2;
+
     final visibleActions = actions.where((action) => action.isVisible).toList();
     final settingsActions = visibleActions
         .where((action) => action.isSettings)
@@ -196,7 +198,7 @@ class LandingPageHandset extends StatelessWidget {
               ..._buildSectionSlivers(
                 context: context,
                 sections: sections,
-                columns: columns,
+                columns: 2,
               ),
               const SliverToBoxAdapter(
                 child: SizedBox(height: PRFSpacingTokens.xl),

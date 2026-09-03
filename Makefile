@@ -5,7 +5,13 @@ splash:
 		dart run flutter_native_splash:create
 
 gen:
-		dart run build_runner build --delete-conflicting-outputs
+		dart run build_runner build
+
+arch-check:
+		./scripts/architecture_guardrails.sh
+
+arch-edges:
+		./scripts/feature_import_edges.sh
 
 fmt:
 		dart fix --apply && dart format lib test

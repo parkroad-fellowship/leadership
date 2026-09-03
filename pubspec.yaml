@@ -39,7 +39,6 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   freezed_annotation: ^3.1.0
-  full_screen_image: ^2.0.0
   gaimon: ^1.4.3
   get_it: ^9.2.1
   google_sign_in: ^7.2.0
@@ -58,16 +57,14 @@ dependencies:
   permission_handler: ^13.0.1
   phone_form_field: ^10.0.18
   pretty_dio_logger: ^1.4.0
-  prf_design: ^0.8.5
-  # path: ../../prf_design_system
+  prf_design:  ^1.0.8
+    # path: ../../prf_design_system
   share_plus: ^13.3.0
   timezone: ^0.11.1
   upgrader: ^13.7.0
   url_launcher: ^6.3.2
   web: ^1.1.1
 
-dependency_overrides: 
-  file_picker_darwin: ^1.0.3
 
 dev_dependencies:
   auto_route_generator: ^10.6.0
@@ -78,6 +75,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   freezed: ^3.2.5
+  hive_ce_generator: ^1.11.1
   icons_launcher: ^3.1.0
   json_serializable: ^6.14.1
   mocktail: ^1.0.5

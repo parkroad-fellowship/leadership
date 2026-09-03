@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/features/auth/cubit/google_sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/firebase_service.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/router/router.dart';
 import 'package:prf_design/prf_design.dart';
 
 class SignInHandset extends StatefulWidget {
@@ -160,9 +162,10 @@ class _SignInHandsetState extends State<SignInHandset> {
                                   children: [
                                     if (canShowAuth || kDebugMode) ...[
                                       // Email Input
-                                      PRFEmailInput(
+                                      PRFTextField(
                                         hintText: l10n.enterEmail,
-                                        emailController: _emailController,
+                                        controller: _emailController,
+                                        type: PRFTextFieldType.email,
                                         enabled: !_isLoading,
                                       ),
 
@@ -171,11 +174,11 @@ class _SignInHandsetState extends State<SignInHandset> {
                                       ),
 
                                       // Password Input
-                                      PRFPasswordInput(
+                                      PRFTextField(
                                         hintText: l10n.enterPassword,
-                                        hidePasswordNotifier:
-                                            _hidePasswordNotifier,
-                                        passwordController: _passwordController,
+                                        obscureNotifier: _hidePasswordNotifier,
+                                        controller: _passwordController,
+                                        type: PRFTextFieldType.password,
                                         enabled: !_isLoading,
                                       ),
 
@@ -221,7 +224,7 @@ class _SignInHandsetState extends State<SignInHandset> {
                                           );
                                         },
                                         builder: (context, state) {
-                                          return PRFPrimaryButton(
+                                          return PRFButton(
                                             onPressed: () {
                                               if (_emailController
                                                   .text
@@ -408,9 +411,10 @@ class GoogleSignInButton extends StatelessWidget {
                   ),
                 );
 
-                return PRFGoogleAuthButton(
+                return PRFButton(
                   onPressed: () =>
                       context.read<GoogleSignInCubit>().signInwithGoogle(),
+                  variant: PRFButtonVariant.google,
                   title: title,
                   disabled: isLoading,
                   isLoading: isLoading,

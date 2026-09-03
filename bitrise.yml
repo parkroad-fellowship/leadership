@@ -1,0 +1,379 @@
+---
+format_version: '26'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: flutter
+app:
+  envs:
+  - FLUTTER_VERSION: 3.47.0
+  - JAVA_VERSION: '21'
+trigger_map:
+- pull_request_source_branch: "*"
+  workflow: check
+workflows:
+  check:
+    description: 'PR validation - runs format check and static analysis.
+
+      '
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '21'
+    - restore-cache@3:
+        inputs:
+        - key: |
+            deps-{{ checksum "pubspec.lock" }}
+            deps-
+    - flutter-installer@1:
+        inputs:
+        - installation_method: version
+        - flutter_version: "$FLUTTER_VERSION"
+    - script@1:
+        title: Format check
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            dart format --set-exit-if-changed lib test
+    - script@1:
+        title: Analyze
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter analyze lib
+    - save-cache@1:
+        inputs:
+        - key: deps-{{ checksum "pubspec.lock" }}
+        - paths: |
+            $HOME/.pub-cache
+            .dart_tool
+  build:
+    description: 'Build APK or AAB for a given flavor. Set BITRISE_FLAVOR env var
+      before triggering (development|staging|production).
+
+      '
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '21'
+    - restore-cache@2:
+        inputs:
+        - key: |
+            deps-{{ checksum "pubspec.lock" }}
+            deps-
+    - flutter-installer@0:
+        inputs:
+        - installation_method: version
+        - flutter_version: "$FLUTTER_VERSION"
+    - script@1:
+        title: Install dependencies and run codegen
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter pub get
+            dart run build_runner build --delete-conflicting-outputs
+            flutter pub get
+    - script@1:
+        title: Setup Android keystore
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$ANDROID_KEYSTORE" | base64 --decode > "$BITRISE_SOURCE_DIR/android/app/key.jks"
+            cat > "$BITRISE_SOURCE_DIR/android/key.properties" <<EOF
+            storeFile=$BITRISE_SOURCE_DIR/android/app/key.jks
+            storePassword=$ANDROID_KEYSTORE_PASSWORD
+            keyAlias=$ANDROID_KEYSTORE_ALIAS
+            keyPassword=$ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD
+            EOF
+    - script@1:
+        title: Build APK or AAB
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            if [ "$BITRISE_FLAVOR" = "production" ]; then
+              flutter build appbundle \
+                --flavor production \
+                --target lib/main_production.dart \
+                --obfuscate --split-debug-info=debug-symbols
+            else
+              flutter build apk \
+                --flavor "$BITRISE_FLAVOR" \
+                --target "lib/main_$BITRISE_FLAVOR.dart" \
+                --release
+            fi
+    - deploy-to-bitrise-io@2: {}
+    - save-cache@1:
+        inputs:
+        - key: deps-{{ checksum "pubspec.lock" }}
+        - paths: |
+            $HOME/.pub-cache
+            .dart_tool
+            build
+            android/.gradle
+  deploy-development:
+    description: 'Build development APK and distribute via Firebase App
+      Distribution.
+
+      '
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '21'
+    - restore-cache@2:
+        inputs:
+        - key: |
+            deps-{{ checksum "pubspec.lock" }}
+            deps-
+    - flutter-installer@0:
+        inputs:
+        - installation_method: version
+        - flutter_version: "$FLUTTER_VERSION"
+    - script@1:
+        title: Install dependencies and run codegen
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter pub get
+            dart run build_runner build --delete-conflicting-outputs
+            flutter pub get
+    - script@1:
+        title: Setup Android keystore
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$ANDROID_KEYSTORE" | base64 --decode > "$BITRISE_SOURCE_DIR/android/app/key.jks"
+            cat > "$BITRISE_SOURCE_DIR/android/key.properties" <<EOF
+            storeFile=$BITRISE_SOURCE_DIR/android/app/key.jks
+            storePassword=$ANDROID_KEYSTORE_PASSWORD
+            keyAlias=$ANDROID_KEYSTORE_ALIAS
+            keyPassword=$ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD
+            EOF
+    - script@1:
+        title: Build development APK
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter build apk \
+              --flavor development \
+              --target lib/main_development.dart \
+              --release
+    - script@1:
+        title: Deploy to Firebase App Distribution
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/firebase-service-account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-service-account.json
+            curl -sL https://firebase.tools | bash
+            firebase appdistribution:distribute build/app/outputs/flutter-apk/app-development-release.apk \
+              --app "$FIREBASE_DEV_APP_ID" \
+              --groups dev-team
+    - save-cache@1:
+        inputs:
+        - key: deps-{{ checksum "pubspec.lock" }}
+        - paths: |
+            $HOME/.pub-cache
+            .dart_tool
+            build
+            android/.gradle
+  deploy-staging:
+    description: 'Build staging APK and distribute via Firebase App Distribution.
+
+      '
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '21'
+    - restore-cache@2:
+        inputs:
+        - key: |
+            deps-{{ checksum "pubspec.lock" }}
+            deps-
+    - flutter-installer@0:
+        inputs:
+        - installation_method: version
+        - flutter_version: "$FLUTTER_VERSION"
+    - script@1:
+        title: Install dependencies and run codegen
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter pub get
+            dart run build_runner build --delete-conflicting-outputs
+            flutter pub get
+    - script@1:
+        title: Setup Android keystore
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$ANDROID_KEYSTORE" | base64 --decode > "$BITRISE_SOURCE_DIR/android/app/key.jks"
+            cat > "$BITRISE_SOURCE_DIR/android/key.properties" <<EOF
+            storeFile=$BITRISE_SOURCE_DIR/android/app/key.jks
+            storePassword=$ANDROID_KEYSTORE_PASSWORD
+            keyAlias=$ANDROID_KEYSTORE_ALIAS
+            keyPassword=$ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD
+            EOF
+    - script@1:
+        title: Build staging APK
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter build apk \
+              --flavor staging \
+              --target lib/main_staging.dart \
+              --release
+    - script@1:
+        title: Deploy to Firebase App Distribution
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/firebase-service-account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-service-account.json
+            curl -sL https://firebase.tools | bash
+            firebase appdistribution:distribute build/app/outputs/flutter-apk/app-staging-release.apk \
+              --app "$FIREBASE_STG_APP_ID" \
+              --groups dev-team
+    - save-cache@1:
+        inputs:
+        - key: deps-{{ checksum "pubspec.lock" }}
+        - paths: |
+            $HOME/.pub-cache
+            .dart_tool
+            build
+            android/.gradle
+  deploy-production:
+    description: 'Build production AAB, deploy to Firebase, Google Play, and upload
+      Crashlytics symbols.
+
+      '
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '21'
+    - restore-cache@3:
+        inputs:
+        - key: |
+            deps-{{ checksum "pubspec.lock" }}
+            deps-
+    - flutter-installer@1:
+        inputs:
+        - installation_method: version
+        - flutter_version: "$FLUTTER_VERSION"
+    - script@1:
+        title: Install dependencies and run codegen
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter pub get
+            dart run build_runner build --delete-conflicting-outputs
+            flutter pub get
+    - script@1:
+        title: Setup Android keystore
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$ANDROID_KEYSTORE" | base64 --decode > "$BITRISE_SOURCE_DIR/android/app/key.jks"
+            cat > "$BITRISE_SOURCE_DIR/android/key.properties" <<EOF
+            storeFile=$BITRISE_SOURCE_DIR/android/app/key.jks
+            storePassword=$ANDROID_KEYSTORE_PASSWORD
+            keyAlias=$ANDROID_KEYSTORE_ALIAS
+            keyPassword=$ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD
+            EOF
+    - script@1:
+        title: Build production AAB
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            flutter build appbundle \
+              --flavor production \
+              --target lib/main_production.dart \
+              --obfuscate --split-debug-info=debug-symbols \
+              --dart-define=APP_ID="$PROD_APP_ID" \
+              --dart-define=APP_SECRET="$PROD_APP_SECRET" \
+              --dart-define=BASE_DOMAIN="$PROD_BASE_DOMAIN" \
+              --dart-define=SOCKET_DOMAIN="$PROD_SOCKET_DOMAIN" \
+              --dart-define=SOCKET_KEY="$PROD_SOCKET_KEY" \
+              --dart-define=AZURE_CONN_STRING="$PROD_AZURE_CONN_STRING" \
+              --dart-define=HIVE_ENCRYPTION_KEY="$PROD_HIVE_ENCRYPTION_KEY" \
+              --dart-define=TENANT_ULID="$PROD_TENANT_ULID"
+    - script@1:
+        title: Deploy to Firebase App Distribution
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/firebase-service-account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-service-account.json
+            curl -sL https://firebase.tools | bash
+            firebase appdistribution:distribute build/app/outputs/bundle/productionRelease/app-production-release.aab \
+              --app "$FIREBASE_PROD_APP_ID" \
+              --groups dev-team
+    - script@1:
+        title: Upload to Google Play via Fastlane
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$PLAY_STORE_CREDENTIALS" > /tmp/play-store-key.json
+            gem install bundler:2.0.2
+            bundle install
+            bundle exec fastlane supply \
+              --aab build/app/outputs/bundle/productionRelease/app-production-release.aab \
+              --package_name "$ANDROID_PACKAGE_NAME" \
+              --track production \
+              --json_key /tmp/play-store-key.json
+    - script@1:
+        title: Upload debug symbols to Crashlytics
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/firebase-credentials.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json
+            zip -r debug-symbols.zip debug-symbols
+            curl -sL https://firebase.tools | bash
+            firebase crashlytics:symbols:upload --app="$FIREBASE_PROD_APP_ID" debug-symbols.zip
+    - save-cache@1:
+        inputs:
+        - key: deps-{{ checksum "pubspec.lock" }}
+        - paths: |
+            $HOME/.pub-cache
+            .dart_tool
+            build
+            android/.gradle
+    triggers:
+      push:
+      - branch: feature/hotfixes
+meta:
+  bitrise.io:
+    stack: osx-xcode-26.6.x
+    machine_type_id: g2.mac.large
