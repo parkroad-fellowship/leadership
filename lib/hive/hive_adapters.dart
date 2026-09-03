@@ -1,4 +1,5 @@
 import 'package:hive_ce/hive.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/enums/prf_institution_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
 import 'package:leadership/enums/prf_mission_role.dart';
@@ -16,7 +17,9 @@ import 'package:leadership/models/remote/prf_church.dart';
 import 'package:leadership/models/remote/prf_class_group.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
+import 'package:leadership/models/remote/prf_department.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
+import 'package:leadership/models/remote/prf_gift.dart';
 import 'package:leadership/models/remote/prf_group.dart';
 import 'package:leadership/models/remote/prf_group_member.dart';
 import 'package:leadership/models/remote/prf_marital_status.dart';
@@ -71,6 +74,9 @@ import 'package:leadership/models/remote/prf_weather_forecast.dart';
     AdapterSpec<PRFExpenseCategoryResponse>(),
     AdapterSpec<PRFExpenseCategory>(),
     AdapterSpec<PRFMediaModel>(),
+    AdapterSpec<PRFGift>(),
+    AdapterSpec<PRFDepartment>(),
+    AdapterSpec<PRFActiveStatus>(),
   ],
   reservedTypeIds: {4},
 )
