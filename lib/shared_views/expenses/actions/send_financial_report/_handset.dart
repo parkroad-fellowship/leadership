@@ -147,7 +147,7 @@ class SendFinancialReportViewHandset extends StatelessWidget {
   Widget _buildSendButton(BuildContext context, bool isLoading) {
     return SizedBox(
       width: double.infinity,
-      child: PRFPrimaryButton(
+      child: PRFButton(
         onPressed: () => _showConfirmationDialog(context),
         title: 'Send Financial Report',
         disabled: isLoading,

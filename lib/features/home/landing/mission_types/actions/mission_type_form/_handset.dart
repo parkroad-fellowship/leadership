@@ -194,7 +194,7 @@ class _MissionTypeFormViewHandsetState
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
-                                child: PRFTextInput(
+                                child: PRFTextField(
                                   hintText: 'Mission type name',
                                   labelText: 'Name *',
                                   helperText: 'Required',
@@ -250,7 +250,7 @@ class _MissionTypeFormViewHandsetState
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
                             ? 'Update Mission Type'

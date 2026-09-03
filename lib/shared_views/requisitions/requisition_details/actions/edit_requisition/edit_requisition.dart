@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/edit_requisition/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 class EditRequisitionView extends StatelessWidget {
   const EditRequisitionView({required this.requisitionUlid, super.key});
@@ -9,14 +9,12 @@ class EditRequisitionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => EditRequisitionViewHandset(
+    return PRFAdaptive(
+      handset: (_) => EditRequisitionViewHandset(
         requisitionUlid: requisitionUlid,
       ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => EditRequisitionViewHandset(
-          requisitionUlid: requisitionUlid,
-        ),
+      builder: (_, _) => EditRequisitionViewHandset(
+        requisitionUlid: requisitionUlid,
       ),
     );
   }

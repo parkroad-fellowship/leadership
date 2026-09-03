@@ -102,8 +102,8 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
         floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: PRFColorPalette.lime300,
-          foregroundColor: PRFColorPalette.navy900,
+          backgroundColor: PRFColors.lime300,
+          foregroundColor: PRFColors.navy900,
           icon: _isExporting
               ? const SizedBox.square(
                   dimension: 20,
@@ -318,7 +318,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search missions by school, type, or theme...',
         controller: _searchController,
         onChanged: (value) {

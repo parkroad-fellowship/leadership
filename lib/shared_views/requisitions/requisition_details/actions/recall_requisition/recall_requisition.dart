@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/recall_requisition/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 class RecallRequisitionView extends StatelessWidget {
   const RecallRequisitionView({
@@ -12,14 +12,12 @@ class RecallRequisitionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => RecallRequisitionViewHandset(
+    return PRFAdaptive(
+      handset: (_) => RecallRequisitionViewHandset(
         requisitionUlid: requisitionUlid,
       ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => RecallRequisitionViewHandset(
-          requisitionUlid: requisitionUlid,
-        ),
+      builder: (_, _) => RecallRequisitionViewHandset(
+        requisitionUlid: requisitionUlid,
       ),
     );
   }

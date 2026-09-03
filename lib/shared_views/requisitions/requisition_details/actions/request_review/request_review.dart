@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/request_review/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 class RequestReviewView extends StatelessWidget {
   const RequestReviewView({required this.requisitionUlid, super.key});
@@ -9,14 +9,12 @@ class RequestReviewView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => RequestReviewViewHandset(
+    return PRFAdaptive(
+      handset: (_) => RequestReviewViewHandset(
         requisitionUlid: requisitionUlid,
       ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => RequestReviewViewHandset(
-          requisitionUlid: requisitionUlid,
-        ),
+      builder: (_, _) => RequestReviewViewHandset(
+        requisitionUlid: requisitionUlid,
       ),
     );
   }

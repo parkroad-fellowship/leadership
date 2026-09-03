@@ -190,7 +190,7 @@ class _DepartmentFormViewHandsetState extends State<DepartmentFormViewHandset> {
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
-                                child: PRFTextInput(
+                                child: PRFTextField(
                                   hintText: 'Department name',
                                   labelText: 'Name *',
                                   helperText: 'Required',
@@ -246,7 +246,7 @@ class _DepartmentFormViewHandsetState extends State<DepartmentFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
                             ? 'Update Department'

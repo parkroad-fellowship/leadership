@@ -292,7 +292,7 @@ class _CreatePaymentInstructionViewHandsetState
           icon: Icons.account_balance,
           title: 'Bank Name',
           isRequired: true,
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Enter bank name',
             controller: _bankNameController,
           ),
@@ -301,9 +301,10 @@ class _CreatePaymentInstructionViewHandsetState
           icon: Icons.numbers,
           title: 'Account Number',
           isRequired: true,
-          child: PRFNumberInput(
+          child: PRFTextField(
             hintText: 'Account number',
             controller: _bankAccountNumberController,
+            type: PRFTextFieldType.number,
           ),
         ),
 
@@ -311,7 +312,7 @@ class _CreatePaymentInstructionViewHandsetState
           icon: Icons.person,
           title: 'Account Name',
           isRequired: true,
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Account name',
             controller: _bankAccountNameController,
           ),
@@ -320,7 +321,7 @@ class _CreatePaymentInstructionViewHandsetState
         PRFFormSection(
           icon: Icons.location_on,
           title: 'Branch',
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Branch (optional)',
             controller: _bankBranchController,
           ),
@@ -328,7 +329,7 @@ class _CreatePaymentInstructionViewHandsetState
         PRFFormSection(
           icon: Icons.code,
           title: 'SWIFT Code',
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'SWIFT code (optional)',
             controller: _bankSwiftCodeController,
           ),
@@ -344,9 +345,10 @@ class _CreatePaymentInstructionViewHandsetState
           icon: Icons.receipt,
           title: 'Paybill Number',
           isRequired: true,
-          child: PRFNumberInput(
+          child: PRFTextField(
             hintText: 'Paybill number',
             controller: _paybillNumberController,
+            type: PRFTextFieldType.number,
           ),
         ),
 
@@ -354,7 +356,7 @@ class _CreatePaymentInstructionViewHandsetState
           icon: Icons.account_box,
           title: 'Account Number',
           isRequired: true,
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Account number',
             controller: _paybillAccountNumberController,
           ),
@@ -370,9 +372,10 @@ class _CreatePaymentInstructionViewHandsetState
           icon: Icons.store,
           title: 'Till Number',
           isRequired: true,
-          child: PRFNumberInput(
+          child: PRFTextField(
             hintText: 'Enter till number',
             controller: _tillNumberController,
+            type: PRFTextFieldType.number,
           ),
         ),
       ],
@@ -584,7 +587,7 @@ class _CreatePaymentInstructionViewHandsetState
                     icon: Icons.person_outline,
                     title: 'Recipient Name',
                     isRequired: true,
-                    child: PRFTextInput(
+                    child: PRFTextField(
                       hintText: 'Enter recipient name',
                       controller: _recipientNameController,
                     ),
@@ -596,7 +599,7 @@ class _CreatePaymentInstructionViewHandsetState
             const SizedBox(height: PRFSpacingTokens.xxl),
 
             // Next Button
-            PRFPrimaryButton(
+            PRFButton(
               onPressed: _goToStep2,
               title: 'Next',
               disabled: !_isStep1Valid,
@@ -706,7 +709,7 @@ class _CreatePaymentInstructionViewHandsetState
                   PRFFormSection(
                     icon: Icons.receipt_long_outlined,
                     title: 'Reference',
-                    child: PRFTextInput(
+                    child: PRFTextField(
                       hintText: 'Enter reference (optional)',
                       controller: _referenceController,
                     ),
@@ -721,10 +724,10 @@ class _CreatePaymentInstructionViewHandsetState
             Row(
               children: [
                 Expanded(
-                  child: PRFSecondaryButton(
+                  child: PRFButton(
                     onPressed: _goToStep1,
                     title: 'Back',
-                    disabled: false,
+                    variant: PRFButtonVariant.secondary,
                   ),
                 ),
                 const SizedBox(width: PRFSpacingTokens.lg),
@@ -775,7 +778,7 @@ class _CreatePaymentInstructionViewHandsetState
                           );
                         },
                         builder: (context, state) {
-                          return PRFPrimaryButton(
+                          return PRFButton(
                             onPressed: _submitForm,
                             title: 'Create instruction',
                             disabled: !_isFormValid,

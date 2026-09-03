@@ -240,7 +240,7 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search school terms...',
         controller: _searchController,
         onChanged: (value) {

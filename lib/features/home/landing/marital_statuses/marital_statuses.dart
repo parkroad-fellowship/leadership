@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/features/home/landing/marital_statuses/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 @RoutePage()
 class MaritalStatusesPage extends StatelessWidget {
@@ -9,8 +9,9 @@ class MaritalStatusesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => const MaritalStatusesPageHandset(),
+    return PRFAdaptive(
+      handset: (_) => const MaritalStatusesPageHandset(),
+      builder: (_, _) => const MaritalStatusesPageHandset(),
     );
   }
 }

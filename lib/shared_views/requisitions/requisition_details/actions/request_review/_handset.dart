@@ -204,7 +204,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                     }
                   },
                   builder: (context, state) {
-                    return PRFPrimaryButton(
+                    return PRFButton(
                       onPressed: _submitForm,
                       title: l10n.record,
                       disabled: !_isFormValid,

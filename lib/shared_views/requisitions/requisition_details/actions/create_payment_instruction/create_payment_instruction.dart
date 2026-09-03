@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/create_payment_instruction/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 class CreatePaymentInstructionView extends StatelessWidget {
   const CreatePaymentInstructionView({
@@ -12,14 +12,12 @@ class CreatePaymentInstructionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => CreatePaymentInstructionViewHandset(
+    return PRFAdaptive(
+      handset: (_) => CreatePaymentInstructionViewHandset(
         requisitionUlid: requisitionUlid,
       ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => CreatePaymentInstructionViewHandset(
-          requisitionUlid: requisitionUlid,
-        ),
+      builder: (_, _) => CreatePaymentInstructionViewHandset(
+        requisitionUlid: requisitionUlid,
       ),
     );
   }

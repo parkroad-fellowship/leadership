@@ -143,8 +143,8 @@ class _DeskEventDetailsPageHandsetState
         0 =>
           Misc.userCan(PRFPermissions.createRequisition)
               ? FloatingActionButton.extended(
-                  backgroundColor: PRFColorPalette.lime300,
-                  foregroundColor: PRFColorPalette.navy900,
+                  backgroundColor: PRFColors.lime300,
+                  foregroundColor: PRFColors.navy900,
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     if (event.accountingEvent != null) {

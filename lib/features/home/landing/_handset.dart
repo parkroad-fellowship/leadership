@@ -19,7 +19,7 @@ class LandingPageHandset extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final columns = width >= 430 ? 3 : 2;
+
     final visibleActions = actions.where((action) => action.isVisible).toList();
     final settingsActions = visibleActions
         .where((action) => action.isSettings)
@@ -196,7 +196,7 @@ class LandingPageHandset extends StatelessWidget {
               ..._buildSectionSlivers(
                 context: context,
                 sections: sections,
-                columns: columns,
+                columns: 2,
               ),
               const SliverToBoxAdapter(
                 child: SizedBox(height: PRFSpacingTokens.xl),

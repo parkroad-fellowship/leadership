@@ -176,12 +176,13 @@ class _RecallRequisitionViewHandsetState
                     PRFFormSection(
                           icon: Icons.notes_outlined,
                           title: 'Recall Notes',
-                          child: PRFTextAreaInput(
+                          child: PRFTextField(
                             controller: _notesController,
                             hintText:
                                 'Enter your reason for recalling '
                                 'this requisition...',
                             maxLines: 4,
+                            type: PRFTextFieldType.textArea,
                           ),
                         )
                         .animate(delay: PRFMotionTokens.stagger4)
@@ -220,9 +221,10 @@ class _RecallRequisitionViewHandsetState
                 child: Column(
                   children: [
                     // Recall Button
-                    PRFDestroyButton(
+                    PRFButton(
                           onPressed: _recallRequisition,
                           title: 'Recall Requisition',
+                          variant: PRFButtonVariant.destructive,
                           disabled: !_canRecall,
                           isLoading: _isLoading,
                         )
@@ -233,9 +235,10 @@ class _RecallRequisitionViewHandsetState
                     const SizedBox(height: PRFSpacingTokens.md),
 
                     // Cancel Button
-                    PRFSecondaryButton(
+                    PRFButton(
                           onPressed: () => Navigator.of(context).pop(),
                           title: 'Cancel',
+                          variant: PRFButtonVariant.secondary,
                           disabled: _isLoading,
                         )
                         .animate(delay: PRFMotionTokens.enterMedium)

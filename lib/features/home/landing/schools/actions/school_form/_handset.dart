@@ -321,7 +321,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing ? 'Update School' : 'Create School',
                         disabled: isLoading || !_isFormValid,
@@ -451,7 +451,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'School name',
             labelText: 'School Name *',
             helperText: 'Required',
@@ -505,12 +505,13 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFNumberInput(
+          child: PRFTextField(
             hintText: '0',
             labelText: 'Total Students *',
             helperText: 'Required',
             errorText: _showValidation ? _studentsError : null,
             controller: _studentsController,
+            type: PRFTextFieldType.number,
             enabled: !isLoading,
             isLoading: isLoading,
             onChanged: (_) {
@@ -526,12 +527,13 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextAreaInput(
+          child: PRFTextField(
             hintText: 'Address',
             labelText: 'Address *',
             helperText: 'Required',
             errorText: _showValidation ? _addressError : null,
             controller: _addressController,
+            type: PRFTextFieldType.textArea,
             enabled: !isLoading,
             minLines: 2,
             maxLines: 3,
@@ -568,7 +570,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: '0.000000',
             labelText: 'Latitude *',
             helperText: 'Required',
@@ -585,7 +587,7 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: '0.000000',
             labelText: 'Longitude *',
             helperText: 'Required',
@@ -608,11 +610,12 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           title: 'Directions',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextAreaInput(
+          child: PRFTextField(
             hintText: 'Directions',
             labelText: 'Directions',
             helperText: 'Optional',
             controller: _directionsController,
+            type: PRFTextFieldType.textArea,
             enabled: !isLoading,
             minLines: 2,
             maxLines: 4,
@@ -623,11 +626,12 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
           title: 'Description',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextAreaInput(
+          child: PRFTextField(
             hintText: 'Description',
             labelText: 'Description',
             helperText: 'Optional',
             controller: _descriptionController,
+            type: PRFTextFieldType.textArea,
             enabled: !isLoading,
           ),
         ),

@@ -1,5 +1,6 @@
 // ignore_for_file: lines_longer_than_80_chars
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -1405,15 +1406,30 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  void _openPdfDocument(BuildContext context, String pdfUrl) {
-    Navigator.of(context).push(
-      MaterialPageRoute<dynamic>(
-        builder: (context) => PDFViewerPage(
-          pdfUrl: pdfUrl,
-          title: 'Receipt PDF',
+  Future<void> _openPdfDocument(
+    BuildContext context,
+    String pdfUrl,
+  ) async {
+    try {
+      final response = await Dio().get<List<int>>(
+        pdfUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final bytes = Uint8List.fromList(response.data!);
+      if (!context.mounted) return;
+      await PRFPdfViewer.show(
+        context,
+        bytes: bytes,
+        title: 'Receipt PDF',
+      );
+    } on Exception {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to load PDF document.'),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _showReceiptPreview(

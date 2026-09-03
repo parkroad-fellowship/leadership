@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/shared_views/requisitions/requisition_details/actions/approval_requisition/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 class ApproveRequisitionView extends StatelessWidget {
   const ApproveRequisitionView({
@@ -12,14 +12,12 @@ class ApproveRequisitionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => ApproveRequisitionViewHandset(
+    return PRFAdaptive(
+      handset: (_) => ApproveRequisitionViewHandset(
         requisitionUlid: requisitionUlid,
       ),
-      layoutDelegate: AdaptiveLayoutDelegateWithMinimallScreenType(
-        handset: (_, _) => ApproveRequisitionViewHandset(
-          requisitionUlid: requisitionUlid,
-        ),
+      builder: (_, _) => ApproveRequisitionViewHandset(
+        requisitionUlid: requisitionUlid,
       ),
     );
   }

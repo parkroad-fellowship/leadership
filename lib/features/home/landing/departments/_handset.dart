@@ -229,7 +229,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search departments...',
         controller: _searchController,
         onChanged: (value) {

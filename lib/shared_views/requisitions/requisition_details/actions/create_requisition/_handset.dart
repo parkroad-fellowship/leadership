@@ -145,9 +145,10 @@ class _CreateRequisitionViewHandsetState
                           icon: Icons.notes_outlined,
                           title: l10n.purpose,
                           isRequired: true,
-                          child: PRFTextAreaInput(
+                          child: PRFTextField(
                             hintText: l10n.purpose,
                             controller: _remarksController,
+                            type: PRFTextFieldType.textArea,
                           ),
                         )
                         .animate(delay: PRFMotionTokens.enterShort)
@@ -187,7 +188,7 @@ class _CreateRequisitionViewHandsetState
                       }
                     },
                     builder: (context, state) {
-                      return PRFPrimaryButton(
+                      return PRFButton(
                         onPressed: _submitForm,
                         title: l10n.record,
                         disabled: !_isFormValid,

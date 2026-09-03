@@ -247,7 +247,7 @@ class _CreateRequisitionItemViewHandsetState
                           icon: Icons.inventory_2_outlined,
                           title: 'Item Name',
                           isRequired: true,
-                          child: PRFTextInput(
+                          child: PRFTextField(
                             hintText: 'Enter item name',
                             labelText: 'Item Name *',
                             helperText: 'Required',
@@ -268,7 +268,7 @@ class _CreateRequisitionItemViewHandsetState
                                 icon: Icons.attach_money,
                                 title: 'Unit Price',
                                 isRequired: true,
-                                child: PRFNumberInput(
+                                child: PRFTextField(
                                   hintText: 'Unit price',
                                   labelText: 'Unit Price *',
                                   helperText: 'Required',
@@ -279,6 +279,7 @@ class _CreateRequisitionItemViewHandsetState
                                   errorText: _showValidation
                                       ? _unitPriceError
                                       : null,
+                                  type: PRFTextFieldType.number,
                                 ),
                               ),
                             ),
@@ -288,7 +289,7 @@ class _CreateRequisitionItemViewHandsetState
                                 icon: Icons.numbers,
                                 title: 'Quantity',
                                 isRequired: true,
-                                child: PRFNumberInput(
+                                child: PRFTextField(
                                   hintText: 'Quantity',
                                   labelText: 'Quantity *',
                                   helperText: 'Required',
@@ -298,6 +299,7 @@ class _CreateRequisitionItemViewHandsetState
                                   errorText: _showValidation
                                       ? _quantityError
                                       : null,
+                                  type: PRFTextFieldType.number,
                                 ),
                               ),
                             ),
@@ -360,13 +362,14 @@ class _CreateRequisitionItemViewHandsetState
                       icon: Icons.note_outlined,
                       title: 'Narration/Justification',
                       isRequired: true,
-                      child: PRFTextAreaInput(
+                      child: PRFTextField(
                         hintText: 'Enter narration',
                         labelText: 'Narration/Justification *',
                         helperText: 'Required',
                         controller: _narrationController,
                         enabled: !_isLoading,
                         errorText: _showValidation ? _narrationError : null,
+                        type: PRFTextFieldType.textArea,
                       ),
                     ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
                   ],
@@ -409,7 +412,7 @@ class _CreateRequisitionItemViewHandsetState
                       }
                     },
                     builder: (context, state) {
-                      return PRFPrimaryButton(
+                      return PRFButton(
                         onPressed: _submitForm,
                         title: 'Add Item',
                         disabled: !_isFormValid,

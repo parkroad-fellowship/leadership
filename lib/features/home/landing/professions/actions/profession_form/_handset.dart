@@ -190,7 +190,7 @@ class _ProfessionFormViewHandsetState extends State<ProfessionFormViewHandset> {
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
-                                child: PRFTextInput(
+                                child: PRFTextField(
                                   hintText: 'Profession name',
                                   labelText: 'Name *',
                                   helperText: 'Required',
@@ -246,7 +246,7 @@ class _ProfessionFormViewHandsetState extends State<ProfessionFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
                             ? 'Update Profession'

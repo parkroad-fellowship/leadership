@@ -230,7 +230,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
                             ? 'Update School Term'
@@ -312,7 +312,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Term name',
             labelText: 'Term Name *',
             helperText: 'Required',
@@ -332,12 +332,13 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFNumberInput(
+          child: PRFTextField(
             hintText: 'e.g. ${DateTime.now().year}',
             labelText: 'Year *',
             helperText: 'Required',
             errorText: _showValidation ? _yearError : null,
             controller: _yearController,
+            type: PRFTextFieldType.number,
             enabled: !isLoading,
             isLoading: isLoading,
             onChanged: (_) {

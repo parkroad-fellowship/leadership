@@ -223,7 +223,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             icon: Icons.badge_outlined,
                             title: l10n.title,
                             isRequired: true,
-                            child: PRFTextInput(
+                            child: PRFTextField(
                               hintText: l10n.name,
                               controller: _titleController,
                             ),
@@ -238,7 +238,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             isRequired: true,
                             child: GestureDetector(
                               onTap: _selectStartDate,
-                              child: PRFTextInput(
+                              child: PRFTextField(
                                 hintText: l10n.startTime,
                                 controller: _startDateController,
                                 enabled: false,
@@ -381,7 +381,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     );
                   },
                   builder: (context, state) {
-                    return PRFPrimaryButton(
+                    return PRFButton(
                       onPressed: _submitForm,
                       title: l10n.record,
                       disabled: !_isFormValid,

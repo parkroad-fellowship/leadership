@@ -487,7 +487,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing ? 'Update Member' : 'Create Member',
                         disabled: isLoading || !_isFormValid,
@@ -566,7 +566,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'First name',
             labelText: 'First Name *',
             helperText: 'Required',
@@ -586,7 +586,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Last name',
             labelText: 'Last Name *',
             helperText: 'Required',
@@ -619,7 +619,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           isRequired: !_isEditing,
           subtitle: _isEditing ? 'Optional' : 'Required',
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Email address',
             labelText: _isEditing ? 'Email' : 'Email *',
             helperText: _isEditing ? 'Optional' : 'Required',
@@ -639,7 +639,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Postal Address',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Postal address',
             labelText: 'Postal Address',
             helperText: 'Optional',
@@ -652,7 +652,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Residence',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Residence',
             labelText: 'Residence',
             helperText: 'Optional',
@@ -665,11 +665,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Bio',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextAreaInput(
+          child: PRFTextField(
             hintText: 'Bio',
             labelText: 'Bio',
             helperText: 'Optional',
             controller: _bioController,
+            type: PRFTextFieldType.textArea,
             enabled: !isLoading,
             minLines: 2,
             maxLines: 4,
@@ -680,7 +681,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'LinkedIn URL',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'LinkedIn URL',
             labelText: 'LinkedIn URL',
             helperText: 'Optional',
@@ -703,7 +704,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Year of Salvation',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'e.g. 2010',
             labelText: 'Year of Salvation',
             helperText: 'Optional',
@@ -744,7 +745,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Pastor',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Pastor name',
             labelText: 'Pastor',
             helperText: 'Optional',
@@ -766,7 +767,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Institution',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Profession institution',
             labelText: 'Institution',
             helperText: 'Optional',
@@ -779,7 +780,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Location',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Profession location',
             labelText: 'Location',
             helperText: 'Optional',
@@ -792,7 +793,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           title: 'Contact',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Profession contact',
             labelText: 'Contact',
             helperText: 'Optional',

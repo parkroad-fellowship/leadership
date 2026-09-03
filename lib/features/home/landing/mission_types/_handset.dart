@@ -230,7 +230,7 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search mission types...',
         controller: _searchController,
         onChanged: (value) {

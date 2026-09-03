@@ -343,7 +343,7 @@ class _EditRequisitionItemViewHandsetState
                     icon: Icons.inventory_2_outlined,
                     title: 'Item Name',
                     isRequired: true,
-                    child: PRFTextInput(
+                    child: PRFTextField(
                       hintText: 'Enter item name',
                       controller: _itemNameController,
                     ),
@@ -360,10 +360,11 @@ class _EditRequisitionItemViewHandsetState
                           icon: Icons.attach_money,
                           title: 'Unit Price',
                           isRequired: true,
-                          child: PRFNumberInput(
+                          child: PRFTextField(
                             hintText: 'Unit price',
                             controller: _unitPriceController,
                             prefixText: 'KES ',
+                            type: PRFTextFieldType.number,
                           ),
                         ),
                       ),
@@ -373,9 +374,10 @@ class _EditRequisitionItemViewHandsetState
                           icon: Icons.numbers,
                           title: 'Quantity',
                           isRequired: true,
-                          child: PRFNumberInput(
+                          child: PRFTextField(
                             hintText: 'Quantity',
                             controller: _quantityController,
+                            type: PRFTextFieldType.number,
                           ),
                         ),
                       ),
@@ -435,9 +437,10 @@ class _EditRequisitionItemViewHandsetState
                 icon: Icons.note_outlined,
                 title: 'Narration/Justification',
                 isRequired: true,
-                child: PRFTextAreaInput(
+                child: PRFTextField(
                   hintText: 'Enter narration',
                   controller: _narrationController,
+                  type: PRFTextFieldType.textArea,
                 ),
               ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
             ],
@@ -447,7 +450,7 @@ class _EditRequisitionItemViewHandsetState
         const SizedBox(height: PRFSpacingTokens.xxl),
 
         // Submit Button
-        PRFPrimaryButton(
+        PRFButton(
               onPressed: _submitForm,
               title: 'Update Item',
               disabled: !_isFormValid,

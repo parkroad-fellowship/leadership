@@ -830,8 +830,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                 return switch (_currentTab) {
                   3 when Misc.userCan(PRFPermissions.createRequisition) =>
                     FloatingActionButton.extended(
-                      backgroundColor: PRFColorPalette.lime300,
-                      foregroundColor: PRFColorPalette.navy900,
+                      backgroundColor: PRFColors.lime300,
+                      foregroundColor: PRFColors.navy900,
                       icon: const Icon(Icons.add),
                       onPressed: () {
                         if (mission.accountingEvent != null) {
@@ -1669,12 +1669,13 @@ class _MissionTextFormBodyState extends State<_MissionTextFormBody> {
                         subtitle: widget.subtitle,
                         isRequired: widget.isRequired,
                         margin: EdgeInsets.zero,
-                        child: PRFTextAreaInput(
+                        child: PRFTextField(
                           hintText: widget.hintText,
                           labelText: widget.labelText,
                           helperText: widget.helperText,
                           errorText: _showValidation ? _error : null,
                           controller: _controller,
+                          type: PRFTextFieldType.textArea,
                           minLines: widget.minLines,
                           maxLines: widget.maxLines,
                         ),
@@ -1686,7 +1687,7 @@ class _MissionTextFormBodyState extends State<_MissionTextFormBody> {
                 const SizedBox(height: PRFSpacingTokens.xxl),
                 SizedBox(
                   width: double.infinity,
-                  child: PRFPrimaryButton(
+                  child: PRFButton(
                     onPressed: _submit,
                     title: widget.submitLabel,
                     disabled: !_isFormValid,
@@ -1978,7 +1979,7 @@ class _MissionMemberSubscriptionFormBodyState
                   const SizedBox(height: PRFSpacingTokens.xxl),
                   SizedBox(
                     width: double.infinity,
-                    child: PRFPrimaryButton(
+                    child: PRFButton(
                       onPressed: _submit,
                       title: 'Subscribe Member',
                       disabled: isLoading || !_isFormValid,
@@ -2240,7 +2241,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
 
                             isRequired: true,
                             margin: EdgeInsets.zero,
-                            child: PRFTextInput(
+                            child: PRFTextField(
                               hintText: 'Enter full name',
                               labelText: 'Full Name *',
                               helperText: 'Required',
@@ -2273,7 +2274,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                 const SizedBox(height: PRFSpacingTokens.xxl),
                 SizedBox(
                   width: double.infinity,
-                  child: PRFPrimaryButton(
+                  child: PRFButton(
                     onPressed: _submit,
                     title: 'Add Missioner',
                     disabled: !_isFormValid,
@@ -2509,7 +2510,7 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             margin: const EdgeInsets.only(
                               bottom: PRFSpacingTokens.md,
                             ),
-                            child: PRFTextInput(
+                            child: PRFTextField(
                               hintText: 'Enter a name or identifier',
                               labelText: 'Name / Identifier *',
                               helperText: 'Required',
@@ -2631,11 +2632,12 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                             title: 'Notes',
 
                             margin: EdgeInsets.zero,
-                            child: PRFTextAreaInput(
+                            child: PRFTextField(
                               hintText: 'Optional details for follow-up',
                               labelText: 'Notes',
                               helperText: 'Optional',
                               controller: _noteController,
+                              type: PRFTextFieldType.textArea,
                             ),
                           ),
                         ],
@@ -2647,7 +2649,7 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                 const SizedBox(height: PRFSpacingTokens.xxl),
                 SizedBox(
                   width: double.infinity,
-                  child: PRFPrimaryButton(
+                  child: PRFButton(
                     onPressed: _submit,
                     title: widget.submitLabel,
                     disabled: !_isFormValid,
@@ -2798,7 +2800,7 @@ class _MissionSubscriberDetailsBodyState
               const SizedBox(height: PRFSpacingTokens.xxl),
               SizedBox(
                 width: double.infinity,
-                child: PRFPrimaryButton(
+                child: PRFButton(
                   onPressed: _submit,
                   title: 'Update Subscriber',
                   isLoading: _isLoading,

@@ -236,7 +236,7 @@ class _EditRequisitionViewHandsetState
                                       child: GestureDetector(
                                         onTap: _selectRequisitionDate,
                                         child: AbsorbPointer(
-                                          child: PRFTextInput(
+                                          child: PRFTextField(
                                             hintText: 'Select date',
                                             controller:
                                                 _requisitionDateController,
@@ -253,9 +253,10 @@ class _EditRequisitionViewHandsetState
                                       icon: Icons.notes_outlined,
                                       title: l10n.purpose,
                                       isRequired: true,
-                                      child: PRFTextAreaInput(
+                                      child: PRFTextField(
                                         hintText: l10n.purpose,
                                         controller: _remarksController,
+                                        type: PRFTextFieldType.textArea,
                                       ),
                                     )
                                     .animate(
@@ -285,7 +286,7 @@ class _EditRequisitionViewHandsetState
 
                     const SizedBox(height: PRFSpacingTokens.xxl),
 
-                    PRFPrimaryButton(
+                    PRFButton(
                           onPressed: _submitForm,
                           title: 'Update',
                           disabled: !_isFormValid,

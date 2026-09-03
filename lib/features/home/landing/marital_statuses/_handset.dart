@@ -236,7 +236,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search marital statuses...',
         controller: _searchController,
         onChanged: (value) {

@@ -201,7 +201,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                   const SizedBox(height: PRFSpacingTokens.lg),
                   _buildForm(context, l10n),
                   const SizedBox(height: PRFSpacingTokens.lg),
-                  PRFPrimaryButton(
+                  PRFButton(
                         onPressed: _submit,
                         title: 'Create Mission',
                         disabled: !_isFormValid,
@@ -293,7 +293,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       child: Row(
         children: [
           Expanded(
-            child: PRFTextInput(
+            child: PRFTextField(
               hintText: 'YYYY-MM-DD',
               labelText: 'Start Date *',
               helperText: 'Select mission start date',
@@ -322,7 +322,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       child: Row(
         children: [
           Expanded(
-            child: PRFTextInput(
+            child: PRFTextField(
               hintText: 'HH:mm',
               labelText: 'Start Time *',
               helperText: 'Mission start time',
@@ -351,7 +351,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       child: Row(
         children: [
           Expanded(
-            child: PRFTextInput(
+            child: PRFTextField(
               hintText: 'YYYY-MM-DD',
               labelText: 'End Date *',
               helperText: 'Select mission end date',
@@ -380,7 +380,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       child: Row(
         children: [
           Expanded(
-            child: PRFTextInput(
+            child: PRFTextField(
               hintText: 'HH:mm',
               labelText: 'End Time *',
               helperText: 'Mission end time',
@@ -406,7 +406,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       isRequired: true,
       subtitle: 'Mission focus/theme',
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Mission theme',
         labelText: '${l10n.theme} *',
         helperText: 'Mission focus/theme',
@@ -424,12 +424,13 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       isRequired: true,
       subtitle: 'Missionaries needed',
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-      child: PRFNumberInput(
+      child: PRFTextField(
         hintText: '0',
         labelText: 'Capacity *',
         helperText: 'Missionaries needed',
         errorText: _showValidation ? _capacityError : null,
         controller: _capacityController,
+        type: PRFTextFieldType.number,
         enabled: !_isLoading,
       ),
     );
@@ -441,7 +442,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       title: 'WhatsApp Link',
 
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'https://...',
         labelText: 'WhatsApp Link',
         helperText: 'Optional',
@@ -457,11 +458,12 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       title: 'Preparation Notes',
 
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-      child: PRFTextAreaInput(
+      child: PRFTextField(
         hintText: 'Any mission preparation notes',
         labelText: 'Preparation Notes',
         helperText: 'Optional',
         controller: _prepNotesController,
+        type: PRFTextFieldType.textArea,
         enabled: !_isLoading,
       ),
     );

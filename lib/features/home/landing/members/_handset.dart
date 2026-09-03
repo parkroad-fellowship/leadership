@@ -252,7 +252,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search members...',
         controller: _searchController,
         onChanged: (value) {

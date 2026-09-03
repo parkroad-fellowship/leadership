@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_ui/flutter_adaptive_ui.dart';
 import 'package:leadership/features/home/landing/departments/_handset.dart';
+import 'package:prf_design/prf_design.dart';
 
 @RoutePage()
 class DepartmentsPage extends StatelessWidget {
@@ -9,8 +9,9 @@ class DepartmentsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveBuilder(
-      defaultBuilder: (_, _) => const DepartmentsPageHandset(),
+    return PRFAdaptive(
+      handset: (_) => const DepartmentsPageHandset(),
+      builder: (_, _) => const DepartmentsPageHandset(),
     );
   }
 }

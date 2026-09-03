@@ -196,7 +196,7 @@ class _MaritalStatusFormViewHandsetState
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
-                                child: PRFTextInput(
+                                child: PRFTextField(
                                   hintText: 'Marital status name',
                                   labelText: 'Name *',
                                   helperText: 'Required',
@@ -252,7 +252,7 @@ class _MaritalStatusFormViewHandsetState
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
                             ? 'Update Marital Status'

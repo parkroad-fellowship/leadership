@@ -189,7 +189,7 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
-                                child: PRFTextInput(
+                                child: PRFTextField(
                                   hintText: 'Church name',
                                   labelText: 'Name *',
                                   helperText: 'Required',
@@ -245,7 +245,7 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing ? 'Update Church' : 'Create Church',
                         disabled: isLoading || !_isFormValid,

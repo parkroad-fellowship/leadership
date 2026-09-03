@@ -288,8 +288,8 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           end: Alignment.bottomCenter,
           colors: [
             theme.colorScheme.primary,
-            PRFColorPalette.navy600,
-            PRFColorPalette.navy400,
+            PRFColors.navy600,
+            PRFColors.navy400,
           ],
           stops: const [0.0, 0.5, 1.0],
         ),
@@ -517,7 +517,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: PRFColorPalette.navy50,
+                color: PRFColors.navy50,
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               ),
               alignment: Alignment.center,

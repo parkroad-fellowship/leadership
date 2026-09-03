@@ -228,7 +228,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search churches...',
         controller: _searchController,
         onChanged: (value) {

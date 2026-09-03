@@ -414,7 +414,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                           isRequired: true,
                           child: Column(
                             children: [
-                              PRFTextAreaInput(
+                              PRFTextField(
                                 hintText: l10n.paymentDesc,
                                 labelText: '${l10n.description} *',
                                 helperText: 'Required',
@@ -423,9 +423,10 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                                 errorText: _showValidation
                                     ? _narrationError
                                     : null,
+                                type: PRFTextFieldType.textArea,
                               ),
                               const SizedBox(height: PRFSpacingTokens.lg),
-                              PRFTextAreaInput(
+                              PRFTextField(
                                 hintText: l10n.confirmationMsg,
                                 labelText: '${l10n.confirmationMsg} *',
                                 helperText: 'Required',
@@ -434,6 +435,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                                 errorText: _showValidation
                                     ? _confirmationMessageError
                                     : null,
+                                type: PRFTextFieldType.textArea,
                               ),
                             ],
                           ),
@@ -490,7 +492,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                       );
                     },
                     builder: (context, state) {
-                      return PRFPrimaryButton(
+                      return PRFButton(
                         onPressed: _submitForm,
                         title: l10n.recordExpense,
                         disabled: !_isFormValid,
@@ -568,7 +570,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
     String? errorText,
     bool fullWidth = false,
   }) {
-    return PRFNumberInput(
+    return PRFTextField(
       controller: controller,
       hintText: hint,
       labelText: '$label *',
@@ -577,6 +579,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
       enabled: !_isLoading,
       isLoading: _isLoading,
       errorText: errorText,
+      type: PRFTextFieldType.number,
     );
   }
 

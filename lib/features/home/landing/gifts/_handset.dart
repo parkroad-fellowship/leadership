@@ -228,7 +228,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search gifts...',
         controller: _searchController,
         onChanged: (value) {

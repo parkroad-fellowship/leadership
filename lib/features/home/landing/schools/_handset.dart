@@ -277,7 +277,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
           ),
         ],
       ),
-      child: PRFTextInput(
+      child: PRFTextField(
         hintText: 'Search schools...',
         controller: _searchController,
         onChanged: (value) {

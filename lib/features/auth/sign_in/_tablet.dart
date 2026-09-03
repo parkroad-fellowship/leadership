@@ -198,18 +198,20 @@ class _SignInTabletState extends State<SignInTablet> {
                   children: [
                     if (canShowAuth || kDebugMode) ...[
                       // Email Input
-                      PRFEmailInput(
+                      PRFTextField(
                         hintText: l10n.enterEmail,
-                        emailController: _emailController,
+                        controller: _emailController,
+                        type: PRFTextFieldType.email,
                         enabled: !_isLoading,
                       ),
                       const SizedBox(height: PRFSpacingTokens.xl),
 
                       // Password Input
-                      PRFPasswordInput(
+                      PRFTextField(
                         hintText: l10n.enterPassword,
-                        hidePasswordNotifier: _hidePasswordNotifier,
-                        passwordController: _passwordController,
+                        obscureNotifier: _hidePasswordNotifier,
+                        controller: _passwordController,
+                        type: PRFTextFieldType.password,
                         enabled: !_isLoading,
                       ),
                       const SizedBox(height: PRFSpacingTokens.xxxl),
@@ -249,7 +251,7 @@ class _SignInTabletState extends State<SignInTablet> {
                           );
                         },
                         builder: (context, state) {
-                          return PRFPrimaryButton(
+                          return PRFButton(
                             onPressed: () {
                               if (_emailController.text.isEmpty) {
                                 ScaffoldMessenger.of(
@@ -410,9 +412,10 @@ class GoogleSignIn extends StatelessWidget {
                       ),
                     );
 
-                    return PRFGoogleAuthButton(
+                    return PRFButton(
                       onPressed: () =>
                           context.read<GoogleSignInCubit>().signInwithGoogle(),
+                      variant: PRFButtonVariant.google,
                       title: title,
                       disabled: isLoading,
                       isLoading: isLoading,

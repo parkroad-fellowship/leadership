@@ -283,7 +283,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing ? 'Update Contact' : 'Add Contact',
                         disabled: isLoading || !_isFormValid,
@@ -363,7 +363,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Enter contact name',
             labelText: 'Contact Name *',
             helperText: 'Required',
@@ -484,7 +484,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           title: 'Email Address',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Enter email address',
             labelText: 'Email Address',
             helperText: 'Optional',
@@ -719,7 +719,7 @@ class _NewContactTypeFormBodyState extends State<_NewContactTypeFormBody> {
 
                         isRequired: true,
                         margin: EdgeInsets.zero,
-                        child: PRFTextInput(
+                        child: PRFTextField(
                           hintText: 'Enter type name',
                           labelText: 'Contact Type Name *',
                           helperText: 'Required',
@@ -734,7 +734,7 @@ class _NewContactTypeFormBodyState extends State<_NewContactTypeFormBody> {
                 const SizedBox(height: PRFSpacingTokens.xxl),
                 SizedBox(
                   width: double.infinity,
-                  child: PRFPrimaryButton(
+                  child: PRFButton(
                     onPressed: _submit,
                     title: 'Create Type',
                     disabled: !_isFormValid,

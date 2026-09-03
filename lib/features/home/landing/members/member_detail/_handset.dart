@@ -143,8 +143,8 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
           end: Alignment.bottomCenter,
           colors: [
             theme.colorScheme.primary,
-            PRFColorPalette.navy600,
-            PRFColorPalette.navy400,
+            PRFColors.navy600,
+            PRFColors.navy400,
           ],
           stops: const [0.0, 0.5, 1.0],
         ),

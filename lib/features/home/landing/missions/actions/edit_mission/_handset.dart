@@ -166,7 +166,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
                   const SizedBox(height: PRFSpacingTokens.lg),
                   _buildForm(context),
                   const SizedBox(height: PRFSpacingTokens.lg),
-                  PRFPrimaryButton(
+                  PRFButton(
                         onPressed: _submit,
                         title: 'Update Mission',
                         disabled: !_isFormValid,
@@ -231,7 +231,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           child: Row(
             children: [
               Expanded(
-                child: PRFTextInput(
+                child: PRFTextField(
                   hintText: 'YYYY-MM-DD',
                   labelText: 'Start Date *',
                   helperText: 'Required',
@@ -257,7 +257,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           child: Row(
             children: [
               Expanded(
-                child: PRFTextInput(
+                child: PRFTextField(
                   hintText: 'YYYY-MM-DD',
                   labelText: 'End Date *',
                   helperText: 'Required',
@@ -283,7 +283,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           child: Row(
             children: [
               Expanded(
-                child: PRFTextInput(
+                child: PRFTextField(
                   hintText: 'HH:mm',
                   labelText: 'Start Time *',
                   helperText: 'Required',
@@ -309,7 +309,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           child: Row(
             children: [
               Expanded(
-                child: PRFTextInput(
+                child: PRFTextField(
                   hintText: 'HH:mm',
                   labelText: 'End Time *',
                   helperText: 'Required',
@@ -331,7 +331,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           title: 'Theme',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'Mission theme',
             labelText: 'Theme',
             helperText: 'Optional',
@@ -344,11 +344,12 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           title: 'Capacity',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFNumberInput(
+          child: PRFTextField(
             hintText: '0',
             labelText: 'Capacity',
             helperText: 'Optional',
             controller: _capacityController,
+            type: PRFTextFieldType.number,
             enabled: !_isLoading,
           ),
         ),
@@ -357,7 +358,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           title: 'WhatsApp Link',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextInput(
+          child: PRFTextField(
             hintText: 'https://...',
             labelText: 'WhatsApp Link',
             helperText: 'Optional',
@@ -370,11 +371,12 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           title: 'Preparation Notes',
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: PRFTextAreaInput(
+          child: PRFTextField(
             hintText: 'Any mission preparation notes',
             labelText: 'Preparation Notes',
             helperText: 'Optional',
             controller: _prepNotesController,
+            type: PRFTextFieldType.textArea,
             enabled: !_isLoading,
           ),
         ),

@@ -188,7 +188,7 @@ class _GiftFormViewHandsetState extends State<GiftFormViewHandset> {
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
-                                child: PRFTextInput(
+                                child: PRFTextField(
                                   hintText: 'Gift name',
                                   labelText: 'Name *',
                                   helperText: 'Required',
@@ -244,7 +244,7 @@ class _GiftFormViewHandsetState extends State<GiftFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
-                      child: PRFPrimaryButton(
+                      child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing ? 'Update Gift' : 'Create Gift',
                         disabled: isLoading || !_isFormValid,

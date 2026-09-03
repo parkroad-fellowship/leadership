@@ -159,30 +159,47 @@ class Singletons {
       ..registerSingleton<EventHiveDbService>(EventHiveDbService())
       ..registerSingleton<RequisitionHiveDbService>(RequisitionHiveDbService())
       ..registerSingleton<MissionHiveDbService>(MissionHiveDbService())
-      ..registerSingleton<MissionQuestionHiveDbService>(MissionQuestionHiveDbService())
+      ..registerSingleton<MissionQuestionHiveDbService>(
+        MissionQuestionHiveDbService(),
+      )
       ..registerSingleton<DebriefNoteHiveDbService>(DebriefNoteHiveDbService())
       ..registerSingleton<SoulHiveDbService>(SoulHiveDbService())
-      ..registerSingleton<MissionSubscriptionHiveDbService>(MissionSubscriptionHiveDbService())
-      ..registerSingleton<MissionOfflineMemberHiveDbService>(MissionOfflineMemberHiveDbService())
-      ..registerSingleton<MissionSessionHiveDbService>(MissionSessionHiveDbService())
+      ..registerSingleton<MissionSubscriptionHiveDbService>(
+        MissionSubscriptionHiveDbService(),
+      )
+      ..registerSingleton<MissionOfflineMemberHiveDbService>(
+        MissionOfflineMemberHiveDbService(),
+      )
+      ..registerSingleton<MissionSessionHiveDbService>(
+        MissionSessionHiveDbService(),
+      )
       ..registerSingleton<MissionTypeHiveDbService>(MissionTypeHiveDbService())
       ..registerSingleton<SchoolTermHiveDbService>(SchoolTermHiveDbService())
-      ..registerSingleton<RequisitionItemHiveDbService>(RequisitionItemHiveDbService())
-      ..registerSingleton<ExpenseCategoryHiveDbService>(ExpenseCategoryHiveDbService())
-      ..registerSingleton<PaymentInstructionHiveDbService>(PaymentInstructionHiveDbService())
-      ..registerSingleton<AllocationEntryHiveDbService>(AllocationEntryHiveDbService())
+      ..registerSingleton<RequisitionItemHiveDbService>(
+        RequisitionItemHiveDbService(),
+      )
+      ..registerSingleton<ExpenseCategoryHiveDbService>(
+        ExpenseCategoryHiveDbService(),
+      )
+      ..registerSingleton<PaymentInstructionHiveDbService>(
+        PaymentInstructionHiveDbService(),
+      )
+      ..registerSingleton<AllocationEntryHiveDbService>(
+        AllocationEntryHiveDbService(),
+      )
       ..registerSingleton<RefundHiveDbService>(RefundHiveDbService())
       ..registerSingleton<SchoolHiveDbService>(SchoolHiveDbService())
       ..registerSingleton<ContactHiveDbService>(ContactHiveDbService())
       ..registerSingleton<ContactTypeHiveDbService>(ContactTypeHiveDbService())
       ..registerSingleton<ClassGroupHiveDbService>(ClassGroupHiveDbService())
       ..registerSingleton<ProfessionHiveDbService>(ProfessionHiveDbService())
-      ..registerSingleton<MaritalStatusHiveDbService>(MaritalStatusHiveDbService())
+      ..registerSingleton<MaritalStatusHiveDbService>(
+        MaritalStatusHiveDbService(),
+      )
       ..registerSingleton<ChurchHiveDbService>(ChurchHiveDbService())
       ..registerSingleton<DepartmentHiveDbService>(DepartmentHiveDbService())
       ..registerSingleton<MemberHiveDbService>(MemberHiveDbService())
-      ..registerSingleton<GiftHiveDbService>(GiftHiveDbService())
-      ;
+      ..registerSingleton<GiftHiveDbService>(GiftHiveDbService());
   }
 
   static Future<void> setupDatabases() async {

@@ -147,11 +147,12 @@ class _ApproveRequisitionViewHandsetState
                     PRFFormSection(
                           icon: Icons.notes_outlined,
                           title: 'Approval Notes',
-                          child: PRFTextAreaInput(
+                          child: PRFTextField(
                             controller: _notesController,
                             hintText:
                                 'Enter your notes or reason for rejection...',
                             maxLines: 4,
+                            type: PRFTextFieldType.textArea,
                           ),
                         )
                         .animate(delay: PRFMotionTokens.stagger4)
@@ -195,7 +196,7 @@ class _ApproveRequisitionViewHandsetState
                 child: Column(
                   children: [
                     // Approve Button
-                    PRFPrimaryButton(
+                    PRFButton(
                           onPressed: _approveRequisition,
                           title: 'Approve Requisition',
                           disabled: !_canApprove,
@@ -208,9 +209,10 @@ class _ApproveRequisitionViewHandsetState
                     const SizedBox(height: PRFSpacingTokens.md),
 
                     // Reject Button
-                    PRFDestroyButton(
+                    PRFButton(
                           onPressed: _rejectRequisition,
                           title: 'Reject Requisition',
+                          variant: PRFButtonVariant.destructive,
                           disabled: !_canReject,
                           isLoading: _isLoading && _isRejecting,
                         )
