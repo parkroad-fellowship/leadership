@@ -42,8 +42,8 @@ class FirebaseServiceImpl implements PRFFirebaseService {
       await _ensureGoogleSignInInitialized();
 
       // Clear any existing session
-      await _auth.signOut();
-      await _googleSignIn.signOut();
+      // await _auth.signOut();
+      // await _googleSignIn.signOut();
 
       // Web requires a different authentication flow
       if (kIsWeb) {
