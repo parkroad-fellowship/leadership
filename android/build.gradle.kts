@@ -42,10 +42,10 @@ subprojects {
             try {
                 p.extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
                     // Support both older and newer AGP DSLs by attempting both properties.
-                    compileSdkVersion(36)
+                    compileSdkVersion(37)
 
                     // also set targetSdk / targetSdkVersion where available
-                    defaultConfig.targetSdk = 36
+                    defaultConfig.targetSdk = 37
                 }
             } catch (e: Exception) {
                 // fail-safe: some subprojects may not expose android DSL in time — ignore

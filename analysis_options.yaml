@@ -5,6 +5,13 @@ analyzer:
     - lib/generated_plugin_registrant.dart
     - lib/**/*.g.dart
     - lib/**/*.freezed.dart
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
   errors:
     invalid_annotation_target: ignore
     # TODO: Remove these gradually
