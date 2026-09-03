@@ -98,24 +98,21 @@ class _GiftFormViewHandsetState extends State<GiftFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<GiftResourceCubit, ResourceState<PRFGift>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFGift> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFGift> &&
+              curr is ResourceListLoaded<PRFGift>) ||
           curr is ResourceError<PRFGift>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFGift>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Gift updated successfully'
-                    : 'Gift created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFGift>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Gift updated successfully'
+                  : 'Gift created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFGift>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);

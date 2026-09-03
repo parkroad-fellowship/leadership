@@ -76,10 +76,6 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFChurch>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFChurch>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFChurch>(:final message) => PRFEmptyView(

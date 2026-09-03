@@ -42,7 +42,6 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     final items = switch (state) {
       ResourceListLoaded<PRFSchool>(:final items) => items,
       ResourceMutating<PRFSchool>(:final items) => items,
-      ResourceMutated<PRFSchool>(:final items) => items,
       ResourceError<PRFSchool>(:final items) => items,
       _ => <PRFSchool>[],
     };
@@ -56,7 +55,6 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     final state = context.read<ContactTypeCubit>().state;
     return switch (state) {
       ResourceListLoaded<PRFContactType>(:final items) => items,
-      ResourceMutated<PRFContactType>(:final items) => items,
       ResourceMutating<PRFContactType>(:final items) => items,
       ResourceError<PRFContactType>(:final items) => items,
       _ => <PRFContactType>[],
@@ -631,10 +629,6 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   ) {
     return BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
       listener: (context, state) {
-        if (state case ResourceMutated<PRFContact>()) {
-          context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
-          context.read<SchoolCubit>().loadAll();
-        }
         if (state case ResourceError<PRFContact>(
           :final message,
         )) {
@@ -645,7 +639,6 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
         final contacts = switch (state) {
           ResourceListLoaded<PRFContact>(:final items) => items,
           ResourceMutating<PRFContact>(:final items) => items,
-          ResourceMutated<PRFContact>(:final items) => items,
           ResourceError<PRFContact>(:final items) => items,
           _ => school.contacts,
         };
@@ -859,10 +852,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
         contact: contact,
         schoolUlid: school.ulid,
         contactTypes: contactTypes,
-        onSaved: () {
-          context.read<ContactCubit>().loadForSchool(school.ulid);
-          context.read<SchoolCubit>().loadAll();
-        },
+        onSaved: () {},
       ),
     );
   }

@@ -78,10 +78,6 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFMissionType>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFMissionType>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFMissionType>(:final message) => PRFEmptyView(

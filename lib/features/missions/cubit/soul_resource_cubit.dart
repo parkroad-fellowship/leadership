@@ -10,6 +10,9 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
     required SoulHiveDbService hiveDbService,
   }) : super(service: missionSoulService, dbService: hiveDbService);
 
+ @override
+  List<String> get defaultIncludes => ['classGroup'];
+
   @override
   Future<List<PRFSoul>> loadCachedList({Map<String, dynamic>? filters}) async {
     return dbService.list();
@@ -18,8 +21,7 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(
       filters: {'mission_ulid': missionUlid},
-      orderBy: 'created_at',
-      orderDirection: 'desc',
+      sortBy: 'created_at',
       limit: 200,
     );
   }

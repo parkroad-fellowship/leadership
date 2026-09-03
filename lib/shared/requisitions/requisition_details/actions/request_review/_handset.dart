@@ -150,7 +150,7 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                       builder: (context, state) {
                         return state.maybeWhen(
                           orElse: () => const SizedBox.shrink(),
-                          listLoading: () => const Center(
+                          listLoading: (items) => const Center(
                             child: LinearProgressIndicator(),
                           ),
                           listLoaded: (leaders, _, _) =>

@@ -98,7 +98,7 @@ class _RequisitionApprovalsPageHandsetState
                     >(
                       bloc: _approvalCubit,
                       builder: (context, state) => state.maybeWhen(
-                        listLoading: () => const SizedBox.square(
+                        listLoading: (items) => const SizedBox.square(
                           dimension: 20,
                           child: PRFCircularProgressIndicator(),
                         ),
@@ -112,7 +112,7 @@ class _RequisitionApprovalsPageHandsetState
                     >(
                       bloc: _closedCubit,
                       builder: (context, state) => state.maybeWhen(
-                        listLoading: () => const SizedBox.square(
+                        listLoading: (items) => const SizedBox.square(
                           dimension: 20,
                           child: PRFCircularProgressIndicator(),
                         ),
@@ -126,7 +126,7 @@ class _RequisitionApprovalsPageHandsetState
                     >(
                       bloc: _draftCubit,
                       builder: (context, state) => state.maybeWhen(
-                        listLoading: () => const SizedBox.square(
+                        listLoading: (items) => const SizedBox.square(
                           dimension: 20,
                           child: PRFCircularProgressIndicator(),
                         ),

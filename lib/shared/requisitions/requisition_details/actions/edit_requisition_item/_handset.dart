@@ -115,22 +115,18 @@ class _EditRequisitionItemViewHandsetState
                     });
                   }
                 },
-                mutated: (_, operation, item) {
-                  if (operation == ResourceOperation.update) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    if (item != null) {
-                      _populateForm(item);
-                    }
-                    Gaimon.success();
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Requisition item updated successfully'),
-                      ),
-                    );
-                  }
+                itemLoaded: (item, items) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  _populateForm(item);
+                  Gaimon.success();
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Requisition item updated successfully'),
+                    ),
+                  );
                 },
                 error: (message, _) {
                   if (_isLoading) {

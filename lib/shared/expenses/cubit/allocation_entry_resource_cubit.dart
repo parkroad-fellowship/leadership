@@ -45,28 +45,40 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
   }) async {
     final member = _hiveService.retrieveMember()!;
 
-    await create(
-      data: PRFAllocationEntryDTO(
-        accountingEventUlid: accountingEventUlid,
-        expenseCategoryUlid: expenseCategoryUlid,
-        memberUlid: member.ulid,
-        entryType: entryType,
-        chargeType: chargeType,
-        charge: charge,
-        unitCost: unitCost,
-        quantity: quantity,
-        narration: narration,
-        confirmationMessage: confirmationMessage,
-      ).toJson(),
+    emit(
+      ResourceState.mutating(
+        items: currentItems,
+        operation: ResourceOperation.create,
+      ),
     );
 
-    final createdEntry = state.maybeWhen(
-      mutated: (items, operation, item) =>
-          operation == ResourceOperation.create ? item : null,
-      orElse: () => null,
-    );
+    final PRFAllocationEntry createdEntry;
+    try {
+      createdEntry = await _allocationEntryService.create(
+        data: PRFAllocationEntryDTO(
+          accountingEventUlid: accountingEventUlid,
+          expenseCategoryUlid: expenseCategoryUlid,
+          memberUlid: member.ulid,
+          entryType: entryType,
+          chargeType: chargeType,
+          charge: charge,
+          unitCost: unitCost,
+          quantity: quantity,
+          narration: narration,
+          confirmationMessage: confirmationMessage,
+        ).toJson(),
+        includes: defaultIncludes,
+      );
+      await dbService.persistEntity(createdEntry);
+    } on Failure catch (e) {
+      emit(ResourceState.error(message: e.message, items: currentItems));
+      return;
+    } catch (e) {
+      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      return;
+    }
 
-    if (createdEntry == null || receiptDTOs.isEmpty) {
+    if (receiptDTOs.isEmpty) {
       return;
     }
 
@@ -92,30 +104,41 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
   }) async {
     final member = _hiveService.retrieveMember()!;
 
-    await update(
-      id: allocationEntryUlid,
-      data: PRFAllocationEntryDTO(
-        accountingEventUlid: accountingEventUlid,
-        expenseCategoryUlid: expenseCategoryUlid,
-        memberUlid: member.ulid,
-        entryType: entryType,
-        chargeType: chargeType,
-        charge: charge,
-        unitCost: unitCost,
-        quantity: quantity,
-        narration: narration,
-        confirmationMessage: confirmationMessage,
-      ).toJson(),
-      matchById: (item) => item.ulid == allocationEntryUlid,
+    emit(
+      ResourceState.mutating(
+        items: currentItems,
+        operation: ResourceOperation.update,
+      ),
     );
 
-    final updatedEntry = state.maybeWhen(
-      mutated: (items, operation, item) =>
-          operation == ResourceOperation.update ? item : null,
-      orElse: () => null,
-    );
+    final PRFAllocationEntry updatedEntry;
+    try {
+      updatedEntry = await _allocationEntryService.update(
+        id: allocationEntryUlid,
+        data: PRFAllocationEntryDTO(
+          accountingEventUlid: accountingEventUlid,
+          expenseCategoryUlid: expenseCategoryUlid,
+          memberUlid: member.ulid,
+          entryType: entryType,
+          chargeType: chargeType,
+          charge: charge,
+          unitCost: unitCost,
+          quantity: quantity,
+          narration: narration,
+          confirmationMessage: confirmationMessage,
+        ).toJson(),
+        includes: defaultIncludes,
+      );
+      await dbService.persistEntity(updatedEntry);
+    } on Failure catch (e) {
+      emit(ResourceState.error(message: e.message, items: currentItems));
+      return;
+    } catch (e) {
+      emit(ResourceState.error(message: e.toString(), items: currentItems));
+      return;
+    }
 
-    if (updatedEntry == null || receiptDTOs.isEmpty) {
+    if (receiptDTOs.isEmpty) {
       return;
     }
 
@@ -153,13 +176,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
         ),
       );
 
-      emit(
-        ResourceState.mutated(
-          items: [item, ...currentItems],
-          operation: ResourceOperation.create,
-          item: item,
-        ),
-      );
+      await dbService.persistEntity(item);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -193,12 +210,15 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
         mediaUuid: mediaUuid,
       );
 
-      emit(
-        ResourceState.mutated(
-          items: currentItems,
-          operation: ResourceOperation.update,
-        ),
+      // Refresh the entry from the API and persist it — the DB stream
+      // re-emits the updated list state.
+      final entry = await _allocationEntryService.get(
+        ulid: allocationEntryUlid,
+        includes: defaultIncludes,
       );
+      await dbService.persistEntity(entry);
+    } on Failure catch (e) {
+      emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }

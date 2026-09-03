@@ -98,24 +98,21 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<ChurchResourceCubit, ResourceState<PRFChurch>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFChurch> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFChurch> &&
+              curr is ResourceListLoaded<PRFChurch>) ||
           curr is ResourceError<PRFChurch>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFChurch>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Church updated successfully'
-                    : 'Church created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFChurch>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Church updated successfully'
+                  : 'Church created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFChurch>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);

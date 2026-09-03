@@ -1,6 +1,4 @@
 import 'package:leadership/enums/prf_event_type.dart';
-import 'package:leadership/enums/prf_leadership_group.dart';
-import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_responsible_desk.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_event.dart';
@@ -14,7 +12,6 @@ import 'package:leadership/services/local_storage/hive/db/event_hive_db_service.
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
-import 'package:leadership/utils/misc.dart';
 
 class EventResourceCubit extends ResourceCubit<PRFEvent> {
   EventResourceCubit({
@@ -28,6 +25,11 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
   final EventService _eventService;
   final RequisitionService _requisitionService;
   final HiveService _hiveService;
+
+  @override
+  List<String> get defaultIncludes => [
+    'accountingEvent',
+  ];
 
   @override
   Future<List<PRFEvent>> loadCachedList({Map<String, dynamic>? filters}) async {
@@ -60,7 +62,7 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
 
   Future<void> loadPastEvents() {
     return loadAll(
-      orderBy: 'start_date',
+      sortBy: 'start_date',
       filters: {
         'responsible_desks': PRFResponsibleDesk.apiKeys(
           PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
@@ -121,13 +123,7 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
 
       _lastCreatedRequisition = requisition;
 
-      emit(
-        ResourceState.mutated(
-          items: [event, ...currentItems],
-          operation: ResourceOperation.create,
-          item: event,
-        ),
-      );
+      await dbService.persistEntity(event);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {

@@ -154,7 +154,6 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return state.maybeWhen(
       listLoaded: (items, _, _) => items,
       mutating: (items, _) => items,
-      mutated: (items, _, _) => items,
       error: (_, items) => items,
       orElse: () => const [],
     );
@@ -213,27 +212,58 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
-  List<PRFClassGroup> _availableClassGroups() {
+  Future<List<PRFClassGroup>> _availableClassGroups() async {
     final mission = _currentMissionFromState(
       context.read<MissionDetailCubit>().state,
     );
     final missionInstitutionType = mission?.school?.institutionType;
-    final classGroups = _itemsFromResourceState(
-      context.read<ClassGroupResourceCubit>().state,
-    );
+    final cubit = context.read<ClassGroupResourceCubit>();
 
-    final result =
-        classGroups
-            .where(
-              (group) =>
-                  missionInstitutionType == null ||
-                  group.institutionType == missionInstitutionType,
-            )
-            .where((group) => group.ulid.isNotEmpty)
-            .toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+    List<PRFClassGroup> usable(List<PRFClassGroup> groups) {
+      final result =
+          groups
+              .where(
+                (group) =>
+                    missionInstitutionType == null ||
+                    group.institutionType == missionInstitutionType,
+              )
+              .where((group) => group.ulid.isNotEmpty)
+              .toList()
+            ..sort((a, b) => a.name.compareTo(b.name));
+      return result;
+    }
 
-    return result;
+    // Class groups are persisted locally (Hive). The cubit's in-memory state
+    // may not yet be populated (e.g. the mission/active load is still in
+    // flight) or may only hold groups for a different institution type. So
+    // whenever the filtered result is empty, fall back to the authoritative
+    // local cache — regardless of what the raw in-memory list contains.
+    var classGroups = usable(_itemsFromResourceState(cubit.state));
+    if (classGroups.isEmpty) {
+      try {
+        classGroups = usable(await cubit.loadCachedList());
+      } catch (_) {
+        classGroups = const [];
+      }
+    }
+
+    // Last resort: kick off the active load (cache-first, background API
+    // refresh) so the correct groups for this mission's institution type are
+    // available on the next attempt, then re-read from the local cache.
+    if (classGroups.isEmpty) {
+      if (missionInstitutionType != null) {
+        await cubit.loadActiveForInstitutionType(missionInstitutionType);
+      } else {
+        await cubit.loadActive();
+      }
+      try {
+        classGroups = usable(await cubit.loadCachedList());
+      } catch (_) {
+        classGroups = const [];
+      }
+    }
+
+    return classGroups;
   }
 
   Future<PRFSoulDTO?> _showSoulFormSheet({
@@ -243,13 +273,13 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     String? initialNote,
     String? initialClassGroupUlid,
     PRFSoulDecisionType initialDecisionType = PRFSoulDecisionType.salvation,
-  }) {
+  }) async {
     return PRFBottomSheet.show<PRFSoulDTO>(
       context,
       title: title,
       child: _MissionSoulFormBody(
         missionUlid: missionUlid,
-        classGroups: _availableClassGroups(),
+        classGroups: await _availableClassGroups(),
         initialName: initialName,
         initialNote: initialNote,
         initialClassGroupUlid: initialClassGroupUlid,
@@ -442,7 +472,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptAddSoul() async {
-    final classGroups = _availableClassGroups();
+    final classGroups = await _availableClassGroups();
     if (classGroups.isEmpty) {
       PRFSnackbar.error(
         context,
@@ -1832,7 +1862,7 @@ class _MissionMemberSubscriptionFormBodyState
           orElse: () => <PRFMember>[],
         );
         final isLoading = state.maybeWhen(
-          listLoading: () => true,
+          listLoading: (items) => true,
           orElse: () => false,
         );
         final errorMessage = state.maybeWhen(
@@ -2751,8 +2781,7 @@ class _MissionSubscriberDetailsBodyState
           case ResourceMutating<PRFMissionSubscription>(:final operation)
               when operation == ResourceOperation.update:
             setState(() => _isLoading = true);
-          case ResourceMutated<PRFMissionSubscription>(:final operation)
-              when operation == ResourceOperation.update:
+          case ResourceListLoaded<PRFMissionSubscription>() when _isLoading:
             setState(() => _isLoading = false);
             Gaimon.success();
             Navigator.of(context).pop(true);

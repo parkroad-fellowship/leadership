@@ -197,22 +197,21 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                             _isLoading = true;
                           });
                         },
-                        mutated: (items, operation, item) {
-                          if (operation != ResourceOperation.create) {
-                            return;
-                          }
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Refund entry added successfully',
+                        listLoaded: (items, page, hasMore) {
+                          if (_isLoading) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            Navigator.of(context).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Refund entry added successfully',
+                                ),
+                                duration: Duration(seconds: 2),
                               ),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                            );
+                          }
                         },
                         error: (message, items) {
                           setState(() {

@@ -300,7 +300,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                                 builder: (context, state) {
                                   return state.maybeWhen(
                                     orElse: () => const SizedBox.shrink(),
-                                    listLoading: () =>
+                                    listLoading: (items) =>
                                         const PRFLinearProgressIndicator(),
                                     listLoaded: (expenseCategories, _, _) =>
                                         Column(
@@ -436,6 +436,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                                     ? _confirmationMessageError
                                     : null,
                                 type: PRFTextFieldType.textArea,
+                                maxLines: 3,
                               ),
                             ],
                           ),
@@ -464,18 +465,17 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                             _isLoading = true;
                           });
                         },
-                        mutated: (items, operation, item) {
-                          if (operation != ResourceOperation.create) {
-                            return;
+                        listLoaded: (items, page, hasMore) {
+                          if (_isLoading) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            Gaimon.success();
+                            Navigator.of(context).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.expenseRecorded)),
+                            );
                           }
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Gaimon.success();
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.expenseRecorded)),
-                          );
                         },
                         error: (message, items) {
                           setState(() {

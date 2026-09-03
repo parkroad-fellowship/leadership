@@ -105,24 +105,21 @@ class _MaritalStatusFormViewHandsetState
       ResourceState<PRFMaritalStatus>
     >(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFMaritalStatus> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFMaritalStatus> &&
+              curr is ResourceListLoaded<PRFMaritalStatus>) ||
           curr is ResourceError<PRFMaritalStatus>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFMaritalStatus>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Marital status updated successfully'
-                    : 'Marital status created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFMaritalStatus>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Marital status updated successfully'
+                  : 'Marital status created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFMaritalStatus>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);

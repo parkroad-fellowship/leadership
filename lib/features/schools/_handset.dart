@@ -78,10 +78,6 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFSchool>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFSchool>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFSchool>(:final message) => PRFEmptyView(

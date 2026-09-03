@@ -47,6 +47,12 @@ hits=$(grep -rln "getIt" "$ROOT/lib/features" "$ROOT/lib/shared" 2>/dev/null \
   | grep "_cubit\.dart$" | grep -v "freezed")
 [ -n "$hits" ] && err "getIt used inside cubits (use constructor injection):\n$hits"
 
+# 5c. List state is only ever emitted by the base CRUD cubits — feature cubits
+#     must persist to Hive and let the DB stream emit listLoaded.
+hits=$(grep -rn "ResourceState[^ ]*\.listLoaded(" "$ROOT/lib/features" "$ROOT/lib/shared" 2>/dev/null \
+  | grep -v "freezed")
+[ -n "$hits" ] && err "Manual listLoaded emissions outside base CRUD cubits (persist to Hive and let the DB stream emit):\n$hits"
+
 # 6. Firebase analytics/crashlytics used directly outside the service layer
 hits=$(grep -rln "FirebaseAnalytics\|FirebaseCrashlytics" "$ROOT/lib" \
   | grep -v "lib/services/analytics/" \

@@ -83,10 +83,6 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                   theme,
                   items,
                 ),
-                ResourceMutated<PRFMaritalStatus>(:final items) => _buildBody(
-                  theme,
-                  items,
-                ),
                 ResourceError<PRFMaritalStatus>(:final items)
                     when items.isNotEmpty =>
                   _buildBody(theme, items),

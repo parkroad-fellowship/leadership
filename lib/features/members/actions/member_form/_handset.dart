@@ -158,24 +158,19 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
     // Load entity lists for selection
     context.read<ChurchResourceCubit>().loadAll(
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
     );
     context.read<ProfessionResourceCubit>().loadAll(
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
     );
     context.read<MaritalStatusResourceCubit>().loadAll(
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
     );
     context.read<DepartmentResourceCubit>().loadAll(
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
     );
     context.read<GiftResourceCubit>().loadAll(
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
     );
   }
 
@@ -318,8 +313,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       child: ChurchFormViewHandset(
         onSaved: () {
           context.read<ChurchResourceCubit>().loadAll(
-            orderBy: 'name',
-            orderDirection: 'asc',
+            sortBy: 'name',
           );
         },
       ),
@@ -333,8 +327,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       child: ProfessionFormViewHandset(
         onSaved: () {
           context.read<ProfessionResourceCubit>().loadAll(
-            orderBy: 'name',
-            orderDirection: 'asc',
+            sortBy: 'name',
           );
         },
       ),
@@ -348,8 +341,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       child: MaritalStatusFormViewHandset(
         onSaved: () {
           context.read<MaritalStatusResourceCubit>().loadAll(
-            orderBy: 'name',
-            orderDirection: 'asc',
+            sortBy: 'name',
           );
         },
       ),
@@ -363,8 +355,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       child: DepartmentFormViewHandset(
         onSaved: () {
           context.read<DepartmentResourceCubit>().loadAll(
-            orderBy: 'name',
-            orderDirection: 'asc',
+            sortBy: 'name',
           );
         },
       ),
@@ -378,8 +369,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       child: GiftFormViewHandset(
         onSaved: () {
           context.read<GiftResourceCubit>().loadAll(
-            orderBy: 'name',
-            orderDirection: 'asc',
+            sortBy: 'name',
           );
         },
       ),
@@ -390,24 +380,21 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<MemberResourceCubit, ResourceState<PRFMember>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFMember> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFMember> &&
+              curr is ResourceListLoaded<PRFMember>) ||
           curr is ResourceError<PRFMember>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFMember>(:final operation):
-            if (operation == ResourceOperation.update ||
-                operation == ResourceOperation.create) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Member updated successfully'
-                    : 'Member created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFMember>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Member updated successfully'
+                  : 'Member created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFMember>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);
@@ -855,7 +842,6 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         final churches = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, item) => items,
           error: (message, items) => items,
           orElse: () => <PRFChurch>[],
         );
@@ -904,7 +890,6 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         final professions = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, item) => items,
           error: (message, items) => items,
           orElse: () => <PRFProfession>[],
         );
@@ -956,7 +941,6 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         final statuses = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, item) => items,
           error: (message, items) => items,
           orElse: () => <PRFMaritalStatus>[],
         );
@@ -1005,7 +989,6 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         final departments = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, item) => items,
           error: (message, items) => items,
           orElse: () => <PRFDepartment>[],
         );
@@ -1059,7 +1042,6 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         final gifts = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, item) => items,
           error: (message, items) => items,
           orElse: () => <PRFGift>[],
         );

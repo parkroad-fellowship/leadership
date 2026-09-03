@@ -133,8 +133,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
           case ResourceMutating<PRFMission>(:final operation)
               when operation == ResourceOperation.update:
             setState(() => _isLoading = true);
-          case ResourceMutated<PRFMission>(:final operation)
-              when operation == ResourceOperation.update:
+          case ResourceListLoaded<PRFMission>() when _isLoading:
             setState(() => _isLoading = false);
             Gaimon.success();
             Navigator.of(context).pop(true);

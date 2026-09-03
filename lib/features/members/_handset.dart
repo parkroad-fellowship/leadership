@@ -76,10 +76,6 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFMember>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFMember>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFMember>(:final message) => PRFEmptyView(

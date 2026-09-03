@@ -391,18 +391,14 @@ class _CreateRequisitionItemViewHandsetState
                           if (operation == ResourceOperation.create) {
                             setState(() => _isLoading = true);
                           }
-                        case ResourceMutated<PRFRequisitionItem>(
-                          :final operation,
-                        ):
-                          if (operation == ResourceOperation.create) {
-                            setState(() => _isLoading = false);
-                            Gaimon.success();
-                            Navigator.of(context).pop();
-                            PRFSnackbar.success(
-                              context,
-                              'Requisition item created successfully',
-                            );
-                          }
+                        case ResourceItemLoaded<PRFRequisitionItem>():
+                          setState(() => _isLoading = false);
+                          Gaimon.success();
+                          Navigator.of(context).pop();
+                          PRFSnackbar.success(
+                            context,
+                            'Requisition item created successfully',
+                          );
                         case ResourceError<PRFRequisitionItem>(:final message):
                           setState(() => _isLoading = false);
                           Gaimon.error();

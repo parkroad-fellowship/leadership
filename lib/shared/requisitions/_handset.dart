@@ -81,7 +81,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
             l10n,
             items,
           ),
-          ResourceMutated<PRFRequisition>(:final items) when items.isEmpty =>
+          ResourceMutating<PRFRequisition>(:final items) when items.isEmpty =>
             RefreshIndicator(
               onRefresh: () => context
                   .read<RequisitionResourceCubit>()
@@ -97,7 +97,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                 ),
               ),
             ),
-          ResourceMutated<PRFRequisition>(:final items) => _buildLoadedList(
+          ResourceMutating<PRFRequisition>(:final items) => _buildLoadedList(
             context,
             theme,
             l10n,

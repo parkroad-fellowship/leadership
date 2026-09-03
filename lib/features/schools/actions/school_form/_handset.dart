@@ -224,12 +224,12 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<SchoolCubit, ResourceState<PRFSchool>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFSchool> &&
+          (curr is ResourceMutating<PRFSchool> &&
               curr.operation != ResourceOperation.delete) ||
           curr is ResourceError<PRFSchool>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFSchool>(:final operation):
+          case ResourceMutating<PRFSchool>(:final operation):
             if (operation == ResourceOperation.create ||
                 operation == ResourceOperation.update) {
               Gaimon.success();

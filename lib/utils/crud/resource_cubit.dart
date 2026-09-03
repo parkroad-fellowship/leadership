@@ -4,9 +4,17 @@ import 'package:bloc/bloc.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/api/_base_api_service.dart';
 import 'package:leadership/services/local_storage/hive/db/_base_hive_db_service.dart';
+import 'package:leadership/utils/crud/paginated_response.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:logger/logger.dart';
 
+/// A single cubit that handles list, create, update, and delete
+/// for any resource backed by a [BaseAPIService<T>].
+///
+/// Subclasses only need to:
+///   1. Pass the service via super constructor.
+///   2. Optionally override [defaultIncludes], [defaultFilters], etc.
+///   3. Add resource-specific convenience methods.
 abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   ResourceCubit({
     required this._service,
@@ -17,9 +25,18 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   final BaseHiveDbService<TRemote> dbService;
   final _logger = Logger();
 
+  /// Stores the last filters used by [loadAll] to ensure
+  /// subsequent fetches use the correct parent key after mutations.
   Map<String, dynamic>? _lastFilters;
+
+  /// Exposes [_lastFilters] to subclasses that need to pass the last-used
+  /// filter context (e.g. parent ULID) from within
+  /// custom mutation methods.
   Map<String, dynamic>? get lastFilters => _lastFilters;
 
+  /// Subscription to the Hive DB stream for reactive updates.
+  /// When external sources (e.g., API calls, socket events) write to Hive,
+  /// this triggers a re-fetch so the cubit state stays current organically.
   StreamSubscription<List<TRemote>>? _dbStreamSubscription;
 
   int _requestSequence = 0;
@@ -27,6 +44,8 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   int _currentPage = 1;
   bool _hasMore = false;
 
+  /// Subscribe to the Hive DB service's stream.
+  /// The stream automatically triggers a locally filtered fetch via [loadCachedList].
   void subscribeToDbUpdates() {
     _dbStreamSubscription?.cancel();
     _dbStreamSubscription = dbService.stream.listen((_) async {
@@ -57,48 +76,43 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     return super.close();
   }
 
+  /// Override these in subclasses for resource-specific defaults.
   List<String> get defaultIncludes => [];
   Map<String, dynamic> get defaultFilters => {};
   int get defaultLimit => 15;
   String? get defaultSortBy => null;
 
+  /// Extracts the current list from whatever state we are in.
   List<TRemote> get currentItems {
     return state.maybeWhen(
       itemLoading: (items, _) => items,
-      listLoading: () => [],
+      listLoading: (items) => items,
       listLoaded: (items, _, _) => items,
       itemLoaded: (_, items) => items,
       mutating: (items, _) => items,
-      mutated: (items, _, _) => items,
       error: (_, items) => items,
       itemError: (_, items, _) => items,
       orElse: () => [],
     );
   }
 
-  TRemote? get currentItem {
-    return state.maybeWhen(
-      itemLoading: (_, item) => item,
-      itemLoaded: (item, _) => item,
-      itemError: (_, _, item) => item,
-      listLoaded: (items, _, _) => items.isNotEmpty ? items.first : null,
-      mutated: (items, _, item) =>
-          item ?? (items.isNotEmpty ? items.first : null),
-      orElse: () => null,
-    );
-  }
-
+  /// Returns the initial cached list used by [loadAll] for the cache-first
+  /// local seed. Defaults to [dbService.list()] (all items).
+  ///
+  /// Override in subclasses that have parent-filtered Hive data to return only
+  /// the items relevant to the current parent context (e.g. by mission ULID).
   Future<List<TRemote>> loadCachedList({
     Map<String, dynamic>? filters,
   });
 
+  /// Fetch the full list of resources from the API.
+  /// Persists into Hive, triggering an organic UI update via [_dbStreamSubscription].
   Future<void> loadAll({
     Map<String, dynamic>? filters,
     List<String>? includes,
     int? limit,
     int? page,
-    String? orderBy,
-    String? orderDirection,
+    String? sortBy,
     bool refreshInBackground = true,
   }) async {
     _emitIfOpen(ResourceState.listLoading());
@@ -109,10 +123,12 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     final resolvedLimit = limit ?? defaultLimit;
     final requestId = _nextRequestId();
 
+    // Ensure we are subscribed to organically push DB changes to the UI
     if (_dbStreamSubscription == null) {
       subscribeToDbUpdates();
     }
 
+    // Strict offline-first: always seed UI with cache immediately.
     try {
       final cached = await loadCachedList(filters: mergedFilters);
       _currentPage = startPage;
@@ -150,7 +166,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         includes: includes,
         resolvedLimit: resolvedLimit,
         startPage: startPage,
-        orderBy: orderBy,
+        sortBy: sortBy,
       ),
     );
   }
@@ -161,7 +177,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     required List<String>? includes,
     required int resolvedLimit,
     required int startPage,
-    required String? orderBy,
+    required String? sortBy,
   }) async {
     try {
       final result = await _service.list(
@@ -169,13 +185,13 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         includes: includes ?? defaultIncludes,
         limit: resolvedLimit,
         page: startPage,
-        sortBy: orderBy ?? defaultSortBy,
+        sortBy: sortBy ?? defaultSortBy,
       );
 
       if (!_isLatestRequest(requestId)) return;
 
-      _currentPage = result.pagination.currentPage ?? 1;
-      _hasMore = result.pagination.hasNext;
+      _currentPage = result.pagination.currentPage ?? startPage;
+      _hasMore = _resolveHasMore(result, resolvedLimit);
 
       await dbService.persistEntities(result.data);
 
@@ -186,7 +202,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
           mergedFilters: mergedFilters,
           includes: includes,
           resolvedLimit: resolvedLimit,
-          orderBy: orderBy,
+          sortBy: sortBy,
         );
       }
     } on Failure catch (e) {
@@ -205,7 +221,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     required Map<String, dynamic> mergedFilters,
     required List<String>? includes,
     required int resolvedLimit,
-    required String? orderBy,
+    required String? sortBy,
   }) async {
     var nextPage = startFromPage;
 
@@ -215,25 +231,26 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         includes: includes ?? defaultIncludes,
         limit: resolvedLimit,
         page: nextPage,
-        sortBy: orderBy ?? defaultSortBy,
+        sortBy: sortBy ?? defaultSortBy,
       );
 
       if (!_isLatestRequest(requestId)) return;
 
-      _currentPage = result.pagination.currentPage ?? 1;
-      _hasMore = result.pagination.hasNext;
+      _currentPage = result.pagination.currentPage ?? nextPage;
+      _hasMore = _resolveHasMore(result, resolvedLimit);
 
       await dbService.persistEntities(result.data);
       nextPage += 1;
     }
   }
 
+  /// Append the next page of results to the current list.
   Future<void> loadMore({
     required int page,
     Map<String, dynamic>? filters,
     List<String>? includes,
     int? limit,
-    String? orderBy,
+    String? sortBy,
     bool loadUntilDone = false,
   }) async {
     final mergedFilters = {...defaultFilters, ...?filters};
@@ -251,13 +268,13 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         includes: includes ?? defaultIncludes,
         limit: resolvedLimit,
         page: page,
-        sortBy: orderBy ?? defaultSortBy,
+        sortBy: sortBy ?? defaultSortBy,
       );
 
       if (!_isLatestRequest(requestId)) return;
 
-      _currentPage = result.pagination.currentPage ?? 1;
-      _hasMore = result.pagination.hasNext;
+      _currentPage = result.pagination.currentPage ?? page;
+      _hasMore = _resolveHasMore(result, resolvedLimit);
 
       await dbService.persistEntities(result.data);
 
@@ -268,7 +285,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
           mergedFilters: mergedFilters,
           includes: includes,
           resolvedLimit: resolvedLimit,
-          orderBy: orderBy,
+          sortBy: sortBy,
         );
       }
     } on Failure catch (e) {
@@ -281,54 +298,10 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     }
   }
 
-  Future<void> loadOne({
-    required String id,
-    List<String>? includes,
-  }) async {
-    final existing = currentItem;
-    _emitIfOpen(ResourceState.itemLoading(item: existing));
-
-    try {
-      final cached = await dbService.get(id);
-      if (cached != null) {
-        _emitIfOpen(ResourceState.itemLoaded(item: cached));
-      }
-
-      final item = await _service.get(
-        ulid: id,
-        includes: includes ?? defaultIncludes,
-      );
-      await dbService.persistEntity(item);
-
-      final persisted = await dbService.get(id);
-      _emitIfOpen(
-        ResourceState.itemLoaded(item: persisted ?? item),
-      );
-    } on Failure catch (e) {
-      final cached = await dbService.get(id);
-      if (cached != null) {
-        _emitIfOpen(ResourceState.itemLoaded(item: cached));
-        return;
-      }
-      _emitIfOpen(
-        ResourceState.itemError(message: e.message, item: existing),
-      );
-    } catch (e, s) {
-      final cached = await dbService.get(id);
-      if (cached != null) {
-        _emitIfOpen(ResourceState.itemLoaded(item: cached));
-        return;
-      }
-      _logger.e('Error loading single resource', error: e, stackTrace: s);
-      _emitIfOpen(
-        ResourceState.itemError(
-          message: e.toString(),
-          item: existing,
-        ),
-      );
-    }
-  }
-
+  /// Create a new resource.
+  ///
+  /// Persists the API response to Hive, leaving [_dbStreamSubscription] to
+  /// stream the authoritative list state back to the UI.
   Future<void> create({
     required Map<String, dynamic> data,
     List<String>? includes,
@@ -345,14 +318,6 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         includes: includes ?? defaultIncludes,
       );
       await dbService.persistEntity(item);
-      final updated = [item, ...currentItems];
-      _emitIfOpen(
-        ResourceState.mutated(
-          items: updated,
-          operation: ResourceOperation.create,
-          item: item,
-        ),
-      );
     } on Failure catch (e) {
       _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
@@ -363,6 +328,10 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     }
   }
 
+  /// Update an existing resource.
+  ///
+  /// Persists the API response to Hive, leaving [_dbStreamSubscription] to
+  /// stream the authoritative list state back to the UI.
   Future<void> update({
     required String id,
     required Map<String, dynamic> data,
@@ -382,16 +351,6 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         includes: includes ?? defaultIncludes,
       );
       await dbService.persistEntity(item);
-      final updated = currentItems.map((existing) {
-        return matchById(existing) ? item : existing;
-      }).toList();
-      _emitIfOpen(
-        ResourceState.mutated(
-          items: updated,
-          operation: ResourceOperation.update,
-          item: item,
-        ),
-      );
     } on Failure catch (e) {
       _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
@@ -402,6 +361,10 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     }
   }
 
+  /// Delete a resource.
+  ///
+  /// Removes the record from Hive, leaving [_dbStreamSubscription] to
+  /// stream the authoritative list state back to the UI.
   Future<void> delete({
     required String ulid,
     required bool Function(TRemote item) matchById,
@@ -415,13 +378,6 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     try {
       await _service.delete(ulid: ulid);
       await dbService.deleteByKey(ulid);
-      final updated = currentItems.where((item) => !matchById(item)).toList();
-      _emitIfOpen(
-        ResourceState.mutated(
-          items: updated,
-          operation: ResourceOperation.delete,
-        ),
-      );
     } on Failure catch (e) {
       _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
     } catch (e, s) {
@@ -432,6 +388,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     }
   }
 
+  /// Reset to initial state.
   void reset() => _emitIfOpen(const ResourceState.initial());
 
   void _emitIfOpen(ResourceState<TRemote> nextState) {
@@ -445,4 +402,10 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   }
 
   bool _isLatestRequest(int requestId) => requestId == _activeRequestId;
+
+  bool _resolveHasMore(PaginatedResponse<TRemote> result, int resolvedLimit) {
+    if (result.pagination.hasNext) return true;
+    if (result.pagination.currentPage != null) return false;
+    return result.data.length == resolvedLimit;
+  }
 }

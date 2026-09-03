@@ -28,7 +28,6 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     final items = switch (state) {
       ResourceListLoaded<PRFMember>(:final items) => items,
       ResourceMutating<PRFMember>(:final items) => items,
-      ResourceMutated<PRFMember>(:final items) => items,
       ResourceError<PRFMember>(:final items) => items,
       _ => <PRFMember>[],
     };

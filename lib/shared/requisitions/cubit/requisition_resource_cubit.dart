@@ -20,8 +20,6 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   final RequisitionService _requisitionService;
   final HiveService _hiveService;
 
-  String? _lastAccountingEventUlid;
-
   @override
   List<String> get defaultIncludes => [
     'member',
@@ -34,11 +32,23 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   Future<List<PRFRequisition>> loadCachedList({
     Map<String, dynamic>? filters,
   }) async {
-    return dbService.list();
+    return dbService.filterBy(
+      (requisition) => [
+        filters?['approval_status'] == null ||
+            requisition.approvalStatus.apiKey ==
+                (filters?['approval_status'] as int),
+        filters?['responsible_desks'] == null ||
+            (filters?['responsible_desks'] as List<int>).contains(
+              requisition.responsibleDesk.apiKey,
+            ),
+        filters?['appointed_approver_ulid'] == null ||
+            requisition.appointedApprover?.ulid ==
+                (filters?['appointed_approver_ulid'] as String),
+      ],
+    );
   }
 
   Future<void> loadForAccountingEvent({required String accountingEventUlid}) {
-    _lastAccountingEventUlid = accountingEventUlid;
     return loadAll(filters: {'accounting_event_ulid': accountingEventUlid});
   }
 
@@ -87,7 +97,6 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
     required PRFAccountingEvent accountingEvent,
     required String remarks,
   }) {
-    _lastAccountingEventUlid = accountingEvent.ulid;
     final member = _hiveService.retrieveMember();
     return create(
       data: PRFRequisitionDTO(
@@ -116,7 +125,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
     try {
       final member = _hiveService.retrieveMember()!;
 
-      await _requisitionService.update(
+      final requisition = await _requisitionService.update(
         id: requisitionUlid,
         data: PRFRequisitionDTO(
           memberUlid: member.ulid,
@@ -127,18 +136,8 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         ).toJson(),
       );
 
-      emit(
-        ResourceState.mutated(
-          items: currentItems,
-          operation: ResourceOperation.update,
-        ),
-      );
-
-      if (_lastAccountingEventUlid != null) {
-        await loadForAccountingEvent(
-          accountingEventUlid: _lastAccountingEventUlid!,
-        );
-      }
+      // Persist the update — the DB stream re-emits the list state.
+      await dbService.persistEntity(requisition);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -161,17 +160,10 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         ulid: requisitionUlid,
         approverUlid: approverUlid,
       );
-      emit(
-        ResourceState.mutated(
-          items: currentItems,
-          operation: ResourceOperation.update,
-        ),
-      );
-      if (_lastAccountingEventUlid != null) {
-        await loadForAccountingEvent(
-          accountingEventUlid: _lastAccountingEventUlid!,
-        );
-      }
+      // The action only returns a bool (nothing was written to Hive), so
+      // refresh just the affected requisition and persist it — the DB stream
+      // re-emits the list state.
+      await _refreshRequisition(requisitionUlid);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -196,17 +188,10 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         approverUlid: member.ulid,
         approvalNotes: approvalNotes,
       );
-      emit(
-        ResourceState.mutated(
-          items: currentItems,
-          operation: ResourceOperation.update,
-        ),
-      );
-      if (_lastAccountingEventUlid != null) {
-        await loadForAccountingEvent(
-          accountingEventUlid: _lastAccountingEventUlid!,
-        );
-      }
+      // The action only returns a bool (nothing was written to Hive), so
+      // refresh just the affected requisition and persist it — the DB stream
+      // re-emits the list state.
+      await _refreshRequisition(requisitionUlid);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -231,17 +216,10 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         approverUlid: member.ulid,
         approvalNotes: approvalNotes,
       );
-      emit(
-        ResourceState.mutated(
-          items: currentItems,
-          operation: ResourceOperation.update,
-        ),
-      );
-      if (_lastAccountingEventUlid != null) {
-        await loadForAccountingEvent(
-          accountingEventUlid: _lastAccountingEventUlid!,
-        );
-      }
+      // The action only returns a bool (nothing was written to Hive), so
+      // refresh just the affected requisition and persist it — the DB stream
+      // re-emits the list state.
+      await _refreshRequisition(requisitionUlid);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
@@ -266,21 +244,25 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         approverUlid: member.ulid,
         approvalNotes: approvalNotes,
       );
-      emit(
-        ResourceState.mutated(
-          items: currentItems,
-          operation: ResourceOperation.update,
-        ),
-      );
-      if (_lastAccountingEventUlid != null) {
-        await loadForAccountingEvent(
-          accountingEventUlid: _lastAccountingEventUlid!,
-        );
-      }
+      // The action only returns a bool (nothing was written to Hive), so
+      // refresh just the affected requisition and persist it — the DB stream
+      // re-emits the list state.
+      await _refreshRequisition(requisitionUlid);
     } on Failure catch (e) {
       emit(ResourceState.error(message: e.message, items: currentItems));
     } catch (e) {
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
+  }
+
+  /// The action only returns a bool (nothing was written to Hive), so
+  /// refresh just the affected requisition and persist it — the DB stream
+  /// re-emits the list state.
+  Future<void> _refreshRequisition(String requisitionUlid) async {
+    final requisition = await _requisitionService.get(
+      ulid: requisitionUlid,
+      includes: defaultIncludes,
+    );
+    await dbService.persistEntity(requisition);
   }
 }

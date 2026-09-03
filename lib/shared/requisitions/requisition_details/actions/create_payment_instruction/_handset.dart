@@ -748,10 +748,7 @@ class _CreatePaymentInstructionViewHandsetState
                                 _isLoading = true;
                               });
                             },
-                            mutated: (items, operation, item) {
-                              if (operation != ResourceOperation.create) {
-                                return;
-                              }
+                            itemLoaded: (item, items) {
                               setState(() {
                                 _isLoading = false;
                               });

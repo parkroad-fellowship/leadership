@@ -38,7 +38,6 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     return state.maybeWhen(
       listLoaded: (items, _, _) => items,
       mutating: (items, _) => items,
-      mutated: (items, _, _) => items,
       error: (_, items) => items,
       orElse: () => const <PRFMission>[],
     );
@@ -387,7 +386,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             ),
           ),
           ResourceListLoaded<PRFMission>(:final items) ||
-          ResourceMutated<PRFMission>(:final items) => (() {
+          ResourceMutating<PRFMission>(:final items) => (() {
             final missions = List<PRFMission>.from(items)
               ..sort((a, b) => a.startDate.compareTo(b.startDate));
             final filtered = _filterMissions(missions);
@@ -484,7 +483,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             ),
           ),
           ResourceListLoaded<PRFMission>(:final items) ||
-          ResourceMutated<PRFMission>(:final items) => (() {
+          ResourceMutating<PRFMission>(:final items) => (() {
             final missions = List<PRFMission>.from(items)
               ..sort((a, b) => b.startDate.compareTo(a.startDate));
             final filtered = _filterMissions(missions);

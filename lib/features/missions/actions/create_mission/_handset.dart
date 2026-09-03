@@ -67,7 +67,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   @override
   void initState() {
     super.initState();
-    context.read<SchoolCubit>().loadAll(orderBy: 'name', orderDirection: 'asc');
     context.read<MissionTypeResourceCubit>().loadActive();
     context.read<SchoolTermResourceCubit>().loadActive();
     _startTimeController.addListener(_onChanged);
@@ -168,8 +167,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           case ResourceMutating<PRFMission>(:final operation)
               when operation == ResourceOperation.create:
             setState(() => _isLoading = true);
-          case ResourceMutated<PRFMission>(:final operation)
-              when operation == ResourceOperation.create:
+          case ResourceListLoaded<PRFMission>() when _isLoading:
             setState(() => _isLoading = false);
             Gaimon.success();
             Navigator.of(context).pop(true);
@@ -475,7 +473,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
         final terms = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, data) => items,
           error: (message, items) => items,
           orElse: () => <PRFSchoolTerm>[],
         );
@@ -573,7 +570,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
         final types = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, data) => items,
           error: (message, items) => items,
           orElse: () => <PRFMissionType>[],
         );
@@ -671,7 +667,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
         final schools = state.maybeWhen(
           listLoaded: (items, page, hasMore) => items,
           mutating: (items, operation) => items,
-          mutated: (items, operation, data) => items,
           error: (message, items) => items,
           orElse: () => <PRFSchool>[],
         );

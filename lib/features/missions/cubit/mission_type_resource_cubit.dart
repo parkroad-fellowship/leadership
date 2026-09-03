@@ -21,8 +21,7 @@ class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
   Future<void> loadActive() {
     return loadAll(
       filters: {'status_key': PRFActiveStatus.active.apiKey},
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
       limit: 200,
     );
   }

@@ -76,10 +76,6 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFGift>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFGift>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFGift>(:final message) => PRFEmptyView(

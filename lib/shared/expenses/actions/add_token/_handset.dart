@@ -216,14 +216,13 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                             _isLoading = true;
                           });
                         },
-                        mutated: (items, operation, item) {
-                          if (operation != ResourceOperation.create) {
-                            return;
+                        listLoaded: (items, page, hasMore) {
+                          if (_isLoading) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            Navigator.of(context).pop();
                           }
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Navigator.of(context).pop();
                         },
                         error: (message, items) {
                           setState(() {

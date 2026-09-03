@@ -77,10 +77,6 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFProfession>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFProfession>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFProfession>(:final message) => PRFEmptyView(

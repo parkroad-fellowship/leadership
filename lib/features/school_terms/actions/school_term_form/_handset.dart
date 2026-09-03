@@ -133,24 +133,21 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<SchoolTermResourceCubit, ResourceState<PRFSchoolTerm>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFSchoolTerm> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFSchoolTerm> &&
+              curr is ResourceListLoaded<PRFSchoolTerm>) ||
           curr is ResourceError<PRFSchoolTerm>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFSchoolTerm>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'School term updated successfully'
-                    : 'School term created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFSchoolTerm>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'School term updated successfully'
+                  : 'School term created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFSchoolTerm>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);

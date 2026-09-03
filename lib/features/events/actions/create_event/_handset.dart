@@ -263,7 +263,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                           _buildParticipantsMultiSelect(
                                             members,
                                           ),
-                                      listLoading: () => Container(
+                                      listLoading: (items) => Container(
                                         height: 60,
                                         decoration: BoxDecoration(
                                           border: Border.all(
@@ -341,34 +341,33 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                           _isLoading = true;
                         });
                       },
-                      mutated: (items, operation, item) {
-                        if (operation != ResourceOperation.create) {
-                          return;
-                        }
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        Gaimon.success();
+                      listLoaded: (items, page, hasMore) {
+                        if (_isLoading) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          Gaimon.success();
 
-                        final requisition = context
-                            .read<EventResourceCubit>()
-                            .lastCreatedRequisition;
-                        if (requisition == null) {
-                          PRFSnackbar.error(
-                            context,
-                            'Event created but requisition was not found',
+                          final requisition = context
+                              .read<EventResourceCubit>()
+                              .lastCreatedRequisition;
+                          if (requisition == null) {
+                            PRFSnackbar.error(
+                              context,
+                              'Event created but requisition was not found',
+                            );
+                            return;
+                          }
+
+                          Navigator.of(context).pop();
+                          context.router.push(
+                            RequisitionDetailsRoute(
+                              requisitionUlid: requisition.ulid,
+                            ),
                           );
-                          return;
+
+                          PRFSnackbar.success(context, l10n.activityCreated);
                         }
-
-                        Navigator.of(context).pop();
-                        context.router.push(
-                          RequisitionDetailsRoute(
-                            requisitionUlid: requisition.ulid,
-                          ),
-                        );
-
-                        PRFSnackbar.success(context, l10n.activityCreated);
                       },
                       error: (message, items) {
                         setState(() {

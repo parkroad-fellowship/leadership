@@ -40,10 +40,6 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         :final items,
       ) =>
         items,
-      ResourceMutated<PRFContactType>(
-        :final items,
-      ) =>
-        items,
       ResourceMutating<PRFContactType>(
         :final items,
       ) =>
@@ -75,10 +71,6 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
       ),
       body: BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
         listener: (context, state) {
-          if (state case ResourceMutated<PRFContact>()) {
-            context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
-            context.read<SchoolCubit>().loadAll();
-          }
           if (state case ResourceError<PRFContact>(
             :final message,
           )) {
@@ -106,10 +98,6 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
             ) =>
               _buildList(theme, items),
             ResourceMutating<PRFContact>(
-              :final items,
-            ) =>
-              _buildList(theme, items),
-            ResourceMutated<PRFContact>(
               :final items,
             ) =>
               _buildList(theme, items),

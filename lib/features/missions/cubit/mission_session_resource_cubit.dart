@@ -27,8 +27,7 @@ class MissionSessionResourceCubit extends ResourceCubit<PRFMissionSession> {
     return loadAll(
       filters: {'mission_ulid': missionUlid},
       includes: defaultIncludes,
-      orderBy: 'starts_at',
-      orderDirection: 'asc',
+      sortBy: 'starts_at',
       limit: 200,
     );
   }

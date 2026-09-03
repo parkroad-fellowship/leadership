@@ -21,8 +21,7 @@ class ClassGroupResourceCubit extends ResourceCubit<PRFClassGroup> {
   Future<void> loadActive() {
     return loadAll(
       filters: {'status_key': PRFActiveStatus.active.apiKey},
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
       limit: 500,
     );
   }
@@ -35,8 +34,7 @@ class ClassGroupResourceCubit extends ResourceCubit<PRFClassGroup> {
         'status_key': PRFActiveStatus.active.apiKey,
         'institution_type': institutionType.value,
       },
-      orderBy: 'name',
-      orderDirection: 'asc',
+      sortBy: 'name',
       limit: 500,
     );
   }

@@ -20,6 +20,7 @@ class DeleteExpenseDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    var deleteInProgress = false;
 
     return PRFConfirmationDialog(
       title: entry.entryType == PRFEntryType.credit
@@ -106,8 +107,12 @@ class DeleteExpenseDialog extends StatelessWidget {
         >(
           listener: (context, state) {
             state.maybeWhen(
-              mutated: (items, operation, item) {
-                if (operation == ResourceOperation.delete) {
+              mutating: (items, operation) {
+                deleteInProgress = operation == ResourceOperation.delete;
+              },
+              listLoaded: (items, page, hasMore) {
+                if (deleteInProgress) {
+                  deleteInProgress = false;
                   Navigator.of(context).pop(true);
                 }
               },

@@ -41,13 +41,6 @@ class RequisitionDetailCubit extends SingleResourceCubit<PRFRequisition> {
         ulid: requisitionUlid,
         approverUlid: approverUlid,
       );
-      emit(
-        ResourceState.mutated(
-          items: currentItem != null ? [currentItem!] : [],
-          operation: ResourceOperation.update,
-          item: currentItem,
-        ),
-      );
       await loadOne(
         id: requisitionUlid,
         matchById: (item) => item.ulid == requisitionUlid,
@@ -76,13 +69,6 @@ class RequisitionDetailCubit extends SingleResourceCubit<PRFRequisition> {
         ulid: requisitionUlid,
         approverUlid: member.ulid,
         approvalNotes: approvalNotes,
-      );
-      emit(
-        ResourceState.mutated(
-          items: currentItem != null ? [currentItem!] : [],
-          operation: ResourceOperation.update,
-          item: currentItem,
-        ),
       );
       await loadOne(
         id: requisitionUlid,
@@ -113,13 +99,6 @@ class RequisitionDetailCubit extends SingleResourceCubit<PRFRequisition> {
         approverUlid: member.ulid,
         approvalNotes: approvalNotes,
       );
-      emit(
-        ResourceState.mutated(
-          items: currentItem != null ? [currentItem!] : [],
-          operation: ResourceOperation.update,
-          item: currentItem,
-        ),
-      );
       await loadOne(
         id: requisitionUlid,
         matchById: (item) => item.ulid == requisitionUlid,
@@ -148,13 +127,6 @@ class RequisitionDetailCubit extends SingleResourceCubit<PRFRequisition> {
         ulid: requisitionUlid,
         approverUlid: member.ulid,
         approvalNotes: approvalNotes,
-      );
-      emit(
-        ResourceState.mutated(
-          items: currentItem != null ? [currentItem!] : [],
-          operation: ResourceOperation.update,
-          item: currentItem,
-        ),
       );
       await loadOne(
         id: requisitionUlid,

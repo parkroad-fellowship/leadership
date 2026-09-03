@@ -190,12 +190,12 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
 
     return BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFContact> &&
+          (curr is ResourceMutating<PRFContact> &&
               curr.operation != ResourceOperation.delete) ||
           curr is ResourceError<PRFContact>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFContact>(
+          case ResourceMutating<PRFContact>(
             :final operation,
           ):
             if (operation == ResourceOperation.create ||
@@ -562,7 +562,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
   ) {
     late final void Function() cancel;
     final sub = cubit.stream.listen((state) {
-      if (state case ResourceMutated<PRFContactType>(
+      if (state case ResourceListLoaded<PRFContactType>(
         :final items,
       )) {
         final newType = items.cast<PRFContactType?>().firstWhere(

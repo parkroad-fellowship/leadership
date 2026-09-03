@@ -77,10 +77,6 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
               theme,
               items,
             ),
-            ResourceMutated<PRFDepartment>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
             ResourceError<PRFDepartment>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFDepartment>(:final message) => PRFEmptyView(

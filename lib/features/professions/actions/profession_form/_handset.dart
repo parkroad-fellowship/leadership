@@ -99,24 +99,21 @@ class _ProfessionFormViewHandsetState extends State<ProfessionFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<ProfessionResourceCubit, ResourceState<PRFProfession>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFProfession> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFProfession> &&
+              curr is ResourceListLoaded<PRFProfession>) ||
           curr is ResourceError<PRFProfession>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFProfession>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Profession updated successfully'
-                    : 'Profession created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFProfession>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Profession updated successfully'
+                  : 'Profession created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFProfession>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);

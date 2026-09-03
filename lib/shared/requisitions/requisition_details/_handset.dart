@@ -154,10 +154,10 @@ class _RequisitionDetailsPageHandsetState
                               items,
                               requisition,
                             ),
-                          ResourceMutated<PRFRequisitionItem>(:final items)
+                          ResourceMutating<PRFRequisitionItem>(:final items)
                               when items.isEmpty =>
                             _buildEmptyState(context, l10n),
-                          ResourceMutated<PRFRequisitionItem>(:final items) =>
+                          ResourceMutating<PRFRequisitionItem>(:final items) =>
                             _buildRequisitionItemsList(
                               context,
                               l10n,
@@ -431,18 +431,16 @@ class _RequisitionDetailsPageHandsetState
             if (_deletingRequisitionItemUlid != item.ulid) return;
 
             state.maybeWhen(
-              mutated: (_, operation, _) {
-                if (operation == ResourceOperation.delete) {
-                  setState(() => _deletingRequisitionItemUlid = null);
-                  _reloadRequisition();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Item deleted successfully'),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+              itemLoaded: (item, items) {
+                setState(() => _deletingRequisitionItemUlid = null);
+                _reloadRequisition();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Item deleted successfully'),
+                    backgroundColor: Colors.green,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               },
               error: (message, _) {
                 setState(() => _deletingRequisitionItemUlid = null);
@@ -1008,9 +1006,8 @@ class _RequisitionDetailsPageHandsetState
         >(
           listener: (listenerContext, state) {
             state.maybeWhen(
-              mutated: (_, operation, _) {
-                if (operation == ResourceOperation.delete &&
-                    dialogContext.mounted) {
+              itemLoaded: (item, items) {
+                if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
                 }
               },
@@ -1822,12 +1819,7 @@ class _RequisitionDetailsPageHandsetState
       child: RequestReviewViewHandset(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh the requisition after requesting review
-      if (context.mounted) {
-        _reloadRequisition();
-      }
-    });
+    );
   }
 
   void _showMoreActionsBottomSheet(BuildContext context) {
@@ -2046,15 +2038,7 @@ class _RequisitionDetailsPageHandsetState
       child: CreateRequisitionItemView(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh the list after adding an item
-      if (context.mounted) {
-        _reloadRequisition();
-        context.read<RequisitionItemResourceCubit>().loadForRequisition(
-          requisitionUlid: widget.requisitionUlid,
-        );
-      }
-    });
+    );
   }
 
   void _showEditRequisitionItemModal(
@@ -2067,15 +2051,7 @@ class _RequisitionDetailsPageHandsetState
       child: EditRequisitionItemView(
         requisitionItemUlid: item.ulid,
       ),
-    ).then((_) {
-      // Refresh the list after editing an item
-      if (context.mounted) {
-        _reloadRequisition();
-        context.read<RequisitionItemResourceCubit>().loadForRequisition(
-          requisitionUlid: widget.requisitionUlid,
-        );
-      }
-    });
+    );
   }
 
   void _showCreatePaymentInstructionModal(BuildContext context) {
@@ -2700,12 +2676,7 @@ class _RequisitionDetailsPageHandsetState
       child: ApproveRequisitionViewHandset(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh the requisition after approval/rejection
-      if (context.mounted) {
-        _reloadRequisition();
-      }
-    });
+    );
   }
 
   void _showEditRequisitionModal(BuildContext context) {
@@ -2715,12 +2686,7 @@ class _RequisitionDetailsPageHandsetState
       child: EditRequisitionViewHandset(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh the requisition after editing
-      if (context.mounted) {
-        _reloadRequisition();
-      }
-    });
+    );
   }
 
   void _showRecallRequisitionModal(BuildContext context) {
@@ -2730,12 +2696,7 @@ class _RequisitionDetailsPageHandsetState
       child: RecallRequisitionView(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh the requisition after recalling
-      if (context.mounted) {
-        _reloadRequisition();
-      }
-    });
+    );
   }
 
   /// Make a phone call using the phone number

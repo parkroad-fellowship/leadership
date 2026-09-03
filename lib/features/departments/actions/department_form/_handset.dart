@@ -99,24 +99,21 @@ class _DepartmentFormViewHandsetState extends State<DepartmentFormViewHandset> {
   Widget build(BuildContext context) {
     return BlocConsumer<DepartmentResourceCubit, ResourceState<PRFDepartment>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFDepartment> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFDepartment> &&
+              curr is ResourceListLoaded<PRFDepartment>) ||
           curr is ResourceError<PRFDepartment>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFDepartment>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Department updated successfully'
-                    : 'Department created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFDepartment>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Department updated successfully'
+                  : 'Department created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFDepartment>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);

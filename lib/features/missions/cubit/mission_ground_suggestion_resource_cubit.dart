@@ -21,8 +21,7 @@ class MissionGroundSuggestionResourceCubit
   Future<void> loadForMission({required String missionUlid}) {
     return loadAll(
       filters: {'mission_ulid': missionUlid},
-      orderBy: 'created_at',
-      orderDirection: 'desc',
+      sortBy: 'created_at',
       limit: 200,
     );
   }

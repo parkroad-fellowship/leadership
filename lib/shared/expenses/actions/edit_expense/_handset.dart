@@ -229,7 +229,7 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                                 builder: (context, state) {
                                   return state.maybeWhen(
                                     orElse: () => const SizedBox.shrink(),
-                                    listLoading: () =>
+                                    listLoading: (items) =>
                                         const PRFLinearProgressIndicator(),
                                     listLoaded: (expenseCategories, _, _) =>
                                         _buildCategorySelector(
@@ -321,6 +321,7 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                                 hintText: l10n.confirmationMsg,
                                 controller: _confirmationController,
                                 type: PRFTextFieldType.textArea,
+                                maxLines: 3,
                               ),
                             ],
                           ),
@@ -349,17 +350,16 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                             _isLoading = true;
                           });
                         },
-                        mutated: (items, operation, item) {
-                          if (operation != ResourceOperation.update) {
-                            return;
+                        listLoaded: (items, page, hasMore) {
+                          if (_isLoading) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            Navigator.of(context).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.expenseRecorded)),
+                            );
                           }
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.expenseRecorded)),
-                          );
                         },
                         error: (message, items) {
                           setState(() {

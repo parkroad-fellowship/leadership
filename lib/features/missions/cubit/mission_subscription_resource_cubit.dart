@@ -27,8 +27,7 @@ class MissionSubscriptionResourceCubit
     return loadAll(
       filters: {'mission_ulid': missionUlid},
       includes: defaultIncludes,
-      orderBy: 'created_at',
-      orderDirection: 'desc',
+      sortBy: 'created_at',
       limit: 200,
     );
   }

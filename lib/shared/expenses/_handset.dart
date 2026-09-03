@@ -47,6 +47,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     with TimezoneMixin {
   bool _showBreakdown = true;
   String? _deletingReceiptUuid;
+  ResourceOperation? _pendingMutationOperation;
   String get accountingEventUlid => widget.accountingEventUlid;
 
   @override
@@ -73,7 +74,12 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         >(
           listener: (context, state) {
             state.maybeWhen(
-              mutated: (items, operation, item) {
+              mutating: (items, operation) {
+                _pendingMutationOperation = operation;
+              },
+              listLoaded: (items, page, hasMore) {
+                final operation = _pendingMutationOperation;
+                _pendingMutationOperation = null;
                 if (operation == ResourceOperation.create) {
                   _loadData();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +90,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   );
                 }
                 if (operation == ResourceOperation.update) {
-                  if (_deletingReceiptUuid != null && item == null) {
+                  if (_deletingReceiptUuid != null) {
                     setState(() {
                       _deletingReceiptUuid = null;
                     });
@@ -167,7 +173,6 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               final entries = state.maybeWhen(
                 listLoaded: (items, page, hasMore) => items,
                 mutating: (items, operation) => items,
-                mutated: (items, operation, item) => items,
                 error: (message, items) => items,
                 orElse: () => <PRFAllocationEntry>[],
               );
@@ -179,7 +184,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   ),
                   child: PRFLinearProgressIndicator(),
                 ),
-                listLoading: () => const Padding(
+                listLoading: (items) => const Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: PRFSpacingTokens.lg,
                   ),
@@ -1566,8 +1571,12 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
             >(
               listener: (context, state) {
                 state.maybeWhen(
-                  mutated: (items, operation, item) {
-                    if (operation == ResourceOperation.delete) {
+                  mutating: (items, operation) {
+                    _pendingMutationOperation = operation;
+                  },
+                  listLoaded: (items, page, hasMore) {
+                    if (_pendingMutationOperation == ResourceOperation.delete) {
+                      _pendingMutationOperation = null;
                       Navigator.of(dialogContext).pop();
                     }
                   },
@@ -2201,7 +2210,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           >(
             builder: (context, state) {
               final isRefreshing = state.maybeWhen(
-                listLoading: () => true,
+                listLoading: (items) => true,
                 orElse: () => false,
               );
 

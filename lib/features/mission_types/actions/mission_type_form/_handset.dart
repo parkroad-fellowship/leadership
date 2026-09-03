@@ -103,24 +103,21 @@ class _MissionTypeFormViewHandsetState
       ResourceState<PRFMissionType>
     >(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutated<PRFMissionType> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFMissionType> &&
+              curr is ResourceListLoaded<PRFMissionType>) ||
           curr is ResourceError<PRFMissionType>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutated<PRFMissionType>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? 'Mission type updated successfully'
-                    : 'Mission type created successfully',
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFMissionType>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? 'Mission type updated successfully'
+                  : 'Mission type created successfully',
+            );
+            widget.onSaved();
           case ResourceError<PRFMissionType>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);
