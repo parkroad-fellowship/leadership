@@ -32,7 +32,21 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
   Future<List<PRFMission>> loadCachedList({
     Map<String, dynamic>? filters,
   }) async {
-    return dbService.list();
+    return dbService.filterBy(
+      (mission) => [
+        filters?['upcoming'] == null || mission.endDate.isAfter(DateTime.now()),
+        filters?['past'] == null || mission.endDate.isBefore(DateTime.now()),
+        filters?['status_keys'] == null ||
+            (filters!['status_keys'] as String)
+                .split(',')
+                .contains(mission.status.apiKey.toString()),
+        filters?['search'] == null ||
+            (mission.school?.name.toLowerCase().contains(
+                  (filters!['search'] as String).toLowerCase(),
+                ) ??
+                false),
+      ],
+    );
   }
 
   Future<void> loadUpcomingMissions() {
