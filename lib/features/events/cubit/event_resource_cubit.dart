@@ -31,7 +31,16 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
 
   @override
   Future<List<PRFEvent>> loadCachedList({Map<String, dynamic>? filters}) async {
-    return dbService.list();
+    return dbService.filterBy(
+      (event) => [
+        filters?['upcoming'] == null || event.endDate.isAfter(DateTime.now()),
+        filters?['past'] == null || event.endDate.isBefore(DateTime.now()),
+        filters?['search'] == null ||
+            (event.name.toLowerCase().contains(
+              (filters!['search'] as String).toLowerCase(),
+            )),
+      ],
+    );
   }
 
   PRFRequisition? _lastCreatedRequisition;
@@ -44,8 +53,6 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
         'responsible_desks': PRFResponsibleDesk.apiKeys(
           PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
         ),
-        if (Misc.userCan(PRFPermissions.viewAnyCommitteeItem))
-          PRFLeadershipGroup.campCommittee.apiKey: true,
         'upcoming': true,
       },
     );
@@ -58,8 +65,6 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
         'responsible_desks': PRFResponsibleDesk.apiKeys(
           PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
         ),
-        if (Misc.userCan(PRFPermissions.viewAnyCommitteeItem))
-          PRFLeadershipGroup.campCommittee.apiKey: true,
         'past': true,
       },
     );

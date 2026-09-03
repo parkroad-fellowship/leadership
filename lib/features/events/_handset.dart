@@ -294,6 +294,8 @@ class _EventsHandsetState extends State<EventsHandset>
                 ),
               );
             }
+
+            final sorted = events.reversed.toList();
             return RefreshIndicator(
               onRefresh: () =>
                   context.read<EventResourceCubit>().loadPastEvents(),
@@ -303,9 +305,9 @@ class _EventsHandsetState extends State<EventsHandset>
                   horizontal: PRFSpacingTokens.lg,
                   vertical: PRFSpacingTokens.xl,
                 ),
-                itemCount: events.length,
+                itemCount: sorted.length,
                 itemBuilder: (context, index) {
-                  final event = events[index];
+                  final event = sorted[index];
                   final isLast = index == events.length - 1;
 
                   return TimelineEventCard(
