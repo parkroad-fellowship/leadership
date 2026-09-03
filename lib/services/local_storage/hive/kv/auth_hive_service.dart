@@ -1,7 +1,7 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/services/local_storage/hive/kv/_base_hive_kv_service.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/constants.dart';
 import 'package:logger/logger.dart';
 
 class AuthHiveService extends BaseHiveKVService {

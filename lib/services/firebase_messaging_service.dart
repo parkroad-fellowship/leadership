@@ -4,10 +4,12 @@ import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/enums/prf_supported_platform.dart';
 import 'package:leadership/models/remote/failure.dart';
-import 'package:leadership/services/_index.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/utils/constants.dart';
+import 'package:leadership/utils/misc.dart';
 import 'package:logger/logger.dart';
 
 /// Top-level function required for FCM background message handling

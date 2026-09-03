@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/features/auth/cubit/google_sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/sign_in_cubit.dart';
 import 'package:leadership/features/auth/cubit/social_login_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/firebase_service.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/router/router.dart';
 import 'package:prf_design/prf_design.dart';
 
 class SignInTablet extends StatefulWidget {

@@ -1,12 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/home/landing/_handset.dart';
 import 'package:leadership/features/home/landing/_tablet.dart';
 import 'package:leadership/features/home/landing/models/landing_action_item.dart';
 import 'package:leadership/l10n/l10n.dart';
-import 'package:leadership/services/_index.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/services/firebase_messaging_service.dart';
+import 'package:leadership/services/notification_service.dart';
+import 'package:leadership/utils/misc.dart';
+import 'package:leadership/utils/router/router.dart';
 import 'package:logger/logger.dart';
 import 'package:prf_design/prf_design.dart';
 

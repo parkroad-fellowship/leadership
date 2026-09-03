@@ -70,7 +70,7 @@ class PRFLeadershipRouter extends RootStackRouter {
     ),
 
     CustomRoute<dynamic>(
-      page: DeskActivitiesRoute.page,
+      page: EventsRoute.page,
       path: deskActivitiesRoute,
       guards: [AuthGuard()],
       transitionsBuilder: TransitionsBuilders.slideLeft,

@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/enums/prf_event.dart';
 import 'package:leadership/models/remote/socket_config.dart';
-import 'package:leadership/services/_index.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/utils/constants.dart';
 import 'package:logger/logger.dart';
 
 abstract class SocketService {

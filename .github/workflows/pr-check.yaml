@@ -21,3 +21,14 @@ jobs:
 
       - name: Flutter Setup & Analysis
         uses: ./.github/actions/flutter-setup
+
+      - name: Architecture Guardrails
+        run: make arch-check
+
+      - name: Codegen Drift Check
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          if ! git diff --exit-code -- '*.freezed.dart' '*.g.dart' '*.gr.dart'; then
+            echo "::error::Generated files are out of date. Run 'make gen' and commit the result."
+            exit 1
+          fi

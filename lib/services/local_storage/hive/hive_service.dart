@@ -36,7 +36,7 @@ import 'package:leadership/services/local_storage/hive/db/school_term_hive_db_se
 import 'package:leadership/services/local_storage/hive/db/soul_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/kv/auth_hive_service.dart';
 import 'package:leadership/services/local_storage/hive/kv/settings_hive_service.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/constants.dart';
 
 class HiveService {
   factory HiveService() => instance ??= HiveService._();

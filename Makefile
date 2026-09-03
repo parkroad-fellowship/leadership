@@ -7,6 +7,12 @@ splash:
 gen:
 		dart run build_runner build
 
+arch-check:
+		./scripts/architecture_guardrails.sh
+
+arch-edges:
+		./scripts/feature_import_edges.sh
+
 fmt:
 		dart fix --apply && dart format lib test
 

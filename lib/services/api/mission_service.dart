@@ -84,41 +84,4 @@ class MissionService extends BaseAPIService<PRFMission> {
     await networkUtil.post('$endpoint/$ulid/make-zero-requisition');
     return true;
   }
-
-  Future<List<Map<String, dynamic>>> listMissionQuestions({
-    required String missionUlid,
-  }) async {
-    final response = await networkUtil.get('$endpoint/$missionUlid/questions');
-    final rawData = response['data'];
-
-    if (rawData is List) {
-      return rawData.whereType<Map<String, dynamic>>().toList(growable: false);
-    }
-
-    return <Map<String, dynamic>>[];
-  }
-
-  Future<Map<String, dynamic>> createMissionQuestion({
-    required String missionUlid,
-    required String question,
-  }) async {
-    final response = await networkUtil.post(
-      '$endpoint/$missionUlid/questions',
-      body: {'question': question},
-    );
-
-    final rawData = response['data'];
-    if (rawData is Map<String, dynamic>) {
-      return rawData;
-    }
-
-    return <String, dynamic>{'question': question};
-  }
-
-  Future<void> deleteMissionQuestion({
-    required String missionUlid,
-    required String questionUlid,
-  }) async {
-    await networkUtil.delete('$endpoint/$missionUlid/questions/$questionUlid');
-  }
 }

@@ -1,6 +1,6 @@
 import 'package:leadership/enums/prf_theme_mode.dart';
 import 'package:leadership/services/local_storage/hive/kv/_base_hive_kv_service.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/constants.dart';
 
 class SettingsHiveService extends BaseHiveKVService {
   @override

@@ -3,7 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:leadership/models/remote/auth.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/socket_config.dart';
-import 'package:leadership/services/_index.dart';
+import 'package:leadership/services/api/auth_service.dart';
+import 'package:leadership/services/firebase_messaging_service.dart';
+import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/services/socket_service.dart';
 import 'package:logger/logger.dart';
 
 part 'sign_in_state.dart';

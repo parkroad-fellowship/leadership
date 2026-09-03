@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/app/app.dart';
 import 'package:leadership/bootstrap.dart';
+import 'package:leadership/di/di_container.dart';
 import 'package:leadership/enums/prf_environment.dart';
-import 'package:leadership/utils/_index.dart';
+import 'package:leadership/utils/constants.dart';
+import 'package:leadership/utils/misc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +36,7 @@ Future<void> main() async {
   ]).then(
     (_) async => bootstrap(
       () => MultiBlocProvider(
-        providers: Singletons.registerCubits(),
+        providers: DIContainer.registerCubits(),
         child: const PRFLeadership(),
       ),
     ),
