@@ -1472,9 +1472,10 @@ packages:
   prf_design:
     dependency: "direct main"
     description:
-      path: "../../prf_design_system"
-      relative: true
-    source: path
+      name: prf_design
+      sha256: "8b3a5cdf40e2c0098949524a0ffcfb8343799aece28ef3d8fc8dc7a79c1b95a7"
+      url: "https://pub.dev"
+    source: hosted
     version: "1.0.8"
   proj4dart:
     dependency: transitive
