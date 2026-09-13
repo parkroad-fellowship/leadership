@@ -82,6 +82,9 @@ class _CreatePaymentInstructionViewHandsetState
   @override
   void initState() {
     super.initState();
+    // Make sure the cubit is subscribed to Hive DB updates so a successful
+    // create emits ResourceState.listLoaded (which closes this sheet).
+    context.read<PaymentInstructionResourceCubit>().subscribeToDbUpdates();
     // Add listeners to update form validation
     _recipientNameController.addListener(() => setState(() {}));
     _mpesaPhoneController.addListener(() => setState(() {}));
@@ -748,7 +751,8 @@ class _CreatePaymentInstructionViewHandsetState
                                 _isLoading = true;
                               });
                             },
-                            itemLoaded: (item, items) {
+                            listLoaded: (items, page, hasMore) {
+                              if (!_isLoading) return;
                               setState(() {
                                 _isLoading = false;
                               });
@@ -763,6 +767,7 @@ class _CreatePaymentInstructionViewHandsetState
                               );
                             },
                             error: (message, items) {
+                              if (!_isLoading) return;
                               setState(() {
                                 _isLoading = false;
                               });
