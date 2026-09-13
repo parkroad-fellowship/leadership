@@ -26,7 +26,16 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
     'appointedApprover',
     'approvedBy',
     'paymentInstruction',
+    'accountingEvent',
   ];
+
+  @override
+  Map<String, dynamic> get defaultFilters => {
+    'responsible_desks': _hiveService.responsibleDesks
+        .map((desk) => desk.apiKey)
+        .toList()
+        .join(','),
+  };
 
   @override
   Future<List<PRFRequisition>> loadCachedList({
@@ -44,12 +53,19 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         filters?['appointed_approver_ulid'] == null ||
             requisition.appointedApprover?.ulid ==
                 (filters?['appointed_approver_ulid'] as String),
+        filters?['accounting_event_ulid'] == null ||
+            requisition.accountingEvent?.ulid ==
+                (filters?['accounting_event_ulid'] as String),
       ],
     );
   }
 
   Future<void> loadForAccountingEvent({required String accountingEventUlid}) {
-    return loadAll(filters: {'accounting_event_ulid': accountingEventUlid});
+    return loadAll(
+      filters: {
+        'accounting_event_ulid': accountingEventUlid,
+      },
+    );
   }
 
   Future<void> loadApprovalRequisitions() {
@@ -67,10 +83,6 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
     return loadAll(
       filters: {
         'appointed_approver_ulid': member.ulid,
-        'responsible_desks': _hiveService.responsibleDesks
-            .map((desk) => desk.apiKey)
-            .toList()
-            .join(','),
         'approval_statuses': [
           PRFApprovalStatus.approved.apiKey,
           PRFApprovalStatus.rejected.apiKey,
@@ -82,10 +94,6 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   Future<void> loadDraftRequisitions() {
     return loadAll(
       filters: {
-        'responsible_desks': _hiveService.responsibleDesks
-            .map((desk) => desk.apiKey)
-            .toList()
-            .join(','),
         'approval_statuses': [
           PRFApprovalStatus.pending.apiKey,
         ].join(','),
