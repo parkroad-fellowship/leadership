@@ -370,6 +370,8 @@ class _CreateRequisitionItemViewHandsetState
                         enabled: !_isLoading,
                         errorText: _showValidation ? _narrationError : null,
                         type: PRFTextFieldType.textArea,
+                        minLines: 3,
+                        maxLines: 6,
                       ),
                     ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
                   ],

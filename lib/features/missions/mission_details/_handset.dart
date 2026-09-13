@@ -2669,6 +2669,8 @@ class _MissionSoulFormBodyState extends State<_MissionSoulFormBody> {
                               helperText: 'Optional',
                               controller: _noteController,
                               type: PRFTextFieldType.textArea,
+                              minLines: 3,
+                              maxLines: 6,
                             ),
                           ),
                         ],

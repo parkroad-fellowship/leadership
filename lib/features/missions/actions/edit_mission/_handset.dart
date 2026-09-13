@@ -377,6 +377,8 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
             controller: _prepNotesController,
             type: PRFTextFieldType.textArea,
             enabled: !_isLoading,
+            minLines: 3,
+            maxLines: 6,
           ),
         ),
       ],

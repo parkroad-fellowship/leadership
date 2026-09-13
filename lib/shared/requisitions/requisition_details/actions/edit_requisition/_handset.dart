@@ -257,6 +257,8 @@ class _EditRequisitionViewHandsetState
                                         hintText: l10n.purpose,
                                         controller: _remarksController,
                                         type: PRFTextFieldType.textArea,
+                                        minLines: 3,
+                                        maxLines: 6,
                                       ),
                                     )
                                     .animate(

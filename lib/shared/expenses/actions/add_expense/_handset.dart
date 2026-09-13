@@ -424,6 +424,8 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                                     ? _narrationError
                                     : null,
                                 type: PRFTextFieldType.textArea,
+                                minLines: 3,
+                                maxLines: 6,
                               ),
                               const SizedBox(height: PRFSpacingTokens.lg),
                               PRFTextField(
@@ -436,7 +438,8 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                                     ? _confirmationMessageError
                                     : null,
                                 type: PRFTextFieldType.textArea,
-                                maxLines: 3,
+                                minLines: 3,
+                                maxLines: 6,
                               ),
                             ],
                           ),
