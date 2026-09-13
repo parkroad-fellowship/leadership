@@ -26,7 +26,7 @@ class MissionSessionResourceCubit extends ResourceCubit<PRFMissionSession> {
     'facilitator',
     'speaker',
     'classGroup',
-    'mission'
+    'mission',
   ];
 
   Future<void> loadForMission({required String missionUlid}) {

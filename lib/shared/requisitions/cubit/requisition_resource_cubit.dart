@@ -8,7 +8,6 @@ import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_se
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
-import 'package:logger/logger.dart';
 
 class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   RequisitionResourceCubit({
