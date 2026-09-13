@@ -41,6 +41,14 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
             (event.name.toLowerCase().contains(
               (filters!['search'] as String).toLowerCase(),
             )),
+        filters?['responsible_desks'] == null ||
+            (filters?['responsible_desks'] as String)
+                .split(',')
+                .map(int.tryParse)
+                .toList()
+                .contains(
+                  event.accountingEvent?.responsibleDesk.apiKey,
+                ),
       ],
     );
   }
@@ -52,9 +60,10 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
   Future<void> loadUpcomingEvents() {
     return loadAll(
       filters: {
-        'responsible_desks': PRFResponsibleDesk.apiKeys(
-          PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
-        ),
+        'responsible_desks': _hiveService.responsibleDesks
+            .map((desk) => desk.apiKey)
+            .toList()
+            .join(','),
         'upcoming': true,
       },
     );
@@ -64,9 +73,10 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
     return loadAll(
       sortBy: 'start_date',
       filters: {
-        'responsible_desks': PRFResponsibleDesk.apiKeys(
-          PRFResponsibleDesk.fromRoles(_hiveService.memberRoles),
-        ),
+        'responsible_desks': _hiveService.responsibleDesks
+            .map((desk) => desk.apiKey)
+            .toList()
+            .join(','),
         'past': true,
       },
     );

@@ -17,7 +17,12 @@ class MissionSubscriptionResourceCubit
   Future<List<PRFMissionSubscription>> loadCachedList({
     Map<String, dynamic>? filters,
   }) async {
-    return dbService.list();
+    return dbService.filterBy(
+      (item) => [
+        filters?['mission_ulid'] == null ||
+            item.mission?.ulid == (filters?['mission_ulid'] as String),
+      ],
+    );
   }
 
   @override

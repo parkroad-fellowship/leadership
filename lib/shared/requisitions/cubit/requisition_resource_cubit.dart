@@ -8,6 +8,7 @@ import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_se
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:logger/logger.dart';
 
 class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   RequisitionResourceCubit({
@@ -30,14 +31,6 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   ];
 
   @override
-  Map<String, dynamic> get defaultFilters => {
-    'responsible_desks': _hiveService.responsibleDesks
-        .map((desk) => desk.apiKey)
-        .toList()
-        .join(','),
-  };
-
-  @override
   Future<List<PRFRequisition>> loadCachedList({
     Map<String, dynamic>? filters,
   }) async {
@@ -46,10 +39,22 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         filters?['approval_status'] == null ||
             requisition.approvalStatus.apiKey ==
                 (filters?['approval_status'] as int),
+        filters?['approval_statuses'] == null ||
+            (filters?['approval_statuses'] as String)
+                .split(',')
+                .map(int.tryParse)
+                .toList()
+                .contains(
+                  requisition.approvalStatus.apiKey,
+                ),
         filters?['responsible_desks'] == null ||
-            (filters?['responsible_desks'] as List<int>).contains(
-              requisition.responsibleDesk.apiKey,
-            ),
+            (filters?['responsible_desks'] as String)
+                .split(',')
+                .map(int.tryParse)
+                .toList()
+                .contains(
+                  requisition.responsibleDesk.apiKey,
+                ),
         filters?['appointed_approver_ulid'] == null ||
             requisition.appointedApprover?.ulid ==
                 (filters?['appointed_approver_ulid'] as String),
@@ -86,6 +91,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         'approval_statuses': [
           PRFApprovalStatus.approved.apiKey,
           PRFApprovalStatus.rejected.apiKey,
+          PRFApprovalStatus.recalled.apiKey,
         ].join(','),
       },
     );
@@ -97,6 +103,10 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
         'approval_statuses': [
           PRFApprovalStatus.pending.apiKey,
         ].join(','),
+        'responsible_desks': _hiveService.responsibleDesks
+            .map((desk) => desk.apiKey)
+            .toList()
+            .join(','),
       },
     );
   }
