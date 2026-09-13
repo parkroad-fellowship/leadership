@@ -151,7 +151,8 @@ class _ApproveRequisitionViewHandsetState
                             controller: _notesController,
                             hintText:
                                 'Enter your notes or reason for rejection...',
-                            maxLines: 4,
+                            minLines: 3,
+                            maxLines: 6,
                             type: PRFTextFieldType.textArea,
                           ),
                         )

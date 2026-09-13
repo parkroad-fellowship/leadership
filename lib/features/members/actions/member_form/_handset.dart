@@ -659,8 +659,8 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
             controller: _bioController,
             type: PRFTextFieldType.textArea,
             enabled: !isLoading,
-            minLines: 2,
-            maxLines: 4,
+            minLines: 3,
+            maxLines: 6,
           ),
         ),
         PRFFormSection(

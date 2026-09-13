@@ -2603,10 +2603,14 @@ class _RequisitionDetailsPageHandsetState
                 size: 16,
               ),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.8),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.surface.withValues(alpha: 0.8),
+                  ),
                 ),
               ),
             ],

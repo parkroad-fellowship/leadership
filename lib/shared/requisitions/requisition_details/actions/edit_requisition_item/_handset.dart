@@ -437,6 +437,8 @@ class _EditRequisitionItemViewHandsetState
                   hintText: 'Enter narration',
                   controller: _narrationController,
                   type: PRFTextFieldType.textArea,
+                  minLines: 3,
+                  maxLines: 6,
                 ),
               ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
             ],

@@ -181,7 +181,8 @@ class _RecallRequisitionViewHandsetState
                             hintText:
                                 'Enter your reason for recalling '
                                 'this requisition...',
-                            maxLines: 4,
+                            minLines: 3,
+                            maxLines: 6,
                             type: PRFTextFieldType.textArea,
                           ),
                         )

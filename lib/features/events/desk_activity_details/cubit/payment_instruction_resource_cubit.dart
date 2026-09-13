@@ -16,7 +16,13 @@ class PaymentInstructionResourceCubit
   Future<List<PRFPaymentInstruction>> loadCachedList({
     Map<String, dynamic>? filters,
   }) async {
-    return dbService.list();
+    return dbService.filterBy(
+      (paymentInstruction) => [
+        filters?['requisition_ulid'] == null ||
+            paymentInstruction.requisition?.ulid ==
+                (filters?['requisition_ulid'] as String),
+      ],
+    );
   }
 
   Future<void> createPaymentInstruction({
@@ -58,6 +64,6 @@ class PaymentInstructionResourceCubit
       tillNumber: tillNumber,
     );
 
-    return create(data: dto.toJson());
+    return create(data: dto.toJson(), includes: ['requisition']);
   }
 }

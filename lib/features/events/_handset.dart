@@ -393,7 +393,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
               // Multi-day date badge
               Container(
                 width: 40,
-                height: isMultiDay ? 72 : 42,
+                height: isMultiDay ? 85 : 42,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,

@@ -173,7 +173,8 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                               PRFTextField(
                                 hintText: l10n.confirmationMessage,
                                 controller: _confirmationController,
-                                maxLines: 3,
+                                minLines: 3,
+                                maxLines: 6,
                                 textInputAction: TextInputAction.done,
                                 type: PRFTextFieldType.textArea,
                               ),

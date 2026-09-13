@@ -169,9 +169,10 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                                     'Enter confirmation message or '
                                     'reference number',
                                 controller: _confirmationController,
-                                maxLines: 3,
+                                maxLines: 6,
                                 textInputAction: TextInputAction.done,
                                 type: PRFTextFieldType.textArea,
+                                minLines: 3,
                               ),
                             ],
                           ),

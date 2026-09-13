@@ -69,6 +69,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     super.initState();
     context.read<MissionTypeResourceCubit>().loadActive();
     context.read<SchoolTermResourceCubit>().loadActive();
+    context.read<SchoolCubit>().loadAll();
     _startTimeController.addListener(_onChanged);
     _endTimeController.addListener(_onChanged);
   }
@@ -463,6 +464,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
         controller: _prepNotesController,
         type: PRFTextFieldType.textArea,
         enabled: !_isLoading,
+        minLines: 3,
+        maxLines: 6,
       ),
     );
   }

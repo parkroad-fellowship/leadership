@@ -14,12 +14,18 @@ class RequisitionItemResourceCubit extends ResourceCubit<PRFRequisitionItem> {
   Future<List<PRFRequisitionItem>> loadCachedList({
     Map<String, dynamic>? filters,
   }) async {
-    return dbService.list();
+    return dbService.filterBy(
+      (item) => [
+        filters?['requisition_ulid'] == null ||
+            item.requisition?.ulid == (filters?['requisition_ulid'] as String),
+      ],
+    );
   }
 
   Future<void> loadForRequisition({required String requisitionUlid}) {
     return loadAll(
       filters: {'requisition_ulid': requisitionUlid},
+      includes: ['requisition'],
       limit: 200,
     );
   }
@@ -41,6 +47,7 @@ class RequisitionItemResourceCubit extends ResourceCubit<PRFRequisitionItem> {
         unitPrice: unitPrice,
         quantity: quantity,
       ).toJson(),
+      includes: ['expenseCategory', 'requisition'],
     );
   }
 
