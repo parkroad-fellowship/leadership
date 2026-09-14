@@ -51,9 +51,7 @@ abstract class PRFMember with _$PRFMember {
 
 @freezed
 abstract class PRFMembersResponse with _$PRFMembersResponse {
-  factory PRFMembersResponse(
-    List<PRFMember> data,
-  ) = _PRFMembersResponse;
+  factory PRFMembersResponse(List<PRFMember> data) = _PRFMembersResponse;
 
   factory PRFMembersResponse.fromJson(Map<String, dynamic> json) =>
       _$PRFMembersResponseFromJson(json);

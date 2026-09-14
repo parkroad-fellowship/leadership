@@ -39,9 +39,7 @@ class _MaritalStatusFormViewHandsetState
   void initState() {
     super.initState();
     final maritalStatus = widget.maritalStatus;
-    _nameController = TextEditingController(
-      text: maritalStatus?.name ?? '',
-    );
+    _nameController = TextEditingController(text: maritalStatus?.name ?? '');
     _activeStatus = maritalStatus?.isActive ?? PRFActiveStatus.active;
     _nameController.addListener(_onFormChanged);
   }
@@ -93,9 +91,7 @@ class _MaritalStatusFormViewHandsetState
       return;
     }
 
-    cubit.createMaritalStatus(
-      name: _nameController.text.trim(),
-    );
+    cubit.createMaritalStatus(name: _nameController.text.trim());
   }
 
   @override

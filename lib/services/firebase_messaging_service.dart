@@ -1,5 +1,3 @@
-// ignore_for_file: unreachable_from_main
-
 import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -14,9 +12,7 @@ import 'package:logger/logger.dart';
 
 /// Top-level function required for FCM background message handling
 @pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(
-  RemoteMessage message,
-) async {
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   Logger().i('Handling background FCM message: ${message.messageId}');
   await FirebaseMessagingService.handleFCMMessage(message);
 }

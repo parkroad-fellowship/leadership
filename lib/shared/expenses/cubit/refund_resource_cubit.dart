@@ -11,9 +11,7 @@ class RefundResourceCubit extends ResourceCubit<PRFRefund> {
   }) : super(service: refundService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFRefund>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFRefund>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 

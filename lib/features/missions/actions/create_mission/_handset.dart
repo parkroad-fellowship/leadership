@@ -184,9 +184,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: PRFSpacingTokens.lg,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
@@ -526,9 +524,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                               ? Theme.of(context).colorScheme.primary
                               : Theme.of(
                                   context,
-                                ).colorScheme.outline.withValues(
-                                  alpha: 0.3,
-                                ),
+                                ).colorScheme.outline.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Text(
@@ -623,9 +619,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                               ? Theme.of(context).colorScheme.primary
                               : Theme.of(
                                   context,
-                                ).colorScheme.outline.withValues(
-                                  alpha: 0.3,
-                                ),
+                                ).colorScheme.outline.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Text(

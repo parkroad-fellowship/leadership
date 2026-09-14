@@ -11,9 +11,7 @@ class SchoolCubit extends ResourceCubit<PRFSchool> {
   }) : super(service: schoolService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFSchool>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFSchool>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 

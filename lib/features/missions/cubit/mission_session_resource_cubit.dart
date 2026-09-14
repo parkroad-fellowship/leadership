@@ -12,7 +12,7 @@ class MissionSessionResourceCubit extends ResourceCubit<PRFMissionSession> {
   @override
   Future<List<PRFMissionSession>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (item) => [
         filters?['mission_ulid'] == null ||

@@ -94,7 +94,7 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
                         description: l10n.noPastMissions,
                       )
                     : RefreshIndicator(
-                        onRefresh: () async =>
+                        onRefresh: () =>
                             context.read<PastMissionResourceCubit>().loadAll(),
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -112,9 +112,7 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
                               isLast: isLast,
                               index: index,
                               onTap: () => context.router.push(
-                                MissionsDetailsRoute(
-                                  missionUlid: mission.ulid,
-                                ),
+                                MissionsDetailsRoute(missionUlid: mission.ulid),
                               ),
                             );
                           }).toList(),

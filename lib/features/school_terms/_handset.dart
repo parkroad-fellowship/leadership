@@ -99,9 +99,7 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
     final filtered = _searchQuery.isEmpty
         ? terms
         : terms
-              .where(
-                (t) => t.name.toLowerCase().contains(_searchQuery),
-              )
+              .where((t) => t.name.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -110,9 +108,7 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           // Navy branded header
-          SliverToBoxAdapter(
-            child: _buildHeader(theme, terms.length),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(theme, terms.length)),
           // Floating search bar
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -121,9 +117,7 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           // School term list
           if (filtered.isEmpty)
@@ -147,18 +141,15 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final term = filtered[index];
-                    return SchoolTermCard(
-                      term: term,
-                      index: index,
-                      onTap: () => _showForm(context, term),
-                      onDelete: () => _confirmDelete(context, term),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final term = filtered[index];
+                  return SchoolTermCard(
+                    term: term,
+                    index: index,
+                    onTap: () => _showForm(context, term),
+                    onDelete: () => _confirmDelete(context, term),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -175,9 +166,7 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
 
   Widget _buildHeader(ThemeData theme, int totalCount) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -307,17 +296,11 @@ class _SchoolTermsPageHandsetState extends State<SchoolTermsPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: term == null ? 'Add School Term' : 'Edit School Term',
-      child: SchoolTermFormViewHandset(
-        term: term,
-        onSaved: _loadData,
-      ),
+      child: SchoolTermFormViewHandset(term: term, onSaved: _loadData),
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    PRFSchoolTerm term,
-  ) async {
+  Future<void> _confirmDelete(BuildContext context, PRFSchoolTerm term) async {
     final confirmed = await PRFConfirmationDialog.show(
       context,
       title: 'Delete School Term',

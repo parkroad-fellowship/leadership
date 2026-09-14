@@ -217,12 +217,10 @@ class _EditRequisitionItemViewHandsetState
                                   'Update the details of this requisition item',
                                   style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimary.withValues(
-                                              alpha: 0.9,
-                                            ),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary
+                                            .withValues(alpha: 0.9),
                                       ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -406,18 +404,14 @@ class _EditRequisitionItemViewHandsetState
                           Text(
                             'Total Price',
                             style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           Text(
                             'KES $_totalPrice',
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                           ),
                         ],

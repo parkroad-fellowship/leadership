@@ -84,10 +84,7 @@ abstract class BaseAPIService<T> {
   }
 
   // Method for fetching a single item
-  Future<T> get({
-    required String ulid,
-    List<String>? includes,
-  }) async {
+  Future<T> get({required String ulid, List<String>? includes}) async {
     try {
       final queryParameters = <String, dynamic>{};
 
@@ -156,13 +153,9 @@ abstract class BaseAPIService<T> {
   }
 
   // Method for deleting an item
-  Future<void> delete({
-    required String ulid,
-  }) async {
+  Future<void> delete({required String ulid}) async {
     try {
-      await _networkUtil.delete(
-        '$endpoint/$ulid',
-      );
+      await _networkUtil.delete('$endpoint/$ulid');
     } catch (e) {
       rethrow;
     }

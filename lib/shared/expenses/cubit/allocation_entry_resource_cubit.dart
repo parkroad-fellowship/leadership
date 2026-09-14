@@ -27,7 +27,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
   @override
   Future<List<PRFAllocationEntry>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (entry) => [
         filters?['accounting_event_ulid'] == null ||
@@ -39,10 +39,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
   }
 
   @override
-  List<String> get defaultIncludes => [
-    'accountingEvent',
-    'expenseCategory',
-  ];
+  List<String> get defaultIncludes => ['accountingEvent', 'expenseCategory'];
 
   Future<void> addAllocationEntry({
     required String accountingEventUlid,
@@ -197,9 +194,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
     }
   }
 
-  Future<void> deleteAllocationEntry({
-    required String allocationEntryUlid,
-  }) {
+  Future<void> deleteAllocationEntry({required String allocationEntryUlid}) {
     return delete(
       ulid: allocationEntryUlid,
       matchById: (item) => item.ulid == allocationEntryUlid,

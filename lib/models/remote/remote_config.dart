@@ -5,9 +5,8 @@ part 'remote_config.g.dart';
 
 @freezed
 abstract class RemoteConfig with _$RemoteConfig {
-  factory RemoteConfig({
-    @Default([]) List<ReviewConfig> reviewConfigs,
-  }) = _RemoteConfig;
+  factory RemoteConfig({@Default([]) List<ReviewConfig> reviewConfigs}) =
+      _RemoteConfig;
 
   factory RemoteConfig.fromJson(Map<String, dynamic> json) =>
       _$RemoteConfigFromJson(json);

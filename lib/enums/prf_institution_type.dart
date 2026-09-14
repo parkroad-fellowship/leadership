@@ -15,8 +15,7 @@ enum PRFInstitutionType {
   @JsonValue(5)
   community(5, 'Community'),
   @JsonValue(6)
-  juniorSecondarySchool(6, 'Junior Secondary School'),
-  ;
+  juniorSecondarySchool(6, 'Junior Secondary School');
 
   const PRFInstitutionType(this.value, this._label);
 
@@ -27,18 +26,13 @@ enum PRFInstitutionType {
 
   List<Color> get gradientColors {
     return switch (this) {
-      primarySchool || community => [
-        PRFColors.navy500,
-        PRFColors.navy400,
-      ],
+      primarySchool || community => [PRFColors.navy500, PRFColors.navy400],
       highSchool || juniorSecondarySchool => [
         const Color(0xFF2563EB),
         const Color(0xFF60A5FA),
       ],
-      college || university => [
-        const Color(0xFFEA580C),
-        const Color(0xFFFB923C),
-      ],
+      college ||
+      university => [const Color(0xFFEA580C), const Color(0xFFFB923C)],
     };
   }
 

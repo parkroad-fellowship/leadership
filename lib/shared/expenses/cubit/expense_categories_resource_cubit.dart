@@ -12,7 +12,7 @@ class ExpenseCategoriesResourceCubit extends ResourceCubit<PRFExpenseCategory> {
   @override
   Future<List<PRFExpenseCategory>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.list();
   }
 }

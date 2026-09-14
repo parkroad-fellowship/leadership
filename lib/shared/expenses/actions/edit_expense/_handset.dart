@@ -13,10 +13,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class EditExpenseViewHandset extends StatefulWidget {
-  const EditExpenseViewHandset({
-    required this.allocationEntry,
-    super.key,
-  });
+  const EditExpenseViewHandset({required this.allocationEntry, super.key});
 
   final PRFAllocationEntry allocationEntry;
 
@@ -165,10 +162,9 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                               vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.onPrimary
-                                  .withValues(
-                                    alpha: 0.2,
-                                  ),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(
                                 PRFRadiusTokens.xl,
                               ),
@@ -370,9 +366,7 @@ class _EditExpenseViewHandsetState extends State<EditExpenseViewHandset> {
                           });
                           ScaffoldMessenger.of(
                             context,
-                          ).showSnackBar(
-                            SnackBar(content: Text(message)),
-                          );
+                          ).showSnackBar(SnackBar(content: Text(message)));
                         },
                         orElse: () {},
                       );

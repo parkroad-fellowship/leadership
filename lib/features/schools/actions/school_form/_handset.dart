@@ -10,11 +10,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class SchoolFormViewHandset extends StatefulWidget {
-  const SchoolFormViewHandset({
-    required this.onSaved,
-    this.school,
-    super.key,
-  });
+  const SchoolFormViewHandset({required this.onSaved, this.school, super.key});
 
   final PRFSchool? school;
   final VoidCallback onSaved;
@@ -480,10 +476,8 @@ class _SchoolFormViewHandsetState extends State<SchoolFormViewHandset> {
             ),
             items: PRFInstitutionType.values
                 .map(
-                  (type) => DropdownMenuItem(
-                    value: type,
-                    child: Text(type.name),
-                  ),
+                  (type) =>
+                      DropdownMenuItem(value: type, child: Text(type.name)),
                 )
                 .toList(),
             onChanged: isLoading

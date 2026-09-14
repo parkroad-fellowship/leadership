@@ -12,16 +12,12 @@ class ChurchResourceCubit extends ResourceCubit<PRFChurch> {
   }) : super(service: churchService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFChurch>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFChurch>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
   Future<void> createChurch({required String name}) {
-    return create(
-      data: PRFChurchDTO(name: name).toJson(),
-    );
+    return create(data: PRFChurchDTO(name: name).toJson());
   }
 
   Future<void> updateChurch({
@@ -31,10 +27,7 @@ class ChurchResourceCubit extends ResourceCubit<PRFChurch> {
   }) {
     return update(
       id: ulid,
-      data: PRFChurchDTO(
-        name: name ?? '',
-        isActive: isActive,
-      ).toJson(),
+      data: PRFChurchDTO(name: name ?? '', isActive: isActive).toJson(),
       matchById: (c) => c.ulid == ulid,
     );
   }

@@ -1,7 +1,6 @@
 enum PRFMediaModel {
   memberProfilePictures('profile-pictures'),
-  allocationEntryReceipts('allocation-entry-receipts'),
-  ;
+  allocationEntryReceipts('allocation-entry-receipts');
 
   const PRFMediaModel(this.collection);
 

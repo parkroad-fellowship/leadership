@@ -14,7 +14,7 @@ class MissionGroundSuggestionResourceCubit
   @override
   Future<List<PRFMissionGroundSuggestion>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.list();
   }
 

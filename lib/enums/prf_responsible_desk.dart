@@ -16,8 +16,7 @@ enum PRFResponsibleDesk {
   @JsonValue(7)
   music(7, 'Music Desk', 'music secretary'),
   @JsonValue(8)
-  treasurer(8, 'Treasurer', 'treasurer'),
-  ;
+  treasurer(8, 'Treasurer', 'treasurer');
 
   const PRFResponsibleDesk(this.apiKey, this._label, this.roleKey);
 

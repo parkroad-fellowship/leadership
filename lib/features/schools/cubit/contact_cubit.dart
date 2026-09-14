@@ -10,9 +10,7 @@ class ContactCubit extends ResourceCubit<PRFContact> {
   }) : super(service: schoolContactService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFContact>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFContact>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 

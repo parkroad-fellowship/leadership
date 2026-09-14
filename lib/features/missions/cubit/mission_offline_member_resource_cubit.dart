@@ -14,7 +14,7 @@ class MissionOfflineMemberResourceCubit
   @override
   Future<List<PRFMissionOfflineMember>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (item) => [
         filters?['mission_ulid'] == null ||
@@ -47,9 +47,6 @@ class MissionOfflineMemberResourceCubit
   }
 
   Future<void> removeOfflineMember({required String ulid}) {
-    return delete(
-      ulid: ulid,
-      matchById: (item) => item.ulid == ulid,
-    );
+    return delete(ulid: ulid, matchById: (item) => item.ulid == ulid);
   }
 }

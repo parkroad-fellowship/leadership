@@ -10,8 +10,7 @@ enum PRFSoulDecisionType {
   @JsonValue(4)
   prayer(4, 'Prayer'),
   @JsonValue(5)
-  other(5, 'Other'),
-  ;
+  other(5, 'Other');
 
   const PRFSoulDecisionType(this.apiKey, this._label);
 

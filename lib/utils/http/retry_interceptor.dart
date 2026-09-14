@@ -40,10 +40,7 @@ class RetryInterceptor extends Interceptor {
           return handler.next(e);
         } else {
           return handler.next(
-            DioException(
-              requestOptions: requestOptions,
-              error: e,
-            ),
+            DioException(requestOptions: requestOptions, error: e),
           );
         }
       }

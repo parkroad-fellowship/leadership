@@ -45,9 +45,8 @@ abstract class PRFRequisition with _$PRFRequisition {
 
 @freezed
 abstract class PRFRequisitionResponse with _$PRFRequisitionResponse {
-  factory PRFRequisitionResponse(
-    List<PRFRequisition> data,
-  ) = _PRFRequisitionResponse;
+  factory PRFRequisitionResponse(List<PRFRequisition> data) =
+      _PRFRequisitionResponse;
 
   factory PRFRequisitionResponse.fromJson(Map<String, dynamic> json) =>
       _$PRFRequisitionResponseFromJson(json);

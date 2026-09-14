@@ -1,6 +1,1 @@
-enum PRFSupportedPlatform {
-  android,
-  ios,
-  huawei,
-  unknown,
-}
+enum PRFSupportedPlatform { android, ios, huawei, unknown }

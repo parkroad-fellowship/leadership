@@ -18,9 +18,7 @@ enum PRFLeadershipGroup {
       PRFResponsibleDesk.organisingSecretary => [],
       PRFResponsibleDesk.missions => [],
       PRFResponsibleDesk.prayer => [],
-      PRFResponsibleDesk.followUp => [
-        campCommittee,
-      ],
+      PRFResponsibleDesk.followUp => [campCommittee],
       PRFResponsibleDesk.music => [],
       PRFResponsibleDesk.treasurer => [],
     };

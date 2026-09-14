@@ -98,9 +98,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
     final filtered = _searchQuery.isEmpty
         ? members
         : members
-              .where(
-                (m) => m.fullName.toLowerCase().contains(_searchQuery),
-              )
+              .where((m) => m.fullName.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -109,9 +107,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           // Navy branded header
-          SliverToBoxAdapter(
-            child: _buildHeader(theme, members.length),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(theme, members.length)),
           // Floating search bar
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -120,9 +116,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           // Member list
           if (filtered.isEmpty)
@@ -146,19 +140,16 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final member = filtered[index];
-                    return MemberCard(
-                      member: member,
-                      index: index,
-                      onTap: () => context.router.push(
-                        MemberDetailsRoute(memberUlid: member.ulid),
-                      ),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final member = filtered[index];
+                  return MemberCard(
+                    member: member,
+                    index: index,
+                    onTap: () => context.router.push(
+                      MemberDetailsRoute(memberUlid: member.ulid),
+                    ),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -175,9 +166,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
 
   Widget _buildHeader(ThemeData theme, int memberCount) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -314,9 +303,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: 'Add Member',
-      child: MemberFormViewHandset(
-        onSaved: _loadData,
-      ),
+      child: MemberFormViewHandset(onSaved: _loadData),
     );
   }
 

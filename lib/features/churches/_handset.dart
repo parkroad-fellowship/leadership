@@ -98,9 +98,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
     final filtered = _searchQuery.isEmpty
         ? items
         : items
-              .where(
-                (item) => item.name.toLowerCase().contains(_searchQuery),
-              )
+              .where((item) => item.name.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -108,9 +106,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
       child: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildHeader(theme, items.length),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(theme, items.length)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               PRFSpacingTokens.lg,
@@ -118,9 +114,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           if (filtered.isEmpty)
             SliverFillRemaining(
@@ -143,18 +137,15 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = filtered[index];
-                    return ChurchCard(
-                      church: item,
-                      index: index,
-                      onTap: () => _showForm(context, item),
-                      onDelete: () => _confirmDelete(context, item),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = filtered[index];
+                  return ChurchCard(
+                    church: item,
+                    index: index,
+                    onTap: () => _showForm(context, item),
+                    onDelete: () => _confirmDelete(context, item),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -167,9 +158,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
 
   Widget _buildHeader(ThemeData theme, int totalCount) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -287,17 +276,11 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: church == null ? 'Add Church' : 'Edit Church',
-      child: ChurchFormViewHandset(
-        church: church,
-        onSaved: _loadData,
-      ),
+      child: ChurchFormViewHandset(church: church, onSaved: _loadData),
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    PRFChurch church,
-  ) async {
+  Future<void> _confirmDelete(BuildContext context, PRFChurch church) async {
     final confirmed = await PRFConfirmationDialog.show(
       context,
       title: 'Delete Church',
@@ -309,9 +292,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
     );
 
     if ((confirmed ?? false) && mounted) {
-      await context.read<ChurchResourceCubit>().deleteChurch(
-        ulid: church.ulid,
-      );
+      await context.read<ChurchResourceCubit>().deleteChurch(ulid: church.ulid);
     }
   }
 }

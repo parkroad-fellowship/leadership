@@ -75,10 +75,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                     onActionPressed: () => _showForm(context, null),
                   ),
                 ResourceListLoaded<PRFMaritalStatus>(:final items) =>
-                  _buildBody(
-                    theme,
-                    items,
-                  ),
+                  _buildBody(theme, items),
                 ResourceMutating<PRFMaritalStatus>(:final items) => _buildBody(
                   theme,
                   items,
@@ -106,9 +103,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
     final filtered = _searchQuery.isEmpty
         ? items
         : items
-              .where(
-                (item) => item.name.toLowerCase().contains(_searchQuery),
-              )
+              .where((item) => item.name.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -116,9 +111,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
       child: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildHeader(theme, items.length),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(theme, items.length)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               PRFSpacingTokens.lg,
@@ -126,9 +119,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           if (filtered.isEmpty)
             SliverFillRemaining(
@@ -151,18 +142,15 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = filtered[index];
-                    return MaritalStatusCard(
-                      maritalStatus: item,
-                      index: index,
-                      onTap: () => _showForm(context, item),
-                      onDelete: () => _confirmDelete(context, item),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = filtered[index];
+                  return MaritalStatusCard(
+                    maritalStatus: item,
+                    index: index,
+                    onTap: () => _showForm(context, item),
+                    onDelete: () => _confirmDelete(context, item),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -175,9 +163,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
 
   Widget _buildHeader(ThemeData theme, int totalCount) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

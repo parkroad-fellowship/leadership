@@ -10,10 +10,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class AddTokenViewHandset extends StatefulWidget {
-  const AddTokenViewHandset({
-    required this.accountingEventUlid,
-    super.key,
-  });
+  const AddTokenViewHandset({required this.accountingEventUlid, super.key});
 
   final String accountingEventUlid;
 
@@ -229,9 +226,9 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                           setState(() {
                             _isLoading = false;
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(message)),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(message)));
                         },
                         orElse: () {},
                       );

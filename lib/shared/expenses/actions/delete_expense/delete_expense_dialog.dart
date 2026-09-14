@@ -9,10 +9,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class DeleteExpenseDialog extends StatelessWidget {
-  const DeleteExpenseDialog({
-    required this.entry,
-    super.key,
-  });
+  const DeleteExpenseDialog({required this.entry, super.key});
 
   final PRFAllocationEntry entry;
 
@@ -72,9 +69,7 @@ class DeleteExpenseDialog extends StatelessWidget {
                     entry.narration,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontStyle: FontStyle.italic,
-                      color: theme.colorScheme.onSurface.withValues(
-                        alpha: 0.7,
-                      ),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -157,9 +152,7 @@ class DeleteExpenseDialog extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: theme.colorScheme.error,
         foregroundColor: theme.colorScheme.onError,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );

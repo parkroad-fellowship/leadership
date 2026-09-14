@@ -15,9 +15,7 @@ class SendFinancialReportCubit extends Cubit<SendFinancialReportState> {
 
   late AccountingEventService _accountingEventService;
 
-  Future<void> sendReport({
-    required String accountingEventUlid,
-  }) async {
+  Future<void> sendReport({required String accountingEventUlid}) async {
     emit(const SendFinancialReportState.loading());
     try {
       await _accountingEventService.sendReport(ulid: accountingEventUlid);

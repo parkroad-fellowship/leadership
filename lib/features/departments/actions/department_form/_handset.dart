@@ -90,9 +90,7 @@ class _DepartmentFormViewHandsetState extends State<DepartmentFormViewHandset> {
       return;
     }
 
-    cubit.createDepartment(
-      name: _nameController.text.trim(),
-    );
+    cubit.createDepartment(name: _nameController.text.trim());
   }
 
   @override

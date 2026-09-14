@@ -398,10 +398,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      statusColor,
-                      statusColor.withValues(alpha: 0.8),
-                    ],
+                    colors: [statusColor, statusColor.withValues(alpha: 0.8)],
                   ),
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   boxShadow: [
@@ -507,9 +504,7 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                border: Border.all(
-                  color: statusColor.withValues(alpha: 0.2),
-                ),
+                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.shadow.withValues(alpha: 0.08),

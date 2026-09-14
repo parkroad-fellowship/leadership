@@ -109,9 +109,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     final filtered = _searchQuery.isEmpty
         ? schools
         : schools
-              .where(
-                (s) => s.name.toLowerCase().contains(_searchQuery),
-              )
+              .where((s) => s.name.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -136,9 +134,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           // School list
           if (filtered.isEmpty)
@@ -162,19 +158,16 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final school = filtered[index];
-                    return SchoolCard(
-                      school: school,
-                      index: index,
-                      onTap: () => context.router.push(
-                        SchoolDetailsRoute(schoolUlid: school.ulid),
-                      ),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final school = filtered[index];
+                  return SchoolCard(
+                    school: school,
+                    index: index,
+                    onTap: () => context.router.push(
+                      SchoolDetailsRoute(schoolUlid: school.ulid),
+                    ),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -196,9 +189,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     int totalContacts,
   ) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -351,10 +342,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: school == null ? 'Add School' : 'Edit School',
-      child: SchoolFormViewHandset(
-        school: school,
-        onSaved: _loadData,
-      ),
+      child: SchoolFormViewHandset(school: school, onSaved: _loadData),
     );
   }
 }

@@ -11,12 +11,10 @@ class CreateRequisitionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PRFAdaptive(
-      handset: (_) => CreateRequisitionViewHandset(
-        accountingEvent: accountingEvent,
-      ),
-      builder: (_, _) => CreateRequisitionViewHandset(
-        accountingEvent: accountingEvent,
-      ),
+      handset: (_) =>
+          CreateRequisitionViewHandset(accountingEvent: accountingEvent),
+      builder: (_, _) =>
+          CreateRequisitionViewHandset(accountingEvent: accountingEvent),
     );
   }
 }

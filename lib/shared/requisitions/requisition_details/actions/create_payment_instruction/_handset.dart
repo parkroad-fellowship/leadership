@@ -158,10 +158,7 @@ class _CreatePaymentInstructionViewHandsetState
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (page) => setState(() => _currentPage = page),
-                children: [
-                  _buildStep1(),
-                  _buildStep2(),
-                ],
+                children: [_buildStep1(), _buildStep2()],
               ),
             ),
           ),
@@ -246,10 +243,7 @@ class _CreatePaymentInstructionViewHandsetState
                     ),
                   ),
                   if (isSelected)
-                    Icon(
-                      Icons.check_circle,
-                      color: theme.colorScheme.primary,
-                    ),
+                    Icon(Icons.check_circle, color: theme.colorScheme.primary),
                 ],
               ),
             ),
@@ -772,9 +766,9 @@ class _CreatePaymentInstructionViewHandsetState
                                 _isLoading = false;
                               });
                               Gaimon.error();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(message)),
-                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
                             },
                             orElse: () {},
                           );

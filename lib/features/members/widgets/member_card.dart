@@ -58,9 +58,7 @@ class MemberCard extends StatelessWidget {
                 // Circle avatar with profile picture or initials
                 CircleAvatar(
                   radius: 23,
-                  backgroundColor: colorScheme.primary.withValues(
-                    alpha: 0.15,
-                  ),
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
                   backgroundImage: profileUrl != null
                       ? NetworkImage(profileUrl)
                       : null,
@@ -74,9 +72,7 @@ class MemberCard extends StatelessWidget {
                         )
                       : null,
                 ),
-                const SizedBox(
-                  width: PRFSpacingTokens.md,
-                ),
+                const SizedBox(width: PRFSpacingTokens.md),
                 // Name + subtitle
                 Expanded(
                   child: Column(
@@ -107,9 +103,7 @@ class MemberCard extends StatelessWidget {
                 ),
                 // Trailing: profession name if available
                 if (member.profession != null) ...[
-                  const SizedBox(
-                    width: PRFSpacingTokens.md,
-                  ),
+                  const SizedBox(width: PRFSpacingTokens.md),
                   Flexible(
                     flex: 0,
                     child: Text(

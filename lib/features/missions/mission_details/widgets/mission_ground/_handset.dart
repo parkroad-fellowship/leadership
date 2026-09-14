@@ -380,9 +380,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,9 +484,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
                         children: [
                           CircleAvatar(
                             backgroundColor: theme.colorScheme.primary
-                                .withValues(
-                                  alpha: 0.1,
-                                ),
+                                .withValues(alpha: 0.1),
                             child: Text(
                               contact.name.substring(0, 1).toUpperCase(),
                               style: TextStyle(
@@ -802,9 +798,7 @@ class _MissionGroundViewHandsetState extends State<MissionGroundViewHandset>
             ),
             child: Text(
               mission.missionPrepNotes!,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.5,
-              ),
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
             ),
           ),
         ],

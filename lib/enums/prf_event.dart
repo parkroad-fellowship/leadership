@@ -2,8 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum PRFEvent {
   @JsonValue(1)
-  defaultEvent('Default Event'),
-  ;
+  defaultEvent('Default Event');
 
   const PRFEvent(this._label);
 
@@ -21,8 +20,7 @@ enum PRFEvent {
 
 enum PRFPresenceEvent {
   @JsonValue(5)
-  defaultPresenceEvent('Default Presence Event'),
-  ;
+  defaultPresenceEvent('Default Presence Event');
 
   const PRFPresenceEvent(this._label);
 

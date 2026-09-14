@@ -30,11 +30,7 @@ class MissionTypeCard extends StatelessWidget {
               vertical: PRFSpacingTokens.sm,
             ),
             decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: PRFColors.gray100,
-                ),
-              ),
+              border: Border(bottom: BorderSide(color: PRFColors.gray100)),
             ),
             child: Row(
               children: [

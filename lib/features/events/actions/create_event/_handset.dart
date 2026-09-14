@@ -133,12 +133,8 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             l10n.createActivityDescription,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimary.withValues(
-                                        alpha: 0.9,
-                                      ),
+                                  color: Theme.of(context).colorScheme.onPrimary
+                                      .withValues(alpha: 0.9),
                                 ),
                             textAlign: TextAlign.center,
                           ),
@@ -267,13 +263,10 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                         height: 60,
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color:
-                                                Theme.of(
-                                                      context,
-                                                    ).colorScheme.outline
-                                                    .withValues(
-                                                      alpha: 0.2,
-                                                    ),
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline
+                                                .withValues(alpha: 0.2),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             PRFRadiusTokens.md,
@@ -287,13 +280,10 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                         height: 60,
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                            color:
-                                                Theme.of(
-                                                      context,
-                                                    ).colorScheme.outline
-                                                    .withValues(
-                                                      alpha: 0.2,
-                                                    ),
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline
+                                                .withValues(alpha: 0.2),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             PRFRadiusTokens.md,
@@ -306,12 +296,9 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                                 .textTheme
                                                 .bodyMedium
                                                 ?.copyWith(
-                                                  color:
-                                                      Theme.of(
-                                                            context,
-                                                          )
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
                                                 ),
                                           ),
                                         ),
@@ -457,9 +444,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
 
         // Members selection area
         Container(
-          constraints: const BoxConstraints(
-            maxHeight: 200,
-          ),
+          constraints: const BoxConstraints(maxHeight: 200),
           decoration: BoxDecoration(
             border: Border.all(
               color: theme.colorScheme.outline.withValues(alpha: 0.2),

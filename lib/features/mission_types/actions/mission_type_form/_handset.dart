@@ -91,9 +91,7 @@ class _MissionTypeFormViewHandsetState
       return;
     }
 
-    cubit.createMissionType(
-      name: _nameController.text.trim(),
-    );
+    cubit.createMissionType(name: _nameController.text.trim());
   }
 
   @override

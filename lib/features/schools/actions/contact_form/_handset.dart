@@ -59,20 +59,13 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
   void initState() {
     super.initState();
     final contact = widget.contact;
-    _nameController = TextEditingController(
-      text: contact?.name ?? '',
-    );
+    _nameController = TextEditingController(text: contact?.name ?? '');
     _phoneController = contact != null
         ? _buildPhoneController(contact.phone)
         : PhoneController(
-            initialValue: const PhoneNumber(
-              isoCode: IsoCode.KE,
-              nsn: '',
-            ),
+            initialValue: const PhoneNumber(isoCode: IsoCode.KE, nsn: ''),
           );
-    _emailController = TextEditingController(
-      text: contact?.email ?? '',
-    );
+    _emailController = TextEditingController(text: contact?.email ?? '');
     _availableTypes = List.of(widget.contactTypes);
 
     if (contact?.contactType != null) {
@@ -195,9 +188,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           curr is ResourceError<PRFContact>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutating<PRFContact>(
-            :final operation,
-          ):
+          case ResourceMutating<PRFContact>(:final operation):
             if (operation == ResourceOperation.create ||
                 operation == ResourceOperation.update) {
               Gaimon.success();
@@ -210,9 +201,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
               );
               widget.onSaved();
             }
-          case ResourceError<PRFContact>(
-            :final message,
-          ):
+          case ResourceError<PRFContact>(:final message):
             Gaimon.error();
             PRFSnackbar.error(context, message);
           default:
@@ -351,10 +340,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     );
   }
 
-  Widget _buildFields(
-    ThemeData theme,
-    bool isLoading,
-  ) {
+  Widget _buildFields(ThemeData theme, bool isLoading) {
     return Column(
       children: [
         PRFFormSection(
@@ -506,9 +492,7 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
           vertical: PRFSpacingTokens.xs,
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(
-            PRFRadiusTokens.full,
-          ),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
           border: Border.all(
             color: PRFColors.limeGreen.withValues(alpha: 0.4),
             width: 1.5,
@@ -517,14 +501,8 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.add,
-              size: 16,
-              color: PRFColors.limeGreen,
-            ),
-            const SizedBox(
-              width: PRFSpacingTokens.xs,
-            ),
+            const Icon(Icons.add, size: 16, color: PRFColors.limeGreen),
+            const SizedBox(width: PRFSpacingTokens.xs),
             Text(
               'New Type',
               style: theme.textTheme.labelLarge?.copyWith(
@@ -556,15 +534,10 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     _listenForNewType(cubit, cleanedName);
   }
 
-  void _listenForNewType(
-    ContactTypeCubit cubit,
-    String name,
-  ) {
+  void _listenForNewType(ContactTypeCubit cubit, String name) {
     late final void Function() cancel;
     final sub = cubit.stream.listen((state) {
-      if (state case ResourceListLoaded<PRFContactType>(
-        :final items,
-      )) {
+      if (state case ResourceListLoaded<PRFContactType>(:final items)) {
         final newType = items.cast<PRFContactType?>().firstWhere(
           (t) => t!.name.toLowerCase() == name.toLowerCase(),
           orElse: () => null,
@@ -585,20 +558,13 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
     cancel = sub.cancel;
   }
 
-  PhoneController _buildPhoneController(
-    String rawPhone,
-  ) {
+  PhoneController _buildPhoneController(String rawPhone) {
     try {
       final parsed = PhoneNumber.parse(rawPhone);
-      return PhoneController(
-        initialValue: parsed,
-      );
+      return PhoneController(initialValue: parsed);
     } catch (_) {
       return PhoneController(
-        initialValue: const PhoneNumber(
-          isoCode: IsoCode.KE,
-          nsn: '',
-        ),
+        initialValue: const PhoneNumber(isoCode: IsoCode.KE, nsn: ''),
       );
     }
   }

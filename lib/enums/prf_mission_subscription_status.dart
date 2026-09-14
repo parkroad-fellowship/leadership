@@ -10,8 +10,7 @@ enum PRFMissionSubscriptionStatus {
   @JsonValue(4)
   fullySubscribed(4, 'Fully subscribed'),
   @JsonValue(5)
-  conflict(5, 'Conflict'),
-  ;
+  conflict(5, 'Conflict');
 
   const PRFMissionSubscriptionStatus(this.apiKey, this._label);
 

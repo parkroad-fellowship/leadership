@@ -27,12 +27,10 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
   final HiveService _hiveService;
 
   @override
-  List<String> get defaultIncludes => [
-    'accountingEvent',
-  ];
+  List<String> get defaultIncludes => ['accountingEvent'];
 
   @override
-  Future<List<PRFEvent>> loadCachedList({Map<String, dynamic>? filters}) async {
+  Future<List<PRFEvent>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.filterBy(
       (event) => [
         filters?['upcoming'] == null || event.endDate.isAfter(DateTime.now()),
@@ -46,9 +44,7 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
                 .split(',')
                 .map(int.tryParse)
                 .toList()
-                .contains(
-                  event.accountingEvent?.responsibleDesk.apiKey,
-                ),
+                .contains(event.accountingEvent?.responsibleDesk.apiKey),
       ],
     );
   }

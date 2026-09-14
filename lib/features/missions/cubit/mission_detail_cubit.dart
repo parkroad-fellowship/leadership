@@ -32,28 +32,18 @@ class MissionDetailCubit extends SingleResourceCubit<PRFMission> {
     );
   }
 
-  Future<void> rejectMission({
-    required String missionUlid,
-    String? reason,
-  }) {
+  Future<void> rejectMission({required String missionUlid, String? reason}) {
     return _runAction(
-      action: () => _missionService.rejectMission(
-        ulid: missionUlid,
-        reason: reason,
-      ),
+      action: () =>
+          _missionService.rejectMission(ulid: missionUlid, reason: reason),
       missionUlid: missionUlid,
     );
   }
 
-  Future<void> cancelMission({
-    required String missionUlid,
-    String? reason,
-  }) {
+  Future<void> cancelMission({required String missionUlid, String? reason}) {
     return _runAction(
-      action: () => _missionService.cancelMission(
-        ulid: missionUlid,
-        reason: reason,
-      ),
+      action: () =>
+          _missionService.cancelMission(ulid: missionUlid, reason: reason),
       missionUlid: missionUlid,
     );
   }
@@ -121,19 +111,9 @@ class MissionDetailCubit extends SingleResourceCubit<PRFMission> {
         refresh: true,
       );
     } on Failure catch (e) {
-      emit(
-        ResourceState.itemError(
-          message: e.message,
-          item: currentItem,
-        ),
-      );
+      emit(ResourceState.itemError(message: e.message, item: currentItem));
     } catch (e) {
-      emit(
-        ResourceState.itemError(
-          message: e.toString(),
-          item: currentItem,
-        ),
-      );
+      emit(ResourceState.itemError(message: e.toString(), item: currentItem));
     }
   }
 }

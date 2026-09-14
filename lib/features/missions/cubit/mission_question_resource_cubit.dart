@@ -13,7 +13,7 @@ class MissionQuestionResourceCubit extends ResourceCubit<PRFMissionQuestion> {
   @override
   Future<List<PRFMissionQuestion>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (item) => [
         filters?['mission_ulid'] == null ||
@@ -40,9 +40,7 @@ class MissionQuestionResourceCubit extends ResourceCubit<PRFMissionQuestion> {
       question: question,
     );
 
-    return create(
-      data: dto.toJson(),
-    );
+    return create(data: dto.toJson());
   }
 
   Future<void> updateQuestion({

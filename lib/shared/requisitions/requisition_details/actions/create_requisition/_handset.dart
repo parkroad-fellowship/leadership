@@ -166,9 +166,7 @@ class _CreateRequisitionViewHandsetState
                   >(
                     listener: (context, state) {
                       switch (state) {
-                        case ResourceMutating<PRFRequisition>(
-                          :final operation,
-                        ):
+                        case ResourceMutating<PRFRequisition>(:final operation):
                           if (operation == ResourceOperation.create) {
                             setState(() => _isLoading = true);
                           }

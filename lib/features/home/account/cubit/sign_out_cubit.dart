@@ -6,9 +6,8 @@ part 'sign_out_state.dart';
 part 'sign_out_cubit.freezed.dart';
 
 class SignOutCubit extends Cubit<SignOutState> {
-  SignOutCubit({
-    required HiveService hiveService,
-  }) : super(const SignOutState.initial()) {
+  SignOutCubit({required HiveService hiveService})
+    : super(const SignOutState.initial()) {
     _hiveService = hiveService;
   }
 

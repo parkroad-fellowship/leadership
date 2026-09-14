@@ -29,9 +29,7 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
   ];
 
   @override
-  Future<List<PRFMission>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFMission>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.filterBy(
       (mission) => [
         filters?['upcoming'] == null || mission.endDate.isAfter(DateTime.now()),
@@ -51,18 +49,12 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
 
   Future<void> loadUpcomingMissions() {
     _lastListFilters = {'upcoming': true};
-    return loadAll(
-      filters: _lastListFilters,
-      sortBy: 'start_date',
-    );
+    return loadAll(filters: _lastListFilters, sortBy: 'start_date');
   }
 
   Future<void> loadPastMissions() {
     _lastListFilters = {'past': true};
-    return loadAll(
-      filters: _lastListFilters,
-      sortBy: 'start_date',
-    );
+    return loadAll(filters: _lastListFilters, sortBy: 'start_date');
   }
 
   Future<void> createMission({required PRFMissionDTO dto}) async {
@@ -94,29 +86,19 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
     );
   }
 
-  Future<void> rejectMission({
-    required String missionUlid,
-    String? reason,
-  }) {
+  Future<void> rejectMission({required String missionUlid, String? reason}) {
     return _runAction(
       missionUlid: missionUlid,
-      action: () => _missionService.rejectMission(
-        ulid: missionUlid,
-        reason: reason,
-      ),
+      action: () =>
+          _missionService.rejectMission(ulid: missionUlid, reason: reason),
     );
   }
 
-  Future<void> cancelMission({
-    required String missionUlid,
-    String? reason,
-  }) {
+  Future<void> cancelMission({required String missionUlid, String? reason}) {
     return _runAction(
       missionUlid: missionUlid,
-      action: () => _missionService.cancelMission(
-        ulid: missionUlid,
-        reason: reason,
-      ),
+      action: () =>
+          _missionService.cancelMission(ulid: missionUlid, reason: reason),
     );
   }
 

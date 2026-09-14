@@ -10,17 +10,14 @@ part 'upload_media_state.dart';
 part 'upload_media_cubit.freezed.dart';
 
 class UploadMediaCubit extends Cubit<UploadMediaState> {
-  UploadMediaCubit({
-    required MediaService mediaService,
-  }) : super(const UploadMediaState.initial()) {
+  UploadMediaCubit({required MediaService mediaService})
+    : super(const UploadMediaState.initial()) {
     _mediaService = mediaService;
   }
 
   late MediaService _mediaService;
 
-  Future<void> uploadMedia({
-    required List<PRFMediaDTO> imageDTOs,
-  }) async {
+  Future<void> uploadMedia({required List<PRFMediaDTO> imageDTOs}) async {
     emit(const UploadMediaState.loading());
     try {
       Logger().d(imageDTOs);

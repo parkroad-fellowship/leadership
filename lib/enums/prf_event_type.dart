@@ -4,8 +4,7 @@ enum PRFEventType {
   @JsonValue(1)
   member(1),
   @JsonValue(2)
-  leadership(2),
-  ;
+  leadership(2);
 
   const PRFEventType(this.apiKey);
 

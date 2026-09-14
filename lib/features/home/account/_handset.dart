@@ -114,9 +114,7 @@ class AccountPageHandset extends StatelessWidget {
                       padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          PRFRadiusTokens.xl,
-                        ),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                         boxShadow: [
                           BoxShadow(
                             color: theme.colorScheme.shadow.withValues(
@@ -256,9 +254,7 @@ class AccountPageHandset extends StatelessWidget {
                       padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          PRFRadiusTokens.xl,
-                        ),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                         boxShadow: [
                           BoxShadow(
                             color: theme.colorScheme.shadow.withValues(
@@ -401,9 +397,7 @@ class AccountPageHandset extends StatelessWidget {
                       padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          PRFRadiusTokens.xl,
-                        ),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                         boxShadow: [
                           BoxShadow(
                             color: theme.colorScheme.shadow.withValues(
@@ -517,11 +511,7 @@ class AccountPageHandset extends StatelessWidget {
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
             ),
-            child: Icon(
-              icon,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
+            child: Icon(icon, color: theme.colorScheme.primary, size: 20),
           ),
           const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
@@ -555,9 +545,7 @@ class AccountPageHandset extends StatelessWidget {
 }
 
 class ChangeProfilePictureButton extends StatelessWidget {
-  const ChangeProfilePictureButton({
-    super.key,
-  });
+  const ChangeProfilePictureButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -588,9 +576,7 @@ class ChangeProfilePictureButton extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.2,
-                    ),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -605,24 +591,14 @@ class ChangeProfilePictureButton extends StatelessWidget {
                       state.mapOrNull(
                         loaded: (_) {
                           Gaimon.success();
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.successfullyUpdated,
-                              ),
-                            ),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.successfullyUpdated)),
                           );
                         },
                         error: (error) {
                           Gaimon.error();
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            SnackBar(
-                              content: Text(error.message),
-                            ),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(error.message)),
                           );
                         },
                       );

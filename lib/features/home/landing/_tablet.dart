@@ -41,10 +41,8 @@ class LandingPageTablet extends StatelessWidget {
       ...deskGroups.entries
           .where((entry) => entry.value.isNotEmpty)
           .map(
-            (entry) => _LandingActionSection(
-              title: entry.key,
-              actions: entry.value,
-            ),
+            (entry) =>
+                _LandingActionSection(title: entry.key, actions: entry.value),
           ),
       if (settingsActions.isNotEmpty)
         _LandingActionSection(title: 'Settings', actions: settingsActions),
@@ -52,11 +50,8 @@ class LandingPageTablet extends StatelessWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) => Misc.exitApp(
-        context: context,
-        didPop: didPop,
-        result: result,
-      ),
+      onPopInvokedWithResult: (didPop, result) =>
+          Misc.exitApp(context: context, didPop: didPop, result: result),
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         body: SafeArea(
@@ -202,9 +197,7 @@ class LandingPageTablet extends StatelessWidget {
               ),
 
               // Bottom spacing
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 60),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 60)),
             ],
           ),
         ),
@@ -301,20 +294,16 @@ class LandingPageTablet extends StatelessWidget {
                 mainAxisSpacing: PRFSpacingTokens.lg,
                 childAspectRatio: 1.05,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final action = section.actions[index];
-                  return _buildTabletActionCard(
-                    title: action.title,
-                    assetPath: action.assetPath,
-                    onTap: action.onTap,
-                    delay:
-                        action.animationDelay + ((sectionStart + index) * 40),
-                    isNeutralCard: action.isNeutralCard,
-                  );
-                },
-                childCount: section.actions.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final action = section.actions[index];
+                return _buildTabletActionCard(
+                  title: action.title,
+                  assetPath: action.assetPath,
+                  onTap: action.onTap,
+                  delay: action.animationDelay + ((sectionStart + index) * 40),
+                  isNeutralCard: action.isNeutralCard,
+                );
+              }, childCount: section.actions.length),
             ),
           ),
         );
@@ -325,10 +314,7 @@ class LandingPageTablet extends StatelessWidget {
 }
 
 class _LandingActionSection {
-  const _LandingActionSection({
-    required this.title,
-    required this.actions,
-  });
+  const _LandingActionSection({required this.title, required this.actions});
 
   final String title;
   final List<LandingActionItem> actions;

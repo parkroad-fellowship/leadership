@@ -26,9 +26,8 @@ abstract class PRFRequisitionItem with _$PRFRequisitionItem {
 
 @freezed
 abstract class PRFRequisitionItemsResponse with _$PRFRequisitionItemsResponse {
-  factory PRFRequisitionItemsResponse(
-    List<PRFRequisitionItem> data,
-  ) = _PRFRequisitionItemsResponse;
+  factory PRFRequisitionItemsResponse(List<PRFRequisitionItem> data) =
+      _PRFRequisitionItemsResponse;
 
   factory PRFRequisitionItemsResponse.fromJson(Map<String, dynamic> json) =>
       _$PRFRequisitionItemsResponseFromJson(json);

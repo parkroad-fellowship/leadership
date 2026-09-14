@@ -171,9 +171,7 @@ class _SignInTabletState extends State<SignInTablet> {
   Expanded _buildSignInForm(AppLocalizations l10n, ThemeData theme) {
     return Expanded(
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 500,
-        ),
+        constraints: const BoxConstraints(maxWidth: 500),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,13 +230,9 @@ class _SignInTabletState extends State<SignInTablet> {
                               setState(() {
                                 _isLoading = !_isLoading;
                               });
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    message,
-                                  ),
+                                  content: Text(message),
                                   backgroundColor: theme.colorScheme.error,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
@@ -256,13 +250,9 @@ class _SignInTabletState extends State<SignInTablet> {
                           return PRFButton(
                             onPressed: () {
                               if (_emailController.text.isEmpty) {
-                                ScaffoldMessenger.of(
-                                  context,
-                                ).showSnackBar(
+                                ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      l10n.enterEmail,
-                                    ),
+                                    content: Text(l10n.enterEmail),
                                     backgroundColor: theme.colorScheme.error,
                                     behavior: SnackBarBehavior.floating,
                                   ),
@@ -272,13 +262,9 @@ class _SignInTabletState extends State<SignInTablet> {
                               }
 
                               if (_passwordController.text.isEmpty) {
-                                ScaffoldMessenger.of(
-                                  context,
-                                ).showSnackBar(
+                                ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      l10n.enterPassword,
-                                    ),
+                                    content: Text(l10n.enterPassword),
                                     backgroundColor: theme.colorScheme.error,
                                     behavior: SnackBarBehavior.floating,
                                   ),
@@ -351,9 +337,7 @@ class _SignInTabletState extends State<SignInTablet> {
                 ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(
-                    PRFRadiusTokens.xxl,
-                  ),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.xxl),
                 ),
                 child: Text(
                   l10n.version(Misc.getAppVersion()),
@@ -372,9 +356,7 @@ class _SignInTabletState extends State<SignInTablet> {
 }
 
 class GoogleSignIn extends StatelessWidget {
-  const GoogleSignIn({
-    super.key,
-  });
+  const GoogleSignIn({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -383,46 +365,27 @@ class GoogleSignIn extends StatelessWidget {
         return BlocBuilder<SocialLoginCubit, SocialLoginState>(
           builder: (context, socialSignUpState) {
             return BlocBuilder<SocialLoginCubit, SocialLoginState>(
-              builder:
-                  (
-                    context,
-                    socialSignInState,
-                  ) {
-                    final (
-                      isLoading,
-                      title,
-                    ) = signInWithGoogleState.maybeWhen(
-                      loading: () => (
-                        true,
-                        'Please wait ...',
-                      ),
-                      orElse: () => socialSignUpState.maybeWhen(
-                        loading: () => (
-                          true,
-                          'Please wait ...',
-                        ),
-                        orElse: () => socialSignInState.maybeWhen(
-                          loading: () => (
-                            true,
-                            'Please wait ...',
-                          ),
-                          orElse: () => (
-                            false,
-                            'Continue with Google',
-                          ),
-                        ),
-                      ),
-                    );
+              builder: (context, socialSignInState) {
+                final (isLoading, title) = signInWithGoogleState.maybeWhen(
+                  loading: () => (true, 'Please wait ...'),
+                  orElse: () => socialSignUpState.maybeWhen(
+                    loading: () => (true, 'Please wait ...'),
+                    orElse: () => socialSignInState.maybeWhen(
+                      loading: () => (true, 'Please wait ...'),
+                      orElse: () => (false, 'Continue with Google'),
+                    ),
+                  ),
+                );
 
-                    return PRFButton(
-                      onPressed: () =>
-                          context.read<GoogleSignInCubit>().signInwithGoogle(),
-                      variant: PRFButtonVariant.google,
-                      title: title,
-                      disabled: isLoading,
-                      isLoading: isLoading,
-                    );
-                  },
+                return PRFButton(
+                  onPressed: () =>
+                      context.read<GoogleSignInCubit>().signInwithGoogle(),
+                  variant: PRFButtonVariant.google,
+                  title: title,
+                  disabled: isLoading,
+                  isLoading: isLoading,
+                );
+              },
             );
           },
         );

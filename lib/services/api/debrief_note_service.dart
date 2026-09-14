@@ -11,9 +11,7 @@ class DebriefNoteService extends BaseAPIService<PRFDebriefNote> {
   }
 
   @override
-  List<PRFDebriefNote> createListFromResponse(
-    Map<String, dynamic> response,
-  ) {
+  List<PRFDebriefNote> createListFromResponse(Map<String, dynamic> response) {
     final rawData = response['data'];
     if (rawData is! List) return <PRFDebriefNote>[];
 

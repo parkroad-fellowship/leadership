@@ -14,8 +14,7 @@ enum PRFMissionStatus {
   @JsonValue(6)
   fullySubscribed(6, 'Fully Subscribed'),
   @JsonValue(7)
-  postponed(7, 'Postponed'),
-  ;
+  postponed(7, 'Postponed');
 
   const PRFMissionStatus(this.apiKey, this._label);
 

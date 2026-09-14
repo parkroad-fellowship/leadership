@@ -92,9 +92,7 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
             .retrieveFCMToken();
         if (fcmToken.isNotEmpty) {
           await getIt<AuthService>().updateProfile(
-            updateDTO: UserUpdateDTO(
-              fcmTokens: [fcmToken],
-            ),
+            updateDTO: UserUpdateDTO(fcmTokens: [fcmToken]),
           );
         }
       } catch (e) {

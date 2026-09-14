@@ -150,9 +150,8 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
                       builder: (context, state) {
                         return state.maybeWhen(
                           orElse: () => const SizedBox.shrink(),
-                          listLoading: (items) => const Center(
-                            child: LinearProgressIndicator(),
-                          ),
+                          listLoading: (items) =>
+                              const Center(child: LinearProgressIndicator()),
                           listLoaded: (leaders, _, _) =>
                               PRFSearchableList<PRFMember>(
                                 entries: leaders
@@ -227,9 +226,9 @@ class _RequestReviewViewHandsetState extends State<RequestReviewViewHandset> {
     final l10n = context.l10n;
 
     if (selectedApprover == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectApprover)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.selectApprover)));
       Gaimon.warning();
       return;
     }

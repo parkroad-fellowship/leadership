@@ -7,10 +7,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class AddRefundViewHandset extends StatefulWidget {
-  const AddRefundViewHandset({
-    required this.accountingEventUlid,
-    super.key,
-  });
+  const AddRefundViewHandset({required this.accountingEventUlid, super.key});
 
   final String accountingEventUlid;
 

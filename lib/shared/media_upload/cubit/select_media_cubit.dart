@@ -11,9 +11,8 @@ part 'select_media_state.dart';
 part 'select_media_cubit.freezed.dart';
 
 class SelectMediaCubit extends Cubit<SelectMediaState> {
-  SelectMediaCubit({
-    required MediaService mediaService,
-  }) : super(const SelectMediaState.initial()) {
+  SelectMediaCubit({required MediaService mediaService})
+    : super(const SelectMediaState.initial()) {
     _mediaService = mediaService;
   }
 

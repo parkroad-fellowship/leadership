@@ -326,9 +326,7 @@ class MissionSubscribersTab extends StatelessWidget {
                         icon: Icons.groups_rounded,
                       ),
                     ),
-                    const SizedBox(
-                      width: PRFSpacingTokens.md,
-                    ),
+                    const SizedBox(width: PRFSpacingTokens.md),
                     Expanded(
                       child: _PeopleMetric(
                         label: 'Filled',
@@ -336,9 +334,7 @@ class MissionSubscribersTab extends StatelessWidget {
                         icon: Icons.person_add_alt_rounded,
                       ),
                     ),
-                    const SizedBox(
-                      width: PRFSpacingTokens.md,
-                    ),
+                    const SizedBox(width: PRFSpacingTokens.md),
                     Expanded(
                       child: _PeopleMetric(
                         label: 'Open',
@@ -350,9 +346,7 @@ class MissionSubscribersTab extends StatelessWidget {
                 ),
                 const SizedBox(height: PRFSpacingTokens.lg),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    PRFRadiusTokens.sm,
-                  ),
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                   child: LinearProgressIndicator(
                     minHeight: 10,
                     value: progress,
@@ -531,10 +525,7 @@ class MissionSubscriptionCard extends StatelessWidget {
             IconButton(
               tooltip: 'Edit role & status',
               onPressed: onView,
-              icon: Icon(
-                Icons.edit_rounded,
-                color: theme.colorScheme.primary,
-              ),
+              icon: Icon(Icons.edit_rounded, color: theme.colorScheme.primary),
             ),
             IconButton(
               tooltip: 'Remove subscriber',
@@ -589,9 +580,7 @@ class MissionOfflineMembersSection extends StatelessWidget {
               ),
               FilledButton.icon(
                 onPressed: onAdd,
-                icon: const Icon(
-                  Icons.person_add_alt_outlined,
-                ),
+                icon: const Icon(Icons.person_add_alt_outlined),
                 label: const Text('Add Missioner'),
               ),
             ],
@@ -600,17 +589,11 @@ class MissionOfflineMembersSection extends StatelessWidget {
           if (error != null)
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(
-                bottom: PRFSpacingTokens.md,
-              ),
-              padding: const EdgeInsets.all(
-                PRFSpacingTokens.sm,
-              ),
+              margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+              padding: const EdgeInsets.all(PRFSpacingTokens.sm),
               decoration: BoxDecoration(
                 color: theme.colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(
-                  PRFRadiusTokens.md,
-                ),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               ),
               child: Text(
                 error!,
@@ -630,10 +613,7 @@ class MissionOfflineMembersSection extends StatelessWidget {
             ...offlineMembers.map(
               (member) => MissionOfflineMemberCard(
                 member: member,
-                subtitle:
-                    'Added ${formatDate(
-                      member.createdAt,
-                    )}',
+                subtitle: 'Added ${formatDate(member.createdAt)}',
                 onRemove: () => onRemove(member),
               ),
             ),
@@ -660,9 +640,7 @@ class MissionOfflineMemberCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: PRFSpacingTokens.sm,
-      ),
+      padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: PRFSpacingTokens.md,
@@ -670,13 +648,9 @@ class MissionOfflineMemberCard extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(
-            PRFRadiusTokens.md,
-          ),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(
-              alpha: 0.38,
-            ),
+            color: theme.colorScheme.outline.withValues(alpha: 0.38),
           ),
         ),
         child: Row(

@@ -10,12 +10,10 @@ class CreateRequisitionItemView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PRFAdaptive(
-      handset: (_) => CreateRequisitionItemViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
-      builder: (_, _) => CreateRequisitionItemViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
+      handset: (_) =>
+          CreateRequisitionItemViewHandset(requisitionUlid: requisitionUlid),
+      builder: (_, _) =>
+          CreateRequisitionItemViewHandset(requisitionUlid: requisitionUlid),
     );
   }
 }

@@ -82,10 +82,7 @@ class LandingActionTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: PRFSpacingTokens.xs),
-                SvgPicture.asset(
-                  assetPath,
-                  height: assetHeight,
-                ),
+                SvgPicture.asset(assetPath, height: assetHeight),
                 const Spacer(),
                 Text(
                   title,

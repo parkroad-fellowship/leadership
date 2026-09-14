@@ -20,10 +20,7 @@ class MissionService extends BaseAPIService<PRFMission> {
     return true;
   }
 
-  Future<bool> rejectMission({
-    required String ulid,
-    String? reason,
-  }) async {
+  Future<bool> rejectMission({required String ulid, String? reason}) async {
     if (reason == null) {
       await networkUtil.post('$endpoint/$ulid/reject');
     } else {
@@ -35,10 +32,7 @@ class MissionService extends BaseAPIService<PRFMission> {
     return true;
   }
 
-  Future<bool> cancelMission({
-    required String ulid,
-    String? reason,
-  }) async {
+  Future<bool> cancelMission({required String ulid, String? reason}) async {
     if (reason == null) {
       await networkUtil.post('$endpoint/$ulid/cancel');
     } else {

@@ -20,10 +20,7 @@ class PeopleDataMissionDetailsSection extends StatelessWidget {
         Tab(text: 'Subscribers'),
         Tab(text: 'Sessions'),
       ],
-      children: [
-        subscribers,
-        sessions,
-      ],
+      children: [subscribers, sessions],
     );
   }
 }

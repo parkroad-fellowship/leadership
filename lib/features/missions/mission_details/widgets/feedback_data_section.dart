@@ -23,11 +23,7 @@ class FeedbackDataMissionDetailsSection extends StatelessWidget {
         Tab(text: 'Souls'),
         Tab(text: 'Questions'),
       ],
-      children: [
-        debriefNotes,
-        souls,
-        questions,
-      ],
+      children: [debriefNotes, souls, questions],
     );
   }
 }

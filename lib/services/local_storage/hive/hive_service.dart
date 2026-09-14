@@ -234,7 +234,7 @@ class HiveService {
       return await Hive.openBox<dynamic>(name, encryptionCipher: cipher);
     } catch (_) {
       await Hive.deleteBoxFromDisk(name);
-      return Hive.openBox<dynamic>(name, encryptionCipher: cipher);
+      return await Hive.openBox<dynamic>(name, encryptionCipher: cipher);
     }
   }
 
@@ -319,7 +319,6 @@ class HiveService {
     return _auth.roles;
   }
 
-  List<PRFResponsibleDesk> get responsibleDesks => PRFResponsibleDesk.fromRoles(
-    _auth.roles,
-  );
+  List<PRFResponsibleDesk> get responsibleDesks =>
+      PRFResponsibleDesk.fromRoles(_auth.roles);
 }

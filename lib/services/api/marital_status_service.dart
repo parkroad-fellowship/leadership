@@ -11,9 +11,7 @@ class MaritalStatusService extends BaseAPIService<PRFMaritalStatus> {
   }
 
   @override
-  List<PRFMaritalStatus> createListFromResponse(
-    Map<String, dynamic> response,
-  ) {
+  List<PRFMaritalStatus> createListFromResponse(Map<String, dynamic> response) {
     final rawData = response['data'];
     if (rawData is! List) return <PRFMaritalStatus>[];
 

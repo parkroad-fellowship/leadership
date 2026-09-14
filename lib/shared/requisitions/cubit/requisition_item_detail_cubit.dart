@@ -11,8 +11,5 @@ class RequisitionItemDetailCubit
   }) : super(service: requisitionItemService, dbService: hiveDbService);
 
   @override
-  List<String> get defaultIncludes => [
-    'expenseCategory',
-    'requisition',
-  ];
+  List<String> get defaultIncludes => ['expenseCategory', 'requisition'];
 }

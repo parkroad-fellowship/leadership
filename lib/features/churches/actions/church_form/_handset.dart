@@ -9,11 +9,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class ChurchFormViewHandset extends StatefulWidget {
-  const ChurchFormViewHandset({
-    required this.onSaved,
-    this.church,
-    super.key,
-  });
+  const ChurchFormViewHandset({required this.onSaved, this.church, super.key});
 
   final PRFChurch? church;
   final VoidCallback onSaved;
@@ -89,9 +85,7 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
       return;
     }
 
-    cubit.createChurch(
-      name: _nameController.text.trim(),
-    );
+    cubit.createChurch(name: _nameController.text.trim());
   }
 
   @override

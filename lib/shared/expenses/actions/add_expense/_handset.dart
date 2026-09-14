@@ -236,10 +236,9 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                               vertical: PRFSpacingTokens.sm,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.onPrimary
-                                  .withValues(
-                                    alpha: 0.2,
-                                  ),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(
                                 PRFRadiusTokens.xl,
                               ),
@@ -487,9 +486,7 @@ class _AddExpenseViewHandsetState extends State<AddExpenseViewHandset> {
                           Gaimon.error();
                           ScaffoldMessenger.of(
                             context,
-                          ).showSnackBar(
-                            SnackBar(content: Text(message)),
-                          );
+                          ).showSnackBar(SnackBar(content: Text(message)));
                         },
                         orElse: () {},
                       );

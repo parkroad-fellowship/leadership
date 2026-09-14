@@ -72,10 +72,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
               theme,
               items,
             ),
-            ResourceMutating<PRFGift>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
+            ResourceMutating<PRFGift>(:final items) => _buildBody(theme, items),
             ResourceError<PRFGift>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
             ResourceError<PRFGift>(:final message) => PRFEmptyView(
@@ -98,9 +95,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
     final filtered = _searchQuery.isEmpty
         ? items
         : items
-              .where(
-                (item) => item.name.toLowerCase().contains(_searchQuery),
-              )
+              .where((item) => item.name.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -108,9 +103,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
       child: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildHeader(theme, items.length),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(theme, items.length)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               PRFSpacingTokens.lg,
@@ -118,9 +111,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           if (filtered.isEmpty)
             SliverFillRemaining(
@@ -143,18 +134,15 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = filtered[index];
-                    return GiftCard(
-                      gift: item,
-                      index: index,
-                      onTap: () => _showForm(context, item),
-                      onDelete: () => _confirmDelete(context, item),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = filtered[index];
+                  return GiftCard(
+                    gift: item,
+                    index: index,
+                    onTap: () => _showForm(context, item),
+                    onDelete: () => _confirmDelete(context, item),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -167,9 +155,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
 
   Widget _buildHeader(ThemeData theme, int totalCount) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -287,17 +273,11 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: gift == null ? 'Add Gift' : 'Edit Gift',
-      child: GiftFormViewHandset(
-        gift: gift,
-        onSaved: _loadData,
-      ),
+      child: GiftFormViewHandset(gift: gift, onSaved: _loadData),
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    PRFGift gift,
-  ) async {
+  Future<void> _confirmDelete(BuildContext context, PRFGift gift) async {
     final confirmed = await PRFConfirmationDialog.show(
       context,
       title: 'Delete Gift',
@@ -309,9 +289,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
     );
 
     if ((confirmed ?? false) && mounted) {
-      await context.read<GiftResourceCubit>().deleteGift(
-        ulid: gift.ulid,
-      );
+      await context.read<GiftResourceCubit>().deleteGift(ulid: gift.ulid);
     }
   }
 }

@@ -56,11 +56,7 @@ class PRFHeaderActionButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(
-                icon,
-                size: 16,
-                color: foregroundColor,
-              ),
+              Icon(icon, size: 16, color: foregroundColor),
               const SizedBox(width: PRFSpacingTokens.xs),
             ],
             Text(

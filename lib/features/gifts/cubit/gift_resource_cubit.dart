@@ -12,14 +12,12 @@ class GiftResourceCubit extends ResourceCubit<PRFGift> {
   }) : super(service: giftService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFGift>> loadCachedList({Map<String, dynamic>? filters}) async {
+  Future<List<PRFGift>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
   Future<void> createGift({required String name}) {
-    return create(
-      data: PRFGiftDTO(name: name).toJson(),
-    );
+    return create(data: PRFGiftDTO(name: name).toJson());
   }
 
   Future<void> updateGift({
@@ -29,10 +27,7 @@ class GiftResourceCubit extends ResourceCubit<PRFGift> {
   }) {
     return update(
       id: ulid,
-      data: PRFGiftDTO(
-        name: name ?? '',
-        isActive: isActive,
-      ).toJson(),
+      data: PRFGiftDTO(name: name ?? '', isActive: isActive).toJson(),
       matchById: (g) => g.ulid == ulid,
     );
   }

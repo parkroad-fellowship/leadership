@@ -83,9 +83,6 @@ abstract class BaseHiveKVService {
 
     final modified = List<Map<String, dynamic>>.from(data)..add(toJson(item));
 
-    putCollection(prefix, contextId, {
-      ...existing,
-      'data': modified,
-    });
+    putCollection(prefix, contextId, {...existing, 'data': modified});
   }
 }

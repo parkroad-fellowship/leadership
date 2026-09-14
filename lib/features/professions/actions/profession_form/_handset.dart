@@ -90,9 +90,7 @@ class _ProfessionFormViewHandsetState extends State<ProfessionFormViewHandset> {
       return;
     }
 
-    cubit.createProfession(
-      name: _nameController.text.trim(),
-    );
+    cubit.createProfession(name: _nameController.text.trim());
   }
 
   @override

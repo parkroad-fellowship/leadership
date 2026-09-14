@@ -1,5 +1,1 @@
-enum MediaType {
-  image,
-  video,
-  audio,
-}
+enum MediaType { image, video, audio }

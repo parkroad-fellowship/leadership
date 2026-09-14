@@ -13,12 +13,10 @@ class CreatePaymentInstructionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PRFAdaptive(
-      handset: (_) => CreatePaymentInstructionViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
-      builder: (_, _) => CreatePaymentInstructionViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
+      handset: (_) =>
+          CreatePaymentInstructionViewHandset(requisitionUlid: requisitionUlid),
+      builder: (_, _) =>
+          CreatePaymentInstructionViewHandset(requisitionUlid: requisitionUlid),
     );
   }
 }

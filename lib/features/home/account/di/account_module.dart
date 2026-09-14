@@ -15,9 +15,7 @@ class AccountModule {
         ),
       ),
       BlocProvider<SignOutCubit>(
-        create: (context) => SignOutCubit(
-          hiveService: getIt<HiveService>(),
-        ),
+        create: (context) => SignOutCubit(hiveService: getIt<HiveService>()),
       ),
     ];
   }

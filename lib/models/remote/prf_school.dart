@@ -34,9 +34,7 @@ abstract class PRFSchool with _$PRFSchool {
 
 @freezed
 abstract class PRFSchoolResponse with _$PRFSchoolResponse {
-  factory PRFSchoolResponse(
-    List<PRFSchool> data,
-  ) = _PRFSchoolResponse;
+  factory PRFSchoolResponse(List<PRFSchool> data) = _PRFSchoolResponse;
   factory PRFSchoolResponse.fromJson(Map<String, dynamic> json) =>
       _$PRFSchoolResponseFromJson(json);
 }

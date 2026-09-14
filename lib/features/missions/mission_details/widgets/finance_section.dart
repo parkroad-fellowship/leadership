@@ -24,10 +24,7 @@ class FinanceMissionDetailsSection extends StatelessWidget {
         Tab(text: requisitionsLabel),
         Tab(text: expensesLabel),
       ],
-      children: [
-        requisitions,
-        expenses,
-      ],
+      children: [requisitions, expenses],
     );
   }
 }

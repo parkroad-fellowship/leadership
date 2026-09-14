@@ -14,7 +14,7 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
   List<String> get defaultIncludes => ['classGroup'];
 
   @override
-  Future<List<PRFSoul>> loadCachedList({Map<String, dynamic>? filters}) async {
+  Future<List<PRFSoul>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.filterBy(
       (item) => [
         filters?['mission_ulid'] == null ||
@@ -32,18 +32,11 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
     );
   }
 
-  Future<void> createSoul({
-    required PRFSoulDTO dto,
-  }) {
-    return create(
-      data: dto.toJson(),
-    );
+  Future<void> createSoul({required PRFSoulDTO dto}) {
+    return create(data: dto.toJson());
   }
 
-  Future<void> updateSoul({
-    required String soulUlid,
-    required PRFSoulDTO dto,
-  }) {
+  Future<void> updateSoul({required String soulUlid, required PRFSoulDTO dto}) {
     return update(
       id: soulUlid,
       data: dto.toJson(),
@@ -52,9 +45,6 @@ class SoulResourceCubit extends ResourceCubit<PRFSoul> {
   }
 
   Future<void> deleteSoul({required String soulUlid}) {
-    return delete(
-      ulid: soulUlid,
-      matchById: (item) => item.ulid == soulUlid,
-    );
+    return delete(ulid: soulUlid, matchById: (item) => item.ulid == soulUlid);
   }
 }

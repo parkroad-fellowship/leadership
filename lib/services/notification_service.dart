@@ -83,9 +83,7 @@ abstract class NotificationService {
         if (requisitionUlid != null) {
           await getIt<PRFLeadershipRouter>().replaceAll([
             const LandingRoute(),
-            RequisitionDetailsRoute(
-              requisitionUlid: requisitionUlid,
-            ),
+            RequisitionDetailsRoute(requisitionUlid: requisitionUlid),
           ]);
         } else {
           Logger().w('No requisition_ulid in notification payload');

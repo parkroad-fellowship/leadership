@@ -13,7 +13,7 @@ class RequisitionItemResourceCubit extends ResourceCubit<PRFRequisitionItem> {
   @override
   Future<List<PRFRequisitionItem>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (item) => [
         filters?['requisition_ulid'] == null ||

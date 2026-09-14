@@ -11,9 +11,7 @@ class RefundService extends BaseAPIService<PRFRefund> {
   }
 
   @override
-  List<PRFRefund> createListFromResponse(
-    Map<String, dynamic> response,
-  ) {
+  List<PRFRefund> createListFromResponse(Map<String, dynamic> response) {
     throw UnimplementedError();
   }
 }

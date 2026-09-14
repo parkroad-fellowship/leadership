@@ -12,16 +12,12 @@ class ProfessionResourceCubit extends ResourceCubit<PRFProfession> {
   }) : super(service: professionService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFProfession>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFProfession>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
   Future<void> createProfession({required String name}) {
-    return create(
-      data: PRFProfessionDTO(name: name).toJson(),
-    );
+    return create(data: PRFProfessionDTO(name: name).toJson());
   }
 
   Future<void> updateProfession({
@@ -31,10 +27,7 @@ class ProfessionResourceCubit extends ResourceCubit<PRFProfession> {
   }) {
     return update(
       id: ulid,
-      data: PRFProfessionDTO(
-        name: name ?? '',
-        isActive: isActive,
-      ).toJson(),
+      data: PRFProfessionDTO(name: name ?? '', isActive: isActive).toJson(),
       matchById: (p) => p.ulid == ulid,
     );
   }

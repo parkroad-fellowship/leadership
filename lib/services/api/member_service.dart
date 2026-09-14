@@ -11,9 +11,7 @@ class MemberService extends BaseAPIService<PRFMember> {
   }
 
   @override
-  List<PRFMember> createListFromResponse(
-    Map<String, dynamic> response,
-  ) {
+  List<PRFMember> createListFromResponse(Map<String, dynamic> response) {
     return PRFMembersResponse.fromJson(response).data;
   }
 }

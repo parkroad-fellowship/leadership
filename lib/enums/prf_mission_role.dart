@@ -12,8 +12,7 @@ enum PRFMissionRole {
   @JsonValue(5)
   musicInstruments('Music Instruments'),
   @JsonValue(6)
-  transportation('Transportation'),
-  ;
+  transportation('Transportation');
 
   const PRFMissionRole(this._label);
 

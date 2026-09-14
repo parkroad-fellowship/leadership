@@ -285,11 +285,7 @@ class _RequisitionDetailsPageHandsetState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              emptyStateIcon,
-              size: 64,
-              color: iconColor,
-            ),
+            Icon(emptyStateIcon, size: 64, color: iconColor),
             const SizedBox(height: PRFSpacingTokens.lg),
             Text(
               title,
@@ -383,30 +379,23 @@ class _RequisitionDetailsPageHandsetState
 
         // Items list
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: PRFSpacingTokens.lg,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final item = items[index];
-                return _buildRequisitionItemCard(
-                  context,
-                  theme,
-                  item,
-                  index,
-                  requisition,
-                );
-              },
-              childCount: items.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final item = items[index];
+              return _buildRequisitionItemCard(
+                context,
+                theme,
+                item,
+                index,
+                requisition,
+              );
+            }, childCount: items.length),
           ),
         ),
 
         // Bottom spacing for bottom action bar
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 100),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
   }
@@ -815,17 +804,13 @@ class _RequisitionDetailsPageHandsetState
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
                                           color: theme.colorScheme.error
-                                              .withValues(
-                                                alpha: 0.12,
-                                              ),
+                                              .withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(
                                             22,
                                           ),
                                           border: Border.all(
                                             color: theme.colorScheme.error
-                                                .withValues(
-                                                  alpha: 0.3,
-                                                ),
+                                                .withValues(alpha: 0.3),
                                           ),
                                         ),
                                         child: isLoading
@@ -934,9 +919,7 @@ class _RequisitionDetailsPageHandsetState
       context,
       title: item.itemName,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.xxl,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1050,10 +1033,7 @@ class _RequisitionDetailsPageHandsetState
                       ),
                       const SizedBox(height: PRFSpacingTokens.xs),
                       Text(
-                        '${NumberFormat.currency(
-                          symbol: 'KES ',
-                          decimalDigits: 0,
-                        ).format(item.totalPrice)} • Qty: ${item.quantity}',
+                        '${NumberFormat.currency(symbol: 'KES ', decimalDigits: 0).format(item.totalPrice)} • Qty: ${item.quantity}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1160,11 +1140,7 @@ class _RequisitionDetailsPageHandsetState
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: PRFSpacingTokens.sm),
         Expanded(
           child: Text(
@@ -1203,10 +1179,7 @@ class _RequisitionDetailsPageHandsetState
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1345,17 +1318,11 @@ class _RequisitionDetailsPageHandsetState
               decoration: BoxDecoration(
                 color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                border: Border.all(
-                  color: Colors.green.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.fact_check,
-                    color: Colors.green,
-                    size: 20,
-                  ),
+                  const Icon(Icons.fact_check, color: Colors.green, size: 20),
                   const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Text(
@@ -1378,9 +1345,7 @@ class _RequisitionDetailsPageHandsetState
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-              border: Border.all(
-                color: statusColor.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: statusColor.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -1544,11 +1509,7 @@ class _RequisitionDetailsPageHandsetState
         ),
         child: Row(
           children: [
-            Icon(
-              PRFApprovalStatus.approved.icon,
-              color: statusColor,
-              size: 20,
-            ),
+            Icon(PRFApprovalStatus.approved.icon, color: statusColor, size: 20),
             const SizedBox(width: PRFSpacingTokens.sm),
             Expanded(
               child: Text(
@@ -1664,17 +1625,11 @@ class _RequisitionDetailsPageHandsetState
         decoration: BoxDecoration(
           color: statusColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-          border: Border.all(
-            color: statusColor.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            Icon(
-              PRFApprovalStatus.rejected.icon,
-              color: statusColor,
-              size: 20,
-            ),
+            Icon(PRFApprovalStatus.rejected.icon, color: statusColor, size: 20),
             const SizedBox(width: PRFSpacingTokens.sm),
             Expanded(
               child: Text(
@@ -1816,9 +1771,7 @@ class _RequisitionDetailsPageHandsetState
     PRFBottomSheet.show<void>(
       context,
       title: context.l10n.requestReview,
-      child: RequestReviewViewHandset(
-        requisitionUlid: widget.requisitionUlid,
-      ),
+      child: RequestReviewViewHandset(requisitionUlid: widget.requisitionUlid),
     );
   }
 
@@ -1828,9 +1781,7 @@ class _RequisitionDetailsPageHandsetState
       context,
       title: l10n.moreActions,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.xxl,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2006,11 +1957,7 @@ class _RequisitionDetailsPageHandsetState
           color: theme.colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
         ),
-        child: Icon(
-          icon,
-          color: theme.colorScheme.primary,
-          size: 20,
-        ),
+        child: Icon(icon, color: theme.colorScheme.primary, size: 20),
       ),
       title: Text(
         title,
@@ -2035,9 +1982,7 @@ class _RequisitionDetailsPageHandsetState
     PRFBottomSheet.show<void>(
       context,
       title: context.l10n.addItem,
-      child: CreateRequisitionItemView(
-        requisitionUlid: widget.requisitionUlid,
-      ),
+      child: CreateRequisitionItemView(requisitionUlid: widget.requisitionUlid),
     );
   }
 
@@ -2048,9 +1993,7 @@ class _RequisitionDetailsPageHandsetState
     PRFBottomSheet.show<void>(
       context,
       title: context.l10n.edit,
-      child: EditRequisitionItemView(
-        requisitionItemUlid: item.ulid,
-      ),
+      child: EditRequisitionItemView(requisitionItemUlid: item.ulid),
     );
   }
 
@@ -2079,9 +2022,7 @@ class _RequisitionDetailsPageHandsetState
       context,
       title: l10n.paymentInstructions,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.xxl,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2106,9 +2047,7 @@ class _RequisitionDetailsPageHandsetState
               child: Column(
                 children: [
                   Icon(
-                    _getPaymentMethodIcon(
-                      paymentInstruction.paymentMethod,
-                    ),
+                    _getPaymentMethodIcon(paymentInstruction.paymentMethod),
                     color: Theme.of(context).colorScheme.onPrimary,
                     size: 32,
                   ),
@@ -2149,10 +2088,7 @@ class _RequisitionDetailsPageHandsetState
             const SizedBox(height: PRFSpacingTokens.xl),
 
             // Method-specific details
-            ..._buildPaymentMethodSpecificDetails(
-              context,
-              paymentInstruction,
-            ),
+            ..._buildPaymentMethodSpecificDetails(context, paymentInstruction),
 
             const SizedBox(height: PRFSpacingTokens.xxxl),
           ],
@@ -2302,11 +2238,7 @@ class _RequisitionDetailsPageHandsetState
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(icon, size: 20, color: theme.colorScheme.primary),
           const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: Text(
@@ -2560,9 +2492,7 @@ class _RequisitionDetailsPageHandsetState
                   ],
                   const SizedBox(height: PRFSpacingTokens.xs),
                   Text(
-                    '${l10n.date}: ${DateFormat.yMMMd().add_Hm().format(
-                      requisition.approvedAt ?? requisition.createdAt,
-                    )}',
+                    '${l10n.date}: ${DateFormat.yMMMd().add_Hm().format(requisition.approvedAt ?? requisition.createdAt)}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.surface.withValues(alpha: 0.7),
                     ),
@@ -2597,11 +2527,7 @@ class _RequisitionDetailsPageHandsetState
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: theme.colorScheme.surface,
-                size: 16,
-              ),
+              Icon(icon, color: theme.colorScheme.surface, size: 16),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -2641,11 +2567,7 @@ class _RequisitionDetailsPageHandsetState
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            status.icon,
-            size: 14,
-            color: status.color(theme),
-          ),
+          Icon(status.icon, size: 14, color: status.color(theme)),
           const SizedBox(width: 6),
           Text(
             status.name,
@@ -2697,9 +2619,7 @@ class _RequisitionDetailsPageHandsetState
     PRFBottomSheet.show<void>(
       context,
       title: 'Recall Requisition',
-      child: RecallRequisitionView(
-        requisitionUlid: widget.requisitionUlid,
-      ),
+      child: RecallRequisitionView(requisitionUlid: widget.requisitionUlid),
     );
   }
 

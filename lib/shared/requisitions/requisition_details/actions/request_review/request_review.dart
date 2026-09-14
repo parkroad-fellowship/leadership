@@ -10,12 +10,10 @@ class RequestReviewView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PRFAdaptive(
-      handset: (_) => RequestReviewViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
-      builder: (_, _) => RequestReviewViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
+      handset: (_) =>
+          RequestReviewViewHandset(requisitionUlid: requisitionUlid),
+      builder: (_, _) =>
+          RequestReviewViewHandset(requisitionUlid: requisitionUlid),
     );
   }
 }

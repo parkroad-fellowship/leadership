@@ -39,11 +39,7 @@ class SchoolTermCard extends StatelessWidget {
           vertical: PRFSpacingTokens.sm,
         ),
         decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: PRFColors.gray100,
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: PRFColors.gray100)),
         ),
         child: Row(
           children: [
@@ -71,9 +67,7 @@ class SchoolTermCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(
-              width: PRFSpacingTokens.md,
-            ),
+            const SizedBox(width: PRFSpacingTokens.md),
             // Name + year subtitle
             Expanded(
               child: Column(
@@ -100,9 +94,7 @@ class SchoolTermCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(
-              width: PRFSpacingTokens.md,
-            ),
+            const SizedBox(width: PRFSpacingTokens.md),
             // Active/Inactive badge and delete
             Row(
               mainAxisSize: MainAxisSize.min,

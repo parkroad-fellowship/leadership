@@ -96,10 +96,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   PRFMission? _currentMissionFromState(ResourceState<PRFMission> state) {
-    return state.mapOrNull(
-      itemLoaded: (s) => s.item,
-      itemError: (s) => s.item,
-    );
+    return state.mapOrNull(itemLoaded: (s) => s.item, itemError: (s) => s.item);
   }
 
   @override
@@ -274,7 +271,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     String? initialClassGroupUlid,
     PRFSoulDecisionType initialDecisionType = PRFSoulDecisionType.salvation,
   }) async {
-    return PRFBottomSheet.show<PRFSoulDTO>(
+    return await PRFBottomSheet.show<PRFSoulDTO>(
       context,
       title: title,
       child: _MissionSoulFormBody(
@@ -325,9 +322,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   }
 
   Future<void> _promptAddQuestion() async {
-    final questionValue = await _showQuestionFormSheet(
-      title: 'Add Question',
-    );
+    final questionValue = await _showQuestionFormSheet(title: 'Add Question');
     if (!mounted || questionValue == null || questionValue.isEmpty) return;
 
     final cubit = context.read<MissionQuestionResourceCubit>();
@@ -543,10 +538,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     }
 
     final cubit = context.read<SoulResourceCubit>();
-    await cubit.updateSoul(
-      soulUlid: soul.ulid,
-      dto: updatedSoul,
-    );
+    await cubit.updateSoul(soulUlid: soul.ulid, dto: updatedSoul);
     if (!mounted) return;
 
     final error = _resourceErrorMessage(cubit.state);
@@ -754,9 +746,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                                 .withValues(alpha: 0.65),
                             indicatorColor: theme.colorScheme.secondary,
                             dividerColor: theme.colorScheme.onPrimary
-                                .withValues(
-                                  alpha: 0.2,
-                                ),
+                                .withValues(alpha: 0.2),
                             labelStyle: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
@@ -938,10 +928,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
           isLoading: state is ResourceListLoading<PRFMissionQuestion>,
           error: error,
           isEmpty: questions.isEmpty,
-          onRefresh: () =>
-              context.read<MissionQuestionResourceCubit>().loadForMission(
-                missionUlid: missionUlid,
-              ),
+          onRefresh: () => context
+              .read<MissionQuestionResourceCubit>()
+              .loadForMission(missionUlid: missionUlid),
           onAdd: _promptAddQuestion,
           addButtonLabel: 'Add Question',
           addButtonIcon: Icons.add_comment_outlined,
@@ -1053,10 +1042,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
           error: error,
           onSubscribe: () => _promptSubscribeMember(mission),
           onViewSubscriber: _viewSubscriberDetails,
-          onUnsubscribe: (subscription) => _unsubscribeMember(
-            mission: mission,
-            subscription: subscription,
-          ),
+          onUnsubscribe: (subscription) =>
+              _unsubscribeMember(mission: mission, subscription: subscription),
           formatDate: _formatDate,
         );
       },
@@ -1075,10 +1062,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
           offlineMembers: members,
           error: error,
           onAdd: () => _promptSubscribeMember(mission),
-          onRemove: (member) => _removeOfflineMember(
-            mission: mission,
-            member: member,
-          ),
+          onRemove: (member) =>
+              _removeOfflineMember(mission: mission, member: member),
           formatDate: _formatDate,
         );
       },
@@ -1090,10 +1075,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     required PRFMissionOfflineMember member,
   }) async {
     if (member.ulid.isEmpty) {
-      PRFSnackbar.error(
-        context,
-        'Missioner cannot be removed yet',
-      );
+      PRFSnackbar.error(context, 'Missioner cannot be removed yet');
       return;
     }
 
@@ -1821,10 +1803,7 @@ class _MissionMemberSubscriptionFormBodyState
   void _submit() {
     if (!_validateSelection()) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fill in all required fields',
-      );
+      PRFSnackbar.error(context, 'Please fill in all required fields');
       return;
     }
 
@@ -1841,9 +1820,7 @@ class _MissionMemberSubscriptionFormBodyState
     final dto = await PRFBottomSheet.show<PRFMissionOfflineMemberDTO>(
       context,
       title: 'Add Missioner',
-      child: _OfflineMemberFormBody(
-        missionUlid: widget.missionUlid,
-      ),
+      child: _OfflineMemberFormBody(missionUlid: widget.missionUlid),
     );
 
     if (!mounted || dto == null) return;
@@ -1886,9 +1863,7 @@ class _MissionMemberSubscriptionFormBodyState
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  theme.colorScheme.primary.withValues(
-                    alpha: 0.05,
-                  ),
+                  theme.colorScheme.primary.withValues(alpha: 0.05),
                   theme.colorScheme.surface,
                 ],
               ),
@@ -1904,24 +1879,16 @@ class _MissionMemberSubscriptionFormBodyState
                   _buildHeaderCard(theme)
                       .animate()
                       .slideY(begin: -0.3)
-                      .fadeIn(
-                        duration: PRFMotionTokens.enterShort,
-                      ),
+                      .fadeIn(duration: PRFMotionTokens.enterShort),
                   const SizedBox(height: PRFSpacingTokens.xxl),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(
-                      PRFSpacingTokens.xl,
-                    ),
+                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(
-                        PRFRadiusTokens.lg,
-                      ),
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withValues(
-                          alpha: 0.2,
-                        ),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -1999,9 +1966,7 @@ class _MissionMemberSubscriptionFormBodyState
                                 style: theme.textTheme.bodySmall,
                               ),
                             ),
-                          const SizedBox(
-                            height: PRFSpacingTokens.lg,
-                          ),
+                          const SizedBox(height: PRFSpacingTokens.lg),
                           _buildAddMissionerButton(theme),
                         ],
                       ),
@@ -2036,9 +2001,7 @@ class _MissionMemberSubscriptionFormBodyState
           vertical: PRFSpacingTokens.xs,
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(
-            PRFRadiusTokens.full,
-          ),
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
           border: Border.all(
             color: PRFColors.limeGreen.withValues(alpha: 0.4),
             width: 1.5,
@@ -2047,14 +2010,8 @@ class _MissionMemberSubscriptionFormBodyState
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.add,
-              size: 16,
-              color: PRFColors.limeGreen,
-            ),
-            const SizedBox(
-              width: PRFSpacingTokens.xs,
-            ),
+            const Icon(Icons.add, size: 16, color: PRFColors.limeGreen),
+            const SizedBox(width: PRFSpacingTokens.xs),
             Text(
               'Add Offline Missioner',
               style: theme.textTheme.labelLarge?.copyWith(
@@ -2082,9 +2039,7 @@ class _MissionMemberSubscriptionFormBodyState
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withValues(
-              alpha: 0.3,
-            ),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -2110,9 +2065,7 @@ class _MissionMemberSubscriptionFormBodyState
             'Choose a fellowship member to '
             'join this mission',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(
-                alpha: 0.9,
-              ),
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
             ),
             textAlign: TextAlign.center,
           ),
@@ -2147,10 +2100,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
     super.initState();
     _nameController = TextEditingController()..addListener(_onChanged);
     _phoneController = PhoneController(
-      initialValue: const PhoneNumber(
-        isoCode: IsoCode.KE,
-        nsn: '',
-      ),
+      initialValue: const PhoneNumber(isoCode: IsoCode.KE, nsn: ''),
     );
     _phoneController.addListener(_onChanged);
   }
@@ -2187,10 +2137,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
   void _submit() {
     if (!_validate()) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fill in all required fields',
-      );
+      PRFSnackbar.error(context, 'Please fill in all required fields');
       return;
     }
 
@@ -2216,9 +2163,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              theme.colorScheme.primary.withValues(
-                alpha: 0.05,
-              ),
+              theme.colorScheme.primary.withValues(alpha: 0.05),
               theme.colorScheme.surface,
             ],
           ),
@@ -2235,20 +2180,14 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                 _buildHeaderCard(theme)
                     .animate()
                     .slideY(begin: -0.3)
-                    .fadeIn(
-                      duration: PRFMotionTokens.enterShort,
-                    ),
+                    .fadeIn(duration: PRFMotionTokens.enterShort),
                 const SizedBox(height: PRFSpacingTokens.xxl),
                 Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(
-                        PRFSpacingTokens.xl,
-                      ),
+                      padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          PRFRadiusTokens.lg,
-                        ),
+                        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                         border: Border.all(
                           color: theme.colorScheme.outline.withValues(
                             alpha: 0.2,
@@ -2280,9 +2219,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                               errorText: _showValidation ? _nameError : null,
                             ),
                           ),
-                          const SizedBox(
-                            height: PRFSpacingTokens.xl,
-                          ),
+                          const SizedBox(height: PRFSpacingTokens.xl),
                           PRFFormSection(
                             icon: Icons.phone_outlined,
                             title: 'Phone Number',
@@ -2297,9 +2234,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                         ],
                       ),
                     )
-                    .animate(
-                      delay: PRFMotionTokens.stagger3,
-                    )
+                    .animate(delay: PRFMotionTokens.stagger3)
                     .slideX(begin: -0.2)
                     .fadeIn(),
                 const SizedBox(height: PRFSpacingTokens.xxl),
@@ -2311,9 +2246,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
                     disabled: !_isFormValid,
                   ),
                 ),
-                const SizedBox(
-                  height: PRFSpacingTokens.xxxl,
-                ),
+                const SizedBox(height: PRFSpacingTokens.xxxl),
               ],
             ),
           ),
@@ -2330,19 +2263,13 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(
-              alpha: 0.8,
-            ),
+            theme.colorScheme.primary.withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(
-          PRFRadiusTokens.lg,
-        ),
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withValues(
-              alpha: 0.3,
-            ),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -2368,9 +2295,7 @@ class _OfflineMemberFormBodyState extends State<_OfflineMemberFormBody> {
             "Add someone who isn't a "
             'registered member',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(
-                alpha: 0.9,
-              ),
+              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
             ),
             textAlign: TextAlign.center,
           ),

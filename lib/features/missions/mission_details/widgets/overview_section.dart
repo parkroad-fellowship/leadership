@@ -20,10 +20,7 @@ class OverviewMissionDetailsSection extends StatelessWidget {
         Tab(text: 'Mission Ground'),
         Tab(text: 'Operations'),
       ],
-      children: [
-        missionGround,
-        operations,
-      ],
+      children: [missionGround, operations],
     );
   }
 }

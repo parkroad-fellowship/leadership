@@ -14,14 +14,12 @@ class MaritalStatusResourceCubit extends ResourceCubit<PRFMaritalStatus> {
   @override
   Future<List<PRFMaritalStatus>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.list();
   }
 
   Future<void> createMaritalStatus({required String name}) {
-    return create(
-      data: PRFMaritalStatusDTO(name: name).toJson(),
-    );
+    return create(data: PRFMaritalStatusDTO(name: name).toJson());
   }
 
   Future<void> updateMaritalStatus({
@@ -31,10 +29,7 @@ class MaritalStatusResourceCubit extends ResourceCubit<PRFMaritalStatus> {
   }) {
     return update(
       id: ulid,
-      data: PRFMaritalStatusDTO(
-        name: name ?? '',
-        isActive: isActive,
-      ).toJson(),
+      data: PRFMaritalStatusDTO(name: name ?? '', isActive: isActive).toJson(),
       matchById: (ms) => ms.ulid == ulid,
     );
   }

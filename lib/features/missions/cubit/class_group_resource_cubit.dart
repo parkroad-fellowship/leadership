@@ -12,9 +12,7 @@ class ClassGroupResourceCubit extends ResourceCubit<PRFClassGroup> {
   }) : super(service: classGroupService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFClassGroup>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFClassGroup>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 

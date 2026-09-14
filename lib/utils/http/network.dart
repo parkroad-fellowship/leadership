@@ -95,19 +95,12 @@ class NetworkUtil {
     );
 
     // Retry interceptor for transient failures
-    dio.interceptors.add(
-      RetryInterceptor(
-        dio: dio,
-      ),
-    );
+    dio.interceptors.add(RetryInterceptor(dio: dio));
 
     // Pretty logger for debug mode
     if (kDebugMode) {
       dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-        ),
+        PrettyDioLogger(requestHeader: true, requestBody: true),
       );
     }
 
@@ -149,10 +142,7 @@ class NetworkUtil {
           statusCode: statusCode,
         );
       case 404:
-        throw Failure(
-          message: 'Resource not found',
-          statusCode: statusCode,
-        );
+        throw Failure(message: 'Resource not found', statusCode: statusCode);
       case 422:
         throw Failure(
           message: _extractErrorMessage(responseData) ?? 'Validation failed',
@@ -257,9 +247,7 @@ class NetworkUtil {
       throw Failure(message: 'Empty response from server');
     }
 
-    Logger().d(
-      'Response data: ${response.data}',
-    );
+    Logger().d('Response data: ${response.data}');
 
     if (response.data is! Map<String, dynamic>) {
       throw Failure(message: 'Invalid response format');

@@ -53,10 +53,6 @@ class AuthHiveService extends BaseHiveKVService {
 
   // Clear auth data
   void clearAuthData() {
-    deleteAll([
-      'accessToken',
-      'accessToken_expiry',
-      'profile',
-    ]);
+    deleteAll(['accessToken', 'accessToken_expiry', 'profile']);
   }
 }

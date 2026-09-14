@@ -71,9 +71,7 @@ class MissionDomainTabSection extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: TabBarView(children: children),
-          ),
+          Expanded(child: TabBarView(children: children)),
         ],
       ),
     );

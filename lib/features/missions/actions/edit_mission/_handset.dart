@@ -149,9 +149,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: PRFSpacingTokens.lg,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(

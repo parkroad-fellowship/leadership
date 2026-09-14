@@ -22,9 +22,8 @@ abstract class PRFMissionOfflineMember with _$PRFMissionOfflineMember {
 @freezed
 abstract class PRFMissionOfflineMembersResponse
     with _$PRFMissionOfflineMembersResponse {
-  factory PRFMissionOfflineMembersResponse(
-    List<PRFMissionOfflineMember> data,
-  ) = _PRFMissionOfflineMembersResponse;
+  factory PRFMissionOfflineMembersResponse(List<PRFMissionOfflineMember> data) =
+      _PRFMissionOfflineMembersResponse;
 
   factory PRFMissionOfflineMembersResponse.fromJson(
     Map<String, dynamic> json,

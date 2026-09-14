@@ -11,9 +11,7 @@ class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
   }) : super(service: missionDebriefNoteService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFDebriefNote>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFDebriefNote>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.filterBy(
       (item) => [
         filters?['mission_ulid'] == null ||
@@ -31,18 +29,10 @@ class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
     );
   }
 
-  Future<void> createNote({
-    required String missionUlid,
-    required String note,
-  }) {
-    final dto = PRFDebriefNoteDTO(
-      missionUlid: missionUlid,
-      note: note,
-    );
+  Future<void> createNote({required String missionUlid, required String note}) {
+    final dto = PRFDebriefNoteDTO(missionUlid: missionUlid, note: note);
 
-    return create(
-      data: dto.toJson(),
-    );
+    return create(data: dto.toJson());
   }
 
   Future<void> updateNote({
@@ -50,10 +40,7 @@ class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
     required String missionUlid,
     required String note,
   }) {
-    final dto = PRFDebriefNoteDTO(
-      missionUlid: missionUlid,
-      note: note,
-    );
+    final dto = PRFDebriefNoteDTO(missionUlid: missionUlid, note: note);
 
     return update(
       id: noteUlid,
@@ -63,9 +50,6 @@ class DebriefNoteResourceCubit extends ResourceCubit<PRFDebriefNote> {
   }
 
   Future<void> deleteNote({required String noteUlid}) {
-    return delete(
-      ulid: noteUlid,
-      matchById: (item) => item.ulid == noteUlid,
-    );
+    return delete(ulid: noteUlid, matchById: (item) => item.ulid == noteUlid);
   }
 }

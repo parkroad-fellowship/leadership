@@ -47,9 +47,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
     super.initState();
     final term = widget.term;
     _nameController = TextEditingController(text: term?.name ?? '');
-    _yearController = TextEditingController(
-      text: term?.year.toString() ?? '',
-    );
+    _yearController = TextEditingController(text: term?.year.toString() ?? '');
     _activeStatus = term?.isActive ?? PRFActiveStatus.active;
 
     _nameController.addListener(_onFormChanged);
@@ -123,10 +121,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
       return;
     }
 
-    cubit.createSchoolTerm(
-      name: _nameController.text.trim(),
-      year: year,
-    );
+    cubit.createSchoolTerm(name: _nameController.text.trim(), year: year);
   }
 
   @override

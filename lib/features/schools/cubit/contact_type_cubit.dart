@@ -11,22 +11,15 @@ class ContactTypeCubit extends ResourceCubit<PRFContactType> {
   }) : super(service: contactTypeService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFContactType>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFContactType>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
   Future<void> createContactType({required String name}) {
-    return create(
-      data: PRFContactTypeDTO(name: name).toJson(),
-    );
+    return create(data: PRFContactTypeDTO(name: name).toJson());
   }
 
-  Future<void> updateContactType({
-    required String ulid,
-    required String name,
-  }) {
+  Future<void> updateContactType({required String ulid, required String name}) {
     return update(
       id: ulid,
       data: PRFContactTypeDTO(name: name).toJson(),

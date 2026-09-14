@@ -236,57 +236,35 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
-          child: _buildHeader(
-            context,
-            l10n,
-            accountingEvent!,
-          ),
+          child: _buildHeader(context, l10n, accountingEvent!),
         ),
         // Financial Overview Header
         SliverToBoxAdapter(
-          child:
-              _buildFinancialOverview(
-                    context,
-                    l10n,
-                    accountingEvent,
-                  )
-                  .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+          child: _buildFinancialOverview(context, l10n, accountingEvent)
+              .animate()
+              .slideY(begin: -0.3)
+              .fadeIn(duration: PRFMotionTokens.enterShort),
         ),
 
         // Quick Actions
         SliverToBoxAdapter(
-          child:
-              _buildQuickActions(
-                    context,
-                    l10n,
-                    accountingEvent,
-                  )
-                  .animate(delay: PRFMotionTokens.stagger2)
-                  .slideY(begin: 0.3)
-                  .fadeIn(),
+          child: _buildQuickActions(context, l10n, accountingEvent)
+              .animate(delay: PRFMotionTokens.stagger2)
+              .slideY(begin: 0.3)
+              .fadeIn(),
         ),
 
         // Refund Information (show when balance > 0)
         SliverToBoxAdapter(
-          child: _buildRefundInformation(
-            context,
-            l10n,
-            accountingEvent,
-          ),
+          child: _buildRefundInformation(context, l10n, accountingEvent),
         ),
 
         // Breakdown Toggle
         SliverToBoxAdapter(
-          child:
-              _buildBreakdownToggle(
-                    context,
-                    entries,
-                  )
-                  .animate(delay: PRFMotionTokens.stagger4)
-                  .slideX(begin: -0.2)
-                  .fadeIn(),
+          child: _buildBreakdownToggle(context, entries)
+              .animate(delay: PRFMotionTokens.stagger4)
+              .slideX(begin: -0.2)
+              .fadeIn(),
         ),
 
         // Expenses List (if breakdown is shown)
@@ -294,18 +272,12 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           SliverPadding(
             padding: const EdgeInsets.all(PRFSpacingTokens.lg),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return _buildExpenseCard(context, entries[index])
-                      .animate()
-                      .fadeIn(
-                        duration: 300.ms,
-                        delay: (index * 50).ms,
-                      )
-                      .slideX(begin: 0.2, end: 0);
-                },
-                childCount: entries.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return _buildExpenseCard(context, entries[index])
+                    .animate()
+                    .fadeIn(duration: 300.ms, delay: (index * 50).ms)
+                    .slideX(begin: 0.2, end: 0);
+              }, childCount: entries.length),
             ),
           ),
 
@@ -320,9 +292,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           ),
 
         // Bottom spacing
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 100),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
   }
@@ -468,10 +438,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 child: _buildStatCard(
                   context,
                   l10n.amountToRefund,
-                  NumberFormat.currency(
-                    locale: 'en_KE',
-                    symbol: 'KES ',
-                  ).format(
+                  NumberFormat.currency(locale: 'en_KE', symbol: 'KES ').format(
                     accountingEvent.latestRefund?.deficitAmount ??
                         accountingEvent.amountToRefund,
                   ),
@@ -514,11 +481,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                       color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                     ),
-                    child: Icon(
-                      icon,
-                      size: 16,
-                      color: color,
-                    ),
+                    child: Icon(icon, size: 16, color: color),
                   ),
                   const Spacer(),
                 ],
@@ -936,11 +899,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                                 context,
                                 receipt.temporaryURL,
                               )
-                            : () => _showReceiptPreview(
-                                context,
-                                receipts,
-                                index,
-                              ),
+                            : () =>
+                                  _showReceiptPreview(context, receipts, index),
                         child: Container(
                           width: 70,
                           height: 70,
@@ -968,12 +928,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                               ? Container(
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.tertiary
-                                        .withValues(
-                                          alpha: 0.2,
-                                        ),
-                                    borderRadius: BorderRadius.circular(
-                                      14,
-                                    ),
+                                        .withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1017,49 +973,41 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                                                   color: theme
                                                       .colorScheme
                                                       .onSurface
-                                                      .withValues(
-                                                        alpha: 0.4,
-                                                      ),
+                                                      .withValues(alpha: 0.4),
                                                   size: 24,
                                                 ),
                                               );
                                             },
-                                        loadingBuilder:
-                                            (
-                                              context,
-                                              child,
-                                              loadingProgress,
-                                            ) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              }
-                                              return ColoredBox(
-                                                color: theme
-                                                    .colorScheme
-                                                    .surfaceContainerHighest,
-                                                child: Center(
-                                                  child: SizedBox(
-                                                    width: 20,
-                                                    height: 20,
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: theme
-                                                          .colorScheme
-                                                          .primary,
-                                                      value:
-                                                          loadingProgress
-                                                                  .expectedTotalBytes !=
-                                                              null
-                                                          ? loadingProgress
-                                                                    .cumulativeBytesLoaded /
-                                                                loadingProgress
-                                                                    .expectedTotalBytes!
-                                                          : null,
-                                                    ),
-                                                  ),
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return ColoredBox(
+                                            color: theme
+                                                .colorScheme
+                                                .surfaceContainerHighest,
+                                            child: Center(
+                                              child: SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                  value:
+                                                      loadingProgress
+                                                              .expectedTotalBytes !=
+                                                          null
+                                                      ? loadingProgress
+                                                                .cumulativeBytesLoaded /
+                                                            loadingProgress
+                                                                .expectedTotalBytes!
+                                                      : null,
                                                 ),
-                                              );
-                                            },
+                                              ),
+                                            ),
+                                          );
+                                        },
                                       ),
                                       // Overlay for better tap indication
                                       Positioned.fill(
@@ -1411,10 +1359,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  Future<void> _openPdfDocument(
-    BuildContext context,
-    String pdfUrl,
-  ) async {
+  Future<void> _openPdfDocument(BuildContext context, String pdfUrl) async {
     try {
       final response = await Dio().get<List<int>>(
         pdfUrl,
@@ -1422,17 +1367,11 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       );
       final bytes = Uint8List.fromList(response.data!);
       if (!context.mounted) return;
-      await PRFPdfViewer.show(
-        context,
-        bytes: bytes,
-        title: 'Receipt PDF',
-      );
+      await PRFPdfViewer.show(context, bytes: bytes, title: 'Receipt PDF');
     } on Exception {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to load PDF document.'),
-        ),
+        const SnackBar(content: Text('Failed to load PDF document.')),
       );
     }
   }
@@ -1444,10 +1383,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   ) {
     Navigator.of(context).push(
       MaterialPageRoute<dynamic>(
-        builder: (context) => ReceiptPreviewPage(
-          receipts: receipts,
-          initialIndex: initialIndex,
-        ),
+        builder: (context) =>
+            ReceiptPreviewPage(receipts: receipts, initialIndex: initialIndex),
       ),
     );
   }
@@ -1470,17 +1407,12 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       title: context.l10n.edit,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
-        child: EditExpenseViewHandset(
-          allocationEntry: entry,
-        ),
+        child: EditExpenseViewHandset(allocationEntry: entry),
       ),
     );
   }
 
-  void _showDeleteConfirmation(
-    BuildContext context,
-    PRFAllocationEntry entry,
-  ) {
+  void _showDeleteConfirmation(BuildContext context, PRFAllocationEntry entry) {
     final theme = Theme.of(context);
 
     showDialog<void>(
@@ -1652,9 +1584,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       title: context.l10n.addToken,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
-        child: AddTokenViewHandset(
-          accountingEventUlid: accountingEvent.ulid,
-        ),
+        child: AddTokenViewHandset(accountingEventUlid: accountingEvent.ulid),
       ),
     ).then((_) {
       if (context.mounted) {
@@ -1674,9 +1604,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       title: 'Add Refund',
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
-        child: AddRefundViewHandset(
-          accountingEventUlid: accountingEvent.ulid,
-        ),
+        child: AddRefundViewHandset(accountingEventUlid: accountingEvent.ulid),
       ),
     ).then((_) {
       if (context.mounted) {
@@ -1927,10 +1855,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
@@ -1976,10 +1901,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: theme.colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(6),
@@ -2023,9 +1945,10 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           context,
           theme,
           'Deficit Amount',
-          NumberFormat.currency(locale: 'en_KE', symbol: 'KES ').format(
-            refund.deficitAmount,
-          ),
+          NumberFormat.currency(
+            locale: 'en_KE',
+            symbol: 'KES ',
+          ).format(refund.deficitAmount),
         ),
         const SizedBox(height: PRFSpacingTokens.sm),
         _buildRefundDetailValue(
@@ -2088,16 +2011,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 ),
               );
             },
-            icon: Icon(
-              Icons.copy,
-              size: 16,
-              color: theme.colorScheme.primary,
-            ),
+            icon: Icon(Icons.copy, size: 16, color: theme.colorScheme.primary),
             padding: const EdgeInsets.all(PRFSpacingTokens.xs),
-            constraints: const BoxConstraints(
-              minWidth: 24,
-              minHeight: 24,
-            ),
+            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
           ),
       ],
     );
@@ -2112,11 +2028,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: PRFSpacingTokens.sm),
         Expanded(
           child: Text(
@@ -2137,10 +2049,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
             );
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 4,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(6),
@@ -2226,10 +2135,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(
-                        Icons.refresh,
-                        color: Colors.white,
-                      ),
+                    : const Icon(Icons.refresh, color: Colors.white),
                 style: IconButton.styleFrom(
                   backgroundColor: theme.colorScheme.primaryContainer,
                 ),
@@ -2239,10 +2145,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           if (widget.showFinancialReport)
             IconButton.filled(
               onPressed: () => _showSendReportModal(context),
-              icon: const Icon(
-                Icons.email,
-                color: Colors.white,
-              ),
+              icon: const Icon(Icons.email, color: Colors.white),
               style: IconButton.styleFrom(
                 backgroundColor: theme.colorScheme.secondaryContainer,
               ),
@@ -2252,9 +2155,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  void _showSendReportModal(
-    BuildContext context,
-  ) {
+  void _showSendReportModal(BuildContext context) {
     PRFBottomSheet.show<void>(
       context,
       title: 'Send Financial Report',

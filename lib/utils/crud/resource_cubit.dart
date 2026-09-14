@@ -16,10 +16,8 @@ import 'package:logger/logger.dart';
 ///   2. Optionally override [defaultIncludes], [defaultFilters], etc.
 ///   3. Add resource-specific convenience methods.
 abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
-  ResourceCubit({
-    required this._service,
-    required this.dbService,
-  }) : super(const ResourceState.initial());
+  ResourceCubit({required this._service, required this.dbService})
+    : super(const ResourceState.initial());
 
   final BaseAPIService<TRemote> _service;
   final BaseHiveDbService<TRemote> dbService;
@@ -101,9 +99,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   ///
   /// Override in subclasses that have parent-filtered Hive data to return only
   /// the items relevant to the current parent context (e.g. by mission ULID).
-  Future<List<TRemote>> loadCachedList({
-    Map<String, dynamic>? filters,
-  });
+  Future<List<TRemote>> loadCachedList({Map<String, dynamic>? filters});
 
   /// Fetch the full list of resources from the API.
   /// Persists into Hive, triggering an organic UI update via [_dbStreamSubscription].

@@ -16,7 +16,7 @@ class MissionSubscriptionResourceCubit
   @override
   Future<List<PRFMissionSubscription>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (item) => [
         filters?['mission_ulid'] == null ||
@@ -48,10 +48,7 @@ class MissionSubscriptionResourceCubit
       missionRole: PRFMissionRole.member,
     );
 
-    return create(
-      data: dto.toJson(),
-      includes: defaultIncludes,
-    );
+    return create(data: dto.toJson(), includes: defaultIncludes);
   }
 
   Future<void> updateSubscription({

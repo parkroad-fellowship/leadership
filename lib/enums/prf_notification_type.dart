@@ -4,8 +4,7 @@ enum PRFNotificationType {
   requisitionApproved('requisition_approved'),
   requisitionRecalled('requisition_recalled'),
   requisitionRejected('requisition_rejected'),
-  requisitionReviewRequested('requisition_review_requested'),
-  ;
+  requisitionReviewRequested('requisition_review_requested');
 
   const PRFNotificationType(this.typeKey);
 

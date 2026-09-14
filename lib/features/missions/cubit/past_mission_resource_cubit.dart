@@ -24,9 +24,7 @@ class PastMissionResourceCubit extends ResourceCubit<PRFSchool> {
   String? get defaultSortBy => 'name';
 
   @override
-  Future<List<PRFSchool>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFSchool>> loadCachedList({Map<String, dynamic>? filters}) {
     final search = filters?['search'] as String?;
     if (search == null || search.isEmpty) {
       return dbService.list();

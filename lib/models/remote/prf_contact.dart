@@ -22,9 +22,7 @@ abstract class PRFContact with _$PRFContact {
 
 @freezed
 abstract class PRFContactResponse with _$PRFContactResponse {
-  factory PRFContactResponse(
-    List<PRFContact> data,
-  ) = _PRFContactResponse;
+  factory PRFContactResponse(List<PRFContact> data) = _PRFContactResponse;
 
   factory PRFContactResponse.fromJson(Map<String, dynamic> json) =>
       _$PRFContactResponseFromJson(json);

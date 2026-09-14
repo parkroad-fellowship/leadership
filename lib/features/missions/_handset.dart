@@ -30,9 +30,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  final app_utils.Debouncer _debouncer = app_utils.Debouncer(
-    milliseconds: 300,
-  );
+  final app_utils.Debouncer _debouncer = app_utils.Debouncer(milliseconds: 300);
   String _searchQuery = '';
   bool _isExporting = false;
 
@@ -563,18 +561,16 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             state is ResourceListLoading<PRFSchool> && schools.isEmpty;
 
         if (showInitialLoader) {
-          return const Center(
-            child: PRFCircularProgressIndicator(),
-          );
+          return const Center(child: PRFCircularProgressIndicator());
         }
 
         final filtered = _filterSchools(schools);
 
         if (filtered.isEmpty) {
           return RefreshIndicator(
-            onRefresh: () async => context
-                .read<PastMissionResourceCubit>()
-                .loadAll(filters: _schoolsFilters()),
+            onRefresh: () => context.read<PastMissionResourceCubit>().loadAll(
+              filters: _schoolsFilters(),
+            ),
             child: PRFEmptyView(
               label: _searchQuery.isEmpty
                   ? l10n.noPastMissions
@@ -589,9 +585,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         }
 
         return RefreshIndicator(
-          onRefresh: () async => context
-              .read<PastMissionResourceCubit>()
-              .loadAll(filters: _schoolsFilters()),
+          onRefresh: () => context.read<PastMissionResourceCubit>().loadAll(
+            filters: _schoolsFilters(),
+          ),
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(
@@ -725,10 +721,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      statusColor,
-                      statusColor.withValues(alpha: 0.8),
-                    ],
+                    colors: [statusColor, statusColor.withValues(alpha: 0.8)],
                   ),
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                   boxShadow: [
@@ -834,9 +827,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                border: Border.all(
-                  color: statusColor.withValues(alpha: 0.2),
-                ),
+                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.shadow.withValues(alpha: 0.08),
@@ -1065,9 +1056,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1076,11 +1065,7 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 12,
-                color: color,
-              ),
+              Icon(icon, size: 12, color: color),
               const SizedBox(width: PRFSpacingTokens.xs),
               Flexible(
                 child: Text(
@@ -1147,9 +1132,7 @@ class DateRangeView extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(
-            alpha: 0.2,
-          ),
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -1169,10 +1152,7 @@ class DateRangeView extends StatelessWidget {
                   isMultiDay
                       // ignore: lines_longer_than_80_chars
                       ? '${Misc.formatDate(startDate, timezone)} - ${Misc.formatDate(endDate, timezone)}'
-                      : Misc.formatDate(
-                          startDate,
-                          timezone,
-                        ),
+                      : Misc.formatDate(startDate, timezone),
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: theme.colorScheme.onSurface,
@@ -1203,18 +1183,14 @@ class DateRangeView extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(
-                          0xFF10B981,
-                        ).withValues(alpha: 0.5),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
                         blurRadius: 6,
                         spreadRadius: 1,
                       ),
                     ],
                   ),
                 )
-                .animate(
-                  onPlay: (controller) => controller.repeat(),
-                )
+                .animate(onPlay: (controller) => controller.repeat())
                 .scale(
                   begin: const Offset(0.8, 0.8),
                   end: const Offset(1.2, 1.2),

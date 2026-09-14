@@ -14,10 +14,7 @@ import 'package:leadership/utils/misc.dart';
 import 'package:prf_design/prf_design.dart';
 
 class SchoolContactsPageHandset extends StatefulWidget {
-  const SchoolContactsPageHandset({
-    required this.schoolUlid,
-    super.key,
-  });
+  const SchoolContactsPageHandset({required this.schoolUlid, super.key});
 
   final String schoolUlid;
 
@@ -36,18 +33,9 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
   List<PRFContactType> get _contactTypes {
     final state = context.read<ContactTypeCubit>().state;
     return switch (state) {
-      ResourceListLoaded<PRFContactType>(
-        :final items,
-      ) =>
-        items,
-      ResourceMutating<PRFContactType>(
-        :final items,
-      ) =>
-        items,
-      ResourceError<PRFContactType>(
-        :final items,
-      ) =>
-        items,
+      ResourceListLoaded<PRFContactType>(:final items) => items,
+      ResourceMutating<PRFContactType>(:final items) => items,
+      ResourceError<PRFContactType>(:final items) => items,
       _ => <PRFContactType>[],
     };
   }
@@ -71,9 +59,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
       ),
       body: BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
         listener: (context, state) {
-          if (state case ResourceError<PRFContact>(
-            :final message,
-          )) {
+          if (state case ResourceError<PRFContact>(:final message)) {
             PRFSnackbar.error(context, message);
           }
         },
@@ -82,10 +68,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
             ResourceListLoading<PRFContact>() => const Center(
               child: PRFCircularProgressIndicator(),
             ),
-            ResourceListLoaded<PRFContact>(
-              :final items,
-            )
-                when items.isEmpty =>
+            ResourceListLoaded<PRFContact>(:final items) when items.isEmpty =>
               PRFEmptyView(
                 label: 'No Contacts',
                 description: 'Add a contact for this school',
@@ -93,22 +76,17 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
                 actionLabel: 'Add Contact',
                 onActionPressed: () => _showContactForm(null),
               ),
-            ResourceListLoaded<PRFContact>(
-              :final items,
-            ) =>
+            ResourceListLoaded<PRFContact>(:final items) => _buildList(
+              theme,
+              items,
+            ),
+            ResourceMutating<PRFContact>(:final items) => _buildList(
+              theme,
+              items,
+            ),
+            ResourceError<PRFContact>(:final items) when items.isNotEmpty =>
               _buildList(theme, items),
-            ResourceMutating<PRFContact>(
-              :final items,
-            ) =>
-              _buildList(theme, items),
-            ResourceError<PRFContact>(
-              :final items,
-            )
-                when items.isNotEmpty =>
-              _buildList(theme, items),
-            ResourceError<PRFContact>(
-              :final message,
-            ) =>
+            ResourceError<PRFContact>(:final message) =>
               PRFErrorView.fromMessage(
                 message: message,
                 onRetry: () => context.read<ContactCubit>().loadForSchool(
@@ -122,10 +100,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
     );
   }
 
-  Widget _buildList(
-    ThemeData theme,
-    List<PRFContact> contacts,
-  ) {
+  Widget _buildList(ThemeData theme, List<PRFContact> contacts) {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
@@ -242,39 +217,26 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         schoolUlid: widget.schoolUlid,
         contactTypes: contactTypes,
         onSaved: () {
-          context.read<ContactCubit>().loadForSchool(
-            widget.schoolUlid,
-          );
+          context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
           context.read<SchoolCubit>().loadAll();
         },
       ),
     );
   }
 
-  Future<void> _callPhoneNumber(
-    String phone,
-  ) async {
+  Future<void> _callPhoneNumber(String phone) async {
     final sanitized = phone.trim();
     if (sanitized.isEmpty) {
       if (!mounted) return;
-      PRFSnackbar.error(
-        context,
-        'No phone number available',
-      );
+      PRFSnackbar.error(context, 'No phone number available');
       return;
     }
 
-    final callUri = Uri(
-      scheme: 'tel',
-      path: sanitized,
-    );
+    final callUri = Uri(scheme: 'tel', path: sanitized);
     final didLaunch = await Misc.openUrl(callUri);
 
     if (!didLaunch && mounted) {
-      PRFSnackbar.error(
-        context,
-        'Could not launch your phone dialer',
-      );
+      PRFSnackbar.error(context, 'Could not launch your phone dialer');
     }
   }
 }

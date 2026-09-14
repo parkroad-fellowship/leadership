@@ -12,9 +12,7 @@ class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
   }) : super(service: missionTypeService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFMissionType>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFMissionType>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
@@ -27,9 +25,7 @@ class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
   }
 
   Future<void> createMissionType({required String name}) {
-    return create(
-      data: PRFMissionTypeDTO(name: name).toJson(),
-    );
+    return create(data: PRFMissionTypeDTO(name: name).toJson());
   }
 
   Future<void> updateMissionType({
@@ -39,10 +35,7 @@ class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
   }) {
     return update(
       id: ulid,
-      data: PRFMissionTypeDTO(
-        name: name ?? '',
-        isActive: isActive,
-      ).toJson(),
+      data: PRFMissionTypeDTO(name: name ?? '', isActive: isActive).toJson(),
       matchById: (mt) => mt.ulid == ulid,
     );
   }

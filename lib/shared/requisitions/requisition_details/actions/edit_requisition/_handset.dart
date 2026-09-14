@@ -175,12 +175,10 @@ class _EditRequisitionViewHandsetState
                                 l10n.modifyRequisitionDetails,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.onSecondary.withValues(
-                                            alpha: 0.9,
-                                          ),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSecondary
+                                          .withValues(alpha: 0.9),
                                     ),
                                 textAlign: TextAlign.center,
                               ),
@@ -204,9 +202,7 @@ class _EditRequisitionViewHandsetState
                             child: CircularProgressIndicator(),
                           ),
                           ResourceItemLoaded<PRFRequisition>() => Container(
-                            padding: const EdgeInsets.all(
-                              PRFSpacingTokens.xl,
-                            ),
+                            padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(
@@ -261,9 +257,7 @@ class _EditRequisitionViewHandsetState
                                         maxLines: 6,
                                       ),
                                     )
-                                    .animate(
-                                      delay: PRFMotionTokens.enterShort,
-                                    )
+                                    .animate(delay: PRFMotionTokens.enterShort)
                                     .slideX(begin: -0.2)
                                     .fadeIn(),
                               ],
@@ -311,9 +305,9 @@ class _EditRequisitionViewHandsetState
     final l10n = context.l10n;
 
     if (_remarksController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.enterPurpose)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.enterPurpose)));
       Gaimon.warning();
       return;
     }
@@ -354,9 +348,7 @@ class _EditRequisitionViewHandsetState
         setState(() {
           requisitionDate = date;
         });
-        _requisitionDateController.text = DateFormat.MMMMEEEEd().format(
-          date,
-        );
+        _requisitionDateController.text = DateFormat.MMMMEEEEd().format(date);
       },
       currentTime: requisitionDate ?? DateTime.now(),
     );

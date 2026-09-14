@@ -3,22 +3,17 @@ import 'package:leadership/shared/requisitions/requisition_details/actions/appro
 import 'package:prf_design/prf_design.dart';
 
 class ApproveRequisitionView extends StatelessWidget {
-  const ApproveRequisitionView({
-    required this.requisitionUlid,
-    super.key,
-  });
+  const ApproveRequisitionView({required this.requisitionUlid, super.key});
 
   final String requisitionUlid;
 
   @override
   Widget build(BuildContext context) {
     return PRFAdaptive(
-      handset: (_) => ApproveRequisitionViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
-      builder: (_, _) => ApproveRequisitionViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
+      handset: (_) =>
+          ApproveRequisitionViewHandset(requisitionUlid: requisitionUlid),
+      builder: (_, _) =>
+          ApproveRequisitionViewHandset(requisitionUlid: requisitionUlid),
     );
   }
 }

@@ -9,11 +9,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class GiftFormViewHandset extends StatefulWidget {
-  const GiftFormViewHandset({
-    required this.onSaved,
-    this.gift,
-    super.key,
-  });
+  const GiftFormViewHandset({required this.onSaved, this.gift, super.key});
 
   final PRFGift? gift;
   final VoidCallback onSaved;
@@ -89,9 +85,7 @@ class _GiftFormViewHandsetState extends State<GiftFormViewHandset> {
       return;
     }
 
-    cubit.createGift(
-      name: _nameController.text.trim(),
-    );
+    cubit.createGift(name: _nameController.text.trim());
   }
 
   @override

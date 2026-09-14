@@ -381,7 +381,7 @@ class AzureStorage {
     final res = await request.send();
 
     if (res.statusCode == 200) {
-      return res.stream.toBytes();
+      return await res.stream.toBytes();
     }
 
     final message = await res.stream.bytesToString();
@@ -516,11 +516,7 @@ class AzureStorage {
       final lastModified = DateTime.tryParse(lastModifiedStr) ?? DateTime.now();
 
       containers.add(
-        ContainerProperties(
-          name: name,
-          lastModified: lastModified,
-          etag: etag,
-        ),
+        ContainerProperties(name: name, lastModified: lastModified, etag: etag),
       );
     }
 

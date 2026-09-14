@@ -41,21 +41,16 @@ class LandingPageHandset extends StatelessWidget {
         ...deskGroups.entries
             .where((entry) => entry.value.isNotEmpty)
             .map(
-              (entry) => _LandingActionSection(
-                title: entry.key,
-                actions: entry.value,
-              ),
+              (entry) =>
+                  _LandingActionSection(title: entry.key, actions: entry.value),
             ),
       _LandingActionSection(title: 'Settings', actions: settingsActions),
     ];
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) => Misc.exitApp(
-        context: context,
-        didPop: didPop,
-        result: result,
-      ),
+      onPopInvokedWithResult: (didPop, result) =>
+          Misc.exitApp(context: context, didPop: didPop, result: result),
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
 
@@ -210,10 +205,7 @@ class LandingPageHandset extends StatelessWidget {
     );
   }
 
-  Widget _buildAnimatedCard({
-    required Widget child,
-    required int delay,
-  }) {
+  Widget _buildAnimatedCard({required Widget child, required int delay}) {
     return Animate(
       effects: [
         FadeEffect(
@@ -290,23 +282,19 @@ class LandingPageHandset extends StatelessWidget {
                 mainAxisSpacing: PRFSpacingTokens.sm,
                 childAspectRatio: 0.92,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final action = section.actions[index];
-                  return _buildAnimatedCard(
-                    delay:
-                        action.animationDelay + ((sectionStart + index) * 40),
-                    child: LandingActionTile(
-                      title: action.title,
-                      assetPath: action.assetPath,
-                      onTap: action.onTap,
-                      assetHeight: 46,
-                      isNeutralCard: action.isNeutralCard,
-                    ),
-                  );
-                },
-                childCount: section.actions.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final action = section.actions[index];
+                return _buildAnimatedCard(
+                  delay: action.animationDelay + ((sectionStart + index) * 40),
+                  child: LandingActionTile(
+                    title: action.title,
+                    assetPath: action.assetPath,
+                    onTap: action.onTap,
+                    assetHeight: 46,
+                    isNeutralCard: action.isNeutralCard,
+                  ),
+                );
+              }, childCount: section.actions.length),
             ),
           ),
         );
@@ -317,10 +305,7 @@ class LandingPageHandset extends StatelessWidget {
 }
 
 class _LandingActionSection {
-  const _LandingActionSection({
-    required this.title,
-    required this.actions,
-  });
+  const _LandingActionSection({required this.title, required this.actions});
 
   final String title;
   final List<LandingActionItem> actions;

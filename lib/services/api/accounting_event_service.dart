@@ -17,13 +17,9 @@ class AccountingEventService extends BaseAPIService<PRFAccountingEvent> {
     throw UnimplementedError();
   }
 
-  Future<bool> sendReport({
-    required String ulid,
-  }) async {
+  Future<bool> sendReport({required String ulid}) async {
     try {
-      await networkUtil.post(
-        '$endpoint/$ulid/send-report',
-      );
+      await networkUtil.post('$endpoint/$ulid/send-report');
       return true;
     } catch (e) {
       rethrow;

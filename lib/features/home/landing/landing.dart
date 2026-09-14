@@ -49,9 +49,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.viewDeskActivities,
         assetPath: 'assets/svgs/events.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.deskActivitiesRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.deskActivitiesRoute),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
         isNeutralCard: true,
@@ -60,9 +59,7 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.viewMissions,
         assetPath: 'assets/svgs/missions.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.missionsRoute,
-        ),
+        onTap: () => context.router.pushPath(PRFLeadershipRouter.missionsRoute),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
         deskGroup: 'Missions Desk',
@@ -81,9 +78,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.viewCommitteeActivities,
         assetPath: 'assets/svgs/events.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.deskActivitiesRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.deskActivitiesRoute),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
         deskGroup: 'Committee Desk',
@@ -91,9 +87,7 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageSchools,
         assetPath: 'assets/svgs/schools.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.schools,
-        ),
+        onTap: () => context.router.pushPath(PRFLeadershipRouter.schools),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.viewAnySchool),
         isSettings: true,
@@ -101,9 +95,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageMissionTypes,
         assetPath: 'assets/svgs/missions.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.missionTypesRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.missionTypesRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -111,9 +104,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageSchoolTerms,
         assetPath: 'assets/svgs/schools.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.schoolTermsRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.schoolTermsRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -121,9 +113,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageProfessions,
         assetPath: 'assets/svgs/credentials.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.professionsRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.professionsRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -131,9 +122,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageMaritalStatuses,
         assetPath: 'assets/svgs/credentials.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.maritalStatusesRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.maritalStatusesRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -141,9 +131,7 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageChurches,
         assetPath: 'assets/svgs/explore.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.churchesRoute,
-        ),
+        onTap: () => context.router.pushPath(PRFLeadershipRouter.churchesRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -151,9 +139,8 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageDepartments,
         assetPath: 'assets/svgs/events.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.departmentsRoute,
-        ),
+        onTap: () =>
+            context.router.pushPath(PRFLeadershipRouter.departmentsRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -161,9 +148,7 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageGifts,
         assetPath: 'assets/svgs/giving.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.giftsRoute,
-        ),
+        onTap: () => context.router.pushPath(PRFLeadershipRouter.giftsRoute),
         animationDelay: 700,
         isVisible: true,
         isSettings: true,
@@ -171,9 +156,7 @@ class _LandingPageState extends State<LandingPage> {
       LandingActionItem(
         title: l10n.manageMembers,
         assetPath: 'assets/svgs/credentials.svg',
-        onTap: () => context.router.pushPath(
-          PRFLeadershipRouter.membersRoute,
-        ),
+        onTap: () => context.router.pushPath(PRFLeadershipRouter.membersRoute),
         animationDelay: 700,
         isVisible: true,
         deskGroup: 'Organising Secretary',

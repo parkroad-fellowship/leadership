@@ -157,10 +157,7 @@ class _DeskEventDetailsPageHandsetState
                         ),
                       );
                     } else {
-                      PRFSnackbar.error(
-                        context,
-                        l10n.requisitionUnavailable,
-                      );
+                      PRFSnackbar.error(context, l10n.requisitionUnavailable);
                     }
                   },
                   label: Text(l10n.createRequisition),

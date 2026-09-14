@@ -10,8 +10,7 @@ enum PRFChargeType {
   @JsonValue(4)
   mpesaATMWithdrawal(4, '(MPESA) ATM Withdrawal'),
   @JsonValue(5)
-  cash(5, 'Cash'),
-  ;
+  cash(5, 'Cash');
 
   const PRFChargeType(this.apiKey, this._label);
 

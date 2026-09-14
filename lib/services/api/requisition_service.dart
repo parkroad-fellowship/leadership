@@ -11,9 +11,7 @@ class RequisitionService extends BaseAPIService<PRFRequisition> {
   }
 
   @override
-  List<PRFRequisition> createListFromResponse(
-    Map<String, dynamic> response,
-  ) {
+  List<PRFRequisition> createListFromResponse(Map<String, dynamic> response) {
     return PRFRequisitionResponse.fromJson(response).data;
   }
 
@@ -24,9 +22,7 @@ class RequisitionService extends BaseAPIService<PRFRequisition> {
     try {
       await networkUtil.post(
         '$endpoint/$ulid/request-review',
-        body: {
-          'appointed_approver_ulid': approverUlid,
-        },
+        body: {'appointed_approver_ulid': approverUlid},
       );
       return true;
     } catch (e) {

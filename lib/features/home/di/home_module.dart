@@ -22,14 +22,12 @@ class HomeModule {
         ),
       ),
       BlocProvider<SelectMediaCubit>(
-        create: (context) => SelectMediaCubit(
-          mediaService: getIt<MediaService>(),
-        ),
+        create: (context) =>
+            SelectMediaCubit(mediaService: getIt<MediaService>()),
       ),
       BlocProvider<UploadMediaCubit>(
-        create: (context) => UploadMediaCubit(
-          mediaService: getIt<MediaService>(),
-        ),
+        create: (context) =>
+            UploadMediaCubit(mediaService: getIt<MediaService>()),
       ),
     ];
   }

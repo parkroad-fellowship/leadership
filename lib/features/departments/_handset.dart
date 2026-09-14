@@ -99,9 +99,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
     final filtered = _searchQuery.isEmpty
         ? items
         : items
-              .where(
-                (item) => item.name.toLowerCase().contains(_searchQuery),
-              )
+              .where((item) => item.name.toLowerCase().contains(_searchQuery))
               .toList();
 
     return GestureDetector(
@@ -109,9 +107,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
       child: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildHeader(theme, items.length),
-          ),
+          SliverToBoxAdapter(child: _buildHeader(theme, items.length)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               PRFSpacingTokens.lg,
@@ -119,9 +115,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
               PRFSpacingTokens.lg,
               PRFSpacingTokens.sm,
             ),
-            sliver: SliverToBoxAdapter(
-              child: _buildSearchBar(theme),
-            ),
+            sliver: SliverToBoxAdapter(child: _buildSearchBar(theme)),
           ),
           if (filtered.isEmpty)
             SliverFillRemaining(
@@ -144,18 +138,15 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
                 horizontal: PRFSpacingTokens.lg,
               ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = filtered[index];
-                    return DepartmentCard(
-                      department: item,
-                      index: index,
-                      onTap: () => _showForm(context, item),
-                      onDelete: () => _confirmDelete(context, item),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = filtered[index];
+                  return DepartmentCard(
+                    department: item,
+                    index: index,
+                    onTap: () => _showForm(context, item),
+                    onDelete: () => _confirmDelete(context, item),
+                  );
+                }, childCount: filtered.length),
               ),
             ),
           const SliverToBoxAdapter(
@@ -168,9 +159,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
 
   Widget _buildHeader(ThemeData theme, int totalCount) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-      ),
+      decoration: BoxDecoration(color: theme.colorScheme.primary),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

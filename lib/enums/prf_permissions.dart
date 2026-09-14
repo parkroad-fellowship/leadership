@@ -171,8 +171,7 @@ enum PRFPermissions {
   viewAnyAnnouncement('viewAny', 'announcement'),
   createAnnouncement('create', 'announcement'),
   editAnnouncement('edit', 'announcement'),
-  deleteAnnouncement('delete', 'announcement'),
-  ;
+  deleteAnnouncement('delete', 'announcement');
 
   const PRFPermissions(this.action, this.resource);
 

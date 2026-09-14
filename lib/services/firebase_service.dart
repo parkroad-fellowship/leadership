@@ -26,11 +26,7 @@ class FirebaseServiceImpl implements PRFFirebaseService {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   Future<void>? _googleSignInInitialization;
 
-  static const List<String> _googleAuthScopes = [
-    'profile',
-    'email',
-    'openid',
-  ];
+  static const List<String> _googleAuthScopes = ['profile', 'email', 'openid'];
 
   Future<void> _ensureGoogleSignInInitialized() {
     return _googleSignInInitialization ??= _googleSignIn.initialize();
@@ -115,10 +111,7 @@ class FirebaseServiceImpl implements PRFFirebaseService {
           accessToken = credential.accessToken ?? '';
         }
 
-        return SocialAuthDTO(
-          provider: 'google',
-          accessToken: accessToken,
-        );
+        return SocialAuthDTO(provider: 'google', accessToken: accessToken);
       } else {
         throw Exception('An error occurred');
       }

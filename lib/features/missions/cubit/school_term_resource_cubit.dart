@@ -12,9 +12,7 @@ class SchoolTermResourceCubit extends ResourceCubit<PRFSchoolTerm> {
   }) : super(service: schoolTermService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFSchoolTerm>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFSchoolTerm>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
@@ -26,10 +24,7 @@ class SchoolTermResourceCubit extends ResourceCubit<PRFSchoolTerm> {
     );
   }
 
-  Future<void> createSchoolTerm({
-    required String name,
-    required int year,
-  }) {
+  Future<void> createSchoolTerm({required String name, required int year}) {
     return create(
       data: PRFSchoolTermDTO(name: name, year: year).toJson(),
     );

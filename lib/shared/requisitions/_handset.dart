@@ -126,12 +126,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
               ),
             ),
           ResourceError<PRFRequisition>(:final items) when items.isNotEmpty =>
-            _buildLoadedList(
-              context,
-              theme,
-              l10n,
-              items,
-            ),
+            _buildLoadedList(context, theme, l10n, items),
           ResourceError<PRFRequisition>(:final message) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -184,12 +179,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-                child: _buildEventHeroCard(
-                  context,
-                  event!,
-                  l10n,
-                  theme,
-                ),
+                child: _buildEventHeroCard(context, event!, l10n, theme),
               ),
             ),
           SliverPadding(
@@ -197,50 +187,45 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
               horizontal: PRFSpacingTokens.lg,
             ),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final requisition = sortedRequisitions[index];
-                  final isLast = index == sortedRequisitions.length - 1;
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final requisition = sortedRequisitions[index];
+                final isLast = index == sortedRequisitions.length - 1;
 
-                  return TimelineRequisitionCard(
-                        requisition: requisition,
-                        isLast: isLast,
-                        index: index,
-                        onTap: () => context.router
-                            .push(
-                              RequisitionDetailsRoute(
-                                requisitionUlid: requisition.ulid,
-                              ),
-                            )
-                            .then((_) {
-                              if (!context.mounted) {
-                                return;
-                              }
-                              context
-                                  .read<RequisitionResourceCubit>()
-                                  .loadForAccountingEvent(
-                                    accountingEventUlid: accountingEvent.ulid,
-                                  );
-                            }),
-                      )
-                      .animate()
-                      .fadeIn(
-                        delay: Duration(milliseconds: index * 100),
-                        duration: PRFMotionTokens.enterShort,
-                      )
-                      .slideX(
-                        begin: 0.3,
-                        end: 0,
-                        curve: PRFMotionTokens.emphasized,
-                      );
-                },
-                childCount: sortedRequisitions.length,
-              ),
+                return TimelineRequisitionCard(
+                      requisition: requisition,
+                      isLast: isLast,
+                      index: index,
+                      onTap: () => context.router
+                          .push(
+                            RequisitionDetailsRoute(
+                              requisitionUlid: requisition.ulid,
+                            ),
+                          )
+                          .then((_) {
+                            if (!context.mounted) {
+                              return;
+                            }
+                            context
+                                .read<RequisitionResourceCubit>()
+                                .loadForAccountingEvent(
+                                  accountingEventUlid: accountingEvent.ulid,
+                                );
+                          }),
+                    )
+                    .animate()
+                    .fadeIn(
+                      delay: Duration(milliseconds: index * 100),
+                      duration: PRFMotionTokens.enterShort,
+                    )
+                    .slideX(
+                      begin: 0.3,
+                      end: 0,
+                      curve: PRFMotionTokens.emphasized,
+                    );
+              }, childCount: sortedRequisitions.length),
             ),
           ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );

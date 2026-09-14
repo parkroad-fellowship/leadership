@@ -1,8 +1,7 @@
 enum PRFMembershipType {
   friend(1, 'Friend'),
   yearlyMember(2, 'Yearly Member'),
-  lifetimeMember(3, 'Lifetime Member'),
-  ;
+  lifetimeMember(3, 'Lifetime Member');
 
   const PRFMembershipType(this.apiKey, this._label);
 

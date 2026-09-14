@@ -10,12 +10,10 @@ class EditRequisitionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PRFAdaptive(
-      handset: (_) => EditRequisitionViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
-      builder: (_, _) => EditRequisitionViewHandset(
-        requisitionUlid: requisitionUlid,
-      ),
+      handset: (_) =>
+          EditRequisitionViewHandset(requisitionUlid: requisitionUlid),
+      builder: (_, _) =>
+          EditRequisitionViewHandset(requisitionUlid: requisitionUlid),
     );
   }
 }

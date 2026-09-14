@@ -13,8 +13,7 @@ enum PRFApprovalStatus {
   @JsonValue(5)
   recalled(5, 'Recalled', Icons.undo),
   @JsonValue(99)
-  ghost(99, 'Zero-Based', Icons.help_outline),
-  ;
+  ghost(99, 'Zero-Based', Icons.help_outline);
 
   const PRFApprovalStatus(this.apiKey, this._label, this.icon);
 

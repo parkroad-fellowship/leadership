@@ -23,9 +23,7 @@ class MemberResourceCubit extends ResourceCubit<PRFMember> {
   ];
 
   @override
-  Future<List<PRFMember>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFMember>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 

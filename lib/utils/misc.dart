@@ -464,9 +464,7 @@ class Misc {
     await File(savePath).writeAsBytes(pdfBytes);
 
     await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(savePath, mimeType: 'application/pdf')],
-      ),
+      ShareParams(files: [XFile(savePath, mimeType: 'application/pdf')]),
     );
   }
 
@@ -482,10 +480,7 @@ class Misc {
 
     try {
       final result = await SharePlus.instance.share(
-        ShareParams(
-          files: [xFile],
-          fileNameOverrides: [fileName],
-        ),
+        ShareParams(files: [xFile], fileNameOverrides: [fileName]),
       );
 
       if (result.status == ShareResultStatus.unavailable) {
@@ -523,12 +518,9 @@ class Misc {
     if (_lastBackPressed == null ||
         now.difference(_lastBackPressed!) > window) {
       _lastBackPressed = now;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: window,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message), duration: window));
     } else {
       SystemNavigator.pop();
     }
@@ -615,8 +607,4 @@ class Misc {
 }
 
 /// Device type enumeration
-enum DeviceType {
-  phone,
-  tablet,
-  desktop,
-}
+enum DeviceType { phone, tablet, desktop }

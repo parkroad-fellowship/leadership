@@ -26,11 +26,7 @@ import 'package:phone_form_field/phone_form_field.dart';
 import 'package:prf_design/prf_design.dart';
 
 class MemberFormViewHandset extends StatefulWidget {
-  const MemberFormViewHandset({
-    required this.onSaved,
-    this.member,
-    super.key,
-  });
+  const MemberFormViewHandset({required this.onSaved, this.member, super.key});
 
   final PRFMember? member;
   final VoidCallback onSaved;
@@ -100,20 +96,14 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
     _lastNameController = TextEditingController(text: member?.lastName ?? '');
     _phoneNumberController = PhoneController(
       initialValue: member != null && member.phoneNumber != null
-          ? PhoneNumber.parse(
-              member.phoneNumber!,
-            )
+          ? PhoneNumber.parse(member.phoneNumber!)
           : const PhoneNumber(isoCode: IsoCode.KE, nsn: ''),
     );
-    _personalEmailController = TextEditingController(
-      text: member?.email ?? '',
-    );
+    _personalEmailController = TextEditingController(text: member?.email ?? '');
     _postalAddressController = TextEditingController(
       text: member?.postalAddress ?? '',
     );
-    _residenceController = TextEditingController(
-      text: member?.residence ?? '',
-    );
+    _residenceController = TextEditingController(text: member?.residence ?? '');
     _bioController = TextEditingController(text: member?.bio ?? '');
     _linkedInUrlController = TextEditingController(
       text: member?.linkedInUrl ?? '',
@@ -157,21 +147,11 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
     }
 
     // Load entity lists for selection
-    context.read<ChurchResourceCubit>().loadAll(
-      sortBy: 'name',
-    );
-    context.read<ProfessionResourceCubit>().loadAll(
-      sortBy: 'name',
-    );
-    context.read<MaritalStatusResourceCubit>().loadAll(
-      sortBy: 'name',
-    );
-    context.read<DepartmentResourceCubit>().loadAll(
-      sortBy: 'name',
-    );
-    context.read<GiftResourceCubit>().loadAll(
-      sortBy: 'name',
-    );
+    context.read<ChurchResourceCubit>().loadAll(sortBy: 'name');
+    context.read<ProfessionResourceCubit>().loadAll(sortBy: 'name');
+    context.read<MaritalStatusResourceCubit>().loadAll(sortBy: 'name');
+    context.read<DepartmentResourceCubit>().loadAll(sortBy: 'name');
+    context.read<GiftResourceCubit>().loadAll(sortBy: 'name');
   }
 
   void _onFormChanged() {
@@ -312,9 +292,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       title: 'Add Church',
       child: ChurchFormViewHandset(
         onSaved: () {
-          context.read<ChurchResourceCubit>().loadAll(
-            sortBy: 'name',
-          );
+          context.read<ChurchResourceCubit>().loadAll(sortBy: 'name');
         },
       ),
     );
@@ -326,9 +304,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       title: 'Add Profession',
       child: ProfessionFormViewHandset(
         onSaved: () {
-          context.read<ProfessionResourceCubit>().loadAll(
-            sortBy: 'name',
-          );
+          context.read<ProfessionResourceCubit>().loadAll(sortBy: 'name');
         },
       ),
     );
@@ -340,9 +316,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       title: 'Add Marital Status',
       child: MaritalStatusFormViewHandset(
         onSaved: () {
-          context.read<MaritalStatusResourceCubit>().loadAll(
-            sortBy: 'name',
-          );
+          context.read<MaritalStatusResourceCubit>().loadAll(sortBy: 'name');
         },
       ),
     );
@@ -354,9 +328,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       title: 'Add Department',
       child: DepartmentFormViewHandset(
         onSaved: () {
-          context.read<DepartmentResourceCubit>().loadAll(
-            sortBy: 'name',
-          );
+          context.read<DepartmentResourceCubit>().loadAll(sortBy: 'name');
         },
       ),
     );
@@ -368,9 +340,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
       title: 'Add Gift',
       child: GiftFormViewHandset(
         onSaved: () {
-          context.read<GiftResourceCubit>().loadAll(
-            sortBy: 'name',
-          );
+          context.read<GiftResourceCubit>().loadAll(sortBy: 'name');
         },
       ),
     );
@@ -827,10 +797,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
   Widget _buildRelationshipsSection() {
     return Column(
-      children: [
-        _buildDepartmentSelection(),
-        _buildGiftSelection(),
-      ],
+      children: [_buildDepartmentSelection(), _buildGiftSelection()],
     );
   }
 
@@ -873,10 +840,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                 emptyText: 'No churches found',
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
-              _buildAddNewButton(
-                label: 'Add Church',
-                onTap: _promptAddChurch,
-              ),
+              _buildAddNewButton(label: 'Add Church', onTap: _promptAddChurch),
             ],
           ),
         );
@@ -1078,10 +1042,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                 emptyText: 'No gifts found',
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
-              _buildAddNewButton(
-                label: 'Add Gift',
-                onTap: _promptAddGift,
-              ),
+              _buildAddNewButton(label: 'Add Gift', onTap: _promptAddGift),
             ],
           ),
         );

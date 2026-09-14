@@ -12,8 +12,7 @@ enum PRFMissionGroundSuggestionStatus {
   @JsonValue(5)
   completed(5, 'Completed'),
   @JsonValue(6)
-  ignore(6, 'Ignore'),
-  ;
+  ignore(6, 'Ignore');
 
   const PRFMissionGroundSuggestionStatus(this.apiKey, this._label);
 

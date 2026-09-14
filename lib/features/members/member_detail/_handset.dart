@@ -10,10 +10,7 @@ import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
 class MemberDetailPageHandset extends StatefulWidget {
-  const MemberDetailPageHandset({
-    required this.memberUlid,
-    super.key,
-  });
+  const MemberDetailPageHandset({required this.memberUlid, super.key});
 
   final String memberUlid;
 
@@ -54,9 +51,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
               title: 'Member Details',
               onBack: () => context.router.maybePop(),
             ),
-            body: const Center(
-              child: PRFCircularProgressIndicator(),
-            ),
+            body: const Center(child: PRFCircularProgressIndicator()),
           );
         }
 
@@ -150,9 +145,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: PRFSpacingTokens.xxl,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: PRFSpacingTokens.xxl),
         child: Column(
           children: [
             // Avatar
@@ -326,11 +319,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
       title: 'DEMOGRAPHICS',
       children: [
         if (member.gender != null)
-          _infoRow(
-            theme,
-            'Gender',
-            member.gender == 1 ? 'Male' : 'Female',
-          ),
+          _infoRow(theme, 'Gender', member.gender == 1 ? 'Male' : 'Female'),
         if (member.maritalStatus != null)
           _infoRow(theme, 'Marital Status', member.maritalStatus!.name),
       ],
@@ -511,10 +500,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     PRFBottomSheet.show<void>(
       context,
       title: 'Edit Member',
-      child: MemberFormViewHandset(
-        member: member,
-        onSaved: _reloadData,
-      ),
+      child: MemberFormViewHandset(member: member, onSaved: _reloadData),
     );
   }
 

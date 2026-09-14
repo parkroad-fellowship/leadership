@@ -15,7 +15,7 @@ class PaymentInstructionResourceCubit
   @override
   Future<List<PRFPaymentInstruction>> loadCachedList({
     Map<String, dynamic>? filters,
-  }) async {
+  }) {
     return dbService.filterBy(
       (paymentInstruction) => [
         filters?['requisition_ulid'] == null ||

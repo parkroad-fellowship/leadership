@@ -30,9 +30,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   ];
 
   @override
-  Future<List<PRFRequisition>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFRequisition>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.filterBy(
       (requisition) => [
         filters?['approval_status'] == null ||
@@ -43,17 +41,13 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
                 .split(',')
                 .map(int.tryParse)
                 .toList()
-                .contains(
-                  requisition.approvalStatus.apiKey,
-                ),
+                .contains(requisition.approvalStatus.apiKey),
         filters?['responsible_desks'] == null ||
             (filters?['responsible_desks'] as String)
                 .split(',')
                 .map(int.tryParse)
                 .toList()
-                .contains(
-                  requisition.responsibleDesk.apiKey,
-                ),
+                .contains(requisition.responsibleDesk.apiKey),
         filters?['appointed_approver_ulid'] == null ||
             requisition.appointedApprover?.ulid ==
                 (filters?['appointed_approver_ulid'] as String),
@@ -65,11 +59,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   }
 
   Future<void> loadForAccountingEvent({required String accountingEventUlid}) {
-    return loadAll(
-      filters: {
-        'accounting_event_ulid': accountingEventUlid,
-      },
-    );
+    return loadAll(filters: {'accounting_event_ulid': accountingEventUlid});
   }
 
   Future<void> loadApprovalRequisitions() {
@@ -99,9 +89,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   Future<void> loadDraftRequisitions() {
     return loadAll(
       filters: {
-        'approval_statuses': [
-          PRFApprovalStatus.pending.apiKey,
-        ].join(','),
+        'approval_statuses': [PRFApprovalStatus.pending.apiKey].join(','),
         'responsible_desks': _hiveService.responsibleDesks
             .map((desk) => desk.apiKey)
             .toList()

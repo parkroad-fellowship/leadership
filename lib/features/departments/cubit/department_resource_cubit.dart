@@ -12,16 +12,12 @@ class DepartmentResourceCubit extends ResourceCubit<PRFDepartment> {
   }) : super(service: departmentService, dbService: hiveDbService);
 
   @override
-  Future<List<PRFDepartment>> loadCachedList({
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<PRFDepartment>> loadCachedList({Map<String, dynamic>? filters}) {
     return dbService.list();
   }
 
   Future<void> createDepartment({required String name}) {
-    return create(
-      data: PRFDepartmentDTO(name: name).toJson(),
-    );
+    return create(data: PRFDepartmentDTO(name: name).toJson());
   }
 
   Future<void> updateDepartment({
@@ -31,10 +27,7 @@ class DepartmentResourceCubit extends ResourceCubit<PRFDepartment> {
   }) {
     return update(
       id: ulid,
-      data: PRFDepartmentDTO(
-        name: name ?? '',
-        isActive: isActive,
-      ).toJson(),
+      data: PRFDepartmentDTO(name: name ?? '', isActive: isActive).toJson(),
       matchById: (d) => d.ulid == ulid,
     );
   }
