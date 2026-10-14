@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/missions/cubit/mission_type_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_mission_type.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
@@ -60,7 +61,7 @@ class _MissionTypeFormViewHandsetState
 
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      _nameError = 'Name is required';
+      _nameError = context.l10n.commonNameRequired;
     }
 
     setState(() {
@@ -73,10 +74,7 @@ class _MissionTypeFormViewHandsetState
   void _submitForm() {
     if (!_validateForm()) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fix the highlighted fields and try again.',
-      );
+      PRFSnackbar.error(context, context.l10n.commonFixHighlightedFields);
       return;
     }
 
@@ -112,13 +110,13 @@ class _MissionTypeFormViewHandsetState
             PRFSnackbar.success(
               context,
               _isEditing
-                  ? 'Mission type updated successfully'
-                  : 'Mission type created successfully',
+                  ? context.l10n.missionTypesUpdated
+                  : context.l10n.missionTypesCreated,
             );
             widget.onSaved();
-          case ResourceError<PRFMissionType>(:final message):
+          case ResourceError<PRFMissionType>():
             Gaimon.error();
-            PRFSnackbar.error(context, message);
+            PRFSnackbar.error(context, context.l10n.commonSaveErrorMessage);
           default:
             break;
         }
@@ -128,6 +126,12 @@ class _MissionTypeFormViewHandsetState
           curr is ResourceError<PRFMissionType>,
       builder: (context, state) {
         final isLoading = state is ResourceMutating<PRFMissionType>;
+        final l10n = context.l10n;
+        final theme = Theme.of(context);
+        final enter = PRFMotionTokens.resolve(
+          context,
+          PRFMotionTokens.enterShort,
+        );
 
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -137,8 +141,10 @@ class _MissionTypeFormViewHandsetState
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                  Theme.of(context).colorScheme.surface,
+                  theme.colorScheme.primary.withValues(
+                    alpha: PRFOpacities.faint,
+                  ),
+                  theme.colorScheme.surface,
                 ],
               ),
             ),
@@ -153,46 +159,39 @@ class _MissionTypeFormViewHandsetState
                     const SizedBox(height: PRFSpacingTokens.lg),
                     _buildHeaderCard(context)
                         .animate()
-                        .slideY(begin: -0.3)
-                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                        .slideY(begin: -0.3, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.lg,
                             ),
                             border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.shadow.withValues(alpha: 0.1),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: PRFOpacities.muted,
                               ),
-                            ],
+                            ),
+                            boxShadow: PRFShadowTokens.card(
+                              theme.colorScheme.shadow,
+                            ),
                           ),
                           child: Column(
                             children: [
                               PRFFormSection(
                                 icon: Icons.category_outlined,
-                                title: 'Name',
+                                title: l10n.commonNameLabel,
                                 isRequired: true,
 
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
                                 child: PRFTextField(
-                                  hintText: 'Mission type name',
-                                  labelText: 'Name *',
-                                  helperText: 'Required',
+                                  hintText: l10n.missionTypesNameHint,
+                                  labelText: l10n.commonNameLabel,
                                   errorText: _showValidation
                                       ? _nameError
                                       : null,
@@ -208,19 +207,16 @@ class _MissionTypeFormViewHandsetState
                               if (_isEditing)
                                 PRFFormSection(
                                   icon: Icons.toggle_on_outlined,
-                                  title: 'Status',
-                                  subtitle: 'Active or inactive',
+                                  title: l10n.commonStatusLabel,
                                   margin: const EdgeInsets.only(
                                     bottom: PRFSpacingTokens.md,
                                   ),
                                   child: SwitchListTile(
                                     title: Text(
                                       _activeStatus == PRFActiveStatus.active
-                                          ? 'Active'
-                                          : 'Inactive',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium,
+                                          ? l10n.commonActive
+                                          : l10n.commonInactive,
+                                      style: theme.textTheme.bodyMedium,
                                     ),
                                     value:
                                         _activeStatus == PRFActiveStatus.active,
@@ -239,17 +235,22 @@ class _MissionTypeFormViewHandsetState
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+                        .animate(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger3,
+                          ),
+                        )
+                        .slideX(begin: -0.2, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
                       child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
-                            ? 'Update Mission Type'
-                            : 'Create Mission Type',
+                            ? l10n.missionTypesSave
+                            : l10n.missionTypesCreate,
                         disabled: isLoading || !_isFormValid,
                         isLoading: isLoading,
                       ),
@@ -275,28 +276,24 @@ class _MissionTypeFormViewHandsetState
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.8),
+            theme.colorScheme.primary.withValues(alpha: PRFOpacities.stronger),
           ],
         ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: PRFShadowTokens.raised(theme.colorScheme.primary),
       ),
       child: Column(
         children: [
           Icon(
             _isEditing ? Icons.edit_outlined : Icons.category_outlined,
-            size: 32,
+            size: PRFSizeTokens.iconXl,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            _isEditing ? 'Edit Mission Type' : 'Create Mission Type',
+            _isEditing
+                ? context.l10n.missionTypesEdit
+                : context.l10n.missionTypesAdd,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -305,10 +302,12 @@ class _MissionTypeFormViewHandsetState
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             _isEditing
-                ? 'Update mission type details'
-                : 'Add a new mission type to the system',
+                ? context.l10n.missionTypesFormEditSubtitle
+                : context.l10n.missionTypesFormCreateSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
             textAlign: TextAlign.center,
           ),

@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -24,25 +23,27 @@ enum PRFInstitutionType {
 
   String get name => _label;
 
-  List<Color> get gradientColors {
+  /// Brand fill used to tell institution types apart (avatars, headers).
+  ///
+  /// Fill only: put text/icons on it with [onFillColor].
+  Color fillColor(BuildContext context) {
+    final colors = context.prfColors;
     return switch (this) {
-      primarySchool || community => [PRFColors.navy500, PRFColors.navy400],
-      highSchool || juniorSecondarySchool => [
-        const Color(0xFF2563EB),
-        const Color(0xFF60A5FA),
-      ],
-      college ||
-      university => [const Color(0xFFEA580C), const Color(0xFFFB923C)],
+      primarySchool || community => colors.navyBlue,
+      highSchool || juniorSecondarySchool => colors.blue,
+      college || university => colors.orange,
     };
   }
 
-  Color get accentColor {
-    return switch (this) {
-      primarySchool || community => PRFColors.limeGreen,
-      highSchool || juniorSecondarySchool => const Color(0xFF2563EB),
-      college || university => const Color(0xFFEA580C),
-    };
+  /// Two-stop gradient built from [fillColor].
+  List<Color> gradientColors(BuildContext context) {
+    final fill = fillColor(context);
+    return [fill, fill.withValues(alpha: PRFOpacities.nearOpaque)];
   }
+
+  /// Readable text/icon colour on [fillColor] (WCAG AA).
+  Color onFillColor(BuildContext context) =>
+      context.statusColors.onColorFor(fillColor(context));
 
   static PRFInstitutionType fromValue(int value) {
     return PRFInstitutionType.values.firstWhere(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
     as picker;
@@ -9,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared/requisitions/cubit/requisition_detail_cubit.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -31,11 +31,6 @@ class _EditRequisitionViewHandsetState
   DateTime? requisitionDate;
   PRFRequisition? requisition;
 
-  // Add form validity check
-  bool get _isFormValid {
-    return _remarksController.text.isNotEmpty && requisitionDate != null;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -44,10 +39,7 @@ class _EditRequisitionViewHandsetState
     _requisitionDateController.addListener(() => setState(() {}));
 
     // Load the requisition data
-    context.read<RequisitionDetailCubit>().loadOne(
-      id: widget.requisitionUlid,
-      matchById: (item) => item.ulid == widget.requisitionUlid,
-    );
+    _loadRequisition();
   }
 
   void _populateForm(PRFRequisition requisition) {
@@ -72,17 +64,10 @@ class _EditRequisitionViewHandsetState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
-          ],
-        ),
-      ),
+    final theme = Theme.of(context);
+
+    return DecoratedBox(
+      decoration: requisitionSheetBackground(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
@@ -95,24 +80,20 @@ class _EditRequisitionViewHandsetState
                   switch (state) {
                     case ResourceItemLoaded<PRFRequisition>(:final item):
                       if (_isLoading) {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.requisitionUpdated)),
-                        );
+                        setState(() => _isLoading = false);
+                        PRFSnackbar.success(context, l10n.requisitionUpdated);
                         Gaimon.success();
                         Navigator.of(context).pop(true);
                       } else {
                         _populateForm(item);
                       }
-                    case ResourceItemError<PRFRequisition>(:final message):
+                    case ResourceItemError<PRFRequisition>():
                       if (_isLoading) {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $message')),
+                        setState(() => _isLoading = false);
+                        PRFSnackbar.error(
+                          context,
+                          l10n.requisitionActionUpdateFailed,
+                          onRetry: _submitForm,
                         );
                         Gaimon.error();
                       }
@@ -124,74 +105,17 @@ class _EditRequisitionViewHandsetState
                   children: [
                     const SizedBox(height: PRFSpacingTokens.lg),
 
-                    // Header Card
-                    Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.secondary,
-                                Theme.of(
-                                  context,
-                                ).colorScheme.secondary.withValues(alpha: 0.8),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(
-                              PRFRadiusTokens.lg,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.secondary.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.edit_outlined,
-                                size: 32,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSecondary,
-                              ),
-                              const SizedBox(height: PRFSpacingTokens.sm),
-                              Text(
-                                l10n.editRequisition,
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                              const SizedBox(height: PRFSpacingTokens.xs),
-                              Text(
-                                l10n.modifyRequisitionDetails,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSecondary
-                                          .withValues(alpha: 0.9),
-                                    ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        )
-                        .animate()
-                        .slideY(begin: -0.3)
-                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                    requisitionActionHeader(
+                      context,
+                      icon: Icons.edit_outlined,
+                      title: l10n.editRequisition,
+                      subtitle: l10n.modifyRequisitionDetails,
+                      background: theme.colorScheme.secondary,
+                      foreground: theme.colorScheme.onSecondary,
+                    ).entrance(context, slide: const Offset(0, -0.3)),
 
                     const SizedBox(height: PRFSpacingTokens.xxl),
 
-                    // Form Card
                     BlocBuilder<
                       RequisitionDetailCubit,
                       ResourceState<PRFRequisition>
@@ -199,81 +123,19 @@ class _EditRequisitionViewHandsetState
                       builder: (context, state) {
                         return switch (state) {
                           ResourceItemLoading<PRFRequisition>() => const Center(
-                            child: CircularProgressIndicator(),
+                            child: PRFCircularProgressIndicator(),
                           ),
-                          ResourceItemLoaded<PRFRequisition>() => Container(
-                            padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.lg,
-                              ),
-                              border: Border.all(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.outline.withValues(alpha: 0.2),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.shadow.withValues(alpha: 0.1),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                PRFFormSection(
-                                      icon: Icons.schedule_outlined,
-                                      title: 'Requisition Date',
-                                      isRequired: true,
-                                      child: GestureDetector(
-                                        onTap: _selectRequisitionDate,
-                                        child: AbsorbPointer(
-                                          child: PRFTextField(
-                                            hintText: 'Select date',
-                                            controller:
-                                                _requisitionDateController,
-                                            enabled: false,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .animate(delay: PRFMotionTokens.stagger4)
-                                    .slideX(begin: -0.2)
-                                    .fadeIn(),
-
-                                PRFFormSection(
-                                      icon: Icons.notes_outlined,
-                                      title: l10n.purpose,
-                                      isRequired: true,
-                                      child: PRFTextField(
-                                        hintText: l10n.purpose,
-                                        controller: _remarksController,
-                                        type: PRFTextFieldType.textArea,
-                                        minLines: 3,
-                                        maxLines: 6,
-                                      ),
-                                    )
-                                    .animate(delay: PRFMotionTokens.enterShort)
-                                    .slideX(begin: -0.2)
-                                    .fadeIn(),
-                              ],
-                            ),
-                          ),
-                          ResourceItemError<PRFRequisition>(:final message) =>
-                            Center(
-                              child: Text(
-                                'Error loading requisition: $message',
-                                style: Theme.of(context).textTheme.bodyLarge
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.error,
-                                    ),
-                              ),
+                          ResourceItemLoaded<PRFRequisition>() =>
+                            _buildFormCard(context),
+                          ResourceItemError<PRFRequisition>(:final item)
+                              when item != null || requisition != null =>
+                            _buildFormCard(context),
+                          ResourceItemError<PRFRequisition>() =>
+                            PRFErrorView.inline(
+                              title: l10n.requisitionDetailLoadErrorTitle,
+                              message: l10n.requisitionDetailLoadErrorMessage,
+                              retryLabel: l10n.tryAgain,
+                              onRetry: _loadRequisition,
                             ),
                           _ => const SizedBox.shrink(),
                         };
@@ -283,14 +145,15 @@ class _EditRequisitionViewHandsetState
                     const SizedBox(height: PRFSpacingTokens.xxl),
 
                     PRFButton(
-                          onPressed: _submitForm,
-                          title: 'Update',
-                          disabled: !_isFormValid,
-                          isLoading: _isLoading,
-                        )
-                        .animate(delay: PRFMotionTokens.enterMedium)
-                        .slideY(begin: 0.3)
-                        .fadeIn(),
+                      onPressed: _submitForm,
+                      title: l10n.requisitionActionSaveChanges,
+                      disabled: _isLoading || requisition == null,
+                      isLoading: _isLoading,
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(0, 0.3),
+                    ),
 
                     const SizedBox(height: PRFSpacingTokens.xxxl),
                   ],
@@ -301,28 +164,86 @@ class _EditRequisitionViewHandsetState
     );
   }
 
+  Widget _buildFormCard(BuildContext context) {
+    final l10n = context.l10n;
+    return requisitionFormCard(
+      context,
+      child: Column(
+        children: [
+          PRFFormSection(
+            icon: Icons.schedule_outlined,
+            title: l10n.requisitionDate,
+            isRequired: true,
+            child: Semantics(
+              button: true,
+              label: l10n.requisitionDate,
+              value: _requisitionDateController.text,
+              hint: l10n.requisitionActionSelectDate,
+              excludeSemantics: true,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _selectRequisitionDate,
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+                  child: AbsorbPointer(
+                    child: PRFTextField(
+                      hintText: l10n.requisitionActionSelectDate,
+                      controller: _requisitionDateController,
+                      enabled: false,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ).entrance(
+            context,
+            delay: PRFMotionTokens.stagger4,
+            slide: const Offset(-0.2, 0),
+          ),
+          PRFFormSection(
+            icon: Icons.notes_outlined,
+            title: l10n.purpose,
+            isRequired: true,
+            child: PRFTextField(
+              hintText: l10n.requisitionActionPurposeHint,
+              controller: _remarksController,
+              type: PRFTextFieldType.textArea,
+              minLines: 3,
+              maxLines: 6,
+            ),
+          ).entrance(
+            context,
+            delay: PRFMotionTokens.stagger5,
+            slide: const Offset(-0.2, 0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _loadRequisition() {
+    context.read<RequisitionDetailCubit>().loadOne(
+      id: widget.requisitionUlid,
+      matchById: (item) => item.ulid == widget.requisitionUlid,
+    );
+  }
+
   Future<void> _submitForm() async {
     final l10n = context.l10n;
 
     if (_remarksController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.enterPurpose)));
+      PRFSnackbar.warning(context, l10n.enterPurpose);
       Gaimon.warning();
       return;
     }
 
     if (requisitionDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select requisition date')),
-      );
+      PRFSnackbar.warning(context, l10n.requisitionActionDateRequired);
       Gaimon.warning();
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     await context.read<RequisitionDetailCubit>().update(
       id: widget.requisitionUlid,

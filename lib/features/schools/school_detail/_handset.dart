@@ -1,17 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/enums/prf_header_action_button_variant.dart';
 import 'package:leadership/features/schools/actions/contact_form/_handset.dart';
 import 'package:leadership/features/schools/actions/school_form/_handset.dart';
 import 'package:leadership/features/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/schools/cubit/school_cubit.dart';
 import 'package:leadership/features/schools/widgets/school_contact_row.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
 import 'package:leadership/models/remote/prf_school.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -66,6 +65,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return BlocBuilder<SchoolCubit, ResourceState<PRFSchool>>(
       builder: (context, state) {
@@ -73,7 +73,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
         if (school == null) {
           return Scaffold(
             appBar: PRFAppBar(
-              title: 'School Details',
+              title: l10n.schoolsDetailTitle,
               onBack: () => context.router.maybePop(),
             ),
             body: const Center(child: PRFCircularProgressIndicator()),
@@ -91,35 +91,37 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   child: Column(
                     children: [
                       PRFBrandedNavBar(
-                        title: 'Schools',
+                        title: l10n.schoolsTitle,
                         onBack: () => context.router.maybePop(),
                         actions: [
-                          PRFHeaderActionButton(
-                            label: 'Edit',
-                            variant: PRFHeaderActionButtonVariant.neutral,
-                            onTap: () => _showEditForm(school),
+                          PRFNavBarAction(
+                            label: l10n.edit,
+                            icon: Icons.edit_outlined,
+                            tooltip: l10n.schoolsEditTooltip,
+                            variant: PRFNavBarActionVariant.neutral,
+                            onPressed: () => _showEditForm(school),
                           ),
                           const SizedBox(width: PRFSpacingTokens.sm),
                           Container(
                             decoration: BoxDecoration(
                               color: theme.colorScheme.onPrimary.withValues(
-                                alpha: 0.14,
+                                alpha: PRFOpacities.hairline,
                               ),
                               borderRadius: BorderRadius.circular(
                                 PRFRadiusTokens.md,
                               ),
                               border: Border.all(
                                 color: theme.colorScheme.onPrimary.withValues(
-                                  alpha: 0.18,
+                                  alpha: PRFOpacities.muted,
                                 ),
                               ),
                             ),
                             child: PopupMenuButton<String>(
-                              padding: EdgeInsets.zero,
+                              tooltip: l10n.schoolsMoreOptions,
                               icon: Icon(
                                 Icons.more_vert,
                                 color: theme.colorScheme.onPrimary,
-                                size: 20,
+                                size: PRFSizeTokens.iconMd,
                               ),
                               onSelected: (value) {
                                 if (value == 'delete') {
@@ -127,13 +129,25 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                                 }
                               },
                               itemBuilder: (_) => [
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'delete',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.delete_outline, size: 20),
-                                      SizedBox(width: PRFSpacingTokens.sm),
-                                      Text('Delete School'),
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: PRFSizeTokens.iconMd,
+                                        color: theme.colorScheme.error,
+                                      ),
+                                      const SizedBox(
+                                        width: PRFSpacingTokens.sm,
+                                      ),
+                                      Text(
+                                        l10n.schoolsDeleteSchool,
+                                        style: theme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                              color: theme.colorScheme.error,
+                                            ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -158,10 +172,10 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                               tabAlignment: TabAlignment.start,
                               labelColor: theme.colorScheme.onPrimary,
                               unselectedLabelColor: theme.colorScheme.onPrimary
-                                  .withValues(alpha: 0.65),
+                                  .withValues(alpha: PRFOpacities.stronger),
                               indicatorColor: theme.colorScheme.secondary,
                               dividerColor: theme.colorScheme.onPrimary
-                                  .withValues(alpha: 0.2),
+                                  .withValues(alpha: PRFOpacities.muted),
                               labelStyle: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -169,9 +183,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                               labelPadding: const EdgeInsets.symmetric(
                                 horizontal: PRFSpacingTokens.sm,
                               ),
-                              tabs: const [
-                                Tab(text: 'Overview'),
-                                Tab(text: 'Contacts'),
+                              tabs: [
+                                Tab(text: l10n.schoolsTabOverview),
+                                Tab(text: l10n.schoolsTabContacts),
                               ],
                             ),
                           ),
@@ -246,12 +260,8 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
 
   Widget _buildHeroSection(ThemeData theme, PRFSchool school) {
     final initials = _getInitials(school.name);
-    final mode = theme.brightness == Brightness.dark
-        ? ThemeMode.dark
-        : ThemeMode.light;
-    final onPrimary = mode == ThemeMode.dark
-        ? PRFColors.gray100
-        : theme.colorScheme.onPrimary;
+    final primary = theme.colorScheme.primary;
+    final onPrimary = theme.colorScheme.onPrimary;
 
     return Container(
       width: double.infinity,
@@ -260,9 +270,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            theme.colorScheme.primary,
-            PRFColors.navy600,
-            PRFColors.navy400,
+            primary,
+            primary,
+            Color.lerp(primary, theme.colorScheme.surface, 0.12)!,
           ],
           stops: const [0.0, 0.5, 1.0],
         ),
@@ -273,13 +283,13 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           children: [
             // Avatar
             Container(
-              width: 64,
-              height: 64,
+              width: PRFSizeTokens.iconHero,
+              height: PRFSizeTokens.iconHero,
               decoration: BoxDecoration(
-                color: onPrimary.withValues(alpha: 0.2),
+                color: onPrimary.withValues(alpha: PRFOpacities.muted),
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                 border: Border.all(
-                  color: onPrimary.withValues(alpha: 0.2),
+                  color: onPrimary.withValues(alpha: PRFOpacities.muted),
                   width: 3,
                 ),
               ),
@@ -303,15 +313,18 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: onPrimary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 20,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(height: PRFSpacingTokens.sm),
             // Type + student count badges
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: PRFSpacingTokens.sm,
+              runSpacing: PRFSpacingTokens.sm,
               children: [
                 // Institution type badge
                 Container(
@@ -320,20 +333,17 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                     vertical: PRFSpacingTokens.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: PRFColors.limeGreen.withValues(alpha: 0.2),
+                    color: theme.colorScheme.secondary,
                     borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                   ),
                   child: Text(
                     school.institutionType.name,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: mode == ThemeMode.dark
-                          ? PRFColors.gray100
-                          : theme.colorScheme.secondary,
+                      color: theme.colorScheme.onSecondary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const SizedBox(width: PRFSpacingTokens.sm),
                 // Students badge
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -341,14 +351,13 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                     vertical: PRFSpacingTokens.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: onPrimary.withValues(alpha: 0.2),
+                    color: onPrimary.withValues(alpha: PRFOpacities.muted),
                     borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                   ),
                   child: Text(
-                    '${school.totalStudents}'
-                    ' students',
+                    context.l10n.schoolsStudentCount(school.totalStudents),
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: onPrimary.withValues(alpha: 0.95),
+                      color: onPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -364,7 +373,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    theme.colorScheme.surface.withValues(alpha: 0.8),
+                    theme.colorScheme.surface.withValues(
+                      alpha: PRFOpacities.stronger,
+                    ),
                     theme.colorScheme.surface,
                   ],
                 ),
@@ -386,20 +397,30 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'SCHOOL INFORMATION',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-              letterSpacing: 0.6,
+          Semantics(
+            header: true,
+            child: Text(
+              context.l10n.schoolsInfoHeading,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
           const SizedBox(height: PRFSpacingTokens.lg),
-          _infoRow(theme, 'Address', school.address),
+          _infoRow(theme, context.l10n.schoolsAddressLabel, school.address),
           if (school.description.isNotEmpty && school.description != 'N/A')
-            _infoRow(theme, 'Description', school.description),
+            _infoRow(
+              theme,
+              context.l10n.schoolsDescriptionLabel,
+              school.description,
+            ),
           if (school.directions.isNotEmpty && school.directions != 'N/A')
-            _infoRow(theme, 'Directions', school.directions),
+            _infoRow(
+              theme,
+              context.l10n.schoolsDirectionsLabel,
+              school.directions,
+            ),
         ],
       ),
     );
@@ -413,20 +434,17 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11,
+            style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
-              fontSize: 14,
-              height: 1.45,
             ),
           ),
         ],
@@ -439,63 +457,70 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   // -----------------------------------------------------------
 
   Widget _buildLocationRow(ThemeData theme, PRFSchool school) {
-    final mode = theme.brightness == Brightness.dark
-        ? ThemeMode.dark
-        : ThemeMode.light;
-
+    final l10n = context.l10n;
     return _buildSectionCard(
       theme: theme,
-      padding: const EdgeInsets.all(PRFSpacingTokens.md),
-      child: InkWell(
-        onTap: () => _openSchoolInMaps(school),
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        child: Row(
-          children: [
-            // Location icon container
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: PRFColors.navy50,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.location_on,
-                color: theme.colorScheme.primary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.zero,
+      child: Semantics(
+        button: true,
+        label: l10n.schoolsOpenInMaps,
+        hint: l10n.schoolsOpenInMapsHint,
+        excludeSemantics: true,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: () => _openSchoolInMaps(school),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+            child: Padding(
+              padding: const EdgeInsets.all(PRFSpacingTokens.md),
+              child: Row(
                 children: [
-                  Text(
-                    'View on Map',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: mode == ThemeMode.dark
-                          ? PRFColors.gray100
-                          : PRFColors.gray900,
+                  // Location icon container
+                  Container(
+                    width: PRFSizeTokens.iconXxl,
+                    height: PRFSizeTokens.iconXxl,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.location_on,
+                      color: theme.colorScheme.onPrimaryContainer,
+                      size: PRFSizeTokens.iconMd,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _coordsText(school),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: mode == ThemeMode.dark
-                          ? PRFColors.gray500
-                          : PRFColors.gray500,
+                  const SizedBox(width: PRFSpacingTokens.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.schoolsOpenInMaps,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: PRFSpacingTokens.xs / 2),
+                        Text(
+                          _coordsText(school),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: theme.colorScheme.primary,
+                    size: PRFSizeTokens.iconLg,
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: theme.colorScheme.primary),
-          ],
+          ),
         ),
       ),
     );
@@ -510,7 +535,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
 
     if (availableMaps.isEmpty) {
       if (!mounted) return;
-      PRFSnackbar.error(context, 'No map apps available');
+      PRFSnackbar.error(context, context.l10n.schoolsNoMapApps);
       return;
     }
 
@@ -520,26 +545,27 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     }
 
     if (!mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (bottomSheetContext) {
-        return SafeArea(
-          child: Wrap(
-            children: availableMaps
-                .map(
-                  (map) => ListTile(
-                    onTap: () {
-                      Navigator.pop(bottomSheetContext);
-                      map.show();
-                    },
-                    title: Text(map.name),
-                    leading: const Icon(Icons.map),
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      },
+    await PRFBottomSheet.show<void>(
+      context,
+      title: context.l10n.schoolsChooseMapApp,
+      child: Builder(
+        builder: (sheetContext) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: availableMaps
+              .map(
+                (map) => ListTile(
+                  minTileHeight: PRFSizeTokens.minTouchTarget,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    map.show();
+                  },
+                  title: Text(map.name),
+                  leading: const Icon(Icons.map, size: PRFSizeTokens.iconLg),
+                ),
+              )
+              .toList(),
+        ),
+      ),
     );
   }
 
@@ -550,8 +576,10 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   Widget _buildContactsPreview(ThemeData theme, PRFSchool school) {
     return BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
       listener: (context, state) {
-        if (state case ResourceError<PRFContact>(:final message)) {
-          PRFSnackbar.error(context, message);
+        if (state case ResourceError<PRFContact>(
+          :final items,
+        ) when items.isNotEmpty) {
+          PRFSnackbar.error(context, context.l10n.schoolContactsActionFailed);
         }
       },
       builder: (context, state) {
@@ -561,6 +589,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           ResourceError<PRFContact>(:final items) => items,
           _ => school.contacts,
         };
+        final l10n = context.l10n;
+        final loadFailed =
+            state is ResourceError<PRFContact> && contacts.isEmpty;
 
         return _buildSectionCard(
           theme: theme,
@@ -571,21 +602,22 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'CONTACTS'
-                      ' (${contacts.length})',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurfaceVariant,
-                        letterSpacing: 0.5,
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        l10n.schoolContactsHeading(contacts.length),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ),
-                  PRFHeaderActionButton(
-                    label: 'New',
+                  PRFNavBarAction(
+                    label: l10n.commonNew,
                     icon: Icons.add,
-                    onTap: () => _showContactForm(null, school),
+                    tooltip: l10n.schoolContactsAddTooltip,
+                    onPressed: () => _showContactForm(null, school),
                   ),
                 ],
               ),
@@ -598,6 +630,15 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                     child: PRFCircularProgressIndicator(),
                   ),
                 )
+              else if (loadFailed)
+                PRFErrorView.inline(
+                  title: l10n.schoolContactsLoadError,
+                  message: l10n.commonLoadErrorMessage,
+                  retryLabel: l10n.commonTryAgain,
+                  onRetry: () => context.read<ContactCubit>().loadForSchool(
+                    widget.schoolUlid,
+                  ),
+                )
               else if (contacts.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -605,7 +646,8 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   ),
                   child: Center(
                     child: Text(
-                      'No contacts yet',
+                      l10n.schoolContactsEmpty,
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -644,7 +686,9 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.34),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
+          ),
         ),
       ),
       child: child,
@@ -658,37 +702,37 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   void _showEditForm(PRFSchool school) {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Edit School',
+      title: context.l10n.schoolsEdit,
       child: SchoolFormViewHandset(school: school, onSaved: _reloadData),
     );
   }
 
   void _showDeleteDialog(PRFSchool school) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     PRFConfirmationDialog.show(
       context,
-      title: 'Delete School',
+      title: l10n.schoolsDeleteTitle,
       isDestructive: true,
-      confirmLabel: 'Delete',
+      confirmLabel: l10n.schoolsDeleteSchool,
+      cancelLabel: l10n.cancel,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Are you sure you want to delete '
-            'this school?',
-            style: theme.textTheme.bodyLarge,
-          ),
-          const SizedBox(height: PRFSpacingTokens.lg),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(PRFSpacingTokens.lg),
             decoration: BoxDecoration(
-              color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+              color: theme.colorScheme.errorContainer.withValues(
+                alpha: PRFOpacities.glow,
+              ),
               borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               border: Border.all(
-                color: theme.colorScheme.error.withValues(alpha: 0.3),
+                color: theme.colorScheme.error.withValues(
+                  alpha: PRFOpacities.glow,
+                ),
               ),
             ),
             child: Column(
@@ -705,7 +749,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
                   school.institutionType.name,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontStyle: FontStyle.italic,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -713,8 +757,8 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
           ),
           const SizedBox(height: PRFSpacingTokens.lg),
           Text(
-            'This action cannot be undone.',
-            style: theme.textTheme.bodySmall?.copyWith(
+            l10n.schoolsCannotUndo,
+            style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.error,
               fontWeight: FontWeight.w500,
             ),
@@ -731,17 +775,15 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
   void _showContactForm(PRFContact? contact, PRFSchool school) {
     final contactTypes = _contactTypes;
     if (contactTypes.isEmpty) {
-      PRFSnackbar.error(
-        context,
-        'Contact types are still loading. '
-        'Please retry in a moment.',
-      );
+      PRFSnackbar.error(context, context.l10n.schoolContactsTypesLoading);
       return;
     }
 
     PRFBottomSheet.show<void>(
       context,
-      title: contact == null ? 'Add Contact' : 'Edit Contact',
+      title: contact == null
+          ? context.l10n.schoolContactsAdd
+          : context.l10n.schoolContactsEdit,
       child: ContactFormViewHandset(
         contact: contact,
         schoolUlid: school.ulid,
@@ -755,7 +797,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     final sanitized = phone.trim();
     if (sanitized.isEmpty) {
       if (!mounted) return;
-      PRFSnackbar.error(context, 'No phone number available');
+      PRFSnackbar.error(context, context.l10n.schoolContactsNoPhone);
       return;
     }
 
@@ -763,7 +805,7 @@ class _SchoolDetailPageHandsetState extends State<SchoolDetailPageHandset> {
     final didLaunch = await Misc.openUrl(callUri);
 
     if (!didLaunch && mounted) {
-      PRFSnackbar.error(context, 'Could not launch your phone dialer');
+      PRFSnackbar.error(context, context.l10n.schoolContactsCallFailed);
     }
   }
 

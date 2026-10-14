@@ -1,10 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:leadership/di/di_container.dart';
 import 'package:leadership/features/home/landing/models/landing_action_item.dart';
-import 'package:leadership/features/home/landing/widgets/landing_action_tile.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/constants.dart';
@@ -45,7 +46,10 @@ class LandingPageTablet extends StatelessWidget {
                 _LandingActionSection(title: entry.key, actions: entry.value),
           ),
       if (settingsActions.isNotEmpty)
-        _LandingActionSection(title: 'Settings', actions: settingsActions),
+        _LandingActionSection(
+          title: l10n.homeSettings,
+          actions: settingsActions,
+        ),
     ];
 
     return PopScope(
@@ -64,96 +68,101 @@ class LandingPageTablet extends StatelessWidget {
                   child: Row(
                     children: [
                       // Profile Picture
-                      GestureDetector(
-                            onTap: () => context.router.pushPath(
-                              PRFLeadershipRouter.accountRoute,
-                            ),
-                            child: Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: theme.colorScheme.primary,
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colorScheme.primary.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                      _breathe(
+                        context,
+                        Semantics(
+                          button: true,
+                          label: l10n.homeOpenAccount,
+                          excludeSemantics: true,
+                          child: Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.antiAlias,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () => context.router.pushPath(
+                                PRFLeadershipRouter.accountRoute,
+                              ),
+                              child: Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary,
+                                    width: 2,
                                   ),
-                                ],
-                              ),
-                              child: ClipOval(
-                                child: ValueListenableBuilder(
-                                  valueListenable: Hive.box<dynamic>(
-                                    PRFLeadershipConfig
-                                        .instance!
-                                        .values
-                                        .hiveBox,
-                                  ).listenable(),
-                                  builder: (context, _, _) {
-                                    final profilePicture = getIt<HiveService>()
-                                        .retrieveMember()
-                                        ?.profilePicture;
+                                  boxShadow: PRFShadowTokens.badge(
+                                    theme.colorScheme.primary,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: ValueListenableBuilder(
+                                    valueListenable: Hive.box<dynamic>(
+                                      PRFLeadershipConfig
+                                          .instance!
+                                          .values
+                                          .hiveBox,
+                                    ).listenable(),
+                                    builder: (context, _, _) {
+                                      final profilePicture =
+                                          getIt<HiveService>()
+                                              .retrieveMember()
+                                              ?.profilePicture;
 
-                                    return profilePicture != null
-                                        ? Image.network(
-                                            profilePicture.temporaryURL,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) => CircleAvatar(
-                                                  backgroundColor: theme
-                                                      .colorScheme
-                                                      .surfaceContainerHighest,
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    size: 32,
-                                                    color: theme
+                                      return profilePicture != null
+                                          ? Image.network(
+                                              profilePicture.temporaryURL,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => CircleAvatar(
+                                                    backgroundColor: theme
                                                         .colorScheme
-                                                        .primary,
+                                                        .surfaceContainerHighest,
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      size:
+                                                          PRFSizeTokens.iconXl,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
+                                                    ),
                                                   ),
+                                            )
+                                          : CircleAvatar(
+                                              backgroundColor:
+                                                  theme.colorScheme.primary,
+                                              child: Text(
+                                                Misc.getUserNameInitials(
+                                                  getIt<HiveService>()
+                                                          .retrieveMember()
+                                                          ?.fullName ??
+                                                      '',
                                                 ),
-                                          )
-                                        : CircleAvatar(
-                                            backgroundColor:
-                                                theme.colorScheme.primary,
-                                            child: Text(
-                                              Misc.getUserNameInitials(
-                                                getIt<HiveService>()
-                                                        .retrieveMember()
-                                                        ?.fullName ??
-                                                    '',
+                                                style: theme
+                                                    .textTheme
+                                                    .titleLarge
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .onPrimary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
                                               ),
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                            ),
-                                          );
-                                  },
+                                            );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
-                          )
-                          .animate(
-                            onPlay: (controller) =>
-                                controller.repeat(reverse: true),
-                          )
-                          .scale(
-                            duration: 2000.ms,
-                            begin: const Offset(1, 1),
-                            end: const Offset(1.05, 1.05),
-                          )
-                          .then(delay: 1000.ms),
+                          ),
+                        ),
+                      ),
 
                       const SizedBox(width: PRFSpacingTokens.xxl),
 
@@ -197,7 +206,9 @@ class LandingPageTablet extends StatelessWidget {
               ),
 
               // Bottom spacing
-              const SliverToBoxAdapter(child: SizedBox(height: 60)),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: PRFSpacingTokens.xxxl),
+              ),
             ],
           ),
         ),
@@ -205,27 +216,32 @@ class LandingPageTablet extends StatelessWidget {
     );
   }
 
-  Widget _buildTabletActionCard({
+  Widget _buildTabletActionCard(
+    BuildContext context, {
     required String title,
     required String assetPath,
     required VoidCallback onTap,
     required int delay,
     bool isNeutralCard = false,
   }) {
+    final cappedDelay = Duration(milliseconds: delay);
     return Animate(
       effects: [
         FadeEffect(
-          duration: 360.ms,
-          delay: Duration(milliseconds: delay),
+          duration: PRFMotionTokens.resolve(context, PRFMotionTokens.slow),
+          delay: PRFMotionTokens.resolve(context, cappedDelay),
         ),
         SlideEffect(
-          duration: 420.ms,
-          delay: Duration(milliseconds: delay),
+          duration: PRFMotionTokens.resolve(
+            context,
+            PRFMotionTokens.enterShort,
+          ),
+          delay: PRFMotionTokens.resolve(context, cappedDelay),
           begin: const Offset(0, 0.08),
-          curve: Curves.easeOut,
+          curve: PRFMotionTokens.settling,
         ),
       ],
-      child: LandingActionTile(
+      child: PRFNavigationTile(
         title: title,
         assetPath: assetPath,
         onTap: onTap,
@@ -233,6 +249,20 @@ class LandingPageTablet extends StatelessWidget {
         isNeutralCard: isNeutralCard,
       ),
     );
+  }
+
+  /// Gentle repeating pulse on the avatar; skipped entirely when the user
+  /// has asked the system to reduce motion.
+  Widget _breathe(BuildContext context, Widget child) {
+    if (MediaQuery.of(context).disableAnimations) return child;
+    return child
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .scale(
+          duration: 2000.ms,
+          begin: const Offset(1, 1),
+          end: const Offset(1.05, 1.05),
+        )
+        .then(delay: 1000.ms);
   }
 
   List<Widget> _buildSectionSlivers({
@@ -261,11 +291,14 @@ class LandingPageTablet extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    section.title,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurface,
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      section.title,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   const SizedBox(height: PRFSpacingTokens.sm),
@@ -274,7 +307,7 @@ class LandingPageTablet extends StatelessWidget {
                     height: 4,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.xs),
                     ),
                   ),
                 ],
@@ -297,10 +330,13 @@ class LandingPageTablet extends StatelessWidget {
               delegate: SliverChildBuilderDelegate((context, index) {
                 final action = section.actions[index];
                 return _buildTabletActionCard(
+                  context,
                   title: action.title,
                   assetPath: action.assetPath,
                   onTap: action.onTap,
-                  delay: action.animationDelay + ((sectionStart + index) * 40),
+                  delay:
+                      action.animationDelay +
+                      (math.min(sectionStart + index, 8) * 40),
                   isNeutralCard: action.isNeutralCard,
                 );
               }, childCount: section.actions.length),

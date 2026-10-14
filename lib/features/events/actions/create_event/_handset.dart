@@ -61,6 +61,9 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
     super.dispose();
   }
 
+  Duration _motion(Duration duration) =>
+      PRFMotionTokens.resolve(context, duration);
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -71,7 +74,9 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+            Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: PRFOpacities.faint),
             Theme.of(context).colorScheme.surface,
           ],
         ),
@@ -94,27 +99,21 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                         gradient: LinearGradient(
                           colors: [
                             Theme.of(context).colorScheme.primary,
-                            Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.8),
+                            Theme.of(context).colorScheme.primary.withValues(
+                              alpha: PRFOpacities.stronger,
+                            ),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: PRFShadowTokens.badge(
+                          Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                       child: Column(
                         children: [
                           Icon(
                             Icons.add_circle_outline,
-                            size: 32,
+                            size: PRFSizeTokens.iconXl,
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           const SizedBox(height: PRFSpacingTokens.sm),
@@ -134,7 +133,9 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.onPrimary
-                                      .withValues(alpha: 0.9),
+                                      .withValues(
+                                        alpha: PRFOpacities.nearOpaque,
+                                      ),
                                 ),
                             textAlign: TextAlign.center,
                           ),
@@ -142,8 +143,11 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                       ),
                     )
                     .animate()
-                    .slideY(begin: -0.3)
-                    .fadeIn(duration: PRFMotionTokens.enterShort),
+                    .slideY(
+                      begin: -0.3,
+                      duration: _motion(PRFMotionTokens.enterShort),
+                    )
+                    .fadeIn(),
 
                 const SizedBox(height: PRFSpacingTokens.xxl),
 
@@ -154,19 +158,13 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                     border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.2),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.shadow.withValues(alpha: 0.1),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                      color: Theme.of(context).colorScheme.outline.withValues(
+                        alpha: PRFOpacities.muted,
                       ),
-                    ],
+                    ),
+                    boxShadow: PRFShadowTokens.card(
+                      Theme.of(context).colorScheme.shadow,
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -211,8 +209,11 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                               hintText: l10n.responsibleDesk,
                             ),
                           )
-                          .animate(delay: PRFMotionTokens.stagger3)
-                          .slideX(begin: -0.2)
+                          .animate(delay: _motion(PRFMotionTokens.stagger3))
+                          .slideX(
+                            begin: -0.2,
+                            duration: _motion(PRFMotionTokens.slow),
+                          )
                           .fadeIn(),
 
                       PRFFormSection(
@@ -224,25 +225,45 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                               controller: _titleController,
                             ),
                           )
-                          .animate(delay: PRFMotionTokens.enterShort)
-                          .slideX(begin: -0.2)
+                          .animate(delay: _motion(PRFMotionTokens.enterShort))
+                          .slideX(
+                            begin: -0.2,
+                            duration: _motion(PRFMotionTokens.slow),
+                          )
                           .fadeIn(),
 
                       PRFFormSection(
                             icon: Icons.schedule_outlined,
                             title: l10n.startTime,
                             isRequired: true,
-                            child: GestureDetector(
-                              onTap: _selectStartDate,
-                              child: PRFTextField(
-                                hintText: l10n.startTime,
-                                controller: _startDateController,
-                                enabled: false,
+                            child: Semantics(
+                              button: true,
+                              label: l10n.eventsChooseStartTime,
+                              value: _startDateController.text,
+                              excludeSemantics: true,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _selectStartDate,
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.md,
+                                  ),
+                                  child: IgnorePointer(
+                                    child: PRFTextField(
+                                      hintText: l10n.eventsChooseStartTime,
+                                      controller: _startDateController,
+                                      enabled: false,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           )
-                          .animate(delay: PRFMotionTokens.stagger4)
-                          .slideX(begin: -0.2)
+                          .animate(delay: _motion(PRFMotionTokens.stagger4))
+                          .slideX(
+                            begin: -0.2,
+                            duration: _motion(PRFMotionTokens.slow),
+                          )
                           .fadeIn(),
 
                       PRFFormSection(
@@ -260,30 +281,41 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                             members,
                                           ),
                                       listLoading: (items) => Container(
-                                        height: 60,
+                                        constraints: const BoxConstraints(
+                                          minHeight: 60,
+                                        ),
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .outline
-                                                .withValues(alpha: 0.2),
+                                                .withValues(
+                                                  alpha: PRFOpacities.muted,
+                                                ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             PRFRadiusTokens.md,
                                           ),
                                         ),
                                         child: const Center(
-                                          child: CircularProgressIndicator(),
+                                          child: PRFCircularProgressIndicator(),
                                         ),
                                       ),
                                       orElse: () => Container(
-                                        height: 60,
+                                        constraints: const BoxConstraints(
+                                          minHeight: 60,
+                                        ),
+                                        padding: const EdgeInsets.all(
+                                          PRFSpacingTokens.md,
+                                        ),
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .outline
-                                                .withValues(alpha: 0.2),
+                                                .withValues(
+                                                  alpha: PRFOpacities.muted,
+                                                ),
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             PRFRadiusTokens.md,
@@ -291,7 +323,10 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            'No members available',
+                                            selectedResponsibleDesk == null
+                                                ? l10n.eventsChooseDeskForMembers
+                                                : l10n.eventsNoMembersAvailable,
+                                            textAlign: TextAlign.center,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium
@@ -307,8 +342,11 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                                   },
                                 ),
                           )
-                          .animate(delay: PRFMotionTokens.stagger3)
-                          .slideX(begin: -0.2)
+                          .animate(delay: _motion(PRFMotionTokens.stagger5))
+                          .slideX(
+                            begin: -0.2,
+                            duration: _motion(PRFMotionTokens.slow),
+                          )
                           .fadeIn(),
                     ],
                   ),
@@ -318,63 +356,69 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
 
                 // Submit Button
                 BlocConsumer<EventResourceCubit, ResourceState<PRFEvent>>(
-                  listener: (context, state) {
-                    state.maybeWhen(
-                      mutating: (items, operation) {
-                        if (operation != ResourceOperation.create) {
-                          return;
-                        }
-                        setState(() {
-                          _isLoading = true;
-                        });
-                      },
-                      listLoaded: (items, page, hasMore) {
-                        if (_isLoading) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          Gaimon.success();
+                      listener: (context, state) {
+                        state.maybeWhen(
+                          mutating: (items, operation) {
+                            if (operation != ResourceOperation.create) {
+                              return;
+                            }
+                            setState(() {
+                              _isLoading = true;
+                            });
+                          },
+                          listLoaded: (items, page, hasMore) {
+                            if (_isLoading) {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              Gaimon.success();
 
-                          final requisition = context
-                              .read<EventResourceCubit>()
-                              .lastCreatedRequisition;
-                          if (requisition == null) {
-                            PRFSnackbar.error(
-                              context,
-                              'Event created but requisition was not found',
-                            );
-                            return;
-                          }
+                              final requisition = context
+                                  .read<EventResourceCubit>()
+                                  .lastCreatedRequisition;
+                              if (requisition == null) {
+                                PRFSnackbar.error(
+                                  context,
+                                  l10n.eventsRequisitionNotFound,
+                                );
+                                return;
+                              }
 
-                          Navigator.of(context).pop();
-                          context.router.push(
-                            RequisitionDetailsRoute(
-                              requisitionUlid: requisition.ulid,
-                            ),
-                          );
+                              Navigator.of(context).pop();
+                              context.router.push(
+                                RequisitionDetailsRoute(
+                                  requisitionUlid: requisition.ulid,
+                                ),
+                              );
 
-                          PRFSnackbar.success(context, l10n.activityCreated);
-                        }
+                              PRFSnackbar.success(
+                                context,
+                                l10n.activityCreated,
+                              );
+                            }
+                          },
+                          error: (message, items) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            Gaimon.error();
+                            PRFSnackbar.error(context, l10n.eventsCreateFailed);
+                          },
+                          orElse: () {},
+                        );
                       },
-                      error: (message, items) {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        Gaimon.error();
-                        PRFSnackbar.error(context, message);
+                      builder: (context, state) {
+                        return PRFButton(
+                          onPressed: _submitForm,
+                          title: l10n.eventsCreateActivityButton,
+                          disabled: !_isFormValid,
+                          isLoading: _isLoading,
+                        );
                       },
-                      orElse: () {},
-                    );
-                  },
-                  builder: (context, state) {
-                    return PRFButton(
-                      onPressed: _submitForm,
-                      title: l10n.record,
-                      disabled: !_isFormValid,
-                      isLoading: _isLoading,
-                    );
-                  },
-                ).animate(delay: 700.ms).slideY(begin: 0.3).fadeIn(),
+                    )
+                    .animate(delay: _motion(PRFMotionTokens.enterLong))
+                    .slideY(begin: 0.3, duration: _motion(PRFMotionTokens.slow))
+                    .fadeIn(),
 
                 const SizedBox(height: PRFSpacingTokens.xxxl),
               ],
@@ -397,45 +441,35 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
             spacing: PRFSpacingTokens.sm,
             runSpacing: PRFSpacingTokens.sm,
             children: selectedParticipants.map((member) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.md,
-                  vertical: 6,
+              return InputChip(
+                label: Text(member.fullName),
+                labelStyle: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w500,
                 ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                  border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                backgroundColor: theme.colorScheme.primaryContainer,
+                side: BorderSide(
+                  color: theme.colorScheme.primary.withValues(
+                    alpha: PRFOpacities.glow,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      member.fullName,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedParticipants.removeWhere(
-                            (p) => p.ulid == member.ulid,
-                          );
-                        });
-                      },
-                      child: Icon(
-                        Icons.close,
-                        size: 16,
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                 ),
+                deleteIcon: Icon(
+                  Icons.close,
+                  size: PRFSizeTokens.iconSm,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+                deleteButtonTooltipMessage:
+                    context.l10n.eventsRemoveParticipant,
+                onDeleted: () {
+                  setState(() {
+                    selectedParticipants.removeWhere(
+                      (p) => p.ulid == member.ulid,
+                    );
+                  });
+                },
               );
             }).toList(),
           ),
@@ -447,16 +481,18 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
           constraints: const BoxConstraints(maxHeight: 200),
           decoration: BoxDecoration(
             border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.2),
+              color: theme.colorScheme.outline.withValues(
+                alpha: PRFOpacities.muted,
+              ),
             ),
             borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           ),
           child: members.isEmpty
-              ? SizedBox(
-                  height: 60,
+              ? Padding(
+                  padding: const EdgeInsets.all(PRFSpacingTokens.lg),
                   child: Center(
                     child: Text(
-                      'No members available',
+                      context.l10n.eventsNoMembersAvailable,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -468,7 +504,9 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                   itemCount: members.length,
                   separatorBuilder: (context, index) => Divider(
                     height: 1,
-                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                    color: theme.colorScheme.outline.withValues(
+                      alpha: PRFOpacities.subtle,
+                    ),
                   ),
                   itemBuilder: (context, index) {
                     final member = members[index];
@@ -477,7 +515,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                     );
 
                     return ListTile(
-                      dense: true,
+                      selected: isSelected,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: PRFSpacingTokens.lg,
                         vertical: PRFSpacingTokens.xs,
@@ -490,7 +528,7 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
                         child: isSelected
                             ? Icon(
                                 Icons.check,
-                                size: 16,
+                                size: PRFSizeTokens.iconSm,
                                 color: theme.colorScheme.onPrimary,
                               )
                             : Text(
@@ -542,10 +580,10 @@ class _CreateEventViewHandsetState extends State<CreateEventViewHandset> {
         const SizedBox(height: PRFSpacingTokens.sm),
         Text(
           selectedParticipants.isEmpty
-              ? 'Select participants from the list above'
-              : '${selectedParticipants.length} '
-                    'participant${selectedParticipants.length == 1 ? '' : 's'} '
-                    'selected',
+              ? context.l10n.eventsSelectParticipantsHint
+              : context.l10n.eventsParticipantsSelected(
+                  selectedParticipants.length,
+                ),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

@@ -6,6 +6,7 @@ import 'package:leadership/enums/prf_entry_type.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/shared/expenses/cubit/allocation_entry_resource_cubit.dart';
+import 'package:leadership/shared/expenses/widgets/expense_choice_chip.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -44,6 +45,8 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
+    Duration motion(Duration d) => PRFMotionTokens.resolve(context, d);
 
     return Container(
       decoration: BoxDecoration(
@@ -51,8 +54,8 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
+            theme.colorScheme.primary.withValues(alpha: PRFOpacities.faint),
+            theme.colorScheme.surface,
           ],
         ),
       ),
@@ -68,58 +71,44 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.tertiary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.tertiary.withValues(alpha: 0.8),
-                        ],
-                      ),
+                      color: theme.colorScheme.tertiary,
                       borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.tertiary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      boxShadow: PRFShadowTokens.badge(
+                        theme.colorScheme.tertiary,
+                      ),
                     ),
                     child: Column(
                       children: [
                         Icon(
                           Icons.toll,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.onTertiary,
+                          size: PRFSizeTokens.iconXl,
+                          color: theme.colorScheme.onTertiary,
                         ),
                         const SizedBox(height: PRFSpacingTokens.sm),
                         Text(
-                          'Add Token',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onTertiary,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          l10n.addToken,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            color: theme.colorScheme.onTertiary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: PRFSpacingTokens.xs),
                         Text(
-                          'Add funds as a credit entry to the allocation',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onTertiary.withValues(alpha: 0.9),
-                              ),
+                          l10n.expenseTokenSubtitle,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onTertiary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   )
                   .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+                  .slideY(
+                    begin: -0.3,
+                    duration: motion(PRFMotionTokens.enterShort),
+                  )
+                  .fadeIn(),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
@@ -127,38 +116,29 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
               Container(
                 padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
+                  boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
                 ),
                 child: Column(
                   children: [
                     PRFFormSection(
                           icon: Icons.attach_money,
-                          title: 'Amount',
+                          title: l10n.amount,
                           isRequired: true,
                           child: _buildNumberField(
                             controller: _amountController,
-                            label: 'Token Amount',
-                            hint: 'Enter token amount',
+                            label: l10n.expenseTokenAmountLabel,
+                            hint: l10n.expenseTokenAmountHint,
                             prefix: 'KES ',
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger2)
-                        .slideX(begin: -0.2)
+                        .animate(delay: motion(PRFMotionTokens.stagger2))
+                        .slideX(
+                          begin: -0.2,
+                          duration: motion(PRFMotionTokens.enterShort),
+                        )
                         .fadeIn(),
 
                     PRFFormSection(
@@ -178,20 +158,24 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
+                        .animate(delay: motion(PRFMotionTokens.stagger4))
+                        .slideX(
+                          begin: -0.2,
+                          duration: motion(PRFMotionTokens.enterShort),
+                        )
                         .fadeIn(),
 
                     PRFFormSection(
                           icon: Icons.payment,
                           title: l10n.paymentMethod,
                           isRequired: true,
-                          child: _buildTransactionTypeSelector(
-                            Theme.of(context),
-                          ),
+                          child: _buildTransactionTypeSelector(),
                         )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
+                        .animate(delay: motion(PRFMotionTokens.stagger3))
+                        .slideX(
+                          begin: -0.2,
+                          duration: motion(PRFMotionTokens.enterShort),
+                        )
                         .fadeIn(),
                   ],
                 ),
@@ -226,9 +210,7 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                           setState(() {
                             _isLoading = false;
                           });
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text(message)));
+                          PRFSnackbar.error(context, l10n.expenseTokenFailed);
                         },
                         orElse: () {},
                       );
@@ -236,14 +218,17 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
                     builder: (context, state) {
                       return PRFButton(
                         onPressed: _submitForm,
-                        title: 'Add Token',
+                        title: l10n.expenseTokenButton,
                         disabled: !_isFormValid,
                         isLoading: _isLoading,
                       );
                     },
                   )
-                  .animate(delay: PRFMotionTokens.stagger5)
-                  .slideY(begin: 0.3)
+                  .animate(delay: motion(PRFMotionTokens.stagger5))
+                  .slideY(
+                    begin: 0.3,
+                    duration: motion(PRFMotionTokens.enterShort),
+                  )
                   .fadeIn(),
 
               const SizedBox(height: PRFSpacingTokens.xxxl),
@@ -282,56 +267,16 @@ class _AddTokenViewHandsetState extends State<AddTokenViewHandset> {
     );
   }
 
-  Widget _buildTransactionTypeSelector(ThemeData theme) {
+  Widget _buildTransactionTypeSelector() {
     return Wrap(
       spacing: PRFSpacingTokens.sm,
       runSpacing: PRFSpacingTokens.sm,
       children: PRFChargeType.values.map((type) {
-        final isSelected = _selectedChargeType == type;
-        return GestureDetector(
+        return ExpenseChoiceChip(
+          label: type.name,
+          icon: _getPaymentIcon(type),
+          selected: _selectedChargeType == type,
           onTap: () => setState(() => _selectedChargeType = type),
-          child: AnimatedContainer(
-            duration: PRFMotionTokens.standard,
-            padding: const EdgeInsets.symmetric(
-              horizontal: PRFSpacingTokens.lg,
-              vertical: PRFSpacingTokens.md,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              border: Border.all(
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _getPaymentIcon(type),
-                  size: 16,
-                  color: isSelected
-                      ? theme.colorScheme.onPrimary
-                      : theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: PRFSpacingTokens.sm),
-                Text(
-                  type.name,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: isSelected
-                        ? theme.colorScheme.onPrimary
-                        : theme.colorScheme.onSurface,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       }).toList(),
     );

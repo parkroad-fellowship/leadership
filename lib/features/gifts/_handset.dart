@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/gifts/actions/gift_form/_handset.dart';
 import 'package:leadership/features/gifts/cubit/gift_resource_cubit.dart';
-import 'package:leadership/features/gifts/widgets/gift_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_gift.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -47,6 +48,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -59,13 +61,12 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
             ),
             ResourceListLoaded<PRFGift>(:final items) when items.isEmpty =>
               PRFEmptyView(
-                label: 'No Gifts Yet',
-                description:
-                    'Get started by adding your first gift to the system',
+                label: l10n.giftsEmptyTitle,
+                description: l10n.giftsEmptyMessage,
                 icon: Icons.card_giftcard_outlined,
-                navBarTitle: 'Gifts',
+                navBarTitle: l10n.giftsTitle,
                 onBackPressed: _goBackToHome,
-                actionLabel: 'Add Gift',
+                actionLabel: l10n.giftsAdd,
                 onActionPressed: () => _showForm(context, null),
               ),
             ResourceListLoaded<PRFGift>(:final items) => _buildBody(
@@ -75,14 +76,11 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
             ResourceMutating<PRFGift>(:final items) => _buildBody(theme, items),
             ResourceError<PRFGift>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFGift>(:final message) => PRFEmptyView(
-              label: 'Error Loading Gifts',
-              description: message,
-              icon: Icons.error_outline,
-              navBarTitle: 'Gifts',
-              onBackPressed: _goBackToHome,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
+            ResourceError<PRFGift>() => PRFLeadershipErrorScreen(
+              navBarTitle: l10n.giftsTitle,
+              title: l10n.giftsLoadError,
+              onBack: _goBackToHome,
+              onRetry: _loadData,
             ),
             _ => const SizedBox.shrink(),
           };
@@ -120,7 +118,8 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No gifts match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -136,11 +135,16 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filtered[index];
-                  return GiftCard(
-                    gift: item,
-                    index: index,
+                  return PRFListItemCard(
+                    title: item.name,
+                    icon: Icons.card_giftcard_outlined,
+                    isActive: item.isActive == PRFActiveStatus.active,
+                    activeLabel: context.l10n.commonActive,
+                    inactiveLabel: context.l10n.commonInactive,
+                    deleteLabel: context.l10n.delete,
                     onTap: () => _showForm(context, item),
                     onDelete: () => _confirmDelete(context, item),
+                    animationIndex: index,
                   );
                 }, childCount: filtered.length),
               ),
@@ -160,13 +164,14 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Gifts',
+            title: context.l10n.giftsTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showForm(context, null),
+                tooltip: context.l10n.giftsAddTooltip,
+                onPressed: () => _showForm(context, null),
               ),
             ],
           ),
@@ -181,7 +186,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total',
+                    label: context.l10n.giftsTotal,
                     value: '$totalCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -200,18 +205,14 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search gifts...',
+        hintText: context.l10n.giftsSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -237,7 +238,7 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -253,7 +254,9 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -272,19 +275,19 @@ class _GiftsPageHandsetState extends State<GiftsPageHandset>
   void _showForm(BuildContext context, PRFGift? gift) {
     PRFBottomSheet.show<void>(
       context,
-      title: gift == null ? 'Add Gift' : 'Edit Gift',
+      title: gift == null ? context.l10n.giftsAdd : context.l10n.giftsEdit,
       child: GiftFormViewHandset(gift: gift, onSaved: _loadData),
     );
   }
 
   Future<void> _confirmDelete(BuildContext context, PRFGift gift) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Gift',
-      message:
-          'Are you sure you want to delete "${gift.name}"? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.giftsDeleteTitle,
+      message: l10n.lookupDeleteMessage(gift.name),
+      confirmLabel: l10n.giftsDeleteConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 

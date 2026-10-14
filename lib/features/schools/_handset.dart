@@ -5,8 +5,9 @@ import 'package:leadership/features/schools/actions/school_form/_handset.dart';
 import 'package:leadership/features/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/schools/cubit/school_cubit.dart';
 import 'package:leadership/features/schools/widgets/school_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_school.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -49,6 +50,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -61,13 +63,12 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
             ),
             ResourceListLoaded<PRFSchool>(:final items) when items.isEmpty =>
               PRFEmptyView(
-                label: 'No Schools Yet',
-                description:
-                    'Get started by adding your first school to the system',
+                label: l10n.schoolsEmptyTitle,
+                description: l10n.schoolsEmptyMessage,
                 icon: Icons.school_outlined,
-                navBarTitle: 'Schools',
+                navBarTitle: l10n.schoolsTitle,
                 onBackPressed: _goBackToHome,
-                actionLabel: 'Add School',
+                actionLabel: l10n.schoolsAdd,
                 onActionPressed: () => _showSchoolForm(context, null),
               ),
             ResourceListLoaded<PRFSchool>(:final items) => _buildBody(
@@ -80,14 +81,11 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
             ),
             ResourceError<PRFSchool>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFSchool>(:final message) => PRFEmptyView(
-              label: 'Error Loading Schools',
-              description: message,
-              icon: Icons.error_outline,
-              navBarTitle: 'Schools',
-              onBackPressed: _goBackToHome,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
+            ResourceError<PRFSchool>() => PRFLeadershipErrorScreen(
+              navBarTitle: l10n.schoolsTitle,
+              title: l10n.schoolsLoadError,
+              onBack: _goBackToHome,
+              onRetry: _loadData,
             ),
             _ => const SizedBox.shrink(),
           };
@@ -144,7 +142,8 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No schools match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -194,13 +193,14 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Schools',
+            title: context.l10n.schoolsTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showSchoolForm(context, null),
+                tooltip: context.l10n.schoolsAddTooltip,
+                onPressed: () => _showSchoolForm(context, null),
               ),
             ],
           ),
@@ -215,7 +215,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Schools',
+                    label: context.l10n.schoolsStatSchools,
                     value: '$schoolCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -223,7 +223,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 const SizedBox(width: PRFSpacingTokens.sm),
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Students',
+                    label: context.l10n.schoolsStatStudents,
                     value: _formatNumber(totalStudents),
                     color: theme.colorScheme.tertiary,
                   ),
@@ -231,7 +231,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
                 const SizedBox(width: PRFSpacingTokens.sm),
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Contacts',
+                    label: context.l10n.schoolsStatContacts,
                     value: '$totalContacts',
                     color: theme.colorScheme.errorContainer,
                   ),
@@ -254,18 +254,14 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search schools...',
+        hintText: context.l10n.schoolsSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -295,7 +291,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -311,7 +307,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -341,7 +339,9 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
   void _showSchoolForm(BuildContext context, PRFSchool? school) {
     PRFBottomSheet.show<void>(
       context,
-      title: school == null ? 'Add School' : 'Edit School',
+      title: school == null
+          ? context.l10n.schoolsAdd
+          : context.l10n.schoolsEdit,
       child: SchoolFormViewHandset(school: school, onSaved: _loadData),
     );
   }

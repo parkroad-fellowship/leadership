@@ -1155,5 +1155,1180 @@
     "zeroBasedRequisition": "Zero-based requisition",
     "@zeroBasedRequisition": {},
     "zeroBasedRequisitionDesc": "No funds were issued for this",
-    "@zeroBasedRequisitionDesc": {}
+    "@zeroBasedRequisitionDesc": {},
+    "tryAgain": "Try again",
+    "missionsShareSchedule": "Share schedule",
+    "missionsPreparingSchedule": "Preparing schedule…",
+    "missionsNoScheduleToShare": "There are no scheduled missions to share yet.",
+    "missionsShareScheduleFailed": "We couldn't share the schedule. Check your connection and try again.",
+    "missionsNewMission": "New mission",
+    "missionsNewMissionTooltip": "Create a new mission",
+    "missionsOpenSlots": "Open slots",
+    "missionsSearchHint": "Search by school, mission type or theme",
+    "missionsNoMatches": "No matching missions",
+    "missionsNoMatchesDesc": "Try a different search word.",
+    "missionsNoSchoolMatches": "No matching schools",
+    "missionsEmptyDesc": "Missions will appear here once they are scheduled.",
+    "missionsLoadErrorTitle": "Couldn't load missions",
+    "missionsLoadErrorMessage": "Check your connection and try again.",
+    "missionsSchoolsLoadErrorTitle": "Couldn't load schools",
+    "missionsStatusOngoing": "Ongoing",
+    "missionsStatusAvailable": "Available",
+    "missionsCreateTitle": "Create mission",
+    "requisitionsStatusPending": "Pending",
+    "requisitionsStatusUnderReview": "Under review",
+    "requisitionsStatusApproved": "Approved",
+    "requisitionsStatusRejected": "Rejected",
+    "requisitionsStatusRecalled": "Recalled",
+    "requisitionsStatusZeroBased": "Zero-based",
+    "requisitionsEmptyTitle": "No requisitions yet",
+    "requisitionsEmptyDescription": "Requisitions raised for this activity will appear here. Pull down to refresh.",
+    "requisitionsLoadErrorTitle": "Couldn't load requisitions",
+    "requisitionsLoadErrorMessage": "Check your connection and try again.",
+    "requisitionsEventBadge": "Event",
+    "requisitionsRequestedOn": "Requested on",
+    "requisitionsAmountKes": "KES {amount}",
+    "@requisitionsAmountKes": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionsCardSemantics": "Requisition for KES {amount}, {status}, requested on {date}",
+    "@requisitionsCardSemantics": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "status": {
+                "type": "String"
+            },
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "mediaSourceTitle": "Add a photo",
+    "mediaSourceTitleVideo": "Add a video",
+    "mediaSourceCamera": "Camera",
+    "mediaSourceTakePhoto": "Take a new photo",
+    "mediaSourceRecordVideo": "Record a new video",
+    "mediaSourceGallery": "Gallery",
+    "mediaSourceChooseOne": "Choose from your photos",
+    "mediaSourceChooseMany": "Choose up to {count} from your photos",
+    "@mediaSourceChooseMany": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "mediaCameraPermissionDenied": "Camera access is turned off. Allow camera access for PRF Leadership in your phone's settings, then try again.",
+    "mediaSelectFailed": "Couldn't add that file. Please try again.",
+    "mediaCaptureFailed": "Couldn't use the camera. Please try again.",
+    "missionDetailsOverview": "Overview",
+    "missionDetailsOverviewSubtitle": "Where the mission is, field notes and mission actions.",
+    "missionDetailsOperations": "Operations",
+    "missionDetailsPeople": "People",
+    "missionDetailsPeopleSubtitle": "Who signed up and the sessions held at this mission.",
+    "missionDetailsSubscribers": "Subscribers",
+    "missionDetailsFeedback": "Feedback",
+    "missionDetailsFinance": "Finance",
+    "missionDetailsFinanceSubtitle": "Requisitions and expenses for this mission.",
+    "missionsSchoolLoadErrorTitle": "Couldn't load this school's missions",
+    "missionsSchoolNotFound": "School not found",
+    "missionsSchoolNotFoundDesc": "This school has no past missions to show.",
+    "expenseEntrySaved": "Entry saved",
+    "expenseReceiptDeleted": "Receipt deleted",
+    "expenseUpdated": "Expense updated",
+    "expenseDeleted": "Expense deleted",
+    "expenseReceiptUploaded": "Receipt uploaded",
+    "expenseReceiptUploadFailed": "Couldn't upload the receipt. Check your connection and try again.",
+    "expenseSaveFailed": "Couldn't save your changes. Check your connection and try again.",
+    "expenseLoadErrorTitle": "Couldn't load expenses",
+    "expenseLoadErrorMessage": "Check your connection and try again.",
+    "expenseEmptyTitle": "No expenses yet",
+    "expenseEmptyDescription": "Use \"Add an expense\" to record money spent on this activity.",
+    "expensePercentSpent": "{percent}% spent",
+    "@expensePercentSpent": {
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "expenseTransactionsTitle": "Transaction breakdown",
+    "expenseHideTransactions": "Tap to hide transactions",
+    "expenseShowTransactions": "{count, plural, =1{Tap to show 1 transaction} other{Tap to show {count} transactions}}",
+    "@expenseShowTransactions": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "expenseDeleteTooltip": "Delete expense",
+    "expenseEditTooltip": "Edit expense",
+    "expenseAttachments": "{count, plural, =1{1 receipt attached} other{{count} receipts attached}}",
+    "@expenseAttachments": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "expenseOpenReceipt": "Open receipt {number}",
+    "@expenseOpenReceipt": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "expenseDeleteReceiptLabel": "Delete receipt {number}",
+    "@expenseDeleteReceiptLabel": {
+        "placeholders": {
+            "number": {
+                "type": "int"
+            }
+        }
+    },
+    "expenseDeleteReceiptTitle": "Delete this receipt?",
+    "expenseDeleteReceiptMessage": "The receipt will be removed from this expense. This can't be undone.",
+    "expenseDeleteReceiptConfirm": "Delete receipt",
+    "expenseReceiptMissingTitle": "Receipt missing",
+    "expenseReceiptMissingDescription": "Add a photo or PDF of the receipt for this expense.",
+    "expenseAddPhoto": "Add photo",
+    "expenseAddPdf": "Add PDF",
+    "expenseUploadingReceipt": "Uploading receipt…",
+    "expensePhotoPickFailed": "Couldn't open your photos. Please try again.",
+    "expensePdfPickFailed": "Couldn't open your files. Please try again.",
+    "expensePdfLoadFailed": "Couldn't open this PDF. Check your connection and try again.",
+    "expenseReceiptPdfTitle": "Receipt (PDF)",
+    "expenseDeleteTitle": "Delete this expense?",
+    "expenseDeleteTokenTitle": "Delete this token?",
+    "expenseDeleteMessage": "This expense will be removed from the activity's records and the balance will be updated. This can't be undone.",
+    "expenseDeleteConfirm": "Delete expense",
+    "expenseDeleteTokenConfirm": "Delete token",
+    "expenseAddRefund": "Record refund",
+    "expenseRefundEntries": "Refund entries",
+    "expenseDeficitAmount": "Deficit amount",
+    "expenseConfirmation": "Confirmation message",
+    "expenseCopyConfirmation": "Copy confirmation message",
+    "expenseCopied": "Copied",
+    "expenseCopyValue": "Copy {label}: {value}",
+    "@expenseCopyValue": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "expenseCopiedValue": "Copied {value}",
+    "@expenseCopiedValue": {
+        "placeholders": {
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "expenseRefreshTooltip": "Refresh expenses",
+    "expenseSendReportTooltip": "Email financial report",
+    "expenseSendReportTitle": "Send financial report",
+    "expenseSendReportDescription": "We'll email a detailed financial report for this activity to the people responsible for it.",
+    "expenseReportContents": "What's in the report",
+    "expenseReportItemBreakdown": "Full expense breakdown",
+    "expenseReportItemBalance": "Current balance and allocations",
+    "expenseReportItemHistory": "Transaction history",
+    "expenseSendReportButton": "Send report",
+    "expenseSendReportConfirmTitle": "Send the financial report?",
+    "expenseSendReportConfirmMessage": "The report will be emailed to all relevant members.",
+    "expenseReportSent": "Financial report sent",
+    "expenseReportSendFailed": "Couldn't send the report. Check your connection and try again.",
+    "expenseRefundTitle": "Record a refund",
+    "expenseRefundSubtitle": "Record money returned for this activity",
+    "expenseRefundAmountSection": "Refund amount",
+    "expenseRefundAmountHint": "Enter the amount refunded",
+    "expenseRefundConfirmationHint": "Paste the M-Pesa confirmation message or reference number",
+    "expenseRefundRecorded": "Refund recorded",
+    "expenseRefundFailed": "Couldn't record the refund. Check your connection and try again.",
+    "expenseTokenSubtitle": "Record money received for this activity",
+    "expenseTokenAmountLabel": "Token amount",
+    "expenseTokenAmountHint": "Enter the token amount",
+    "expenseTokenButton": "Save token",
+    "expenseTokenFailed": "Couldn't save the token. Check your connection and try again.",
+    "expenseAddTitle": "Add an expense",
+    "expenseAddSubtitle": "Fill in the details below to record money spent",
+    "expenseTotal": "Total: {amount}",
+    "@expenseTotal": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "expenseCategoryRequired": "Choose an expense category",
+    "expensePaymentMethodRequired": "Choose how the money was paid",
+    "expenseUnitCostRequired": "Enter the cost per item",
+    "expenseUnitCostInvalid": "Enter a cost greater than 0",
+    "expenseQuantityRequired": "Enter the quantity",
+    "expenseQuantityInvalid": "Enter a whole number greater than 0",
+    "expenseChargeRequired": "Enter the transaction charge (0 if none)",
+    "expenseChargeInvalid": "Enter a charge of 0 or more",
+    "expenseDescriptionRequired": "Describe what the money was used for",
+    "expenseConfirmationRequired": "Paste the payment confirmation message",
+    "expenseFixFields": "Some details are missing. Check the highlighted fields.",
+    "expenseRequired": "Required",
+    "expenseAddFailed": "Couldn't save this expense. Check your connection and try again.",
+    "expenseCategoriesLoadFailed": "Couldn't load expense categories",
+    "expenseEditTitle": "Edit expense",
+    "expenseEditSubtitle": "Update the expense details",
+    "expenseSaveChanges": "Save changes",
+    "expenseUpdateFailed": "Couldn't update this expense. Check your connection and try again.",
+    "expenseReceiptCounter": "Receipt {current} of {total}",
+    "@expenseReceiptCounter": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "expenseReceiptImageFailed": "Couldn't load this receipt image",
+    "expenseCloseReceipts": "Close receipts",
+    "missionDetailsFeedbackSummary": "Debrief notes, souls and questions from this mission.",
+    "pressBackAgainToExit": "Press back again to close the app",
+    "commonTryAgain": "Try again",
+    "commonActive": "Active",
+    "commonInactive": "Inactive",
+    "commonNew": "New",
+    "commonLoadErrorMessage": "Check your connection and try again.",
+    "commonSaveErrorMessage": "Your changes were not saved. Check your connection and try again.",
+    "commonFixHighlightedFields": "Please fix the highlighted fields and try again.",
+    "commonNameRequired": "Enter a name",
+    "commonNoSearchMatches": "Nothing matches your search. Try a different word.",
+    "commonNameLabel": "Name",
+    "commonStatusLabel": "Status",
+    "lookupDeleteMessage": "\"{name}\" will be removed for good. This can't be undone.",
+    "@lookupDeleteMessage": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "lookupDeleteFailed": "Couldn't delete \"{name}\". Check your connection and try again.",
+    "@lookupDeleteFailed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "professionsTitle": "Professions",
+    "professionsEmptyTitle": "No professions yet",
+    "professionsEmptyMessage": "Add the first profession to start the list.",
+    "professionsAdd": "Add profession",
+    "professionsAddTooltip": "Add a new profession",
+    "professionsEdit": "Edit profession",
+    "professionsLoadError": "Couldn't load professions",
+    "professionsSearchHint": "Search professions",
+    "professionsDeleteTitle": "Delete this profession?",
+    "professionsDeleteConfirm": "Delete profession",
+    "professionsTotal": "Total",
+    "professionsNameHint": "e.g. Teacher",
+    "professionsSave": "Save changes",
+    "professionsCreate": "Add profession",
+    "professionsUpdated": "Profession updated",
+    "professionsCreated": "Profession added",
+    "professionsFormEditSubtitle": "Change the name or status of this profession.",
+    "professionsFormCreateSubtitle": "Add a new profession to the list.",
+    "requisitionDetailLoadErrorTitle": "Couldn't load this requisition",
+    "requisitionDetailItemsLoadErrorTitle": "Couldn't load the items on this requisition",
+    "requisitionDetailLoadErrorMessage": "Check your connection and try again.",
+    "requisitionDetailItemDeleted": "Item removed from the requisition",
+    "requisitionDetailItemDeleteFailed": "Couldn't delete this item. Check your connection and try again.",
+    "requisitionDetailDeleteItemTitle": "Delete this item?",
+    "requisitionDetailDeleteItemMessage": "This item will be removed from the requisition and the total will be updated.",
+    "requisitionDetailCannotUndo": "This can't be undone.",
+    "requisitionDetailDeleteItemConfirm": "Delete item",
+    "requisitionDetailDeleteItemTooltip": "Delete {item}",
+    "@requisitionDetailDeleteItemTooltip": {
+        "placeholders": {
+            "item": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionDetailTapToEdit": "Tap to edit this item",
+    "requisitionDetailAwaitingYourApproval": "This requisition is waiting for your approval. Check the items, then approve or reject it.",
+    "requisitionDetailReviewAndApprove": "Review and approve",
+    "requisitionDetailAddPayment": "Add payment details",
+    "requisitionDetailRecalledTitle": "Requisition recalled",
+    "requisitionDetailNoPhoneNumber": "There's no phone number saved for {name}.",
+    "@requisitionDetailNoPhoneNumber": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionDetailCallFailed": "Couldn't start the call. Check the phone number and try again.",
+    "requisitionDetailNotesValue": "Notes: {notes}",
+    "@requisitionDetailNotesValue": {
+        "placeholders": {
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionDetailDateValue": "Date: {date}",
+    "@requisitionDetailDateValue": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionDetailPaymentMpesa": "M-PESA",
+    "requisitionDetailPaymentBankTransfer": "Bank transfer",
+    "requisitionDetailPaymentPaybill": "Paybill",
+    "requisitionDetailPaymentTill": "Till number",
+    "requisitionDetailItemSummary": "{amount} • Qty: {quantity}",
+    "@requisitionDetailItemSummary": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionReviewTitle": "Review requisition",
+    "requisitionActionReviewSubtitle": "Check the items and total before you decide.",
+    "requisitionActionTotalRequested": "Total requested: {amount}",
+    "@requisitionActionTotalRequested": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionApprovalNotesHint": "Add a note. A note is required if you reject.",
+    "requisitionActionApproveButton": "Approve requisition",
+    "requisitionActionRejectButton": "Reject requisition",
+    "requisitionActionApproveConfirmTitle": "Approve requisition for {amount}?",
+    "@requisitionActionApproveConfirmTitle": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionApproveConfirmMessage": "Once it's approved, no more items can be added to this requisition.",
+    "requisitionActionRejectConfirmTitle": "Reject requisition for {amount}?",
+    "@requisitionActionRejectConfirmTitle": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionRejectConfirmMessage": "Your note will be saved as the reason for rejecting it.",
+    "requisitionActionApproved": "Requisition approved",
+    "requisitionActionRejected": "Requisition rejected",
+    "requisitionActionApproveFailed": "Couldn't approve this requisition. Check your connection and try again.",
+    "requisitionActionRejectFailed": "Couldn't reject this requisition. Check your connection and try again.",
+    "requisitionActionRejectNotesRequired": "Add a note explaining why you're rejecting this requisition.",
+    "requisitionActionRecallInfo": "Recalling takes this requisition out of review. You can edit it and send it for review again.",
+    "requisitionActionRecallNotesTitle": "Reason for recalling",
+    "requisitionActionRecallNotesHint": "Why are you recalling this requisition? (optional)",
+    "requisitionActionRecallConfirmTitle": "Recall requisition for {amount}?",
+    "@requisitionActionRecallConfirmTitle": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionRecallFailed": "Couldn't recall this requisition. Check your connection and try again.",
+    "requisitionActionRequestReviewSubtitle": "Choose the leader who should approve this requisition.",
+    "requisitionActionSendForReview": "Send for review",
+    "requisitionActionReviewRequested": "Sent to {name} for review",
+    "@requisitionActionReviewRequested": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionReviewRequestFailed": "Couldn't send this requisition for review. Check your connection and try again.",
+    "requisitionActionApproversLoadFailed": "Couldn't load the list of approvers",
+    "requisitionActionCreated": "Requisition created",
+    "requisitionActionCreateFailed": "Couldn't create the requisition. Check your connection and try again.",
+    "requisitionActionPurposeHint": "What is this requisition for?",
+    "requisitionActionSelectDate": "Choose a date",
+    "requisitionActionDateRequired": "Choose the requisition date",
+    "requisitionActionSaveChanges": "Save changes",
+    "requisitionActionUpdateFailed": "Couldn't save your changes. Check your connection and try again.",
+    "requisitionActionAddItemTitle": "Add an item",
+    "requisitionActionAddItemSubtitle": "Add a new item to this requisition",
+    "requisitionActionItemName": "Item name",
+    "requisitionActionItemNameHint": "Enter the item name",
+    "requisitionActionUnitPriceHint": "Price per item",
+    "requisitionActionNarration": "Narration / justification",
+    "requisitionActionNarrationHint": "Explain why this item is needed",
+    "requisitionActionItemAdded": "Item added to the requisition",
+    "requisitionActionItemAddFailed": "Couldn't add this item. Check your connection and try again.",
+    "requisitionActionItemNameRequired": "Enter the item name",
+    "requisitionActionUnitPriceRequired": "Enter the price per item",
+    "requisitionActionUnitPriceInvalid": "Enter a price greater than 0",
+    "requisitionActionNarrationRequired": "Explain why this item is needed",
+    "requisitionActionNumbersInvalid": "Enter the price and quantity as whole numbers",
+    "requisitionActionEditItemTitle": "Edit item",
+    "requisitionActionEditItemSubtitle": "Update the details of this item",
+    "requisitionActionItemUpdated": "Item updated",
+    "requisitionActionItemUpdateFailed": "Couldn't update this item. Check your connection and try again.",
+    "requisitionActionItemLoadFailed": "Couldn't load this item",
+    "requisitionActionStepMethod": "Method",
+    "requisitionActionPaymentStep1Subtitle": "Choose how the money will be paid and who will receive it",
+    "requisitionActionPaymentStep2Subtitle": "Enter the {method} details",
+    "@requisitionActionPaymentStep2Subtitle": {
+        "placeholders": {
+            "method": {
+                "type": "String"
+            }
+        }
+    },
+    "requisitionActionMpesaPhone": "M-PESA phone number",
+    "requisitionActionMpesaPhoneHint": "Phone number registered for M-PESA",
+    "requisitionActionBankNameHint": "Enter the bank name",
+    "requisitionActionOptional": "Optional",
+    "requisitionActionRecipientHint": "Full name of the person being paid",
+    "requisitionActionNext": "Next",
+    "requisitionActionBack": "Back",
+    "requisitionActionSavePaymentDetails": "Save payment details",
+    "requisitionActionPaymentSaved": "Payment details saved",
+    "requisitionActionPaymentSaveFailed": "Couldn't save the payment details. Check your connection and try again.",
+    "requisitionActionSelectCategory": "Select {category}",
+    "@requisitionActionSelectCategory": {
+        "placeholders": {
+            "category": {
+                "type": "String"
+            }
+        }
+    },
+    "eventsNewActivity": "New activity",
+    "eventsNewActivityTooltip": "Create a new activity",
+    "eventsLoadErrorTitle": "Couldn't load activities",
+    "eventsTimeRangeDaily": "{start} - {end} daily",
+    "@eventsTimeRangeDaily": {
+        "placeholders": {
+            "start": {
+                "type": "String"
+            },
+            "end": {
+                "type": "String"
+            }
+        }
+    },
+    "eventsEmptyPastDesc": "Activities that have ended will appear here.",
+    "mapZoomIn": "Zoom in",
+    "mapZoomOut": "Zoom out",
+    "mapGoToPin": "Go back to the selected location",
+    "mapSelectedLocation": "Selected location: {latitude}, {longitude}",
+    "@mapSelectedLocation": {
+        "placeholders": {
+            "latitude": {
+                "type": "String"
+            },
+            "longitude": {
+                "type": "String"
+            }
+        }
+    },
+    "mapTapToSelect": "Tap the map to drop a pin on the location.",
+    "mapNoLocation": "No location set",
+    "mapOpenInMaps": "Open in Maps",
+    "mapLocationLabel": "Map showing the location",
+    "eventsCreateActivityButton": "Create activity",
+    "eventsNoMembersAvailable": "No members available",
+    "eventsChooseDeskForMembers": "Choose a responsible desk to see its members.",
+    "eventsSelectParticipantsHint": "Tap names in the list above to add participants.",
+    "eventsParticipantsSelected": "{count, plural, =1{1 participant selected} other{{count} participants selected}}",
+    "@eventsParticipantsSelected": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "eventsRemoveParticipant": "Remove participant",
+    "eventsRequisitionNotFound": "Activity created, but we couldn't open its requisition. You can find it under Requisitions.",
+    "eventsCreateFailed": "We couldn't create the activity. Check your connection and try again.",
+    "eventsChooseStartTime": "Choose start date and time",
+    "departmentsTitle": "Departments",
+    "departmentsEmptyTitle": "No departments yet",
+    "departmentsEmptyMessage": "Add the first department to start the list.",
+    "departmentsAdd": "Add department",
+    "departmentsAddTooltip": "Add a new department",
+    "departmentsEdit": "Edit department",
+    "departmentsLoadError": "Couldn't load departments",
+    "departmentsSearchHint": "Search departments",
+    "departmentsDeleteTitle": "Delete this department?",
+    "departmentsDeleteConfirm": "Delete department",
+    "departmentsTotal": "Total",
+    "departmentsNameHint": "e.g. Missions",
+    "departmentsSave": "Save changes",
+    "departmentsCreate": "Add department",
+    "departmentsUpdated": "Department updated",
+    "departmentsCreated": "Department added",
+    "departmentsFormEditSubtitle": "Change the name or status of this department.",
+    "departmentsFormCreateSubtitle": "Add a new department to the list.",
+    "giftsTitle": "Gifts",
+    "giftsEmptyTitle": "No gifts yet",
+    "giftsEmptyMessage": "Add the first gift to start the list.",
+    "giftsAdd": "Add gift",
+    "giftsAddTooltip": "Add a new gift",
+    "giftsEdit": "Edit gift",
+    "giftsLoadError": "Couldn't load gifts",
+    "giftsSearchHint": "Search gifts",
+    "giftsDeleteTitle": "Delete this gift?",
+    "giftsDeleteConfirm": "Delete gift",
+    "giftsTotal": "Total",
+    "giftsNameHint": "e.g. Teaching",
+    "giftsSave": "Save changes",
+    "giftsCreate": "Add gift",
+    "giftsUpdated": "Gift updated",
+    "giftsCreated": "Gift added",
+    "giftsFormEditSubtitle": "Change the name or status of this gift.",
+    "giftsFormCreateSubtitle": "Add a new gift to the list.",
+    "maritalStatusesTitle": "Marital Statuses",
+    "maritalStatusesEmptyTitle": "No marital statuses yet",
+    "maritalStatusesEmptyMessage": "Add the first marital status to start the list.",
+    "maritalStatusesAdd": "Add marital status",
+    "maritalStatusesAddTooltip": "Add a new marital status",
+    "maritalStatusesEdit": "Edit marital status",
+    "maritalStatusesLoadError": "Couldn't load marital statuses",
+    "maritalStatusesSearchHint": "Search marital statuses",
+    "maritalStatusesDeleteTitle": "Delete this marital status?",
+    "maritalStatusesDeleteConfirm": "Delete marital status",
+    "maritalStatusesTotal": "Total",
+    "maritalStatusesNameHint": "e.g. Married",
+    "maritalStatusesSave": "Save changes",
+    "maritalStatusesCreate": "Add marital status",
+    "maritalStatusesUpdated": "Marital status updated",
+    "maritalStatusesCreated": "Marital status added",
+    "maritalStatusesFormEditSubtitle": "Change the name or status of this marital status.",
+    "maritalStatusesFormCreateSubtitle": "Add a new marital status to the list.",
+    "missionTypesTitle": "Mission Types",
+    "missionTypesEmptyTitle": "No mission types yet",
+    "missionTypesEmptyMessage": "Add the first mission type to start the list.",
+    "missionTypesAdd": "Add mission type",
+    "missionTypesAddTooltip": "Add a new mission type",
+    "missionTypesEdit": "Edit mission type",
+    "missionTypesLoadError": "Couldn't load mission types",
+    "missionTypesSearchHint": "Search mission types",
+    "missionTypesDeleteTitle": "Delete this mission type?",
+    "missionTypesDeleteConfirm": "Delete mission type",
+    "missionTypesTotal": "Total",
+    "missionTypesNameHint": "e.g. School mission",
+    "missionTypesSave": "Save changes",
+    "missionTypesCreate": "Add mission type",
+    "missionTypesUpdated": "Mission type updated",
+    "missionTypesCreated": "Mission type added",
+    "missionTypesFormEditSubtitle": "Change the name or status of this mission type.",
+    "missionTypesFormCreateSubtitle": "Add a new mission type to the list.",
+    "churchesTitle": "Churches",
+    "churchesEmptyTitle": "No churches yet",
+    "churchesEmptyMessage": "Add the first church to start the list.",
+    "churchesAdd": "Add church",
+    "churchesAddTooltip": "Add a new church",
+    "churchesEdit": "Edit church",
+    "churchesLoadError": "Couldn't load churches",
+    "churchesSearchHint": "Search churches",
+    "churchesDeleteTitle": "Delete this church?",
+    "churchesDeleteConfirm": "Delete church",
+    "churchesTotal": "Total",
+    "churchesNameHint": "e.g. Nairobi Chapel",
+    "churchesSave": "Save changes",
+    "churchesCreate": "Add church",
+    "churchesUpdated": "Church updated",
+    "churchesCreated": "Church added",
+    "churchesFormEditSubtitle": "Change the name or status of this church.",
+    "churchesFormCreateSubtitle": "Add a new church to the list.",
+    "schoolTermsTitle": "School terms",
+    "schoolTermsEmptyTitle": "No school terms yet",
+    "schoolTermsEmptyMessage": "Add the first school term to start the list.",
+    "schoolTermsAdd": "Add school term",
+    "schoolTermsAddTooltip": "Add a new school term",
+    "schoolTermsEdit": "Edit school term",
+    "schoolTermsLoadError": "Couldn't load school terms",
+    "schoolTermsSearchHint": "Search school terms",
+    "schoolTermsDeleteTitle": "Delete this school term?",
+    "schoolTermsDeleteConfirm": "Delete school term",
+    "schoolTermsTotal": "Total",
+    "schoolTermsSave": "Save changes",
+    "schoolTermsUpdated": "School term updated",
+    "schoolTermsCreated": "School term added",
+    "schoolTermsFormEditSubtitle": "Change the details of this school term.",
+    "schoolTermsFormCreateSubtitle": "Add a new school term to the list.",
+    "schoolTermsNameLabel": "Term name",
+    "schoolTermsNameHint": "e.g. Term 1",
+    "schoolTermsNameRequired": "Enter the term name",
+    "schoolTermsYearLabel": "Year",
+    "schoolTermsYearHint": "e.g. {year}",
+    "@schoolTermsYearHint": {
+        "placeholders": {
+            "year": {
+                "type": "int",
+                "format": "decimalPattern"
+            }
+        }
+    },
+    "schoolTermsYearRequired": "Enter the year",
+    "schoolTermsYearInvalid": "Enter a year in numbers, like 2025",
+    "homeSettings": "Settings",
+    "homeMyDesk": "My Desk",
+    "homeMissionsDesk": "Missions Desk",
+    "homeCommitteeDesk": "Committee Desk",
+    "homeOrganisingSecretary": "Organising Secretary",
+    "homeOpenAccount": "Your account and profile picture",
+    "requisitionApprovalsLoadError": "Couldn't load requisitions",
+    "schoolTermsYearExample": "e.g. {year}",
+    "@schoolTermsYearExample": {
+        "placeholders": {
+            "year": {
+                "type": "String"
+            }
+        }
+    },
+    "membersTitle": "Members",
+    "membersEmptyTitle": "No members yet",
+    "membersEmptyMessage": "Members you add will appear here.",
+    "membersLoadError": "Couldn't load members",
+    "membersSearchHint": "Search members by name",
+    "membersTotal": "Total members",
+    "membersAdd": "Add member",
+    "membersAddTooltip": "Add a new member",
+    "membersEdit": "Edit member",
+    "membersEditTooltip": "Edit this member's details",
+    "membersLoading": "Loading members",
+    "membersDetailTitle": "Member",
+    "membersDetailLoadingTitle": "Member details",
+    "membersNotFoundTitle": "Member not found",
+    "membersNotFoundMessage": "This member may have been removed. Go back and pick another member.",
+    "membersCardSemantics": "{name}. Open member details",
+    "@membersCardSemantics": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "membersSectionPersonal": "Personal",
+    "membersSectionSpiritual": "Spiritual",
+    "membersSectionProfessional": "Professional",
+    "membersSectionDemographics": "Demographics",
+    "membersSectionDepartments": "Departments",
+    "membersSectionGifts": "Gifts",
+    "membersNoInformation": "No information added yet",
+    "membersPhone": "Phone number",
+    "membersPostalAddress": "Postal address",
+    "membersResidence": "Residence",
+    "membersBio": "Bio",
+    "membersLinkedIn": "LinkedIn profile link",
+    "membersYearOfSalvation": "Year of salvation",
+    "membersChurchVolunteer": "Church volunteer",
+    "membersPastor": "Pastor",
+    "membersChurch": "Church",
+    "membersProfession": "Profession",
+    "membersInstitution": "Institution",
+    "membersLocation": "Location",
+    "membersContact": "Contact",
+    "membersGender": "Gender",
+    "membersMale": "Male",
+    "membersFemale": "Female",
+    "membersMaritalStatus": "Marital status",
+    "membersFirstName": "First name",
+    "membersLastName": "Last name",
+    "membersFirstNameRequired": "Enter the member's first name",
+    "membersLastNameRequired": "Enter the member's last name",
+    "membersEmailRequired": "Enter the member's email address",
+    "membersEmailHint": "e.g. name@example.com",
+    "membersOptional": "Optional",
+    "membersBioHint": "A short note about the member",
+    "membersLinkedInHint": "e.g. https://linkedin.com/in/name",
+    "membersYearHint": "e.g. 2010",
+    "membersPastorHint": "Pastor's name",
+    "membersInstitutionHint": "Where they work or study",
+    "membersLocationHint": "Town or area of work",
+    "membersContactHint": "Work phone or email",
+    "membersSelectMultiple": "Optional. You can choose more than one.",
+    "membersSearchChurch": "Search churches",
+    "membersSearchProfession": "Search professions",
+    "membersSearchMaritalStatus": "Search marital statuses",
+    "membersSearchDepartment": "Search departments",
+    "membersSearchGift": "Search gifts",
+    "membersNoChurches": "No churches match. Add one below.",
+    "membersNoProfessions": "No professions match. Add one below.",
+    "membersNoMaritalStatuses": "No marital statuses match. Add one below.",
+    "membersNoDepartments": "No departments match. Add one below.",
+    "membersNoGifts": "No gifts match. Add one below.",
+    "membersAddChurch": "Add a church",
+    "membersAddProfession": "Add a profession",
+    "membersAddMaritalStatus": "Add a marital status",
+    "membersAddDepartment": "Add a department",
+    "membersAddGift": "Add a gift",
+    "membersSave": "Save changes",
+    "membersCreate": "Add member",
+    "membersUpdated": "Member details saved",
+    "membersCreated": "Member added",
+    "membersFormEditSubtitle": "Change this member's profile details.",
+    "membersFormCreateSubtitle": "Fill in the new member's details. Only name and email are required.",
+    "schoolsTitle": "Schools",
+    "schoolsEmptyTitle": "No schools yet",
+    "schoolsEmptyMessage": "Add the first school to start the list.",
+    "schoolsAdd": "Add school",
+    "schoolsAddTooltip": "Add a new school",
+    "schoolsEdit": "Edit school",
+    "schoolsEditTooltip": "Edit this school's details",
+    "schoolsLoadError": "Couldn't load schools",
+    "schoolsSearchHint": "Search schools",
+    "schoolsStatSchools": "Schools",
+    "schoolsStatStudents": "Students",
+    "schoolsStatContacts": "Contacts",
+    "schoolsContactCount": "{count, plural, =0{No contacts} =1{1 contact} other{{count} contacts}}",
+    "@schoolsContactCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "schoolsStudentCount": "{count, plural, =1{1 student} other{{count} students}}",
+    "@schoolsStudentCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "schoolsCardSemantics": "{name}, {type}. {students}. {contacts}.",
+    "@schoolsCardSemantics": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "type": {
+                "type": "String"
+            },
+            "students": {
+                "type": "String"
+            },
+            "contacts": {
+                "type": "String"
+            }
+        }
+    },
+    "schoolsDetailTitle": "School details",
+    "schoolsMoreOptions": "More options",
+    "schoolsDeleteSchool": "Delete school",
+    "schoolsDeleteTitle": "Delete this school?",
+    "schoolsDeleteMessage": "This school and its details will be removed for good.",
+    "schoolsCannotUndo": "This can't be undone.",
+    "schoolsTabOverview": "Overview",
+    "schoolsTabContacts": "Contacts",
+    "schoolsInfoHeading": "School information",
+    "schoolsAddressLabel": "Address",
+    "schoolsDescriptionLabel": "Description",
+    "schoolsDirectionsLabel": "Directions",
+    "schoolsOpenInMaps": "Open in maps",
+    "schoolsOpenInMapsHint": "Get directions to this school",
+    "schoolsChooseMapApp": "Open with",
+    "schoolsNoMapApps": "No maps app found on this phone.",
+    "schoolContactsTitle": "Contacts",
+    "schoolContactsHeading": "Contacts ({count})",
+    "@schoolContactsHeading": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "schoolContactsAddTooltip": "Add a contact for this school",
+    "schoolContactsEmpty": "No contacts yet. Tap New to add one.",
+    "schoolContactsEmptyTitle": "No contacts yet",
+    "schoolContactsEmptyMessage": "Add the people you talk to at this school.",
+    "schoolContactsAdd": "Add contact",
+    "schoolContactsEdit": "Edit contact",
+    "schoolContactsLoadError": "Couldn't load contacts",
+    "schoolContactsActionFailed": "Couldn't update the contacts. Check your connection and try again.",
+    "schoolContactsTypesLoading": "Still loading contact types. Try again in a moment.",
+    "schoolContactsNoPhone": "This contact has no phone number.",
+    "schoolContactsCallFailed": "Couldn't open your phone app to make the call.",
+    "schoolContactsTapToEdit": "Tap a contact to change their details.",
+    "schoolContactsCall": "Call",
+    "schoolContactsCallSemantics": "Call {name}",
+    "@schoolContactsCallSemantics": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "schoolContactsEditSemantics": "Edit {name}",
+    "@schoolContactsEditSemantics": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "accountSignOutConfirm": "You'll need your email and password to sign in again.",
+    "accountDarkMode": "Dark mode",
+    "accountPersonalInformation": "Personal information",
+    "accountFallbackName": "Your name",
+    "accountChangePhoto": "Change profile picture",
+    "accountChangePhotoFailed": "We couldn't update your profile picture. Check your connection and try again.",
+    "authSignInFailed": "We couldn't sign you in. Check your email and password and try again.",
+    "authGoogleSignInFailed": "We couldn't sign you in with Google. Use your PRF organisation email and try again.",
+    "authEnterEmail": "Enter your email address.",
+    "authEnterPassword": "Enter your password.",
+    "authOr": "or",
+    "authPleaseWait": "Please wait…",
+    "authContinueWithGoogle": "Continue with Google",
+    "schoolsFormNameLabel": "School name",
+    "schoolsFormNameHint": "e.g. Moi Girls High School",
+    "schoolsFormNameRequired": "Enter the school's name",
+    "schoolsFormTypeLabel": "Institution type",
+    "schoolsFormTypeRequired": "Choose the institution type",
+    "schoolsFormStudentsLabel": "Total students",
+    "schoolsFormStudentsHint": "e.g. 450",
+    "schoolsFormStudentsRequired": "Enter the number of students",
+    "schoolsFormStudentsInvalid": "Enter the number of students as a whole number, like 450",
+    "schoolsFormAddressLabel": "Address",
+    "schoolsFormAddressHint": "Town, road or landmark",
+    "schoolsFormAddressRequired": "Enter the school's address",
+    "schoolsFormMapLabel": "Location on the map",
+    "schoolsFormMapSubtitle": "Tap the map to drop a pin on the school",
+    "schoolsFormLatitudeLabel": "Latitude",
+    "schoolsFormLongitudeLabel": "Longitude",
+    "schoolsFormCoordinateHelper": "Filled in when you drop a pin on the map",
+    "schoolsFormLocationInvalid": "Drop a pin on the map to set the location",
+    "schoolsFormDirectionsLabel": "Directions",
+    "schoolsFormDirectionsHint": "How to get there (optional)",
+    "schoolsFormDescriptionLabel": "Description",
+    "schoolsFormDescriptionHint": "Anything else to know about the school (optional)",
+    "schoolsFormOptional": "Optional",
+    "schoolsFormSave": "Save changes",
+    "schoolsUpdated": "School updated",
+    "schoolsCreated": "School added",
+    "schoolsFormEditSubtitle": "Change the school's details or location.",
+    "schoolsFormCreateSubtitle": "Add a school with its details and location.",
+    "missionRecordsTitle": "Mission records",
+    "missionRecordsLoadErrorTitle": "Couldn't load these records",
+    "missionRecordsActionError": "Something went wrong. Pull down to refresh and try again.",
+    "missionCapacityTitle": "Subscriber capacity",
+    "missionCapacitySubtitle": "How many places are filled and how many are still open.",
+    "missionFilled": "Filled",
+    "missionOpen": "Open",
+    "missionPercentFilled": "{percent}% filled",
+    "@missionPercentFilled": {
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "missionSubscribersTitle": "Mission subscribers",
+    "missionSubscribersSubtitle": "Fellowship members signed up for this mission.",
+    "missionSubscribedCount": "{count, plural, =1{1 subscribed} other{{count} subscribed}}",
+    "@missionSubscribedCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "missionSubscribeMember": "Subscribe a member",
+    "missionNoSubscribersYet": "No subscribers yet",
+    "missionNoSubscribersDesc": "Tap \"Subscribe a member\" to add someone to this mission.",
+    "missionSubscribedOn": "Subscribed on {date}",
+    "@missionSubscribedOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "missionEditRoleStatus": "Edit role and status",
+    "missionRemove": "Remove",
+    "missionRemoveSubscriber": "Remove subscriber",
+    "missionNonMembersTitle": "Non-member missioners",
+    "missionNonMembersSubtitle": "People who joined the mission but aren't registered members.",
+    "missionMissionersCount": "{count, plural, =1{1 missioner} other{{count} missioners}}",
+    "@missionMissionersCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "missionAddMissioner": "Add missioner",
+    "missionNoNonMembers": "No non-member missioners",
+    "missionNoNonMembersDesc": "Tap \"Add missioner\" to record someone who isn't a registered member.",
+    "missionAddedOnDate": "Added {date}",
+    "@missionAddedOnDate": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "missionRemoveMissioner": "Remove missioner",
+    "missionViewSubscriberDetails": "View details for {name}",
+    "@missionViewSubscriberDetails": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "schoolContactsNameLabel": "Contact name",
+    "schoolContactsNameHint": "e.g. Jane Wanjiku",
+    "schoolContactsNameRequired": "Enter the contact's name",
+    "schoolContactsPhoneLabel": "Phone number",
+    "schoolContactsPhoneHint": "e.g. 712 345 678",
+    "schoolContactsPhoneRequired": "Enter the contact's phone number",
+    "schoolContactsTypeLabel": "Contact type",
+    "schoolContactsTypeRequired": "Choose a contact type",
+    "schoolContactsEmailLabel": "Email address",
+    "schoolContactsEmailHint": "e.g. jane@example.com",
+    "schoolContactsEmailInvalid": "Enter an email address like jane@example.com",
+    "schoolContactsUpdated": "Contact updated",
+    "schoolContactsCreated": "Contact added",
+    "schoolContactsSave": "Save changes",
+    "schoolContactsFormEditSubtitle": "Change this contact's details.",
+    "schoolContactsFormCreateSubtitle": "Add a person to contact at this school.",
+    "schoolContactsNewType": "New type",
+    "schoolContactsNewTypeTooltip": "Add a new contact type",
+    "schoolContactsNewTypeTitle": "New contact type",
+    "schoolContactsNewTypeSubtitle": "Add a type you can reuse for school contacts, like Principal.",
+    "schoolContactsTypeNameLabel": "Type name",
+    "schoolContactsTypeNameHint": "e.g. Principal",
+    "schoolContactsTypeNameRequired": "Enter a name for the type",
+    "schoolContactsCreateType": "Add type",
+    "schoolContactsTypeCreateFailed": "Couldn't add the contact type. Check your connection and try again.",
+    "mdSave": "Save",
+    "mdQuestion": "Question",
+    "mdQuestionSubtitle": "Write down what students asked during the mission.",
+    "mdRequired": "Required",
+    "mdQuestionRequired": "Enter the question before saving.",
+    "mdDebriefNote": "Debrief note",
+    "mdDebriefNoteSubtitle": "Write down what happened and what the team learned.",
+    "mdDebriefNoteRequired": "Enter the note before saving.",
+    "mdDebriefNoteHint": "What happened, and what did we learn?",
+    "mdConfirmContinue": "Are you sure? This can't be undone.",
+    "mdUnknownDate": "Unknown date",
+    "mdAddQuestion": "Add question",
+    "mdQuestionRecorded": "Question saved",
+    "mdNotSyncedYet": "This item is still saving. Try again in a moment.",
+    "mdDeleteQuestion": "Delete this question?",
+    "mdQuestionDeleted": "Question deleted",
+    "mdEditQuestion": "Edit question",
+    "mdUpdate": "Save changes",
+    "mdQuestionUpdated": "Question updated",
+    "mdDebriefNoteAdded": "Debrief note added",
+    "mdDeleteDebriefNote": "Delete this debrief note?",
+    "mdDebriefNoteDeleted": "Debrief note deleted",
+    "mdEditDebriefNote": "Edit debrief note",
+    "mdDebriefNoteUpdated": "Debrief note updated",
+    "mdNoClassGroups": "No class groups are set up for this school type yet. Add one, then try again.",
+    "mdRecordSoul": "Record a soul",
+    "mdSoulRecorded": "Soul recorded",
+    "mdDeleteSoul": "Delete this soul record?",
+    "mdSoulDeleted": "Soul record deleted",
+    "mdEditSoul": "Edit soul record",
+    "mdSoulUpdated": "Soul record updated",
+    "mdMemberSubscribed": "Member subscribed to this mission",
+    "mdMissionerAdded": "Missioner added to this mission",
+    "mdRemoveSubscription": "Remove this subscriber?",
+    "mdSubscriptionRemoved": "Subscriber removed",
+    "mdSubscriberDetails": "Subscriber details",
+    "mdEditMission": "Edit mission",
+    "mdRefreshMission": "Refresh mission",
+    "mdLoadErrorTitle": "Couldn't load this mission",
+    "mdQuestionsEmpty": "No questions yet",
+    "mdQuestionsEmptyDesc": "Questions students asked at the mission will appear here.",
+    "mdUntitledQuestion": "Untitled question",
+    "mdDebriefEmpty": "No debrief notes yet",
+    "mdDebriefEmptyDesc": "Notes and reflections from the mission team will appear here.",
+    "mdUntitledNote": "Untitled note",
+    "mdSoulsEmpty": "No souls recorded yet",
+    "mdSoulsEmptyDesc": "Souls recorded during the mission will appear here.",
+    "mdRemoveMissioner": "Remove this missioner?",
+    "mdMissionerRemoved": "Missioner removed",
+    "mdOpApprove": "Approve mission",
+    "mdOpApproveDesc": "Mark this mission as approved.",
+    "mdOpApproveDone": "Mission approved",
+    "mdOpReject": "Reject mission",
+    "mdOpRejectDesc": "Turn down this mission request.",
+    "mdOpRejectDone": "Mission rejected",
+    "mdOpCancel": "Cancel mission",
+    "mdOpCancelDesc": "Call off this mission.",
+    "mdOpCancelDone": "Mission cancelled",
+    "mdOpComplete": "Complete mission",
+    "mdOpCompleteDesc": "Mark this mission as done after it has happened.",
+    "mdOpCompleteDone": "Mission marked as complete",
+    "mdOpNotifySchool": "Notify school",
+    "mdOpNotifySchoolDesc": "Send the mission details to the school.",
+    "mdOpNotifySchoolDone": "School notified",
+    "mdOpRequestFeedback": "Ask school for feedback",
+    "mdOpRequestFeedbackDesc": "Ask the school how the mission went.",
+    "mdOpRequestFeedbackDone": "Feedback request sent",
+    "mdOpNotifyWhatsapp": "Notify WhatsApp group",
+    "mdOpNotifyWhatsappDesc": "Send a mission update to the WhatsApp group.",
+    "mdOpNotifyWhatsappDone": "WhatsApp group notified",
+    "mdOpSummary": "Create summary",
+    "mdOpSummaryDesc": "Create a summary of this mission.",
+    "mdOpSummaryDone": "Mission summary created",
+    "mdOpUploadDrive": "Upload media to Google Drive",
+    "mdOpUploadDriveDesc": "Copy this mission's photos and videos to Google Drive.",
+    "mdOpUploadDriveDone": "Media upload started",
+    "mdOpZeroReq": "Make zero requisition",
+    "mdOpZeroReqDesc": "Create a requisition with no money for this mission.",
+    "mdOpZeroReqDone": "Zero requisition created",
+    "mdOpInProgress": "Please wait for the current action to finish.",
+    "mdActionFailed": "That didn't work. Check your connection and try again.",
+    "mdCompleteConfirm": "Mark this mission as complete? Only do this after the mission has happened.",
+    "mdComplete": "Mark complete",
+    "mdZeroReqConfirm": "Create a requisition with no money for this mission? Use this when no spending is expected.",
+    "mdCreateRequisition": "Create requisition",
+    "mdReasonOptional": "Reason (optional)",
+    "mdReason": "Reason",
+    "mdReasonSubtitle": "Add a short note explaining why. You can leave this blank.",
+    "mdOptional": "Optional",
+    "mdSessionsTitle": "Mission sessions",
+    "mdSessionsSubtitle": "Who led each session and when it happened.",
+    "mdSessionsEmpty": "No sessions yet",
+    "mdSessionsEmptyDesc": "Sessions for this mission will appear here.",
+    "mdSessionFallback": "Mission session",
+    "mdFacilitator": "Facilitator: {name}",
+    "@mdFacilitator": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "mdSpeaker": "Speaker: {name}",
+    "@mdSpeaker": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "mdUnassigned": "Not assigned",
+    "mdFillRequired": "Please fill in the required fields.",
+    "mdSelectMemberError": "Choose a member to continue.",
+    "mdSelectMember": "Choose a member",
+    "mdSelectMemberSubtitle": "Search for the member you want to add to this mission.",
+    "mdSearchMember": "Search by name",
+    "mdNoMembersFound": "No members found",
+    "mdMembersLoadError": "Couldn't load members. Check your connection and try again.",
+    "mdNoMembersRefresh": "No members found. Close this and try again.",
+    "mdAddNonMember": "Add someone who isn't a member",
+    "mdSubscribeMemberSubtitle": "Choose a fellowship member to join this mission.",
+    "mdNameRequired": "Enter a name.",
+    "mdFullName": "Full name",
+    "mdEnterFullName": "Enter full name",
+    "mdPhoneNumber": "Phone number",
+    "mdEnterPhone": "Enter phone number",
+    "mdAddMissionerSubtitle": "Add someone who isn't a registered member.",
+    "mdSoulNameRequired": "Enter a name or identifier.",
+    "mdSoulName": "Name or identifier",
+    "mdSoulNameHint": "Enter a name or identifier",
+    "mdClassGroup": "Class group",
+    "mdSearchClassGroup": "Search class groups",
+    "mdNoClassGroupsForType": "No class groups found for this school type",
+    "mdDecisionType": "Decision type",
+    "mdSelectOne": "Choose one",
+    "mdNotes": "Notes",
+    "mdNotesHint": "Optional details for follow-up",
+    "mdRecordSoulSubtitle": "Record salvation decisions and follow-up details.",
+    "mdSubscriberUpdated": "Subscriber updated",
+    "mdPhone": "Phone",
+    "mdResidence": "Residence",
+    "mdPastor": "Pastor",
+    "mdRole": "Role",
+    "mdStatus": "Status",
+    "mdUpdateSubscriber": "Save subscriber",
+    "mgSchoolUnavailable": "This mission's school details aren't available yet.",
+    "mgNoContacts": "No contact people have been added for this school yet.",
+    "mgTravelTime": "Travel time",
+    "mgCallContact": "Call {name}",
+    "@mgCallContact": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "mgOpenInMaps": "Open in maps",
+    "mfSchoolTermRequired": "Choose a school term.",
+    "mfMissionTypeRequired": "Choose a mission type.",
+    "mfSchoolRequired": "Choose a school.",
+    "mfStartDateRequired": "Choose a start date.",
+    "mfEndDateRequired": "Choose an end date.",
+    "mfEndBeforeStart": "The end date can't be before the start date.",
+    "mfStartTimeRequired": "Choose a start time.",
+    "mfEndTimeRequired": "Choose an end time.",
+    "mfThemeRequired": "Enter a theme for the mission.",
+    "mfCapacityRequired": "Enter how many missioners are needed.",
+    "mfCapacityMin": "Capacity must be at least 1.",
+    "mfCreated": "Mission created",
+    "mfUpdated": "Mission updated",
+    "mfSaveFailed": "We couldn't save the mission. Check your connection and try again.",
+    "mfCreateButton": "Create mission",
+    "mfUpdateButton": "Save changes",
+    "mfCreateSubtitle": "Fill in the mission details below to get started.",
+    "mfEditTitle": "Edit mission",
+    "mfStartDate": "Start date",
+    "mfEndDate": "End date",
+    "mfStartTime": "Start time",
+    "mfEndTime": "End time",
+    "mfChooseStartDate": "Choose start date",
+    "mfChooseEndDate": "Choose end date",
+    "mfChooseStartTime": "Choose start time",
+    "mfChooseEndTime": "Choose end time",
+    "mfTapToChoose": "Tap the calendar or clock button to choose",
+    "mfThemeHint": "Mission theme",
+    "mfThemeHelp": "The focus or theme of this mission",
+    "mfCapacity": "Capacity",
+    "mfCapacityHelp": "How many missioners are needed",
+    "mfWhatsAppLink": "WhatsApp group link",
+    "mfPrepNotes": "Preparation notes",
+    "mfPrepNotesHint": "Anything the team should know before the mission",
+    "mfOptional": "Optional",
+    "mfRequired": "Required",
+    "mfSchoolTerm": "School term",
+    "mfMissionType": "Mission type",
+    "mfSchool": "School",
+    "mfSearchSchool": "Search schools",
+    "mfNoSchools": "No schools found",
+    "mfFixFields": "Some details are missing. Check the highlighted fields.",
+    "mfNoTerms": "No school terms are set up yet.",
+    "mfNoTypes": "No mission types are set up yet.",
+    "mfOptionsLoadError": "Couldn't load these options.",
+    "mfTheme": "Theme",
+    "mgNoMapsApp": "No maps app found on this phone."
 }

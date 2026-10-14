@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:leadership/features/missions/mission_details/widgets/domain_tab_section.dart';
+import 'package:leadership/l10n/l10n.dart';
+import 'package:prf_design/prf_design.dart';
 
 class PeopleDataMissionDetailsSection extends StatelessWidget {
   const PeopleDataMissionDetailsSection({
@@ -13,12 +14,12 @@ class PeopleDataMissionDetailsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MissionDomainTabSection(
-      title: 'People Data',
-      subtitle: 'Subscribers and ministry outcomes from the mission.',
-      tabs: const [
-        Tab(text: 'Subscribers'),
-        Tab(text: 'Sessions'),
+    return PRFDomainTabSection(
+      title: context.l10n.missionDetailsPeople,
+      subtitle: context.l10n.missionDetailsPeopleSubtitle,
+      tabs: [
+        Tab(text: context.l10n.missionDetailsSubscribers),
+        Tab(text: context.l10n.sessions),
       ],
       children: [subscribers, sessions],
     );

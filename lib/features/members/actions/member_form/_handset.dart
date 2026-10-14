@@ -13,6 +13,7 @@ import 'package:leadership/features/marital_statuses/cubit/marital_status_resour
 import 'package:leadership/features/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/professions/actions/profession_form/_handset.dart';
 import 'package:leadership/features/professions/cubit/profession_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_church.dart';
 import 'package:leadership/models/remote/prf_department.dart';
 import 'package:leadership/models/remote/prf_gift.dart';
@@ -191,13 +192,13 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
     final email = _personalEmailController.text.trim();
 
     if (firstName.isEmpty) {
-      _firstNameError = 'First name is required';
+      _firstNameError = context.l10n.membersFirstNameRequired;
     }
     if (lastName.isEmpty) {
-      _lastNameError = 'Last name is required';
+      _lastNameError = context.l10n.membersLastNameRequired;
     }
     if (!_isEditing && email.isEmpty) {
-      _personalEmailError = 'Email is required';
+      _personalEmailError = context.l10n.membersEmailRequired;
     }
 
     setState(() {
@@ -214,10 +215,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   void _submitForm() {
     if (!_validateForm()) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fix the highlighted fields and try again.',
-      );
+      PRFSnackbar.error(context, context.l10n.commonFixHighlightedFields);
       return;
     }
 
@@ -289,7 +287,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Future<void> _promptAddChurch() async {
     await PRFBottomSheet.show<void>(
       context,
-      title: 'Add Church',
+      title: context.l10n.membersAddChurch,
       child: ChurchFormViewHandset(
         onSaved: () {
           context.read<ChurchResourceCubit>().loadAll(sortBy: 'name');
@@ -301,7 +299,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Future<void> _promptAddProfession() async {
     await PRFBottomSheet.show<void>(
       context,
-      title: 'Add Profession',
+      title: context.l10n.membersAddProfession,
       child: ProfessionFormViewHandset(
         onSaved: () {
           context.read<ProfessionResourceCubit>().loadAll(sortBy: 'name');
@@ -313,7 +311,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Future<void> _promptAddMaritalStatus() async {
     await PRFBottomSheet.show<void>(
       context,
-      title: 'Add Marital Status',
+      title: context.l10n.membersAddMaritalStatus,
       child: MaritalStatusFormViewHandset(
         onSaved: () {
           context.read<MaritalStatusResourceCubit>().loadAll(sortBy: 'name');
@@ -325,7 +323,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Future<void> _promptAddDepartment() async {
     await PRFBottomSheet.show<void>(
       context,
-      title: 'Add Department',
+      title: context.l10n.membersAddDepartment,
       child: DepartmentFormViewHandset(
         onSaved: () {
           context.read<DepartmentResourceCubit>().loadAll(sortBy: 'name');
@@ -337,7 +335,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   Future<void> _promptAddGift() async {
     await PRFBottomSheet.show<void>(
       context,
-      title: 'Add Gift',
+      title: context.l10n.membersAddGift,
       child: GiftFormViewHandset(
         onSaved: () {
           context.read<GiftResourceCubit>().loadAll(sortBy: 'name');
@@ -361,13 +359,13 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
             PRFSnackbar.success(
               context,
               _isEditing
-                  ? 'Member updated successfully'
-                  : 'Member created successfully',
+                  ? context.l10n.membersUpdated
+                  : context.l10n.membersCreated,
             );
             widget.onSaved();
-          case ResourceError<PRFMember>(:final message):
+          case ResourceError<PRFMember>():
             Gaimon.error();
-            PRFSnackbar.error(context, message);
+            PRFSnackbar.error(context, context.l10n.commonSaveErrorMessage);
           default:
             break;
         }
@@ -377,6 +375,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           curr is ResourceError<PRFMember>,
       builder: (context, state) {
         final isLoading = state is ResourceMutating<PRFMember>;
+        final l10n = context.l10n;
+        final theme = Theme.of(context);
+        final enter = PRFMotionTokens.resolve(
+          context,
+          PRFMotionTokens.enterShort,
+        );
 
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -386,8 +390,10 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                  Theme.of(context).colorScheme.surface,
+                  theme.colorScheme.primary.withValues(
+                    alpha: PRFOpacities.faint,
+                  ),
+                  theme.colorScheme.surface,
                 ],
               ),
             ),
@@ -402,31 +408,25 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.lg),
                     _buildHeaderCard(context)
                         .animate()
-                        .slideY(begin: -0.3)
-                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                        .slideY(begin: -0.3, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.lg,
                             ),
                             border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.shadow.withValues(alpha: 0.1),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: PRFOpacities.muted,
                               ),
-                            ],
+                            ),
+                            boxShadow: PRFShadowTokens.card(
+                              theme.colorScheme.shadow,
+                            ),
                           ),
                           child: Column(
                             children: [
@@ -438,15 +438,22 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+                        .animate(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger3,
+                          ),
+                        )
+                        .slideX(begin: -0.2, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
                       child: PRFButton(
                         onPressed: _submitForm,
-                        title: _isEditing ? 'Update Member' : 'Create Member',
+                        title: _isEditing
+                            ? l10n.membersSave
+                            : l10n.membersCreate,
                         disabled: isLoading || !_isFormValid,
                         isLoading: isLoading,
                       ),
@@ -472,28 +479,22 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.8),
+            theme.colorScheme.primary.withValues(alpha: PRFOpacities.stronger),
           ],
         ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: PRFShadowTokens.raised(theme.colorScheme.primary),
       ),
       child: Column(
         children: [
           Icon(
             _isEditing ? Icons.edit_outlined : Icons.person_add_outlined,
-            size: 32,
+            size: PRFSizeTokens.iconXl,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            _isEditing ? 'Edit Member' : 'Add Member',
+            _isEditing ? context.l10n.membersEdit : context.l10n.membersAdd,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -502,10 +503,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             _isEditing
-                ? 'Update member profile information'
-                : 'Register a new member',
+                ? context.l10n.membersFormEditSubtitle
+                : context.l10n.membersFormCreateSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
             textAlign: TextAlign.center,
           ),
@@ -515,18 +518,17 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   }
 
   Widget _buildPersonalSection(bool isLoading) {
+    final l10n = context.l10n;
     return Column(
       children: [
         PRFFormSection(
           icon: Icons.person_outline,
-          title: 'First Name',
+          title: l10n.membersFirstName,
           isRequired: true,
-
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'First name',
-            labelText: 'First Name *',
-            helperText: 'Required',
+            hintText: l10n.membersFirstName,
+            labelText: l10n.membersFirstName,
             errorText: _showValidation ? _firstNameError : null,
             controller: _firstNameController,
             enabled: !isLoading,
@@ -539,14 +541,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.person_outline,
-          title: 'Last Name',
+          title: l10n.membersLastName,
           isRequired: true,
-
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Last name',
-            labelText: 'Last Name *',
-            helperText: 'Required',
+            hintText: l10n.membersLastName,
+            labelText: l10n.membersLastName,
             errorText: _showValidation ? _lastNameError : null,
             controller: _lastNameController,
             enabled: !isLoading,
@@ -559,12 +559,11 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.phone_outlined,
-          title: 'Phone Number',
-          isRequired: true,
-
+          title: l10n.membersPhone,
+          subtitle: l10n.membersOptional,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFPhoneInput(
-            hintText: 'Phone number',
+            hintText: l10n.membersPhone,
 
             controller: _phoneNumberController,
             enabled: !isLoading,
@@ -572,14 +571,13 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.email_outlined,
-          title: 'Email',
+          title: l10n.email,
           isRequired: !_isEditing,
-          subtitle: _isEditing ? 'Optional' : 'Required',
+          subtitle: _isEditing ? l10n.membersOptional : null,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Email address',
-            labelText: _isEditing ? 'Email' : 'Email *',
-            helperText: _isEditing ? 'Optional' : 'Required',
+            hintText: l10n.membersEmailHint,
+            labelText: l10n.email,
             errorText: _showValidation ? _personalEmailError : null,
             controller: _personalEmailController,
             enabled: !isLoading,
@@ -593,39 +591,36 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.location_on_outlined,
-          title: 'Postal Address',
-
+          title: l10n.membersPostalAddress,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Postal address',
-            labelText: 'Postal Address',
-            helperText: 'Optional',
+            hintText: l10n.membersPostalAddress,
+            labelText: l10n.membersPostalAddress,
+            helperText: l10n.membersOptional,
             controller: _postalAddressController,
             enabled: !isLoading,
           ),
         ),
         PRFFormSection(
           icon: Icons.home_outlined,
-          title: 'Residence',
-
+          title: l10n.membersResidence,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Residence',
-            labelText: 'Residence',
-            helperText: 'Optional',
+            hintText: l10n.membersResidence,
+            labelText: l10n.membersResidence,
+            helperText: l10n.membersOptional,
             controller: _residenceController,
             enabled: !isLoading,
           ),
         ),
         PRFFormSection(
           icon: Icons.notes_outlined,
-          title: 'Bio',
-
+          title: l10n.membersBio,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Bio',
-            labelText: 'Bio',
-            helperText: 'Optional',
+            hintText: l10n.membersBioHint,
+            labelText: l10n.membersBio,
+            helperText: l10n.membersOptional,
             controller: _bioController,
             type: PRFTextFieldType.textArea,
             enabled: !isLoading,
@@ -635,13 +630,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.link_outlined,
-          title: 'LinkedIn URL',
-
+          title: l10n.membersLinkedIn,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'LinkedIn URL',
-            labelText: 'LinkedIn URL',
-            helperText: 'Optional',
+            hintText: l10n.membersLinkedInHint,
+            labelText: l10n.membersLinkedIn,
+            helperText: l10n.membersOptional,
             controller: _linkedInUrlController,
             enabled: !isLoading,
             keyboardType: TextInputType.url,
@@ -653,18 +647,18 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
   Widget _buildSpiritualSection(bool isLoading) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Column(
       children: [
         PRFFormSection(
           icon: Icons.calendar_today_outlined,
-          title: 'Year of Salvation',
-
+          title: l10n.membersYearOfSalvation,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'e.g. 2010',
-            labelText: 'Year of Salvation',
-            helperText: 'Optional',
+            hintText: l10n.membersYearHint,
+            labelText: l10n.membersYearOfSalvation,
+            helperText: l10n.membersOptional,
             controller: _yearOfSalvationController,
             enabled: !isLoading,
             keyboardType: TextInputType.number,
@@ -672,40 +666,34 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.volunteer_activism_outlined,
-          title: 'Church Volunteer',
-          subtitle: 'Toggle volunteer status',
+          title: l10n.membersChurchVolunteer,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _churchVolunteer ? 'Yes' : 'No',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+          child: SwitchListTile(
+            title: Text(
+              _churchVolunteer ? l10n.yes : l10n.no,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
-              Switch(
-                value: _churchVolunteer,
-                onChanged: isLoading
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _churchVolunteer = value;
-                        });
-                      },
-              ),
-            ],
+            ),
+            value: _churchVolunteer,
+            contentPadding: EdgeInsets.zero,
+            onChanged: isLoading
+                ? null
+                : (value) {
+                    setState(() {
+                      _churchVolunteer = value;
+                    });
+                  },
           ),
         ),
         PRFFormSection(
           icon: Icons.person_pin_outlined,
-          title: 'Pastor',
-
+          title: l10n.membersPastor,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Pastor name',
-            labelText: 'Pastor',
-            helperText: 'Optional',
+            hintText: l10n.membersPastorHint,
+            labelText: l10n.membersPastor,
+            helperText: l10n.membersOptional,
             controller: _pastorController,
             enabled: !isLoading,
           ),
@@ -716,44 +704,42 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   }
 
   Widget _buildProfessionalSection(bool isLoading) {
+    final l10n = context.l10n;
     return Column(
       children: [
         _buildProfessionSelection(),
         PRFFormSection(
           icon: Icons.business_outlined,
-          title: 'Institution',
-
+          title: l10n.membersInstitution,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Profession institution',
-            labelText: 'Institution',
-            helperText: 'Optional',
+            hintText: l10n.membersInstitutionHint,
+            labelText: l10n.membersInstitution,
+            helperText: l10n.membersOptional,
             controller: _professionInstitutionController,
             enabled: !isLoading,
           ),
         ),
         PRFFormSection(
           icon: Icons.location_city_outlined,
-          title: 'Location',
-
+          title: l10n.membersLocation,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Profession location',
-            labelText: 'Location',
-            helperText: 'Optional',
+            hintText: l10n.membersLocationHint,
+            labelText: l10n.membersLocation,
+            helperText: l10n.membersOptional,
             controller: _professionLocationController,
             enabled: !isLoading,
           ),
         ),
         PRFFormSection(
           icon: Icons.contact_phone_outlined,
-          title: 'Contact',
-
+          title: l10n.membersContact,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Profession contact',
-            labelText: 'Contact',
-            helperText: 'Optional',
+            hintText: l10n.membersContactHint,
+            labelText: l10n.membersContact,
+            helperText: l10n.membersOptional,
             controller: _professionContactController,
             enabled: !isLoading,
           ),
@@ -763,23 +749,22 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
   }
 
   Widget _buildDemographicsSection(bool isLoading) {
+    final l10n = context.l10n;
     return Column(
       children: [
         PRFFormSection(
           icon: Icons.wc_outlined,
-          title: 'Gender',
-
-          isRequired: true,
+          title: l10n.membersGender,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: DropdownButtonFormField<int>(
             initialValue: _selectedGender,
-            decoration: const InputDecoration(
-              labelText: 'Gender',
-              helperText: 'Optional',
+            decoration: InputDecoration(
+              labelText: l10n.membersGender,
+              helperText: l10n.membersOptional,
             ),
-            items: const [
-              DropdownMenuItem(value: 1, child: Text('Male')),
-              DropdownMenuItem(value: 2, child: Text('Female')),
+            items: [
+              DropdownMenuItem(value: 1, child: Text(l10n.membersMale)),
+              DropdownMenuItem(value: 2, child: Text(l10n.membersFemale)),
             ],
             onChanged: isLoading
                 ? null
@@ -815,8 +800,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
         return PRFFormSection(
           icon: Icons.church_outlined,
-          title: 'Church',
-
+          title: context.l10n.membersChurch,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -836,11 +820,14 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                   });
                 },
                 selection: _selectedChurchUlid,
-                hintText: 'Search church',
-                emptyText: 'No churches found',
+                hintText: context.l10n.membersSearchChurch,
+                emptyText: context.l10n.membersNoChurches,
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
-              _buildAddNewButton(label: 'Add Church', onTap: _promptAddChurch),
+              _buildAddNewButton(
+                label: context.l10n.membersAddChurch,
+                onTap: _promptAddChurch,
+              ),
             ],
           ),
         );
@@ -860,8 +847,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
         return PRFFormSection(
           icon: Icons.work_outlined,
-          title: 'Profession',
-
+          title: context.l10n.membersProfession,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -881,12 +867,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                   });
                 },
                 selection: _selectedProfessionUlid,
-                hintText: 'Search profession',
-                emptyText: 'No professions found',
+                hintText: context.l10n.membersSearchProfession,
+                emptyText: context.l10n.membersNoProfessions,
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
               _buildAddNewButton(
-                label: 'Add Profession',
+                label: context.l10n.membersAddProfession,
                 onTap: _promptAddProfession,
               ),
             ],
@@ -911,8 +897,7 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
         return PRFFormSection(
           icon: Icons.favorite_outlined,
-          title: 'Marital Status',
-
+          title: context.l10n.membersMaritalStatus,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -932,12 +917,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                   });
                 },
                 selection: _selectedMaritalStatusUlid,
-                hintText: 'Search marital status',
-                emptyText: 'No marital statuses found',
+                hintText: context.l10n.membersSearchMaritalStatus,
+                emptyText: context.l10n.membersNoMaritalStatuses,
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
               _buildAddNewButton(
-                label: 'Add Marital Status',
+                label: context.l10n.membersAddMaritalStatus,
                 onTap: _promptAddMaritalStatus,
               ),
             ],
@@ -959,8 +944,8 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
         return PRFFormSection(
           icon: Icons.groups_outlined,
-          title: 'Departments',
-          subtitle: 'Optional — select multiple',
+          title: context.l10n.membersSectionDepartments,
+          subtitle: context.l10n.membersSelectMultiple,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -985,12 +970,12 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                     }
                   });
                 },
-                hintText: 'Search department',
-                emptyText: 'No departments found',
+                hintText: context.l10n.membersSearchDepartment,
+                emptyText: context.l10n.membersNoDepartments,
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
               _buildAddNewButton(
-                label: 'Add Department',
+                label: context.l10n.membersAddDepartment,
                 onTap: _promptAddDepartment,
               ),
             ],
@@ -1012,8 +997,8 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
 
         return PRFFormSection(
           icon: Icons.card_giftcard_outlined,
-          title: 'Gifts',
-          subtitle: 'Optional — select multiple',
+          title: context.l10n.membersSectionGifts,
+          subtitle: context.l10n.membersSelectMultiple,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1038,11 +1023,14 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
                     }
                   });
                 },
-                hintText: 'Search gift',
-                emptyText: 'No gifts found',
+                hintText: context.l10n.membersSearchGift,
+                emptyText: context.l10n.membersNoGifts,
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
-              _buildAddNewButton(label: 'Add Gift', onTap: _promptAddGift),
+              _buildAddNewButton(
+                label: context.l10n.membersAddGift,
+                onTap: _promptAddGift,
+              ),
             ],
           ),
         );
@@ -1054,25 +1042,48 @@ class _MemberFormViewHandsetState extends State<MemberFormViewHandset> {
     required String label,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.add_circle_outline,
-            size: 16,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(width: PRFSpacingTokens.xs),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: PRFSizeTokens.minTouchTarget,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.sm,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add_circle_outline,
+                    size: PRFSizeTokens.iconMd,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: PRFSpacingTokens.xs),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

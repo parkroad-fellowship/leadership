@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -10,7 +12,6 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_school.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/debouncer.dart' as app_utils;
 import 'package:leadership/utils/misc.dart';
@@ -85,11 +86,13 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       if (!mounted) return;
       PRFSnackbar.error(
         context,
-        e.statusCode == 404 ? 'No scheduled missions to export' : e.message,
+        e.statusCode == 404
+            ? context.l10n.missionsNoScheduleToShare
+            : context.l10n.missionsShareScheduleFailed,
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      PRFSnackbar.error(context, 'Failed to export schedule');
+      PRFSnackbar.error(context, context.l10n.missionsShareScheduleFailed);
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
@@ -106,15 +109,19 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
         floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: PRFColors.lime300,
-          foregroundColor: PRFColors.navy900,
+          backgroundColor: theme.colorScheme.secondary,
+          foregroundColor: theme.colorScheme.onSecondary,
           icon: _isExporting
               ? const SizedBox.square(
-                  dimension: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  dimension: PRFSizeTokens.iconMd,
+                  child: PRFCircularProgressIndicator(),
                 )
               : const Icon(Icons.ios_share),
-          label: Text(_isExporting ? 'Exporting...' : 'Share Schedule'),
+          label: Text(
+            _isExporting
+                ? l10n.missionsPreparingSchedule
+                : l10n.missionsShareSchedule,
+          ),
           onPressed: _isExporting ? null : _exportAndShareSchedule,
         ),
         body: Column(
@@ -130,9 +137,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                     ),
                     actions: [
                       if (Misc.userCan(PRFPermissions.createMission))
-                        PRFHeaderActionButton(
-                          label: '+ New',
-                          onTap: _showCreateMissionForm,
+                        PRFNavBarAction(
+                          label: l10n.missionsNewMission,
+                          icon: Icons.add,
+                          tooltip: l10n.missionsNewMissionTooltip,
+                          onPressed: _showCreateMissionForm,
                         ),
                       if (Misc.userCan(PRFPermissions.createMission))
                         const SizedBox(width: PRFSpacingTokens.sm),
@@ -143,7 +152,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                         builder: (context, state) => switch (state) {
                           ResourceListLoading<PRFMission>() =>
                             const SizedBox.square(
-                              dimension: 24,
+                              dimension: PRFSizeTokens.iconLg,
                               child: PRFCircularProgressIndicator(),
                             ),
                           _ => const SizedBox.shrink(),
@@ -180,7 +189,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                               children: [
                                 Expanded(
                                   child: _buildHeaderStat(
-                                    label: 'Missions',
+                                    label: l10n.missions,
                                     value: '${items.length}',
                                     color: theme.colorScheme.secondary,
                                   ),
@@ -188,7 +197,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                                 const SizedBox(width: PRFSpacingTokens.sm),
                                 Expanded(
                                   child: _buildHeaderStat(
-                                    label: 'Capacity',
+                                    label: l10n.capacity,
                                     value: '$totalCapacity',
                                     color: theme.colorScheme.tertiary,
                                   ),
@@ -196,7 +205,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                                 const SizedBox(width: PRFSpacingTokens.sm),
                                 Expanded(
                                   child: _buildHeaderStat(
-                                    label: 'Open Slots',
+                                    label: l10n.missionsOpenSlots,
                                     value: '$openSlots',
                                     color: theme.colorScheme.errorContainer,
                                   ),
@@ -214,7 +223,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                       PRFSpacingTokens.sm,
                     ),
                     child: Transform.translate(
-                      offset: const Offset(0, -6),
+                      offset: const Offset(0, -PRFSpacingTokens.xs),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: TabBar(
@@ -222,10 +231,10 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                           isScrollable: true,
                           labelColor: theme.colorScheme.onPrimary,
                           unselectedLabelColor: theme.colorScheme.onPrimary
-                              .withValues(alpha: 0.65),
+                              .withValues(alpha: PRFOpacities.stronger),
                           indicatorColor: theme.colorScheme.secondary,
                           dividerColor: theme.colorScheme.onPrimary.withValues(
-                            alpha: 0.2,
+                            alpha: PRFOpacities.muted,
                           ),
                           labelStyle: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
@@ -284,7 +293,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -300,7 +309,9 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -314,18 +325,14 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search missions by school, type, or theme...',
+        hintText: context.l10n.missionsSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -359,37 +366,16 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
 
   Widget _buildMissionsTimeline(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
 
     return BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
       builder: (context, state) {
         return switch (state) {
-          ResourceInitial<PRFMission>() ||
-          ResourceListLoading<PRFMission>() => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          ResourceError<PRFMission>(:final message) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
+          ResourceInitial<PRFMission>() || ResourceListLoading<PRFMission>() =>
+            const Center(child: PRFCircularProgressIndicator()),
+          ResourceError<PRFMission>() => _buildLoadError(
+            context,
+            onRetry: () =>
+                context.read<MissionResourceCubit>().loadUpcomingMissions(),
           ),
           ResourceListLoaded<PRFMission>(:final items) ||
           ResourceMutating<PRFMission>(:final items) => (() {
@@ -404,10 +390,10 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                 child: PRFEmptyView(
                   label: _searchQuery.isEmpty
                       ? l10n.noMissions
-                      : 'No matching missions',
+                      : l10n.missionsNoMatches,
                   description: _searchQuery.isEmpty
-                      ? l10n.pleaseWait
-                      : 'Try a different search term.',
+                      ? l10n.missionsEmptyDesc
+                      : l10n.missionsNoMatchesDesc,
                 ),
               );
             }
@@ -436,8 +422,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                       )
                       .animate()
                       .fadeIn(
-                        delay: Duration(milliseconds: index * 100),
-                        duration: PRFMotionTokens.enterShort,
+                        delay: _staggerDelay(context, index),
+                        duration: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.enterShort,
+                        ),
                       )
                       .slideX(
                         begin: 0.3,
@@ -456,37 +445,16 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
 
   Widget _buildPastMissionsTimeline(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
 
     return BlocBuilder<MissionResourceCubit, ResourceState<PRFMission>>(
       builder: (context, state) {
         return switch (state) {
-          ResourceInitial<PRFMission>() ||
-          ResourceListLoading<PRFMission>() => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          ResourceError<PRFMission>(:final message) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
+          ResourceInitial<PRFMission>() || ResourceListLoading<PRFMission>() =>
+            const Center(child: PRFCircularProgressIndicator()),
+          ResourceError<PRFMission>() => _buildLoadError(
+            context,
+            onRetry: () =>
+                context.read<MissionResourceCubit>().loadPastMissions(),
           ),
           ResourceListLoaded<PRFMission>(:final items) ||
           ResourceMutating<PRFMission>(:final items) => (() {
@@ -501,10 +469,10 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                 child: PRFEmptyView(
                   label: _searchQuery.isEmpty
                       ? l10n.noMissions
-                      : 'No matching missions',
+                      : l10n.missionsNoMatches,
                   description: _searchQuery.isEmpty
-                      ? l10n.pleaseWait
-                      : 'Try a different search term.',
+                      ? l10n.missionsEmptyDesc
+                      : l10n.missionsNoMatchesDesc,
                 ),
               );
             }
@@ -533,8 +501,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                       )
                       .animate()
                       .fadeIn(
-                        delay: Duration(milliseconds: index * 100),
-                        duration: PRFMotionTokens.enterShort,
+                        delay: _staggerDelay(context, index),
+                        duration: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.enterShort,
+                        ),
                       )
                       .slideX(
                         begin: 0.3,
@@ -567,6 +538,19 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         final filtered = _filterSchools(schools);
 
         if (filtered.isEmpty) {
+          final hasError = state.maybeWhen(
+            error: (_, _) => true,
+            orElse: () => false,
+          );
+          if (hasError) {
+            return _buildLoadError(
+              context,
+              title: l10n.missionsSchoolsLoadErrorTitle,
+              onRetry: () => context.read<PastMissionResourceCubit>().loadAll(
+                filters: _schoolsFilters(),
+              ),
+            );
+          }
           return RefreshIndicator(
             onRefresh: () => context.read<PastMissionResourceCubit>().loadAll(
               filters: _schoolsFilters(),
@@ -574,12 +558,10 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             child: PRFEmptyView(
               label: _searchQuery.isEmpty
                   ? l10n.noPastMissions
-                  : 'No matching schools',
-              description: state.maybeWhen(
-                error: (message, _) => message,
-                itemError: (message, _, _) => message,
-                orElse: () => l10n.pleaseWait,
-              ),
+                  : l10n.missionsNoSchoolMatches,
+              description: _searchQuery.isEmpty
+                  ? l10n.missionsEmptyDesc
+                  : l10n.missionsNoMatchesDesc,
             ),
           );
         }
@@ -609,8 +591,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
                   )
                   .animate()
                   .fadeIn(
-                    delay: Duration(milliseconds: index * 100),
-                    duration: PRFMotionTokens.enterShort,
+                    delay: _staggerDelay(context, index),
+                    duration: PRFMotionTokens.resolve(
+                      context,
+                      PRFMotionTokens.enterShort,
+                    ),
                   )
                   .slideX(
                     begin: 0.3,
@@ -621,6 +606,26 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
           ),
         );
       },
+    );
+  }
+
+  Duration _staggerDelay(BuildContext context, int index) =>
+      PRFMotionTokens.resolve(
+        context,
+        PRFMotionTokens.stagger2 * math.min(index, 8),
+      );
+
+  Widget _buildLoadError(
+    BuildContext context, {
+    required VoidCallback onRetry,
+    String? title,
+  }) {
+    final l10n = context.l10n;
+    return PRFErrorView(
+      failure: PRFFailure(message: l10n.missionsLoadErrorMessage),
+      title: title ?? l10n.missionsLoadErrorTitle,
+      retryLabel: l10n.tryAgain,
+      onRetry: onRetry,
     );
   }
 
@@ -640,7 +645,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
   void _showCreateMissionForm() {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Create Mission',
+      title: context.l10n.missionsCreateTitle,
       child: const CreateMissionView(),
     ).then((_) {
       if (!mounted) return;
@@ -672,532 +677,71 @@ class TimelineMissionCard extends StatelessWidget with TimezoneMixin {
   final bool isSubscribed;
   final VoidCallback? onTap;
 
+  static bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = context.l10n;
+    final statusColors = context.statusColors;
     final now = DateTime.now();
     final startDate = mission.startDate;
     final endDate = mission.endDate;
-    final isUpcoming = startDate.isAfter(now);
-    final isPast = endDate.isBefore(now.subtract(const Duration(days: 1)));
-    final isOngoing = startDate.isBefore(now) && endDate.isAfter(now);
+    // Day-inclusive, matching PRF Missions: a mission is ongoing when today
+    // falls on or between its start and end days.
+    final startedByToday =
+        startDate.isBefore(now) || _isSameDay(startDate, now);
+    final endsTodayOrLater = endDate.isAfter(now) || _isSameDay(endDate, now);
+    final isOngoing = startedByToday && endsTodayOrLater;
+    final isUpcoming = !startedByToday;
+    final isPast = !endsTodayOrLater;
     final isMultiDay = !_isSameDay(startDate, endDate);
-    final duration = endDate.difference(startDate).inDays + 1;
+    final durationDays = endDate.difference(startDate).inDays + 1;
+    final timeRange =
+        '${Misc.formatTime(mission.startTime, timezone)} - '
+        '${Misc.formatTime(mission.endTime, timezone)}';
 
-    // Premium status color system
     final statusColor = isSubscribed
-        ? PRFColors.limeGreen
+        ? statusColors.success.main
         : isOngoing
-        ? PRFColors.limeGreen
+        ? statusColors.inProgress.main
         : isUpcoming
-        ? theme.colorScheme.primary
+        ? statusColors.scheduled.main
         : isPast
-        ? theme.colorScheme.onSurfaceVariant
-        : theme.colorScheme.secondary;
+        ? statusColors.completed.main
+        : statusColors.info.main;
 
     final statusText = isSubscribed
-        ? 'Subscribed'
+        ? l10n.subscribed
         : isOngoing
-        ? 'Active'
+        ? l10n.missionsStatusOngoing
         : isUpcoming
-        ? 'Upcoming'
+        ? l10n.upcoming
         : isPast
-        ? 'Completed'
-        : 'Available';
+        ? l10n.completed
+        : l10n.missionsStatusAvailable;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 60,
-          child: Column(
-            children: [
-              // Multi-day date badge
-              Container(
-                width: 50,
-                height: isMultiDay ? 100 : 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [statusColor, statusColor.withValues(alpha: 0.8)],
-                  ),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                  boxShadow: [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isMultiDay) ...[
-                      // Start date
-                      Text(
-                        startDate.day.toString(),
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        Misc.getMonthAbbreviation(startDate.month),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Container(
-                        width: 12,
-                        height: 1,
-                        color: Colors.white.withValues(alpha: 0.7),
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                      ),
-                      // End date
-                      Text(
-                        endDate.day.toString(),
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        Misc.getMonthAbbreviation(endDate.month),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ] else ...[
-                      // Single day
-                      Text(
-                        startDate.day.toString(),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        Misc.getMonthAbbreviation(startDate.month),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              // Timeline line with flexible height
-              if (!isLast)
-                Container(
-                  width: 2,
-                  height: 60,
-                  margin: const EdgeInsets.symmetric(
-                    vertical: PRFSpacingTokens.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        statusColor.withValues(alpha: 0.6),
-                        theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
-            ],
-          ),
-        ),
-
-        const SizedBox(width: PRFSpacingTokens.lg),
-
-        Expanded(
-          child: GestureDetector(
-            onTap: onTap,
-            child: Container(
-              margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
-                  ),
-                  BoxShadow(
-                    color: statusColor.withValues(alpha: 0.05),
-                    blurRadius: 24,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Premium header with gradient
-                    Container(
-                      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            statusColor.withValues(alpha: 0.1),
-                            statusColor.withValues(alpha: 0.05),
-                          ],
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // School name and status
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  mission.school?.name ?? '',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: PRFSpacingTokens.sm),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: PRFSpacingTokens.sm,
-                                  vertical: PRFSpacingTokens.xs,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor,
-                                  borderRadius: BorderRadius.circular(
-                                    PRFRadiusTokens.md,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: statusColor.withValues(alpha: 0.3),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  statusText,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: PRFSpacingTokens.md),
-
-                          // Mission type with icon
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(
-                                    PRFRadiusTokens.sm,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.school_rounded,
-                                  size: 16,
-                                  color: theme.colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                              const SizedBox(width: PRFSpacingTokens.sm),
-                              Expanded(
-                                child: Text(
-                                  mission.missionType?.name ?? '',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Content section
-                    Padding(
-                      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Duration and timing info
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildInfoChip(
-                                  context,
-                                  Icons.access_time_rounded,
-                                  l10n.duration,
-                                  isMultiDay
-                                      ? l10n.durationDesc(duration)
-                                      // ignore: lines_longer_than_80_chars
-                                      : '${Misc.formatTime(mission.startTime, timezone)} - ${Misc.formatTime(mission.endTime, timezone)}',
-                                  theme.colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(width: PRFSpacingTokens.sm),
-                              Expanded(
-                                child: _buildInfoChip(
-                                  context,
-                                  Icons.people_rounded,
-                                  l10n.capacity,
-                                  l10n.capacityDesc(mission.capacity),
-                                  theme.colorScheme.secondary,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: PRFSpacingTokens.md),
-
-                          // Date range display
-                          DateRangeView(
-                            isMultiDay: isMultiDay,
-                            startDate: startDate,
-                            timezone: timezone,
-                            endDate: endDate,
-                            mission: mission,
-                            isOngoing: isOngoing,
-                          ),
-
-                          const SizedBox(height: PRFSpacingTokens.md),
-
-                          // Action button
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: PRFSpacingTokens.lg,
-                              vertical: PRFSpacingTokens.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.sm,
-                              ),
-                              border: Border.all(
-                                color: statusColor.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'View Details',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: statusColor,
-                                  ),
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.xs),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 14,
-                                  color: statusColor,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoChip(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 12, color: color),
-              const SizedBox(width: PRFSpacingTokens.xs),
-              Flexible(
-                child: Text(
-                  label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-              fontSize: 11,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  bool _isSameDay(DateTime date1, DateTime date2) {
-    return date1.year == date2.year &&
-        date1.month == date2.month &&
-        date1.day == date2.day;
-  }
-}
-
-class DateRangeView extends StatelessWidget {
-  const DateRangeView({
-    required this.isMultiDay,
-    required this.startDate,
-    required this.timezone,
-    required this.endDate,
-    required this.mission,
-    required this.isOngoing,
-    super.key,
-  });
-
-  final bool isMultiDay;
-  final DateTime startDate;
-  final String timezone;
-  final DateTime endDate;
-  final PRFMission mission;
-  final bool isOngoing;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(PRFSpacingTokens.md),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 16,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(width: PRFSpacingTokens.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isMultiDay
-                      // ignore: lines_longer_than_80_chars
-                      ? '${Misc.formatDate(startDate, timezone)} - ${Misc.formatDate(endDate, timezone)}'
-                      : Misc.formatDate(startDate, timezone),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (isMultiDay)
-                  Text(
-                    // ignore: lines_longer_than_80_chars
-                    '${Misc.formatTime(mission.startTime, timezone)} - ${Misc.formatTime(mission.endTime, timezone)}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-              ],
-            ),
-          ),
-          // Progress indicator for ongoing missions
-          if (isOngoing)
-            Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
-                        blurRadius: 6,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                )
-                .animate(onPlay: (controller) => controller.repeat())
-                .scale(
-                  begin: const Offset(0.8, 0.8),
-                  end: const Offset(1.2, 1.2),
-                  duration: 1000.ms,
-                ),
-        ],
-      ),
+    return PRFTimelineMissionCard(
+      isLast: isLast,
+      startDate: startDate,
+      endDate: endDate,
+      statusColor: statusColor,
+      statusText: statusText,
+      schoolName: mission.school?.name ?? '',
+      missionTypeName: mission.missionType?.name ?? '',
+      durationLabel: l10n.duration,
+      durationValue: isMultiDay ? l10n.durationDesc(durationDays) : timeRange,
+      capacityLabel: l10n.capacity,
+      capacityValue: l10n.capacityDesc(mission.capacity),
+      datePrimaryText: isMultiDay
+          ? '${Misc.formatDate(startDate, timezone)} - '
+                '${Misc.formatDate(endDate, timezone)}'
+          : Misc.formatDate(startDate, timezone),
+      dateSecondaryText: isMultiDay ? timeRange : null,
+      showActiveIndicator: isOngoing,
+      activeIndicatorColor: statusColors.active,
+      actionLabel: l10n.viewDetails,
+      onTap: onTap,
     );
   }
 }

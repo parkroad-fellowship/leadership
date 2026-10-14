@@ -87,7 +87,7 @@ class FirebaseServiceImpl implements PRFFirebaseService {
         accessToken: googleClientAuthorization.accessToken,
       );
     } else {
-      throw Exception('An error occurred');
+      throw Exception("Couldn't sign in with Google. Please try again.");
     }
   }
 
@@ -113,7 +113,7 @@ class FirebaseServiceImpl implements PRFFirebaseService {
 
         return SocialAuthDTO(provider: 'google', accessToken: accessToken);
       } else {
-        throw Exception('An error occurred');
+        throw Exception("Couldn't sign in with Google. Please try again.");
       }
     } catch (e) {
       log('Web sign-in error: $e', error: e);

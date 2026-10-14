@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/professions/actions/profession_form/_handset.dart';
 import 'package:leadership/features/professions/cubit/profession_resource_cubit.dart';
-import 'package:leadership/features/professions/widgets/profession_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_profession.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -47,6 +48,7 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -60,13 +62,12 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
             ResourceListLoaded<PRFProfession>(:final items)
                 when items.isEmpty =>
               PRFEmptyView(
-                label: 'No Professions Yet',
-                description:
-                    'Get started by adding your first profession to the system',
+                label: l10n.professionsEmptyTitle,
+                description: l10n.professionsEmptyMessage,
                 icon: Icons.work_outlined,
-                navBarTitle: 'Professions',
+                navBarTitle: l10n.professionsTitle,
                 onBackPressed: _goBackToHome,
-                actionLabel: 'Add Profession',
+                actionLabel: l10n.professionsAdd,
                 onActionPressed: () => _showForm(context, null),
               ),
             ResourceListLoaded<PRFProfession>(:final items) => _buildBody(
@@ -79,14 +80,11 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
             ),
             ResourceError<PRFProfession>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFProfession>(:final message) => PRFEmptyView(
-              label: 'Error Loading Professions',
-              description: message,
-              icon: Icons.error_outline,
-              navBarTitle: 'Professions',
-              onBackPressed: _goBackToHome,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
+            ResourceError<PRFProfession>() => PRFLeadershipErrorScreen(
+              navBarTitle: l10n.professionsTitle,
+              title: l10n.professionsLoadError,
+              onBack: _goBackToHome,
+              onRetry: _loadData,
             ),
             _ => const SizedBox.shrink(),
           };
@@ -124,7 +122,8 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No professions match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -140,11 +139,16 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filtered[index];
-                  return ProfessionCard(
-                    profession: item,
-                    index: index,
+                  return PRFListItemCard(
+                    title: item.name,
+                    icon: Icons.work_outlined,
+                    isActive: item.isActive == PRFActiveStatus.active,
+                    activeLabel: context.l10n.commonActive,
+                    inactiveLabel: context.l10n.commonInactive,
+                    deleteLabel: context.l10n.delete,
                     onTap: () => _showForm(context, item),
                     onDelete: () => _confirmDelete(context, item),
+                    animationIndex: index,
                   );
                 }, childCount: filtered.length),
               ),
@@ -164,13 +168,14 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Professions',
+            title: context.l10n.professionsTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showForm(context, null),
+                tooltip: context.l10n.professionsAddTooltip,
+                onPressed: () => _showForm(context, null),
               ),
             ],
           ),
@@ -185,7 +190,7 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total',
+                    label: context.l10n.professionsTotal,
                     value: '$totalCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -204,18 +209,14 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search professions...',
+        hintText: context.l10n.professionsSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -241,7 +242,7 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -257,7 +258,9 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -276,7 +279,9 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
   void _showForm(BuildContext context, PRFProfession? profession) {
     PRFBottomSheet.show<void>(
       context,
-      title: profession == null ? 'Add Profession' : 'Edit Profession',
+      title: profession == null
+          ? context.l10n.professionsAdd
+          : context.l10n.professionsEdit,
       child: ProfessionFormViewHandset(
         profession: profession,
         onSaved: _loadData,
@@ -288,13 +293,13 @@ class _ProfessionsPageHandsetState extends State<ProfessionsPageHandset>
     BuildContext context,
     PRFProfession profession,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Profession',
-      message:
-          'Are you sure you want to delete "${profession.name}"? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.professionsDeleteTitle,
+      message: l10n.lookupDeleteMessage(profession.name),
+      confirmLabel: l10n.professionsDeleteConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 

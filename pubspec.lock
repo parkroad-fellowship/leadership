@@ -341,10 +341,10 @@ packages:
     dependency: "direct main"
     description:
       name: device_info_plus
-      sha256: "0891702f96b2e465fe567b7ec448380e6b1c14f60af552a8536d9f583b6b8442"
+      sha256: ade1c36f8355d6284c98e4a47992ea263887ed3d1acb281e37635dd45f04c4aa
       url: "https://pub.dev"
     source: hosted
-    version: "13.2.0"
+    version: "13.3.0"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -698,10 +698,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_datetime_picker_plus
-      sha256: f8f15209dc6a2597bd4749afa8b05b13d9fa953e6fbf843a93f59e9d12e4a631
+      sha256: "8caf8c5b199b744ce8dd9cec7f3e1d802d912e71c2151a9f5aa3d97cbf16f814"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.4.1"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -801,10 +801,10 @@ packages:
     dependency: "direct main"
     description:
       name: gaimon
-      sha256: cb70dfa678f4a0cdd6cf6ad0498d82c768fbcfe02eb61db6ea1230de82f6ac8b
+      sha256: e35559d3a00ae1cd71f62427919c245440fdf579711ebb70b7fb90612e7ff9b9
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.0"
+    version: "1.5.1"
   get_it:
     dependency: "direct main"
     description:
@@ -881,18 +881,18 @@ packages:
     dependency: "direct main"
     description:
       name: hive_ce
-      sha256: "650b64282b7ea664ea58a08492d2b163ac6dc6d0ef552d0d77aac6678e1518e9"
+      sha256: "940042eeb9b96e93d25a0cd4b463aa487f4e288499fe699506c841087e03ac5d"
       url: "https://pub.dev"
     source: hosted
-    version: "2.20.0"
+    version: "2.21.0"
   hive_ce_flutter:
     dependency: "direct main"
     description:
       name: hive_ce_flutter
-      sha256: "2677e95a333ff15af43ccd06af7eb7abbf1a4f154ea071997f3de4346cae913a"
+      sha256: "231c5f025a44f4a555b4e7417d1468027cc32d9471b00543bd5bce72464a1009"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.4"
+    version: "2.4.0"
   hive_ce_generator:
     dependency: "direct dev"
     description:
@@ -977,10 +977,10 @@ packages:
     dependency: "direct main"
     description:
       name: image_picker
-      sha256: d8402284df184bc05f4a2210c6c23983b0720f4cd87cbd05c5390a78af602667
+      sha256: e71b1bd9e40124041128d60fc3034c7b1598e1bba4e570bba0c70301c817013a
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.3"
+    version: "1.2.4"
   image_picker_android:
     dependency: transitive
     description:
@@ -1193,10 +1193,10 @@ packages:
     dependency: transitive
     description:
       name: material_ui
-      sha256: "134ab2f0843545c4e661e4ba2753fe1bcf0753cb690d5a9ee4870638a40411e9"
+      sha256: "98ab9eda579ecae623e4b376c603035c5def78ce706f735f30bd632af5814695"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.6.0"
   meta:
     dependency: transitive
     description:
@@ -1488,11 +1488,10 @@ packages:
   prf_design:
     dependency: "direct main"
     description:
-      name: prf_design
-      sha256: "8b3a5cdf40e2c0098949524a0ffcfb8343799aece28ef3d8fc8dc7a79c1b95a7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.8"
+      path: "../../prf_design_system"
+      relative: true
+    source: path
+    version: "1.1.0"
   proj4dart:
     dependency: transitive
     description:
@@ -1545,10 +1544,10 @@ packages:
     dependency: "direct main"
     description:
       name: share_plus
-      sha256: "34f00f9becd2743c1fb05363d624f9f70d37f7ccdcdda47450bc0b8c9d327b8c"
+      sha256: db40767f130189d53f3ae8a6393c217ff4a492da1baff718a9873679c0c00224
       url: "https://pub.dev"
     source: hosted
-    version: "13.3.0"
+    version: "13.3.1"
   share_plus_platform_interface:
     dependency: transitive
     description:
@@ -1774,10 +1773,10 @@ packages:
     dependency: "direct main"
     description:
       name: timezone
-      sha256: "981d1020d6ef8fe1e7b3de5054e5b25579ae7c403d7734adc508ffc47668e9cb"
+      sha256: "9f4e5a1a0e4fef7dd3424842c0575db01bfb7a11730e8d55753fcd5c5c98767b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.1"
+    version: "0.11.2"
   typed_data:
     dependency: transitive
     description:
@@ -1822,10 +1821,10 @@ packages:
     dependency: "direct main"
     description:
       name: url_launcher
-      sha256: f6a7e5c4835bb4e3026a04793a4199ca2d14c739ec378fdfe23fc8075d0439f8
+      sha256: e8cc955c97e06df9879140a1fe301f3d493f01b7c62dec7f46834be31d7e9fda
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.2"
+    version: "6.3.3"
   url_launcher_android:
     dependency: transitive
     description:

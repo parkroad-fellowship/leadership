@@ -192,7 +192,9 @@ class FirebaseMessagingServiceImpl implements FirebaseMessagingService {
       }
     } catch (error) {
       Logger().e('Error retrieving FCM token: $error');
-      throw Failure(message: error.toString());
+      throw Failure(
+        message: "Couldn't turn on notifications. Please try again later.",
+      );
     }
   }
 }

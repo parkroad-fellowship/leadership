@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:prf_design/prf_design.dart';
 
 enum PRFApprovalStatus {
   @JsonValue(1)
@@ -23,14 +24,21 @@ enum PRFApprovalStatus {
 
   String get name => _label;
 
+  /// Theme-aware colours and localised labels live in the
+  /// `PRFApprovalStatusStyle` extension
+  /// (`lib/shared/requisitions/widgets/approval_status_style.dart`):
+  /// use `status.statusSet(context)` and `status.label(l10n)`.
+  @Deprecated('Use PRFApprovalStatusStyle.statusSet(context)')
   Color color(ThemeData theme) {
+    final status = theme.extension<PRFStatusExtension>();
+    if (status == null) return theme.colorScheme.primary;
     return switch (this) {
-      pending => theme.colorScheme.secondary,
-      underReview => Colors.orange,
-      approved => Colors.green,
-      rejected => theme.colorScheme.error,
-      recalled => Colors.grey,
-      ghost => Colors.transparent,
+      pending => status.pending.main,
+      underReview => status.warning.main,
+      approved => status.success.main,
+      rejected => status.error.main,
+      recalled => status.ignored.main,
+      ghost => status.info.main,
     };
   }
 }

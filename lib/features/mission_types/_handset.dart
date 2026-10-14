@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/mission_types/actions/mission_type_form/_handset.dart';
-import 'package:leadership/features/mission_types/widgets/mission_type_card.dart';
 import 'package:leadership/features/missions/cubit/mission_type_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_mission_type.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -48,51 +49,50 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       resizeToAvoidBottomInset: true,
-      body: BlocBuilder<MissionTypeResourceCubit, ResourceState<PRFMissionType>>(
-        builder: (context, state) {
-          return switch (state) {
-            ResourceListLoading<PRFMissionType>() => const Center(
-              child: PRFCircularProgressIndicator(),
-            ),
-            ResourceListLoaded<PRFMissionType>(:final items)
-                when items.isEmpty =>
-              PRFEmptyView(
-                label: 'No Mission Types Yet',
-                description:
-                    'Get started by adding your first mission type to the system',
-                icon: Icons.category_outlined,
-                navBarTitle: 'Mission Types',
-                onBackPressed: _goBackToHome,
-                actionLabel: 'Add Mission Type',
-                onActionPressed: () => _showForm(context, null),
-              ),
-            ResourceListLoaded<PRFMissionType>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
-            ResourceMutating<PRFMissionType>(:final items) => _buildBody(
-              theme,
-              items,
-            ),
-            ResourceError<PRFMissionType>(:final items) when items.isNotEmpty =>
-              _buildBody(theme, items),
-            ResourceError<PRFMissionType>(:final message) => PRFEmptyView(
-              label: 'Error Loading Mission Types',
-              description: message,
-              icon: Icons.error_outline,
-              navBarTitle: 'Mission Types',
-              onBackPressed: _goBackToHome,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
-            ),
-            _ => const SizedBox.shrink(),
-          };
-        },
-      ),
+      body:
+          BlocBuilder<MissionTypeResourceCubit, ResourceState<PRFMissionType>>(
+            builder: (context, state) {
+              return switch (state) {
+                ResourceListLoading<PRFMissionType>() => const Center(
+                  child: PRFCircularProgressIndicator(),
+                ),
+                ResourceListLoaded<PRFMissionType>(:final items)
+                    when items.isEmpty =>
+                  PRFEmptyView(
+                    label: l10n.missionTypesEmptyTitle,
+                    description: l10n.missionTypesEmptyMessage,
+                    icon: Icons.category_outlined,
+                    navBarTitle: l10n.missionTypesTitle,
+                    onBackPressed: _goBackToHome,
+                    actionLabel: l10n.missionTypesAdd,
+                    onActionPressed: () => _showForm(context, null),
+                  ),
+                ResourceListLoaded<PRFMissionType>(:final items) => _buildBody(
+                  theme,
+                  items,
+                ),
+                ResourceMutating<PRFMissionType>(:final items) => _buildBody(
+                  theme,
+                  items,
+                ),
+                ResourceError<PRFMissionType>(:final items)
+                    when items.isNotEmpty =>
+                  _buildBody(theme, items),
+                ResourceError<PRFMissionType>() => PRFLeadershipErrorScreen(
+                  navBarTitle: l10n.missionTypesTitle,
+                  title: l10n.missionTypesLoadError,
+                  onBack: _goBackToHome,
+                  onRetry: _loadData,
+                ),
+                _ => const SizedBox.shrink(),
+              };
+            },
+          ),
     );
   }
 
@@ -125,7 +125,8 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No mission types match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -141,11 +142,16 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filtered[index];
-                  return MissionTypeCard(
-                    missionType: item,
-                    index: index,
+                  return PRFListItemCard(
+                    title: item.name,
+                    icon: Icons.category_outlined,
+                    isActive: item.isActive == PRFActiveStatus.active,
+                    activeLabel: context.l10n.commonActive,
+                    inactiveLabel: context.l10n.commonInactive,
+                    deleteLabel: context.l10n.delete,
                     onTap: () => _showForm(context, item),
                     onDelete: () => _confirmDelete(context, item),
+                    animationIndex: index,
                   );
                 }, childCount: filtered.length),
               ),
@@ -165,13 +171,14 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Mission Types',
+            title: context.l10n.missionTypesTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showForm(context, null),
+                tooltip: context.l10n.missionTypesAddTooltip,
+                onPressed: () => _showForm(context, null),
               ),
             ],
           ),
@@ -186,7 +193,7 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total',
+                    label: context.l10n.missionTypesTotal,
                     value: '$totalCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -205,18 +212,14 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search mission types...',
+        hintText: context.l10n.missionTypesSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -242,7 +245,7 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -258,7 +261,9 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -277,7 +282,9 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
   void _showForm(BuildContext context, PRFMissionType? missionType) {
     PRFBottomSheet.show<void>(
       context,
-      title: missionType == null ? 'Add Mission Type' : 'Edit Mission Type',
+      title: missionType == null
+          ? context.l10n.missionTypesAdd
+          : context.l10n.missionTypesEdit,
       child: MissionTypeFormViewHandset(
         missionType: missionType,
         onSaved: _loadData,
@@ -289,13 +296,13 @@ class _MissionTypesPageHandsetState extends State<MissionTypesPageHandset>
     BuildContext context,
     PRFMissionType missionType,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Mission Type',
-      message:
-          'Are you sure you want to delete "${missionType.name}"? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.missionTypesDeleteTitle,
+      message: l10n.lookupDeleteMessage(missionType.name),
+      confirmLabel: l10n.missionTypesDeleteConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 

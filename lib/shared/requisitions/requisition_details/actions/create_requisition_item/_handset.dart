@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_expense_category.dart';
 import 'package:leadership/models/remote/prf_requisition_item.dart';
 import 'package:leadership/shared/expenses/cubit/expense_categories_resource_cubit.dart';
 import 'package:leadership/shared/requisitions/cubit/requisition_item_resource_cubit.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -40,23 +41,10 @@ class _CreateRequisitionItemViewHandsetState
   String? _quantityError;
   String? _narrationError;
 
-  bool get _isFormValid {
-    final unitPrice = int.tryParse(_unitPriceController.text.trim());
-    final quantity = int.tryParse(_quantityController.text.trim());
-
-    return selectedExpenseCategory != null &&
-        _itemNameController.text.trim().isNotEmpty &&
-        unitPrice != null &&
-        unitPrice > 0 &&
-        quantity != null &&
-        quantity > 0 &&
-        _narrationController.text.trim().isNotEmpty;
-  }
-
   @override
   void initState() {
     super.initState();
-    context.read<ExpenseCategoriesResourceCubit>().loadAll(limit: 100);
+    _loadCategories();
 
     // Add listeners to calculate total
     _unitPriceController.addListener(_calculateTotal);
@@ -82,19 +70,17 @@ class _CreateRequisitionItemViewHandsetState
     super.dispose();
   }
 
+  void _loadCategories() {
+    context.read<ExpenseCategoriesResourceCubit>().loadAll(limit: 100);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
-          ],
-        ),
-      ),
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return DecoratedBox(
+      decoration: requisitionSheetBackground(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
@@ -102,268 +88,141 @@ class _CreateRequisitionItemViewHandsetState
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
 
-              // Header Card
-              Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.add_shopping_cart,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.sm),
-                        Text(
-                          'Add Requisition Item',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.xs),
-                        Text(
-                          'Add a new item to this requisition',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimary.withValues(alpha: 0.9),
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+              requisitionActionHeader(
+                context,
+                icon: Icons.add_shopping_cart,
+                title: l10n.requisitionActionAddItemTitle,
+                subtitle: l10n.requisitionActionAddItemSubtitle,
+              ).entrance(context, slide: const Offset(0, -0.3)),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Form Card
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
+              requisitionFormCard(
+                context,
                 child: Column(
                   children: [
-                    // Expense Category Selector
                     PRFFormSection(
-                          icon: Icons.category_outlined,
-                          title: 'Expense Category',
-                          isRequired: true,
-                          child:
-                              BlocBuilder<
-                                ExpenseCategoriesResourceCubit,
-                                ResourceState<PRFExpenseCategory>
-                              >(
-                                builder: (context, state) {
-                                  return state.maybeWhen(
-                                    orElse: () =>
-                                        const PRFCircularProgressIndicator(),
-                                    listLoaded: (expenseCategories, _, _) =>
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _buildCategorySelector(
-                                              expenseCategories,
+                      icon: Icons.category_outlined,
+                      title: l10n.expenseCategory,
+                      isRequired: true,
+                      child:
+                          BlocBuilder<
+                            ExpenseCategoriesResourceCubit,
+                            ResourceState<PRFExpenseCategory>
+                          >(
+                            builder: (context, state) {
+                              return state.maybeWhen(
+                                orElse: () => const Center(
+                                  child: PRFCircularProgressIndicator(),
+                                ),
+                                listLoaded: (expenseCategories, _, _) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildCategorySelector(expenseCategories),
+                                    if (_showValidation &&
+                                        _categoryError != null) ...[
+                                      const SizedBox(
+                                        height: PRFSpacingTokens.xs,
+                                      ),
+                                      Text(
+                                        _categoryError!,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme.colorScheme.error,
                                             ),
-                                            if (_showValidation &&
-                                                _categoryError != null) ...[
-                                              const SizedBox(
-                                                height: PRFSpacingTokens.xs,
-                                              ),
-                                              Text(
-                                                _categoryError!,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: Theme.of(
-                                                        context,
-                                                      ).colorScheme.error,
-                                                    ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                    error: (message, _) => Text(
-                                      'Error loading categories: $message',
-                                      style: TextStyle(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.error,
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    // Item Name
-                    PRFFormSection(
-                          icon: Icons.inventory_2_outlined,
-                          title: 'Item Name',
-                          isRequired: true,
-                          child: PRFTextField(
-                            hintText: 'Enter item name',
-                            labelText: 'Item Name *',
-                            helperText: 'Required',
-                            controller: _itemNameController,
-                            enabled: !_isLoading,
-                            errorText: _showValidation ? _itemNameError : null,
+                                    ],
+                                  ],
+                                ),
+                                error: (_, _) => PRFErrorView.inline(
+                                  title: l10n.expenseCategoriesLoadFailed,
+                                  message:
+                                      l10n.requisitionDetailLoadErrorMessage,
+                                  retryLabel: l10n.tryAgain,
+                                  onRetry: _loadCategories,
+                                ),
+                              );
+                            },
                           ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger3,
+                      slide: const Offset(-0.2, 0),
+                    ),
 
-                    // Unit Price and Quantity Row
-                    Row(
-                          children: [
-                            Expanded(
-                              child: PRFFormSection(
-                                icon: Icons.attach_money,
-                                title: 'Unit Price',
-                                isRequired: true,
-                                child: PRFTextField(
-                                  hintText: 'Unit price',
-                                  labelText: 'Unit Price *',
-                                  helperText: 'Required',
-                                  controller: _unitPriceController,
-                                  prefixText: 'KES ',
-                                  enabled: !_isLoading,
-                                  isLoading: _isLoading,
-                                  errorText: _showValidation
-                                      ? _unitPriceError
-                                      : null,
-                                  type: PRFTextFieldType.number,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: PRFSpacingTokens.lg),
-                            Expanded(
-                              child: PRFFormSection(
-                                icon: Icons.numbers,
-                                title: 'Quantity',
-                                isRequired: true,
-                                child: PRFTextField(
-                                  hintText: 'Quantity',
-                                  labelText: 'Quantity *',
-                                  helperText: 'Required',
-                                  controller: _quantityController,
-                                  enabled: !_isLoading,
-                                  isLoading: _isLoading,
-                                  errorText: _showValidation
-                                      ? _quantityError
-                                      : null,
-                                  type: PRFTextFieldType.number,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                        .animate(delay: PRFMotionTokens.stagger5)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-
-                    // Total Price Display
-                    if (_totalPrice > 0)
-                      Container(
-                            margin: const EdgeInsets.only(
-                              top: PRFSpacingTokens.lg,
-                            ),
-                            padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.md,
-                              ),
-                              border: Border.all(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.outline.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Total Price',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  'KES $_totalPrice',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          )
-                          .animate(delay: PRFMotionTokens.enterShort)
-                          .slideY(begin: 0.2)
-                          .fadeIn(),
-                    const SizedBox(height: PRFSpacingTokens.lg),
-                    // Narration
                     PRFFormSection(
-                      icon: Icons.note_outlined,
-                      title: 'Narration/Justification',
+                      icon: Icons.inventory_2_outlined,
+                      title: l10n.requisitionActionItemName,
                       isRequired: true,
                       child: PRFTextField(
-                        hintText: 'Enter narration',
-                        labelText: 'Narration/Justification *',
-                        helperText: 'Required',
+                        hintText: l10n.requisitionActionItemNameHint,
+                        controller: _itemNameController,
+                        enabled: !_isLoading,
+                        errorText: _showValidation ? _itemNameError : null,
+                      ),
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger4,
+                      slide: const Offset(-0.2, 0),
+                    ),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: PRFFormSection(
+                            icon: Icons.attach_money,
+                            title: l10n.unitPrice,
+                            isRequired: true,
+                            child: PRFTextField(
+                              hintText: l10n.requisitionActionUnitPriceHint,
+                              controller: _unitPriceController,
+                              prefixText: 'KES ',
+                              enabled: !_isLoading,
+                              isLoading: _isLoading,
+                              errorText: _showValidation
+                                  ? _unitPriceError
+                                  : null,
+                              type: PRFTextFieldType.number,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: PRFSpacingTokens.lg),
+                        Expanded(
+                          child: PRFFormSection(
+                            icon: Icons.numbers,
+                            title: l10n.quantity,
+                            isRequired: true,
+                            child: PRFTextField(
+                              hintText: l10n.enterQuantity,
+                              controller: _quantityController,
+                              enabled: !_isLoading,
+                              isLoading: _isLoading,
+                              errorText: _showValidation
+                                  ? _quantityError
+                                  : null,
+                              type: PRFTextFieldType.number,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(-0.2, 0),
+                    ),
+
+                    if (_totalPrice > 0)
+                      _buildTotal(
+                        context,
+                      ).entrance(context, slide: const Offset(0, 0.2)),
+                    const SizedBox(height: PRFSpacingTokens.lg),
+                    PRFFormSection(
+                      icon: Icons.note_outlined,
+                      title: l10n.requisitionActionNarration,
+                      isRequired: true,
+                      child: PRFTextField(
+                        hintText: l10n.requisitionActionNarrationHint,
                         controller: _narrationController,
                         enabled: !_isLoading,
                         errorText: _showValidation ? _narrationError : null,
@@ -371,14 +230,17 @@ class _CreateRequisitionItemViewHandsetState
                         minLines: 3,
                         maxLines: 6,
                       ),
-                    ).animate(delay: 450.ms).slideX(begin: -0.2).fadeIn(),
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(-0.2, 0),
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Submit Button
               BlocConsumer<
                     RequisitionItemResourceCubit,
                     ResourceState<PRFRequisitionItem>
@@ -397,13 +259,17 @@ class _CreateRequisitionItemViewHandsetState
                           Navigator.of(context).pop();
                           PRFSnackbar.success(
                             context,
-                            'Requisition item created successfully',
+                            l10n.requisitionActionItemAdded,
                           );
-                        case ResourceError<PRFRequisitionItem>(:final message)
+                        case ResourceError<PRFRequisitionItem>()
                             when _isLoading:
                           setState(() => _isLoading = false);
                           Gaimon.error();
-                          PRFSnackbar.error(context, message);
+                          PRFSnackbar.error(
+                            context,
+                            l10n.requisitionActionItemAddFailed,
+                            onRetry: _submitForm,
+                          );
                         default:
                           break;
                       }
@@ -411,15 +277,17 @@ class _CreateRequisitionItemViewHandsetState
                     builder: (context, state) {
                       return PRFButton(
                         onPressed: _submitForm,
-                        title: 'Add Item',
-                        disabled: !_isFormValid,
+                        title: l10n.addItem,
+                        disabled: _isLoading,
                         isLoading: _isLoading,
                       );
                     },
                   )
-                  .animate(delay: PRFMotionTokens.enterMedium)
-                  .slideY(begin: 0.3)
-                  .fadeIn(),
+                  .entrance(
+                    context,
+                    delay: PRFMotionTokens.stagger5,
+                    slide: const Offset(0, 0.3),
+                  ),
 
               const SizedBox(height: PRFSpacingTokens.xxxl),
             ],
@@ -429,57 +297,56 @@ class _CreateRequisitionItemViewHandsetState
     );
   }
 
-  Widget _buildCategorySelector(List<PRFExpenseCategory> categories) {
+  Widget _buildTotal(BuildContext context) {
     final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(top: PRFSpacingTokens.lg),
+      padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              context.l10n.totalPrice,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            formatKes(_totalPrice),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategorySelector(List<PRFExpenseCategory> categories) {
     return Wrap(
       spacing: PRFSpacingTokens.sm,
       runSpacing: PRFSpacingTokens.sm,
       children: categories.map((category) {
-        final isSelected = selectedExpenseCategory?.ulid == category.ulid;
-        return GestureDetector(
-          onTap: () => setState(() => selectedExpenseCategory = category),
-          child: AnimatedContainer(
-            duration: PRFMotionTokens.standard,
-            padding: const EdgeInsets.symmetric(
-              horizontal: PRFSpacingTokens.lg,
-              vertical: PRFSpacingTokens.sm,
-            ),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.5,
-                    ),
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-              border: Border.all(
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Text(
-              category.name,
-              maxLines: 2,
-              softWrap: true,
-              overflow: TextOverflow.visible,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isSelected
-                    ? theme.colorScheme.onPrimary
-                    : theme.colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ),
+        return RequisitionSelectableTile(
+          label: category.name,
+          selected: selectedExpenseCategory?.ulid == category.ulid,
+          onTap: _isLoading
+              ? null
+              : () => setState(() => selectedExpenseCategory = category),
         );
       }).toList(),
     );
   }
 
   bool _validateForm({bool showSnackbar = true}) {
+    final l10n = context.l10n;
     _itemNameError = null;
     _categoryError = null;
     _unitPriceError = null;
@@ -490,27 +357,27 @@ class _CreateRequisitionItemViewHandsetState
     final quantity = int.tryParse(_quantityController.text.trim());
 
     if (selectedExpenseCategory == null) {
-      _categoryError = 'Please select an expense category';
+      _categoryError = l10n.expenseCategoryRequired;
     }
 
     if (_itemNameController.text.trim().isEmpty) {
-      _itemNameError = 'Item name is required';
+      _itemNameError = l10n.requisitionActionItemNameRequired;
     }
 
     if (_unitPriceController.text.trim().isEmpty) {
-      _unitPriceError = 'Unit price is required';
+      _unitPriceError = l10n.requisitionActionUnitPriceRequired;
     } else if (unitPrice == null || unitPrice <= 0) {
-      _unitPriceError = 'Enter a valid unit price';
+      _unitPriceError = l10n.requisitionActionUnitPriceInvalid;
     }
 
     if (_quantityController.text.trim().isEmpty) {
-      _quantityError = 'Quantity is required';
+      _quantityError = l10n.expenseQuantityRequired;
     } else if (quantity == null || quantity <= 0) {
-      _quantityError = 'Enter a valid quantity';
+      _quantityError = l10n.expenseQuantityInvalid;
     }
 
     if (_narrationController.text.trim().isEmpty) {
-      _narrationError = 'Narration/justification is required';
+      _narrationError = l10n.requisitionActionNarrationRequired;
     }
 
     final isValid = [
@@ -527,10 +394,7 @@ class _CreateRequisitionItemViewHandsetState
 
     if (!isValid && showSnackbar) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fix the highlighted fields and try again.',
-      );
+      PRFSnackbar.warning(context, l10n.expenseFixFields);
     }
 
     return isValid;
@@ -545,9 +409,9 @@ class _CreateRequisitionItemViewHandsetState
     final quantity = int.tryParse(_quantityController.text);
 
     if (unitPrice == null || quantity == null) {
-      PRFSnackbar.error(
+      PRFSnackbar.warning(
         context,
-        'Please enter valid numbers for price and quantity',
+        context.l10n.requisitionActionNumbersInvalid,
       );
       Gaimon.warning();
       return;

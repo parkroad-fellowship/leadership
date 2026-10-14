@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -18,87 +19,97 @@ class SchoolContactRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final subtitle = _buildSubtitle(contact);
+    final l10n = context.l10n;
+    final success = context.statusColors.success;
+    final radius = BorderRadius.circular(PRFRadiusTokens.md);
 
-    return InkWell(
-      onTap: onTapEdit,
-      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.md,
-          vertical: PRFSpacingTokens.md,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.32),
+    return Material(
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
         ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: theme.colorScheme.primary.withValues(
-                alpha: 0.14,
-              ),
-              child: Text(
-                _getInitials(contact.name),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.primary,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTapEdit,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: PRFSpacingTokens.md,
+            vertical: PRFSpacingTokens.sm,
+          ),
+          child: Row(
+            children: [
+              ExcludeSemantics(
+                child: CircleAvatar(
+                  radius: PRFSizeTokens.iconXxl / 2,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Text(
+                    _getInitials(contact.name),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: PRFSpacingTokens.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    contact.name,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (subtitle.isNotEmpty)
+              const SizedBox(width: PRFSpacingTokens.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
+                      contact.name,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                ],
+                    if (subtitle.isNotEmpty)
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
               ),
-            ),
-            _ActionPill(
-              label: 'Edit',
-              onTap: onTapEdit,
-              icon: Icons.edit_outlined,
-              backgroundColor: theme.colorScheme.primary.withValues(
-                alpha: 0.11,
-              ),
-              foregroundColor: theme.colorScheme.primary,
-              borderColor: theme.colorScheme.primary.withValues(alpha: 0.15),
-            ),
-            if (contact.phone.isNotEmpty && onTapCall != null) ...[
-              const SizedBox(width: PRFSpacingTokens.sm),
               _ActionPill(
-                label: 'Call',
-                onTap: onTapCall!,
-                icon: Icons.call,
-                backgroundColor: PRFColors.lime100,
-                foregroundColor: PRFColors.lime800,
-                borderColor: PRFColors.lime300,
+                label: l10n.edit,
+                semanticLabel: l10n.schoolContactsEditSemantics(contact.name),
+                onTap: onTapEdit,
+                icon: Icons.edit_outlined,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                foregroundColor: theme.colorScheme.onPrimaryContainer,
+                borderColor: theme.colorScheme.primary.withValues(
+                  alpha: PRFOpacities.muted,
+                ),
               ),
+              if (contact.phone.isNotEmpty && onTapCall != null) ...[
+                const SizedBox(width: PRFSpacingTokens.sm),
+                _ActionPill(
+                  label: l10n.schoolContactsCall,
+                  semanticLabel: l10n.schoolContactsCallSemantics(contact.name),
+                  onTap: onTapCall!,
+                  icon: Icons.call,
+                  backgroundColor: success.background,
+                  foregroundColor: success.foreground,
+                  borderColor: success.main.withValues(
+                    alpha: PRFOpacities.glow,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -127,6 +138,7 @@ class SchoolContactRow extends StatelessWidget {
 class _ActionPill extends StatelessWidget {
   const _ActionPill({
     required this.label,
+    required this.semanticLabel,
     required this.onTap,
     required this.icon,
     required this.backgroundColor,
@@ -135,6 +147,7 @@ class _ActionPill extends StatelessWidget {
   });
 
   final String label;
+  final String semanticLabel;
   final VoidCallback onTap;
   final IconData icon;
   final Color backgroundColor;
@@ -143,33 +156,46 @@ class _ActionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.sm,
-          vertical: PRFSpacingTokens.xs,
-        ),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          border: Border.all(color: borderColor),
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: foregroundColor),
-            const SizedBox(width: PRFSpacingTokens.xs / 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: foregroundColor,
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Material(
+        color: backgroundColor,
+        shape: StadiumBorder(side: BorderSide(color: borderColor)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: PRFSizeTokens.minTouchTarget,
+              minWidth: PRFSizeTokens.minTouchTarget,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.md,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: PRFSizeTokens.iconSm,
+                    color: foregroundColor,
+                  ),
+                  const SizedBox(width: PRFSpacingTokens.xs),
+                  Text(
+                    label,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: foregroundColor,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

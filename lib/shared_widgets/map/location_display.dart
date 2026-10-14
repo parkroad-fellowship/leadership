@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/shared_widgets/map/map_attribution.dart';
+import 'package:prf_design/prf_design.dart';
 
 /// A widget that displays a location on a map with a marker.
 /// This is a read-only view for displaying school locations.
@@ -38,31 +41,32 @@ class LocationDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final radius = BorderRadius.circular(PRFRadiusTokens.smd);
+    final border = Border.all(
+      color: theme.colorScheme.outline.withValues(alpha: PRFOpacities.muted),
+    );
 
     if (!_hasValidCoordinates) {
       return Container(
-        height: height,
+        constraints: BoxConstraints(minHeight: height),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.2),
-          ),
+          borderRadius: radius,
+          border: border,
         ),
         child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.location_off_outlined,
-                size: 48,
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.5,
-                ),
+                size: PRFSizeTokens.iconXxxl,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: PRFSpacingTokens.sm),
               Text(
-                'No location set',
+                l10n.mapNoLocation,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -74,111 +78,81 @@ class LocationDisplay extends StatelessWidget {
     }
 
     final location = LatLng(latitude, longitude);
+    final coordinates =
+        '${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.2),
-            ),
-          ),
+          decoration: BoxDecoration(borderRadius: radius, border: border),
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
-              FlutterMap(
-                options: MapOptions(
-                  initialCenter: location,
-                  initialZoom: 15,
-                  interactionOptions: const InteractionOptions(
-                    flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+              Semantics(
+                label: '${schoolName ?? l10n.mapLocationLabel}. $coordinates',
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: location,
+                    initialZoom: 15,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                    ),
                   ),
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'org.parkroadfellowship.leadership',
-                    maxZoom: 19,
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: location,
-                        width: 40,
-                        height: 40,
-                        child: Icon(
-                          Icons.location_pin,
-                          color: theme.colorScheme.primary,
-                          size: 40,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              // Attribution badge (required by OSM tile policy)
-              Positioned(
-                right: 8,
-                bottom: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text.rich(
-                    TextSpan(
-                      text: '© ',
-                      style: theme.textTheme.labelSmall,
-                      children: [
-                        TextSpan(
-                          text: 'OpenStreetMap',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.blue.shade700,
-                            decoration: TextDecoration.underline,
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'org.parkroadfellowship.leadership',
+                      maxZoom: 19,
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: location,
+                          width: PRFSizeTokens.iconXxl,
+                          height: PRFSizeTokens.iconXxl,
+                          child: Icon(
+                            Icons.location_pin,
+                            color: theme.colorScheme.primary,
+                            size: PRFSizeTokens.iconXxl,
                           ),
-                        ),
-                        TextSpan(
-                          text: ' contributors',
-                          style: theme.textTheme.labelSmall,
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
+              ),
+              // Attribution badge (required by OSM tile policy)
+              const Positioned(
+                right: PRFSpacingTokens.sm,
+                bottom: PRFSpacingTokens.sm,
+                child: MapAttribution(),
               ),
               // Coordinates badge
               Positioned(
-                left: 8,
-                bottom: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                left: PRFSpacingTokens.sm,
+                bottom: PRFSpacingTokens.sm,
+                child: ExcludeSemantics(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: PRFSpacingTokens.sm,
+                      vertical: PRFSpacingTokens.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface.withValues(
+                        alpha: PRFOpacities.nearOpaque,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    '${latitude.toStringAsFixed(4)}, '
-                    '${longitude.toStringAsFixed(4)}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w500,
+                      borderRadius: BorderRadius.circular(PRFRadiusTokens.xs),
+                      boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
+                    ),
+                    child: Text(
+                      coordinates,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -187,17 +161,12 @@ class LocationDisplay extends StatelessWidget {
           ),
         ),
         if (showOpenInMapsButton && onOpenInMaps != null) ...[
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: onOpenInMaps,
-              icon: const Icon(Icons.open_in_new, size: 18),
-              label: const Text('Open in Maps'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          PRFButton(
+            onPressed: onOpenInMaps!,
+            title: l10n.mapOpenInMaps,
+            icon: Icons.open_in_new,
+            variant: PRFButtonVariant.outlined,
           ),
         ],
       ],

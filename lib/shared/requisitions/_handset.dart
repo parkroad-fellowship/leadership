@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -40,6 +42,44 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
     );
   }
 
+  Future<void> _reload() => context
+      .read<RequisitionResourceCubit>()
+      .loadForAccountingEvent(accountingEventUlid: accountingEvent.ulid);
+
+  Widget _buildEmpty(AppLocalizations l10n, ThemeData theme) {
+    return RefreshIndicator(
+      onRefresh: _reload,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            if (event != null) ...[
+              _buildEventHeroCard(context, event!, l10n, theme),
+              const SizedBox(height: PRFSpacingTokens.xxl),
+            ],
+            PRFEmptyView(
+              label: l10n.requisitionsEmptyTitle,
+              description: l10n.requisitionsEmptyDescription,
+              icon: Icons.receipt_outlined,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildError(AppLocalizations l10n) {
+    return Center(
+      child: PRFErrorView.fromMessage(
+        title: l10n.requisitionsLoadErrorTitle,
+        message: l10n.requisitionsLoadErrorMessage,
+        retryLabel: l10n.tryAgain,
+        onRetry: _reload,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -49,32 +89,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
       builder: (context, state) {
         return switch (state) {
           ResourceListLoaded<PRFRequisition>(:final items) when items.isEmpty =>
-            RefreshIndicator(
-              onRefresh: () => context
-                  .read<RequisitionResourceCubit>()
-                  .loadForAccountingEvent(
-                    accountingEventUlid: accountingEvent.ulid,
-                  ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                ),
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [
-                    if (event != null) ...[
-                      _buildEventHeroCard(context, event!, l10n, theme),
-                      const SizedBox(height: PRFSpacingTokens.xxl),
-                    ],
-                    PRFEmptyView(
-                      label: l10n.requisitions,
-                      description: 'No requisitions found for this activity',
-                      icon: Icons.receipt_outlined,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildEmpty(l10n, theme),
           ResourceListLoaded<PRFRequisition>(:final items) => _buildLoadedList(
             context,
             theme,
@@ -82,78 +97,17 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
             items,
           ),
           ResourceMutating<PRFRequisition>(:final items) when items.isEmpty =>
-            RefreshIndicator(
-              onRefresh: () => context
-                  .read<RequisitionResourceCubit>()
-                  .loadForAccountingEvent(
-                    accountingEventUlid: accountingEvent.ulid,
-                  ),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: PRFEmptyView(
-                  label: l10n.requisitions,
-                  description: 'No requisitions found for this activity',
-                  icon: Icons.receipt_outlined,
-                ),
-              ),
-            ),
+            _buildEmpty(l10n, theme),
           ResourceMutating<PRFRequisition>(:final items) => _buildLoadedList(
             context,
             theme,
             l10n,
             items,
           ),
-          ResourceError<PRFRequisition>(:final message, :final items)
-              when items.isEmpty =>
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: theme.colorScheme.error,
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.lg),
-                  Text(
-                    message,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.error,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
           ResourceError<PRFRequisition>(:final items) when items.isNotEmpty =>
             _buildLoadedList(context, theme, l10n, items),
-          ResourceError<PRFRequisition>(:final message) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          _ => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
+          ResourceError<PRFRequisition>() => _buildError(l10n),
+          _ => const Center(child: PRFCircularProgressIndicator()),
         };
       },
     );
@@ -169,9 +123,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return RefreshIndicator(
-      onRefresh: () => context
-          .read<RequisitionResourceCubit>()
-          .loadForAccountingEvent(accountingEventUlid: accountingEvent.ulid),
+      onRefresh: _reload,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -214,18 +166,31 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                     )
                     .animate()
                     .fadeIn(
-                      delay: Duration(milliseconds: index * 100),
-                      duration: PRFMotionTokens.enterShort,
+                      delay: PRFMotionTokens.resolve(
+                        context,
+                        Duration(milliseconds: min(index, 8) * 100),
+                      ),
+                      duration: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.enterShort,
+                      ),
                     )
                     .slideX(
                       begin: 0.3,
                       end: 0,
+                      duration: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.enterShort,
+                      ),
                       curve: PRFMotionTokens.emphasized,
                     );
               }, childCount: sortedRequisitions.length),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          // Leaves room below the last card for the floating action button.
+          const SliverToBoxAdapter(
+            child: SizedBox(height: PRFSpacingTokens.xxxl * 2.5),
+          ),
         ],
       ),
     );
@@ -237,6 +202,7 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
     AppLocalizations l10n,
     ThemeData theme,
   ) {
+    final scheme = theme.colorScheme;
     return Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -244,18 +210,12 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                theme.colorScheme.primary,
-                theme.colorScheme.primary.withValues(alpha: 0.8),
+                scheme.primary,
+                scheme.primary.withValues(alpha: PRFOpacities.stronger),
               ],
             ),
             borderRadius: BorderRadius.circular(PRFRadiusTokens.xxl),
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            boxShadow: PRFShadowTokens.heroGlow(scheme.primary),
           ),
           child: Padding(
             padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
@@ -266,17 +226,19 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: PRFSpacingTokens.md,
+                        vertical: PRFSpacingTokens.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: scheme.onPrimary.withValues(
+                          alpha: PRFOpacities.muted,
+                        ),
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
                       ),
                       child: Text(
-                        'EVENT',
+                        l10n.requisitionsEventBadge.toUpperCase(),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
+                          color: scheme.onPrimary,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
                         ),
@@ -286,13 +248,15 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                     Container(
                       padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: scheme.onPrimary.withValues(
+                          alpha: PRFOpacities.muted,
+                        ),
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.event_rounded,
-                        color: Colors.white,
-                        size: 20,
+                        color: scheme.onPrimary,
+                        size: PRFSizeTokens.iconMd,
                       ),
                     ),
                   ],
@@ -300,8 +264,10 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                 const SizedBox(height: PRFSpacingTokens.lg),
                 Text(
                   event.name.toUpperCase(),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.headlineLarge?.copyWith(
-                    color: Colors.white,
+                    color: scheme.onPrimary,
                     fontWeight: FontWeight.w900,
                     height: 1.1,
                   ),
@@ -311,45 +277,51 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                   Text(
                     event.venue!,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: scheme.onPrimary.withValues(
+                        alpha: PRFOpacities.nearOpaque,
+                      ),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 const SizedBox(height: PRFSpacingTokens.xl),
-                Row(
-                  children: [
-                    _buildDateTimeChip(
-                      context,
-                      Icons.play_arrow_rounded,
-                      l10n.missionStart(
-                        Misc.formatMissionDate(event.startDate, timezone),
-                        Misc.formatTime(event.startTime, timezone),
-                      ),
-                      theme,
-                    ),
-                  ],
+                _buildDateTimeChip(
+                  context,
+                  Icons.play_arrow_rounded,
+                  l10n.missionStart(
+                    Misc.formatMissionDate(event.startDate, timezone),
+                    Misc.formatTime(event.startTime, timezone),
+                  ),
+                  theme,
                 ),
                 const SizedBox(height: PRFSpacingTokens.sm),
-                Row(
-                  children: [
-                    _buildDateTimeChip(
-                      context,
-                      Icons.stop_rounded,
-                      l10n.missionEnd(
-                        Misc.formatMissionDate(event.endDate, timezone),
-                        Misc.formatTime(event.endTime, timezone),
-                      ),
-                      theme,
-                    ),
-                  ],
+                _buildDateTimeChip(
+                  context,
+                  Icons.stop_rounded,
+                  l10n.missionEnd(
+                    Misc.formatMissionDate(event.endDate, timezone),
+                    Misc.formatTime(event.endTime, timezone),
+                  ),
+                  theme,
                 ),
               ],
             ),
           ),
         )
         .animate()
-        .fadeIn(duration: PRFMotionTokens.enterShort)
-        .slideY(begin: 0.3, end: 0);
+        .fadeIn(
+          duration: PRFMotionTokens.resolve(
+            context,
+            PRFMotionTokens.enterShort,
+          ),
+        )
+        .slideY(
+          begin: 0.3,
+          end: 0,
+          duration: PRFMotionTokens.resolve(
+            context,
+            PRFMotionTokens.enterShort,
+          ),
+        );
   }
 
   Widget _buildDateTimeChip(
@@ -358,25 +330,28 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
     String text,
     ThemeData theme,
   ) {
+    final onPrimary = theme.colorScheme.onPrimary;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: PRFSpacingTokens.md,
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: onPrimary.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 16),
+          Icon(icon, color: onPrimary, size: PRFSizeTokens.iconSm),
           const SizedBox(width: PRFSpacingTokens.sm),
-          Text(
-            text,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: onPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

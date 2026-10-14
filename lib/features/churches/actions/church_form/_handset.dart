@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/churches/cubit/church_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_church.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
@@ -54,7 +55,7 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
 
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      _nameError = 'Name is required';
+      _nameError = context.l10n.commonNameRequired;
     }
 
     setState(() {
@@ -67,10 +68,7 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
   void _submitForm() {
     if (!_validateForm()) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fix the highlighted fields and try again.',
-      );
+      PRFSnackbar.error(context, context.l10n.commonFixHighlightedFields);
       return;
     }
 
@@ -103,13 +101,13 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
             PRFSnackbar.success(
               context,
               _isEditing
-                  ? 'Church updated successfully'
-                  : 'Church created successfully',
+                  ? context.l10n.churchesUpdated
+                  : context.l10n.churchesCreated,
             );
             widget.onSaved();
-          case ResourceError<PRFChurch>(:final message):
+          case ResourceError<PRFChurch>():
             Gaimon.error();
-            PRFSnackbar.error(context, message);
+            PRFSnackbar.error(context, context.l10n.commonSaveErrorMessage);
           default:
             break;
         }
@@ -119,6 +117,12 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
           curr is ResourceError<PRFChurch>,
       builder: (context, state) {
         final isLoading = state is ResourceMutating<PRFChurch>;
+        final l10n = context.l10n;
+        final theme = Theme.of(context);
+        final enter = PRFMotionTokens.resolve(
+          context,
+          PRFMotionTokens.enterShort,
+        );
 
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -128,8 +132,10 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                  Theme.of(context).colorScheme.surface,
+                  theme.colorScheme.primary.withValues(
+                    alpha: PRFOpacities.faint,
+                  ),
+                  theme.colorScheme.surface,
                 ],
               ),
             ),
@@ -144,46 +150,39 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.lg),
                     _buildHeaderCard(context)
                         .animate()
-                        .slideY(begin: -0.3)
-                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                        .slideY(begin: -0.3, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.lg,
                             ),
                             border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.shadow.withValues(alpha: 0.1),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: PRFOpacities.muted,
                               ),
-                            ],
+                            ),
+                            boxShadow: PRFShadowTokens.card(
+                              theme.colorScheme.shadow,
+                            ),
                           ),
                           child: Column(
                             children: [
                               PRFFormSection(
                                 icon: Icons.church_outlined,
-                                title: 'Name',
+                                title: l10n.commonNameLabel,
                                 isRequired: true,
 
                                 margin: const EdgeInsets.only(
                                   bottom: PRFSpacingTokens.md,
                                 ),
                                 child: PRFTextField(
-                                  hintText: 'Church name',
-                                  labelText: 'Name *',
-                                  helperText: 'Required',
+                                  hintText: l10n.churchesNameHint,
+                                  labelText: l10n.commonNameLabel,
                                   errorText: _showValidation
                                       ? _nameError
                                       : null,
@@ -199,19 +198,16 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                               if (_isEditing)
                                 PRFFormSection(
                                   icon: Icons.toggle_on_outlined,
-                                  title: 'Status',
-                                  subtitle: 'Active or inactive',
+                                  title: l10n.commonStatusLabel,
                                   margin: const EdgeInsets.only(
                                     bottom: PRFSpacingTokens.md,
                                   ),
                                   child: SwitchListTile(
                                     title: Text(
                                       _activeStatus == PRFActiveStatus.active
-                                          ? 'Active'
-                                          : 'Inactive',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium,
+                                          ? l10n.commonActive
+                                          : l10n.commonInactive,
+                                      style: theme.textTheme.bodyMedium,
                                     ),
                                     value:
                                         _activeStatus == PRFActiveStatus.active,
@@ -230,15 +226,22 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+                        .animate(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger3,
+                          ),
+                        )
+                        .slideX(begin: -0.2, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
                       child: PRFButton(
                         onPressed: _submitForm,
-                        title: _isEditing ? 'Update Church' : 'Create Church',
+                        title: _isEditing
+                            ? l10n.churchesSave
+                            : l10n.churchesCreate,
                         disabled: isLoading || !_isFormValid,
                         isLoading: isLoading,
                       ),
@@ -264,28 +267,22 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.8),
+            theme.colorScheme.primary.withValues(alpha: PRFOpacities.stronger),
           ],
         ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: PRFShadowTokens.raised(theme.colorScheme.primary),
       ),
       child: Column(
         children: [
           Icon(
             _isEditing ? Icons.edit_outlined : Icons.church_outlined,
-            size: 32,
+            size: PRFSizeTokens.iconXl,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            _isEditing ? 'Edit Church' : 'Create Church',
+            _isEditing ? context.l10n.churchesEdit : context.l10n.churchesAdd,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -294,10 +291,12 @@ class _ChurchFormViewHandsetState extends State<ChurchFormViewHandset> {
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             _isEditing
-                ? 'Update church details'
-                : 'Add a new church to the system',
+                ? context.l10n.churchesFormEditSubtitle
+                : context.l10n.churchesFormCreateSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
             textAlign: TextAlign.center,
           ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/features/missions/cubit/mission_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_mission_dto.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
@@ -81,21 +82,21 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
     _clearErrors();
 
     if (_startDate == null) {
-      _startDateError = 'Start date is required';
+      _startDateError = context.l10n.mfStartDateRequired;
     }
     if (_endDate == null) {
-      _endDateError = 'End date is required';
+      _endDateError = context.l10n.mfEndDateRequired;
     }
     if (_startDate != null &&
         _endDate != null &&
         _endDate!.isBefore(_startDate!)) {
-      _endDateError = 'End date cannot be before start date';
+      _endDateError = context.l10n.mfEndBeforeStart;
     }
     if (_startTimeController.text.trim().isEmpty) {
-      _startTimeError = 'Start time is required';
+      _startTimeError = context.l10n.mfStartTimeRequired;
     }
     if (_endTimeController.text.trim().isEmpty) {
-      _endTimeError = 'End time is required';
+      _endTimeError = context.l10n.mfEndTimeRequired;
     }
 
     setState(() {
@@ -137,11 +138,11 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
             setState(() => _isLoading = false);
             Gaimon.success();
             Navigator.of(context).pop(true);
-            PRFSnackbar.success(context, 'Mission updated successfully');
-          case ResourceError<PRFMission>(:final message) when _isLoading:
+            PRFSnackbar.success(context, context.l10n.mfUpdated);
+          case ResourceError<PRFMission>() when _isLoading:
             setState(() => _isLoading = false);
             Gaimon.error();
-            PRFSnackbar.error(context, message);
+            PRFSnackbar.error(context, context.l10n.mfSaveFailed);
           default:
             break;
         }
@@ -165,12 +166,23 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
                   const SizedBox(height: PRFSpacingTokens.lg),
                   PRFButton(
                         onPressed: _submit,
-                        title: 'Update Mission',
+                        title: context.l10n.mfUpdateButton,
                         disabled: !_isFormValid,
                         isLoading: _isLoading,
                       )
-                      .animate(delay: PRFMotionTokens.enterMedium)
-                      .slideY(begin: 0.3)
+                      .animate(
+                        delay: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.enterMedium,
+                        ),
+                      )
+                      .slideY(
+                        begin: 0.3,
+                        duration: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.slow,
+                        ),
+                      )
                       .fadeIn(),
                   const SizedBox(height: PRFSpacingTokens.lg),
                 ],
@@ -191,7 +203,9 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.secondary,
-            theme.colorScheme.secondary.withValues(alpha: 0.8),
+            theme.colorScheme.secondary.withValues(
+              alpha: PRFOpacities.stronger,
+            ),
           ],
         ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
@@ -200,12 +214,12 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         children: [
           Icon(
             Icons.edit_rounded,
-            size: 32,
+            size: PRFSizeTokens.iconXl,
             color: theme.colorScheme.onSecondary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            'Edit Mission',
+            context.l10n.mfEditTitle,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onSecondary,
               fontWeight: FontWeight.bold,
@@ -221,7 +235,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
       children: [
         PRFFormSection(
           icon: Icons.event,
-          title: 'Start Date',
+          title: context.l10n.mfStartDate,
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
@@ -230,8 +244,8 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               Expanded(
                 child: PRFTextField(
                   hintText: 'YYYY-MM-DD',
-                  labelText: 'Start Date *',
-                  helperText: 'Required',
+                  labelText: context.l10n.mfStartDate,
+                  helperText: context.l10n.mfRequired,
                   errorText: _showValidation ? _startDateError : null,
                   controller: _startDateController,
                   enabled: false,
@@ -239,6 +253,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               IconButton.outlined(
+                tooltip: context.l10n.mfChooseStartDate,
                 onPressed: _isLoading ? null : _selectStartDate,
                 icon: const Icon(Icons.event),
               ),
@@ -247,7 +262,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         ),
         PRFFormSection(
           icon: Icons.event_available,
-          title: 'End Date',
+          title: context.l10n.mfEndDate,
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
@@ -256,8 +271,8 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               Expanded(
                 child: PRFTextField(
                   hintText: 'YYYY-MM-DD',
-                  labelText: 'End Date *',
-                  helperText: 'Required',
+                  labelText: context.l10n.mfEndDate,
+                  helperText: context.l10n.mfRequired,
                   errorText: _showValidation ? _endDateError : null,
                   controller: _endDateController,
                   enabled: false,
@@ -265,6 +280,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               IconButton.outlined(
+                tooltip: context.l10n.mfChooseEndDate,
                 onPressed: _isLoading ? null : _selectEndDate,
                 icon: const Icon(Icons.event_available),
               ),
@@ -273,7 +289,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         ),
         PRFFormSection(
           icon: Icons.schedule,
-          title: 'Start Time',
+          title: context.l10n.mfStartTime,
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
@@ -282,8 +298,8 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               Expanded(
                 child: PRFTextField(
                   hintText: 'HH:mm',
-                  labelText: 'Start Time *',
-                  helperText: 'Required',
+                  labelText: context.l10n.mfStartTime,
+                  helperText: context.l10n.mfRequired,
                   errorText: _showValidation ? _startTimeError : null,
                   controller: _startTimeController,
                   enabled: false,
@@ -291,6 +307,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               IconButton.outlined(
+                tooltip: context.l10n.mfChooseStartTime,
                 onPressed: _isLoading ? null : _selectStartTime,
                 icon: const Icon(Icons.schedule),
               ),
@@ -299,7 +316,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         ),
         PRFFormSection(
           icon: Icons.schedule_send,
-          title: 'End Time',
+          title: context.l10n.mfEndTime,
           isRequired: true,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
@@ -308,8 +325,8 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               Expanded(
                 child: PRFTextField(
                   hintText: 'HH:mm',
-                  labelText: 'End Time *',
-                  helperText: 'Required',
+                  labelText: context.l10n.mfEndTime,
+                  helperText: context.l10n.mfRequired,
                   errorText: _showValidation ? _endTimeError : null,
                   controller: _endTimeController,
                   enabled: false,
@@ -317,6 +334,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               IconButton.outlined(
+                tooltip: context.l10n.mfChooseEndTime,
                 onPressed: _isLoading ? null : _selectEndTime,
                 icon: const Icon(Icons.schedule_send),
               ),
@@ -325,26 +343,26 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         ),
         PRFFormSection(
           icon: Icons.label_outline,
-          title: 'Theme',
+          title: context.l10n.mfTheme,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Mission theme',
-            labelText: 'Theme',
-            helperText: 'Optional',
+            hintText: context.l10n.mfThemeHint,
+            labelText: context.l10n.mfTheme,
+            helperText: context.l10n.mfOptional,
             controller: _themeController,
             enabled: !_isLoading,
           ),
         ),
         PRFFormSection(
           icon: Icons.groups_outlined,
-          title: 'Capacity',
+          title: context.l10n.mfCapacity,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
             hintText: '0',
-            labelText: 'Capacity',
-            helperText: 'Optional',
+            labelText: context.l10n.mfCapacity,
+            helperText: context.l10n.mfOptional,
             controller: _capacityController,
             type: PRFTextFieldType.number,
             enabled: !_isLoading,
@@ -352,26 +370,26 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
         ),
         PRFFormSection(
           icon: Icons.forum_outlined,
-          title: 'WhatsApp Link',
+          title: context.l10n.mfWhatsAppLink,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
             hintText: 'https://...',
-            labelText: 'WhatsApp Link',
-            helperText: 'Optional',
+            labelText: context.l10n.mfWhatsAppLink,
+            helperText: context.l10n.mfOptional,
             controller: _whatsAppLinkController,
             enabled: !_isLoading,
           ),
         ),
         PRFFormSection(
           icon: Icons.notes_outlined,
-          title: 'Preparation Notes',
+          title: context.l10n.mfPrepNotes,
 
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Any mission preparation notes',
-            labelText: 'Preparation Notes',
-            helperText: 'Optional',
+            hintText: context.l10n.mfPrepNotesHint,
+            labelText: context.l10n.mfPrepNotes,
+            helperText: context.l10n.mfOptional,
             controller: _prepNotesController,
             type: PRFTextFieldType.textArea,
             enabled: !_isLoading,
@@ -473,7 +491,7 @@ class _EditMissionViewHandsetState extends State<EditMissionViewHandset>
 
   Future<void> _submit() async {
     if (!_validateForm()) {
-      PRFSnackbar.error(context, 'Please fix highlighted fields first.');
+      PRFSnackbar.error(context, context.l10n.mfFixFields);
       return;
     }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:leadership/features/missions/mission_details/widgets/domain_tab_section.dart';
+import 'package:leadership/l10n/l10n.dart';
+import 'package:prf_design/prf_design.dart';
 
 class FeedbackDataMissionDetailsSection extends StatelessWidget {
   const FeedbackDataMissionDetailsSection({
@@ -15,13 +16,13 @@ class FeedbackDataMissionDetailsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MissionDomainTabSection(
-      title: 'Feedback Data',
-      subtitle: 'Questions captured and post-mission debrief reflections.',
-      tabs: const [
-        Tab(text: 'Debrief Notes'),
-        Tab(text: 'Souls'),
-        Tab(text: 'Questions'),
+    return PRFDomainTabSection(
+      title: context.l10n.missionDetailsFeedback,
+      subtitle: context.l10n.missionDetailsFeedbackSummary,
+      tabs: [
+        Tab(text: context.l10n.debriefNotes),
+        Tab(text: context.l10n.souls),
+        Tab(text: context.l10n.questions),
       ],
       children: [debriefNotes, souls, questions],
     );
