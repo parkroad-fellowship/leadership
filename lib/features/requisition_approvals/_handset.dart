@@ -12,6 +12,7 @@ import 'package:leadership/services/local_storage/hive/db/requisition_hive_db_se
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/shared/requisitions/cubit/requisition_resource_cubit.dart';
 import 'package:leadership/shared/requisitions/widgets/timeline_requisitions_card.dart';
+import 'package:leadership/shared_widgets/load_more_on_scroll.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.dart';
 import 'package:leadership/utils/router/router.gr.dart';
@@ -47,16 +48,18 @@ class _RequisitionApprovalsPageHandsetState
       requisitionService: getIt<RequisitionService>(),
       hiveService: getIt<HiveService>(),
       hiveDbService: getIt<RequisitionHiveDbService>(),
-    )..loadClosedRequisitions();
+    );
 
     _draftCubit = RequisitionResourceCubit(
       requisitionService: getIt<RequisitionService>(),
       hiveService: getIt<HiveService>(),
       hiveDbService: getIt<RequisitionHiveDbService>(),
-    )..loadDraftRequisitions();
+    );
 
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
+      // TabController notifies twice per animated change; act once.
+      if (_tabController.indexIsChanging) return;
       if (_tabController.index == 0) {
         _approvalCubit.loadApprovalRequisitions();
       } else if (_tabController.index == 1) {
@@ -207,7 +210,6 @@ class _RequisitionApprovalsPageHandsetState
       context,
       emptyDescription: context.l10n.noPendingRequisitionsDesc,
       reload: (cubit) => cubit.loadApprovalRequisitions(),
-      reloadAfterDetails: (cubit) => cubit.loadApprovalRequisitions(),
     );
   }
 
@@ -216,7 +218,7 @@ class _RequisitionApprovalsPageHandsetState
       context,
       emptyDescription: context.l10n.noClosedRequisitionsDesc,
       reload: (cubit) => cubit.loadClosedRequisitions(),
-      reloadAfterDetails: (cubit) => cubit.loadClosedRequisitions(),
+      paged: true,
     );
   }
 
@@ -225,7 +227,6 @@ class _RequisitionApprovalsPageHandsetState
       context,
       emptyDescription: context.l10n.noDraftRequisitionsDesc,
       reload: (cubit) => cubit.loadDraftRequisitions(),
-      reloadAfterDetails: (cubit) => cubit.loadDraftRequisitions(),
     );
   }
 
@@ -233,8 +234,7 @@ class _RequisitionApprovalsPageHandsetState
     BuildContext context, {
     required String emptyDescription,
     required Future<void> Function(RequisitionResourceCubit cubit) reload,
-    required Future<void> Function(RequisitionResourceCubit cubit)
-    reloadAfterDetails,
+    bool paged = false,
   }) {
     final l10n = context.l10n;
 
@@ -249,7 +249,10 @@ class _RequisitionApprovalsPageHandsetState
 
             if (sortedRequisitions.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () => reload(cubit),
+                onRefresh: () {
+                  cubit.invalidate();
+                  return reload(cubit);
+                },
                 child: PRFEmptyView(
                   label: l10n.noRequisitions,
                   description: emptyDescription,
@@ -257,50 +260,66 @@ class _RequisitionApprovalsPageHandsetState
               );
             }
 
+            final showSpinner = paged && cubit.hasMorePages;
             final duration = PRFMotionTokens.resolve(
               context,
               PRFMotionTokens.enterShort,
             );
 
             return RefreshIndicator(
-              onRefresh: () => reload(cubit),
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                  vertical: PRFSpacingTokens.xl,
-                ),
-                itemCount: sortedRequisitions.length,
-                itemBuilder: (context, index) {
-                  final requisition = sortedRequisitions[index];
-                  final isLast = index == sortedRequisitions.length - 1;
-                  final card = TimelineRequisitionCard(
-                    requisition: requisition,
-                    isLast: isLast,
-                    index: index,
-                    onTap: () => context.router
-                        .push(
-                          RequisitionDetailsRoute(
-                            requisitionUlid: requisition.ulid,
-                          ),
-                        )
-                        .then((_) => reloadAfterDetails(cubit)),
-                  );
-                  if (duration == Duration.zero) return card;
-
-                  // Cap the stagger so long lists don't make people wait.
-                  final delay = PRFMotionTokens.stagger2 * min(index, 8);
-                  return card
-                      .animate()
-                      .fadeIn(delay: delay, duration: duration)
-                      .slideX(
-                        begin: 0.3,
-                        end: 0,
-                        delay: delay,
-                        duration: duration,
-                        curve: PRFMotionTokens.emphasized,
-                      );
+              onRefresh: () {
+                cubit.invalidate();
+                return reload(cubit);
+              },
+              child: LoadMoreOnScroll(
+                onEndReached: () {
+                  if (paged) cubit.loadNextPage();
                 },
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.lg,
+                    vertical: PRFSpacingTokens.xl,
+                  ),
+                  itemCount: sortedRequisitions.length + (showSpinner ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == sortedRequisitions.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(PRFSpacingTokens.lg),
+                        child: Center(child: PRFCircularProgressIndicator()),
+                      );
+                    }
+                    final requisition = sortedRequisitions[index];
+                    final isLast = index == sortedRequisitions.length - 1;
+                    final card = TimelineRequisitionCard(
+                      requisition: requisition,
+                      isLast: isLast,
+                      index: index,
+                      // No reload on return: detail actions persist to the
+                      // same Hive box and every tab re-emits from its DB
+                      // stream, keeping paging and scroll position.
+                      onTap: () => context.router.push(
+                        RequisitionDetailsRoute(
+                          requisitionUlid: requisition.ulid,
+                        ),
+                      ),
+                    );
+                    if (duration == Duration.zero) return card;
+
+                    // Cap the stagger so long lists don't make people wait.
+                    final delay = PRFMotionTokens.stagger2 * min(index, 8);
+                    return card
+                        .animate()
+                        .fadeIn(delay: delay, duration: duration)
+                        .slideX(
+                          begin: 0.3,
+                          end: 0,
+                          delay: delay,
+                          duration: duration,
+                          curve: PRFMotionTokens.emphasized,
+                        );
+                  },
+                ),
               ),
             );
           },

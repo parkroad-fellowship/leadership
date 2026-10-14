@@ -20,6 +20,7 @@ import 'package:leadership/shared/expenses/actions/add_token/_handset.dart';
 import 'package:leadership/shared/expenses/actions/delete_expense/delete_expense_dialog.dart';
 import 'package:leadership/shared/expenses/actions/edit_expense/_handset.dart';
 import 'package:leadership/shared/expenses/actions/send_financial_report/_handset.dart';
+import 'package:leadership/shared/expenses/cubit/accounting_event_cubit.dart';
 import 'package:leadership/shared/expenses/cubit/allocation_entry_resource_cubit.dart';
 import 'package:leadership/shared/expenses/widgets/reciept_preview.dart';
 import 'package:leadership/shared/media_upload/cubit/select_media_cubit.dart';
@@ -56,10 +57,26 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     _loadData();
   }
 
-  void _loadData() {
+  /// [force] bypasses the freshness window. Use it when the server changed
+  /// something Hive does not know about yet (receipt upload) or the user
+  /// explicitly asked to refresh.
+  void _loadData({bool force = false}) {
     context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
       accountingEventUlid: accountingEventUlid,
+      force: force,
     );
+  }
+
+  /// Refetch the event so the totals the server computes stay current.
+  void _reloadEvent() {
+    context.read<AccountingEventCubit>().load(accountingEventUlid, force: true);
+  }
+
+  /// Refresh button, error retry and after mutations: always go to the
+  /// network (mutation responses carry fewer includes than the list).
+  void _refreshAll() {
+    _loadData(force: true);
+    _reloadEvent();
   }
 
   @override
@@ -81,7 +98,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 final operation = _pendingMutationOperation;
                 _pendingMutationOperation = null;
                 if (operation == ResourceOperation.create) {
-                  _loadData();
+                  _refreshAll();
                   PRFSnackbar.success(context, l10n.expenseEntrySaved);
                 }
                 if (operation == ResourceOperation.update) {
@@ -94,11 +111,11 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                     return;
                   }
 
-                  _loadData();
+                  _refreshAll();
                   PRFSnackbar.success(context, l10n.expenseUpdated);
                 }
                 if (operation == ResourceOperation.delete) {
-                  _loadData();
+                  _refreshAll();
                   PRFSnackbar.success(context, l10n.expenseDeleted);
                 }
               },
@@ -119,7 +136,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
             state.maybeWhen(
               orElse: () {},
               loaded: () {
-                _loadData();
+                // The upload never writes Hive, so only a forced fetch
+                // brings the new receipt in.
+                _loadData(force: true);
                 PRFSnackbar.success(context, l10n.expenseReceiptUploaded);
               },
               error: (message) {
@@ -165,7 +184,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                           title: l10n.expenseLoadErrorTitle,
                           message: l10n.expenseLoadErrorMessage,
                           retryLabel: l10n.tryAgain,
-                          onRetry: _loadData,
+                          onRetry: _refreshAll,
                         ),
                       )
                     : _buildLoadedView(context, l10n, items),
@@ -196,36 +215,70 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     AppLocalizations l10n,
     List<PRFAllocationEntry> entries,
   ) {
-    final accountingEvent = entries.isNotEmpty
-        ? entries.first.accountingEvent
-        : null;
+    // The event (with refunds) comes from AccountingEventCubit. Until it
+    // arrives, or when offline, fall back to the plain event embedded in the
+    // cached rows so credits, debits and balance still show. That fallback
+    // has no refunds, so refund-dependent figures are withheld until the
+    // cubit's event is available: never show a money figure that may be
+    // wrong.
+    final eventState = context.watch<AccountingEventCubit>().state;
+    final accountingEvent =
+        eventState.event ?? entries.firstOrNull?.accountingEvent;
+    // A failed (forced) reload keeps the previous event, whose refunds may
+    // be out of date: treat it as unavailable rather than show old figures.
+    final refundsReady = eventState.event != null && eventState.error == null;
+    final refundsFailed = eventState.error != null;
     Duration motion(Duration d) => PRFMotionTokens.resolve(context, d);
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: _buildHeader(context, l10n, accountingEvent!),
-        ),
-        // Financial Overview Header
-        SliverToBoxAdapter(
-          child: _buildFinancialOverview(context, l10n, accountingEvent)
-              .animate()
-              .slideY(begin: -0.3, duration: motion(PRFMotionTokens.enterShort))
-              .fadeIn(),
-        ),
+        if (accountingEvent != null) ...[
+          SliverToBoxAdapter(child: _buildHeader(context, l10n)),
+          // Financial Overview Header
+          SliverToBoxAdapter(
+            child:
+                _buildFinancialOverview(
+                      context,
+                      l10n,
+                      accountingEvent,
+                      refundPlaceholder: refundsReady
+                          ? null
+                          : refundsFailed
+                          ? l10n.expenseRefundStatOffline
+                          : l10n.expenseRefundLoading,
+                    )
+                    .animate()
+                    .slideY(
+                      begin: -0.3,
+                      duration: motion(PRFMotionTokens.enterShort),
+                    )
+                    .fadeIn(),
+          ),
 
-        // Quick Actions
-        SliverToBoxAdapter(
-          child: _buildQuickActions(context, l10n, accountingEvent)
-              .animate(delay: motion(PRFMotionTokens.stagger2))
-              .slideY(begin: 0.3, duration: motion(PRFMotionTokens.enterShort))
-              .fadeIn(),
-        ),
+          // Quick Actions
+          SliverToBoxAdapter(
+            child: _buildQuickActions(context, l10n, accountingEvent)
+                .animate(delay: motion(PRFMotionTokens.stagger2))
+                .slideY(
+                  begin: 0.3,
+                  duration: motion(PRFMotionTokens.enterShort),
+                )
+                .fadeIn(),
+          ),
 
-        // Refund Information (show when balance > 0)
-        SliverToBoxAdapter(
-          child: _buildRefundInformation(context, l10n, accountingEvent),
-        ),
+          // Refund Information (needs the event's refunds)
+          SliverToBoxAdapter(
+            child: refundsReady
+                ? _buildRefundInformation(context, l10n, accountingEvent)
+                : _buildRefundUnavailable(
+                    context,
+                    refundsFailed
+                        ? l10n.expenseRefundNeedsConnection
+                        : l10n.expenseRefundLoadingDetails,
+                    loading: !refundsFailed,
+                  ),
+          ),
+        ],
 
         // Breakdown Toggle
         SliverToBoxAdapter(
@@ -270,11 +323,14 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
+  /// [refundPlaceholder] replaces the amount-to-refund figure when the
+  /// event's refunds are not loaded yet (or failed to load).
   Widget _buildFinancialOverview(
     BuildContext context,
     AppLocalizations l10n,
-    PRFAccountingEvent accountingEvent,
-  ) {
+    PRFAccountingEvent accountingEvent, {
+    String? refundPlaceholder,
+  }) {
     final theme = Theme.of(context);
     final onPrimary = theme.colorScheme.onPrimary;
     final spentPercentage = accountingEvent.credits > 0
@@ -406,10 +462,14 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 child: _buildStatCard(
                   context,
                   l10n.amountToRefund,
-                  NumberFormat.currency(locale: 'en_KE', symbol: 'KES ').format(
-                    accountingEvent.latestRefund?.deficitAmount ??
-                        accountingEvent.amountToRefund,
-                  ),
+                  refundPlaceholder ??
+                      NumberFormat.currency(
+                        locale: 'en_KE',
+                        symbol: 'KES ',
+                      ).format(
+                        accountingEvent.latestRefund?.deficitAmount ??
+                            accountingEvent.amountToRefund,
+                      ),
                   Icons.refresh,
                   theme.colorScheme.outline,
                 ),
@@ -1336,6 +1396,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
+  // No reload after the token sheet closes: the token is persisted to Hive
+  // (the entries list re-emits) and the allocation listener above refetches
+  // the event totals when the save completes.
   void _showAddTokenModal(
     BuildContext context,
     PRFAccountingEvent accountingEvent,
@@ -1347,30 +1410,28 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: AddTokenViewHandset(accountingEventUlid: accountingEvent.ulid),
       ),
-    ).then((_) {
-      if (context.mounted) {
-        context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
-          accountingEventUlid: accountingEvent.ulid,
-        );
-      }
-    });
+    );
   }
 
   void _showAddRefundModal(
     BuildContext context,
     PRFAccountingEvent accountingEvent,
   ) {
-    PRFBottomSheet.show<void>(
+    PRFBottomSheet.show<bool>(
       context,
       title: context.l10n.expenseAddRefund,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: AddRefundViewHandset(accountingEventUlid: accountingEvent.ulid),
       ),
-    ).then((_) {
-      if (context.mounted) {
-        context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
-          accountingEventUlid: accountingEvent.ulid,
+    ).then((saved) {
+      // Only a saved refund changes anything. Refunds save through
+      // RefundResourceCubit, so the allocation listener never sees them;
+      // refetch the event (it carries the refunds and server totals).
+      if ((saved ?? false) && context.mounted) {
+        context.read<AccountingEventCubit>().load(
+          accountingEvent.ulid,
+          force: true,
         );
       }
     });
@@ -1577,6 +1638,46 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 ),
               )
               .slideY(begin: 0.2, end: 0),
+    );
+  }
+
+  Widget _buildRefundUnavailable(
+    BuildContext context,
+    String message, {
+    required bool loading,
+  }) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+      child: Container(
+        padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            if (loading)
+              const PRFCircularProgressIndicator(size: PRFSizeTokens.iconSm)
+            else
+              Icon(
+                Icons.cloud_off_outlined,
+                color: theme.colorScheme.onSurfaceVariant,
+                size: PRFSizeTokens.iconSm,
+              ),
+            const SizedBox(width: PRFSpacingTokens.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1856,11 +1957,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations l10n,
-    PRFAccountingEvent accountingEvent,
-  ) {
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(PRFSpacingTokens.lg),
@@ -1898,13 +1995,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
 
               return IconButton.filled(
                 tooltip: l10n.expenseRefreshTooltip,
-                onPressed: isRefreshing
-                    ? null
-                    : () => context
-                          .read<AllocationEntryResourceCubit>()
-                          .refreshForAccountingEvent(
-                            accountingEventUlid: accountingEvent.ulid,
-                          ),
+                onPressed: isRefreshing ? null : _refreshAll,
                 icon: isRefreshing
                     ? PRFCircularProgressIndicator(
                         size: PRFSizeTokens.iconMd,

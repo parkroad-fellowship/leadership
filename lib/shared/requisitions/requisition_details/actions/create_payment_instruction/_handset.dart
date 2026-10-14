@@ -550,7 +550,7 @@ class _CreatePaymentInstructionViewHandsetState
                               if (!_isLoading) return;
                               setState(() => _isLoading = false);
                               Gaimon.success();
-                              Navigator.of(context).pop();
+                              Navigator.of(context).pop(true);
                               PRFSnackbar.success(
                                 context,
                                 l10n.requisitionActionPaymentSaved,

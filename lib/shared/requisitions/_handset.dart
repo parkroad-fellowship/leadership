@@ -42,9 +42,12 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
     );
   }
 
-  Future<void> _reload() => context
-      .read<RequisitionResourceCubit>()
-      .loadForAccountingEvent(accountingEventUlid: accountingEvent.ulid);
+  Future<void> _reload() {
+    final cubit = context.read<RequisitionResourceCubit>()..invalidate();
+    return cubit.loadForAccountingEvent(
+      accountingEventUlid: accountingEvent.ulid,
+    );
+  }
 
   Widget _buildEmpty(AppLocalizations l10n, ThemeData theme) {
     return RefreshIndicator(
@@ -147,22 +150,13 @@ class _RequisitionsViewHandsetState extends State<RequisitionsViewHandset>
                       requisition: requisition,
                       isLast: isLast,
                       index: index,
-                      onTap: () => context.router
-                          .push(
-                            RequisitionDetailsRoute(
-                              requisitionUlid: requisition.ulid,
-                            ),
-                          )
-                          .then((_) {
-                            if (!context.mounted) {
-                              return;
-                            }
-                            context
-                                .read<RequisitionResourceCubit>()
-                                .loadForAccountingEvent(
-                                  accountingEventUlid: accountingEvent.ulid,
-                                );
-                          }),
+                      // No reload on return: detail actions persist to the same
+                      // Hive box and the list re-emits from its DB stream.
+                      onTap: () => context.router.push(
+                        RequisitionDetailsRoute(
+                          requisitionUlid: requisition.ulid,
+                        ),
+                      ),
                     )
                     .animate()
                     .fadeIn(

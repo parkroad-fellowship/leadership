@@ -10,6 +10,7 @@ import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/services/media_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
+import 'package:logger/logger.dart';
 
 class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
   AllocationEntryResourceCubit({
@@ -40,6 +41,30 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
 
   @override
   List<String> get defaultIncludes => ['accountingEvent', 'expenseCategory'];
+
+  /// Everything an expense row renders. Single-entry refetches use it too so
+  /// a persisted row never loses its member or receipts.
+  static const _rowIncludes = [
+    'accountingEvent',
+    'expenseCategory',
+    'member',
+    'receipts',
+  ];
+
+  /// Receipts upload after the entry is saved, so the saved row has none.
+  /// Refetch it once they are up so the new receipts reach Hive (and the
+  /// list) without waiting for the freshness window.
+  Future<void> _refetchEntry(String ulid) async {
+    try {
+      final entry = await _allocationEntryService.get(
+        ulid: ulid,
+        includes: _rowIncludes,
+      );
+      await dbService.persistEntity(entry);
+    } catch (e, s) {
+      Logger().e('Error refetching expense entry', error: e, stackTrace: s);
+    }
+  }
 
   Future<void> addAllocationEntry({
     required String accountingEventUlid,
@@ -97,6 +122,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
         imageDTO: receiptDTO.copyWith(modelUlid: createdEntry.ulid),
       );
     }
+    await _refetchEntry(createdEntry.ulid);
   }
 
   Future<void> updateAllocationEntry({
@@ -157,6 +183,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
         imageDTO: receiptDTO.copyWith(modelUlid: updatedEntry.ulid),
       );
     }
+    await _refetchEntry(updatedEntry.ulid);
   }
 
   Future<void> addAllocationTokenEntry({
@@ -222,7 +249,7 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
       // re-emits the updated list state.
       final entry = await _allocationEntryService.get(
         ulid: allocationEntryUlid,
-        includes: defaultIncludes,
+        includes: _rowIncludes,
       );
       await dbService.persistEntity(entry);
     } on Failure catch (e) {
@@ -234,17 +261,16 @@ class AllocationEntryResourceCubit extends ResourceCubit<PRFAllocationEntry> {
 
   Future<void> refreshForAccountingEvent({
     required String accountingEventUlid,
+    bool force = false,
   }) {
+    // The event's refunds come from `AccountingEventCubit` once per screen
+    // instead of being embedded in every row. The plain `accountingEvent`
+    // stays: [loadCachedList] scopes Hive rows by its ulid and editing an
+    // expense reads it (the API has no `accounting_event_ulid` scalar).
     return loadAll(
-      includes: [
-        'expenseCategory',
-        'member',
-        'accountingEvent',
-        'accountingEvent.refunds',
-        'accountingEvent.latestRefund',
-        'receipts',
-      ],
+      includes: _rowIncludes,
       filters: {'accounting_event_ulid': accountingEventUlid},
+      force: force,
     );
   }
 

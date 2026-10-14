@@ -12,6 +12,7 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/prf_school.dart';
+import 'package:leadership/shared_widgets/load_more_on_scroll.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/debouncer.dart' as app_utils;
 import 'package:leadership/utils/misc.dart';
@@ -55,16 +56,23 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
 
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.index == 0) {
+      // TabController notifies twice per animated change; act once.
+      if (_tabController.indexIsChanging) return;
+      _loadTab(_tabController.index);
+    });
+  }
+
+  void _loadTab(int index) {
+    switch (index) {
+      case 0:
         context.read<MissionResourceCubit>().loadUpcomingMissions();
-      } else if (_tabController.index == 1) {
+      case 1:
         context.read<MissionResourceCubit>().loadPastMissions();
-      } else {
+      default:
         context.read<PastMissionResourceCubit>().loadAll(
           filters: _schoolsFilters(),
         );
-      }
-    });
+    }
   }
 
   @override
@@ -385,8 +393,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
 
             if (filtered.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () =>
-                    context.read<MissionResourceCubit>().loadUpcomingMissions(),
+                onRefresh: () {
+                  final cubit = context.read<MissionResourceCubit>()
+                    ..invalidate();
+                  return cubit.loadUpcomingMissions();
+                },
                 child: PRFEmptyView(
                   label: _searchQuery.isEmpty
                       ? l10n.noMissions
@@ -399,8 +410,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             }
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<MissionResourceCubit>().loadUpcomingMissions(),
+              onRefresh: () {
+                final cubit = context.read<MissionResourceCubit>()
+                  ..invalidate();
+                return cubit.loadUpcomingMissions();
+              },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
@@ -461,11 +475,15 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             final missions = List<PRFMission>.from(items)
               ..sort((a, b) => b.startDate.compareTo(a.startDate));
             final filtered = _filterMissions(missions);
+            final hasMore = context.read<MissionResourceCubit>().hasMorePages;
 
             if (filtered.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () =>
-                    context.read<MissionResourceCubit>().loadPastMissions(),
+                onRefresh: () {
+                  final cubit = context.read<MissionResourceCubit>()
+                    ..invalidate();
+                  return cubit.loadPastMissions();
+                },
                 child: PRFEmptyView(
                   label: _searchQuery.isEmpty
                       ? l10n.noMissions
@@ -478,41 +496,54 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             }
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<MissionResourceCubit>().loadPastMissions(),
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                  vertical: PRFSpacingTokens.xl,
-                ),
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  final mission = filtered[index];
-                  final isLast = index == filtered.length - 1;
-
-                  return TimelineMissionCard(
-                        mission: mission,
-                        isLast: isLast,
-                        index: index,
-                        onTap: () => context.router.push(
-                          MissionsDetailsRoute(missionUlid: mission.ulid),
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(
-                        delay: _staggerDelay(context, index),
-                        duration: PRFMotionTokens.resolve(
-                          context,
-                          PRFMotionTokens.enterShort,
-                        ),
-                      )
-                      .slideX(
-                        begin: 0.3,
-                        end: 0,
-                        curve: PRFMotionTokens.emphasized,
+              onRefresh: () {
+                final cubit = context.read<MissionResourceCubit>()
+                  ..invalidate();
+                return cubit.loadPastMissions();
+              },
+              child: LoadMoreOnScroll(
+                onEndReached: () =>
+                    context.read<MissionResourceCubit>().loadNextPage(),
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.lg,
+                    vertical: PRFSpacingTokens.xl,
+                  ),
+                  itemCount: filtered.length + (hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == filtered.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(PRFSpacingTokens.lg),
+                        child: Center(child: PRFCircularProgressIndicator()),
                       );
-                },
+                    }
+                    final mission = filtered[index];
+                    final isLast = index == filtered.length - 1;
+
+                    return TimelineMissionCard(
+                          mission: mission,
+                          isLast: isLast,
+                          index: index,
+                          onTap: () => context.router.push(
+                            MissionsDetailsRoute(missionUlid: mission.ulid),
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(
+                          delay: _staggerDelay(context, index),
+                          duration: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.enterShort,
+                          ),
+                        )
+                        .slideX(
+                          begin: 0.3,
+                          end: 0,
+                          curve: PRFMotionTokens.emphasized,
+                        );
+                  },
+                ),
               ),
             );
           })(),
@@ -552,9 +583,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
             );
           }
           return RefreshIndicator(
-            onRefresh: () => context.read<PastMissionResourceCubit>().loadAll(
-              filters: _schoolsFilters(),
-            ),
+            onRefresh: () {
+              final cubit = context.read<PastMissionResourceCubit>()
+                ..invalidate();
+              return cubit.loadAll(filters: _schoolsFilters());
+            },
             child: PRFEmptyView(
               label: _searchQuery.isEmpty
                   ? l10n.noPastMissions
@@ -567,9 +600,11 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
         }
 
         return RefreshIndicator(
-          onRefresh: () => context.read<PastMissionResourceCubit>().loadAll(
-            filters: _schoolsFilters(),
-          ),
+          onRefresh: () {
+            final cubit = context.read<PastMissionResourceCubit>()
+              ..invalidate();
+            return cubit.loadAll(filters: _schoolsFilters());
+          },
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(
@@ -647,17 +682,7 @@ class _MissionsPageHandsetState extends State<MissionsPageHandset>
       context,
       title: context.l10n.missionsCreateTitle,
       child: const CreateMissionView(),
-    ).then((_) {
-      if (!mounted) return;
-      if (_tabController.index == 0) {
-        context.read<MissionResourceCubit>().loadUpcomingMissions();
-      } else {
-        context.read<MissionResourceCubit>().loadPastMissions();
-        context.read<PastMissionResourceCubit>().loadAll(
-          filters: _schoolsFilters(),
-        );
-      }
-    });
+    );
   }
 }
 

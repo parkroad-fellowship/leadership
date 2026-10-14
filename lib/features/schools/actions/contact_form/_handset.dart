@@ -182,24 +182,22 @@ class _ContactFormViewHandsetState extends State<ContactFormViewHandset> {
 
     return BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
       listenWhen: (prev, curr) =>
-          (curr is ResourceMutating<PRFContact> &&
-              curr.operation != ResourceOperation.delete) ||
+          (prev is ResourceMutating<PRFContact> &&
+              prev.operation != ResourceOperation.delete &&
+              curr is ResourceListLoaded<PRFContact>) ||
           curr is ResourceError<PRFContact>,
       listener: (context, state) {
         switch (state) {
-          case ResourceMutating<PRFContact>(:final operation):
-            if (operation == ResourceOperation.create ||
-                operation == ResourceOperation.update) {
-              Gaimon.success();
-              Navigator.pop(context);
-              PRFSnackbar.success(
-                context,
-                _isEditing
-                    ? context.l10n.schoolContactsUpdated
-                    : context.l10n.schoolContactsCreated,
-              );
-              widget.onSaved();
-            }
+          case ResourceListLoaded<PRFContact>():
+            Gaimon.success();
+            Navigator.pop(context);
+            PRFSnackbar.success(
+              context,
+              _isEditing
+                  ? context.l10n.schoolContactsUpdated
+                  : context.l10n.schoolContactsCreated,
+            );
+            widget.onSaved();
           case ResourceError<PRFContact>():
             Gaimon.error();
             PRFSnackbar.error(context, context.l10n.commonSaveErrorMessage);

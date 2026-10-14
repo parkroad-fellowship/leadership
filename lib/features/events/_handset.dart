@@ -14,6 +14,7 @@ import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
 import 'package:leadership/services/local_storage/hive/db/event_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
+import 'package:leadership/shared_widgets/load_more_on_scroll.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
@@ -50,10 +51,12 @@ class _EventsHandsetState extends State<EventsHandset>
       requisitionService: getIt<RequisitionService>(),
       hiveService: getIt<HiveService>(),
       hiveDbService: getIt<EventHiveDbService>(),
-    )..loadPastEvents();
+    );
 
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
+      // TabController notifies twice per animated change; act once.
+      if (_tabController.indexIsChanging) return;
       if (_tabController.index == 0) {
         _upcomingCubit.loadUpcomingEvents();
       } else {
@@ -188,8 +191,11 @@ class _EventsHandsetState extends State<EventsHandset>
           listLoaded: (events, _, _) {
             if (events.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () =>
-                    context.read<EventResourceCubit>().loadUpcomingEvents(),
+                onRefresh: () {
+                  final cubit = context.read<EventResourceCubit>()
+                    ..invalidate();
+                  return cubit.loadUpcomingEvents();
+                },
                 child: PRFEmptyView(
                   label: l10n.noActivities,
                   description: l10n.createActivity,
@@ -201,8 +207,10 @@ class _EventsHandsetState extends State<EventsHandset>
               ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<EventResourceCubit>().loadUpcomingEvents(),
+              onRefresh: () {
+                final cubit = context.read<EventResourceCubit>()..invalidate();
+                return cubit.loadUpcomingEvents();
+              },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
@@ -261,8 +269,11 @@ class _EventsHandsetState extends State<EventsHandset>
           listLoaded: (events, _, _) {
             if (events.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () =>
-                    context.read<EventResourceCubit>().loadPastEvents(),
+                onRefresh: () {
+                  final cubit = context.read<EventResourceCubit>()
+                    ..invalidate();
+                  return cubit.loadPastEvents();
+                },
                 child: PRFEmptyView(
                   label: l10n.noActivities,
                   description: l10n.eventsEmptyPastDesc,
@@ -270,46 +281,60 @@ class _EventsHandsetState extends State<EventsHandset>
               );
             }
 
-            final sorted = events.reversed.toList();
+            final sorted = List<PRFEvent>.from(events)
+              ..sort((a, b) => b.startDate.compareTo(a.startDate));
+            final hasMore = context.read<EventResourceCubit>().hasMorePages;
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<EventResourceCubit>().loadPastEvents(),
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                  vertical: PRFSpacingTokens.xl,
-                ),
-                itemCount: sorted.length,
-                itemBuilder: (context, index) {
-                  final event = sorted[index];
-                  final isLast = index == events.length - 1;
-
-                  return TimelineEventCard(
-                        event: event,
-                        isLast: isLast,
-                        index: index,
-                        onTap: () => context.router.push(
-                          DeskEventDetailsRoute(event: event),
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(
-                        delay: PRFMotionTokens.resolve(
-                          context,
-                          PRFMotionTokens.stagger2 * math.min(index, 8),
-                        ),
-                        duration: PRFMotionTokens.resolve(
-                          context,
-                          PRFMotionTokens.enterShort,
-                        ),
-                      )
-                      .slideX(
-                        begin: 0.3,
-                        end: 0,
-                        curve: PRFMotionTokens.emphasized,
+              onRefresh: () {
+                final cubit = context.read<EventResourceCubit>()..invalidate();
+                return cubit.loadPastEvents();
+              },
+              child: LoadMoreOnScroll(
+                onEndReached: () =>
+                    context.read<EventResourceCubit>().loadNextPage(),
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.lg,
+                    vertical: PRFSpacingTokens.xl,
+                  ),
+                  itemCount: sorted.length + (hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == sorted.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(PRFSpacingTokens.lg),
+                        child: Center(child: PRFCircularProgressIndicator()),
                       );
-                },
+                    }
+                    final event = sorted[index];
+                    final isLast = index == events.length - 1;
+
+                    return TimelineEventCard(
+                          event: event,
+                          isLast: isLast,
+                          index: index,
+                          onTap: () => context.router.push(
+                            DeskEventDetailsRoute(event: event),
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger2 * math.min(index, 8),
+                          ),
+                          duration: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.enterShort,
+                          ),
+                        )
+                        .slideX(
+                          begin: 0.3,
+                          end: 0,
+                          curve: PRFMotionTokens.emphasized,
+                        );
+                  },
+                ),
               ),
             );
           },

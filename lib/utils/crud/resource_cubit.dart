@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/api/_base_api_service.dart';
 import 'package:leadership/services/local_storage/hive/db/_base_hive_db_service.dart';
+import 'package:leadership/utils/crud/fetch_ledger.dart';
 import 'package:leadership/utils/crud/paginated_response.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:logger/logger.dart';
@@ -77,8 +79,46 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   /// Override these in subclasses for resource-specific defaults.
   List<String> get defaultIncludes => [];
   Map<String, dynamic> get defaultFilters => {};
-  int get defaultLimit => 15;
+  int get defaultLimit => 100;
+
+  /// When true (default) [loadAll] keeps fetching until the last page so
+  /// local search sees the whole collection. History lists that grow without
+  /// bound override this with `false` and call [loadNextPage] on scroll.
+  bool get crawlAllPages => true;
+
+  bool get hasMorePages => _hasMore;
+
+  List<String>? _lastIncludes;
+  int _lastLimit = 0;
+  String? _lastSortBy;
+  bool _pageInFlight = false;
   String? get defaultSortBy => null;
+
+  /// How long a fetched list stays fresh. Within this window [loadAll]
+  /// renders Hive only and makes no request. Lookup cubits override this
+  /// with hours; pull-to-refresh calls [invalidate] first.
+  Duration get staleAfter => const Duration(minutes: 5);
+
+  /// Forget freshness for every query on this cubit's endpoint so the next
+  /// [loadAll] hits the network. Call before pull-to-refresh reloads.
+  void invalidate() =>
+      FetchLedger.instance.invalidatePrefix('${_service.endpoint}|');
+
+  String _queryKey({
+    required Map<String, dynamic> filters,
+    required List<String> includes,
+    required int limit,
+    required String? sortBy,
+  }) {
+    final f =
+        filters.entries
+            .where((e) => e.value != null)
+            .map((e) => '${e.key}=${e.value}')
+            .toList()
+          ..sort();
+    final i = [...includes]..sort();
+    return '${_service.endpoint}|${f.join('&')}|${i.join(',')}|$limit|${sortBy ?? ''}';
+  }
 
   /// Extracts the current list from whatever state we are in.
   List<TRemote> get currentItems {
@@ -110,6 +150,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     int? page,
     String? sortBy,
     bool refreshInBackground = true,
+    bool force = false,
   }) async {
     _emitIfOpen(ResourceState.listLoading());
 
@@ -117,6 +158,9 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     _lastFilters = mergedFilters;
     final startPage = page ?? 1;
     final resolvedLimit = limit ?? defaultLimit;
+    _lastIncludes = includes;
+    _lastLimit = resolvedLimit;
+    _lastSortBy = sortBy;
     final requestId = _nextRequestId();
 
     // Ensure we are subscribed to organically push DB changes to the UI
@@ -127,8 +171,15 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     // Strict offline-first: always seed UI with cache immediately.
     try {
       final cached = await loadCachedList(filters: mergedFilters);
-      _currentPage = startPage;
-      _hasMore = cached.length == resolvedLimit;
+      if (crawlAllPages) {
+        _currentPage = startPage;
+        _hasMore = cached.length == resolvedLimit;
+      } else {
+        // History lists accumulate pages in Hive; resume after the last
+        // full page already cached so scrolling reaches older items.
+        _currentPage = max(1, cached.length ~/ resolvedLimit);
+        _hasMore = cached.length >= resolvedLimit;
+      }
       _emitIfOpen(
         ResourceState.listLoaded(
           items: cached,
@@ -155,8 +206,17 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
 
     if (!refreshInBackground) return;
 
+    final key = _queryKey(
+      filters: mergedFilters,
+      includes: includes ?? defaultIncludes,
+      limit: resolvedLimit,
+      sortBy: sortBy ?? defaultSortBy,
+    );
+    if (!force && FetchLedger.instance.isFresh(key, staleAfter)) return;
+
     unawaited(
       _refreshAllInBackground(
+        key: key,
         requestId: requestId,
         mergedFilters: mergedFilters,
         includes: includes,
@@ -168,6 +228,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
   }
 
   Future<void> _refreshAllInBackground({
+    required String key,
     required int requestId,
     required Map<String, dynamic> mergedFilters,
     required List<String>? includes,
@@ -175,6 +236,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
     required int startPage,
     required String? sortBy,
   }) async {
+    final epoch = FetchLedger.instance.epoch;
     try {
       final result = await _service.list(
         filters: mergedFilters,
@@ -191,7 +253,7 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
 
       await dbService.persistEntities(result.data);
 
-      if (_hasMore) {
+      if (_hasMore && crawlAllPages) {
         await _loadRemainingPagesInBackground(
           requestId: requestId,
           startFromPage: _currentPage + 1,
@@ -200,6 +262,10 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
           resolvedLimit: resolvedLimit,
           sortBy: sortBy,
         );
+      }
+
+      if (_isLatestRequest(requestId) && epoch == FetchLedger.instance.epoch) {
+        FetchLedger.instance.markFetched(key);
       }
     } on Failure catch (e) {
       _emitIfOpen(ResourceState.error(message: e.message, items: currentItems));
@@ -292,6 +358,57 @@ abstract class ResourceCubit<TRemote> extends Cubit<ResourceState<TRemote>> {
         ResourceState.error(message: e.toString(), items: currentItems),
       );
     }
+  }
+
+  /// Fetch the next page of the last [loadAll] query (infinite scroll).
+  Future<void> loadNextPage() async {
+    if (!_hasMore || _pageInFlight) return;
+    _pageInFlight = true;
+    final requestId = _activeRequestId;
+    final limit = _lastLimit == 0 ? defaultLimit : _lastLimit;
+    try {
+      final result = await _service.list(
+        filters: _lastFilters,
+        includes: _lastIncludes ?? defaultIncludes,
+        limit: limit,
+        page: _currentPage + 1,
+        sortBy: _lastSortBy ?? defaultSortBy,
+      );
+      if (!_isLatestRequest(requestId)) return;
+      _currentPage = result.pagination.currentPage ?? _currentPage + 1;
+      _hasMore = _resolveHasMore(result, limit);
+      await dbService.persistEntities(result.data);
+      // An empty or already-cached page does not fire the Hive stream, so
+      // emit explicitly or the footer spinner never clears.
+      if (_isLatestRequest(requestId)) {
+        _emitIfOpen(
+          ResourceState.listLoaded(
+            items: await loadCachedList(filters: _lastFilters),
+            page: _currentPage,
+            hasMore: _hasMore,
+          ),
+        );
+      }
+    } on Failure catch (e) {
+      _logger.w('Next page failed: ${e.message}');
+      _stopPagingKeepingCache(requestId);
+    } catch (e, s) {
+      _logger.e('Error loading next page', error: e, stackTrace: s);
+      _stopPagingKeepingCache(requestId);
+    } finally {
+      _pageInFlight = false;
+    }
+  }
+
+  /// A failed next page must not replace the cached history with a
+  /// full-screen error: stop paging and keep showing what is cached.
+  /// Pull-to-refresh ([loadAll]) restores paging.
+  void _stopPagingKeepingCache(int requestId) {
+    if (!_isLatestRequest(requestId)) return;
+    _hasMore = false;
+    _emitIfOpen(
+      ResourceState.listLoaded(items: currentItems, page: _currentPage),
+    );
   }
 
   /// Create a new resource.

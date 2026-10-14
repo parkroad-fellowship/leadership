@@ -20,6 +20,11 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   final RequisitionService _requisitionService;
   final HiveService _hiveService;
 
+  bool _historyMode = false;
+
+  @override
+  bool get crawlAllPages => !_historyMode;
+
   @override
   List<String> get defaultIncludes => [
     'member',
@@ -58,11 +63,17 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
     );
   }
 
+  // Keeps the `accountingEvent` include on purpose: the API returns no
+  // `accounting_event_ulid` scalar, and [loadCachedList] scopes Hive rows to
+  // the event through `requisition.accountingEvent?.ulid`. Rows fetched
+  // without it would never show in this list.
   Future<void> loadForAccountingEvent({required String accountingEventUlid}) {
+    _historyMode = false;
     return loadAll(filters: {'accounting_event_ulid': accountingEventUlid});
   }
 
   Future<void> loadApprovalRequisitions() {
+    _historyMode = false;
     final member = _hiveService.retrieveMember()!;
     return loadAll(
       filters: {
@@ -73,8 +84,11 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   }
 
   Future<void> loadClosedRequisitions() {
+    _historyMode = true;
     final member = _hiveService.retrieveMember()!;
     return loadAll(
+      sortBy: '-created_at',
+      limit: 30,
       filters: {
         'appointed_approver_ulid': member.ulid,
         'approval_statuses': [
@@ -87,6 +101,7 @@ class RequisitionResourceCubit extends ResourceCubit<PRFRequisition> {
   }
 
   Future<void> loadDraftRequisitions() {
+    _historyMode = false;
     return loadAll(
       filters: {
         'approval_statuses': [PRFApprovalStatus.pending.apiKey].join(','),

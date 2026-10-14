@@ -132,6 +132,9 @@ class _RequisitionDetailsPageHandsetState
                             message: l10n.requisitionDetailLoadErrorMessage,
                             retryLabel: l10n.tryAgain,
                             onRetry: () {
+                              context
+                                  .read<RequisitionItemResourceCubit>()
+                                  .invalidate();
                               _reloadRequisition();
                               _reloadItems();
                             },
@@ -272,6 +275,7 @@ class _RequisitionDetailsPageHandsetState
 
     return RefreshIndicator(
       onRefresh: () async {
+        context.read<RequisitionItemResourceCubit>().invalidate();
         _reloadRequisition();
         _reloadItems();
       },
@@ -1702,15 +1706,16 @@ class _RequisitionDetailsPageHandsetState
   }
 
   void _showCreatePaymentInstructionModal(BuildContext context) {
-    PRFBottomSheet.show<void>(
+    PRFBottomSheet.show<bool>(
       context,
       title: context.l10n.paymentInstructions,
       child: CreatePaymentInstructionView(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh requisition after creating payment instruction
-      if (context.mounted) {
+    ).then((saved) {
+      // The payment instruction lives in its own Hive box, so the requisition
+      // that embeds it has to be refetched, but only after a successful save.
+      if ((saved ?? false) && context.mounted) {
         _reloadRequisition();
       }
     });

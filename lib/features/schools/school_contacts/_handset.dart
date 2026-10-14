@@ -2,13 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/schools/actions/contact_form/_handset.dart';
-import 'package:leadership/features/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/schools/cubit/school_cubit.dart';
 import 'package:leadership/features/schools/widgets/school_contact_row.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
+import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:prf_design/prf_design.dart';
@@ -24,11 +24,7 @@ class SchoolContactsPageHandset extends StatefulWidget {
 }
 
 class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
-  }
+  PRFSchool? _lastSchool;
 
   List<PRFContactType> get _contactTypes {
     final state = context.read<ContactTypeCubit>().state;
@@ -59,46 +55,44 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
           ),
         ],
       ),
-      body: BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
-        listener: (context, state) {
-          if (state case ResourceError<PRFContact>(
-            :final items,
-          ) when items.isNotEmpty) {
-            PRFSnackbar.error(context, l10n.schoolContactsActionFailed);
-          }
-        },
+      body: BlocBuilder<SchoolCubit, ResourceState<PRFSchool>>(
         builder: (context, state) {
-          return switch (state) {
-            ResourceListLoading<PRFContact>() => const Center(
-              child: PRFCircularProgressIndicator(),
-            ),
-            ResourceListLoaded<PRFContact>(:final items) when items.isEmpty =>
-              PRFEmptyView(
-                label: l10n.schoolContactsEmptyTitle,
-                description: l10n.schoolContactsEmptyMessage,
-                icon: Icons.contacts_outlined,
-                actionLabel: l10n.schoolContactsAdd,
-                onActionPressed: () => _showContactForm(null),
-              ),
-            ResourceListLoaded<PRFContact>(:final items) => _buildList(
-              theme,
-              items,
-            ),
-            ResourceMutating<PRFContact>(:final items) => _buildList(
-              theme,
-              items,
-            ),
-            ResourceError<PRFContact>(:final items) when items.isNotEmpty =>
-              _buildList(theme, items),
-            ResourceError<PRFContact>() => PRFErrorView.fromMessage(
-              title: l10n.schoolContactsLoadError,
-              message: l10n.commonLoadErrorMessage,
-              retryLabel: l10n.commonTryAgain,
-              onRetry: () =>
-                  context.read<ContactCubit>().loadForSchool(widget.schoolUlid),
-            ),
-            _ => const SizedBox.shrink(),
+          // Render the contacts embedded in the school: the contact Hive list
+          // is not school-keyed, so ContactCubit state can hold other schools.
+          final schools = switch (state) {
+            ResourceListLoaded<PRFSchool>(:final items) => items,
+            ResourceListLoading<PRFSchool>(:final items) => items,
+            ResourceMutating<PRFSchool>(:final items) => items,
+            ResourceError<PRFSchool>(:final items) => items,
+            _ => <PRFSchool>[],
           };
+          final found = schools.cast<PRFSchool?>().firstWhere(
+            (s) => s!.ulid == widget.schoolUlid,
+            orElse: () => null,
+          );
+          // A refresh can momentarily emit an empty list; keep the last one.
+          if (found != null) _lastSchool = found;
+          final school = found ?? (schools.isEmpty ? _lastSchool : null);
+          if (school == null) {
+            return state is ResourceError<PRFSchool>
+                ? PRFErrorView.fromMessage(
+                    title: l10n.schoolContactsLoadError,
+                    message: l10n.commonLoadErrorMessage,
+                    retryLabel: l10n.commonTryAgain,
+                    onRetry: () => context.read<SchoolCubit>().loadAll(),
+                  )
+                : const Center(child: PRFCircularProgressIndicator());
+          }
+          if (school.contacts.isEmpty) {
+            return PRFEmptyView(
+              label: l10n.schoolContactsEmptyTitle,
+              description: l10n.schoolContactsEmptyMessage,
+              icon: Icons.contacts_outlined,
+              actionLabel: l10n.schoolContactsAdd,
+              onActionPressed: () => _showContactForm(null),
+            );
+          }
+          return _buildList(theme, school.contacts);
         },
       ),
     );
@@ -222,9 +216,11 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         contact: contact,
         schoolUlid: widget.schoolUlid,
         contactTypes: contactTypes,
+        // Refetch the school so its embedded contacts update.
         onSaved: () {
-          context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
-          context.read<SchoolCubit>().loadAll();
+          context.read<SchoolCubit>()
+            ..invalidate()
+            ..loadAll();
         },
       ),
     );

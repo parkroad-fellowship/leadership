@@ -22,7 +22,6 @@ class MissionDetailCubit extends SingleResourceCubit<PRFMission> {
     'accountingEvent',
     'schoolTerm',
     'weatherForecasts',
-    'missionType',
   ];
 
   Future<void> approveMission({required String missionUlid}) {

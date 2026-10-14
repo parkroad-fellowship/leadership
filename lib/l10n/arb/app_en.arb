@@ -2330,5 +2330,21 @@
     "mfNoTypes": "No mission types are set up yet.",
     "mfOptionsLoadError": "Couldn't load these options.",
     "mfTheme": "Theme",
-    "mgNoMapsApp": "No maps app found on this phone."
+    "mgNoMapsApp": "No maps app found on this phone.",
+    "expenseRefundLoading": "Loading…",
+    "@expenseRefundLoading": {
+        "description": "Shown in place of the amount-to-refund figure while refund details load"
+    },
+    "expenseRefundStatOffline": "Needs connection",
+    "@expenseRefundStatOffline": {
+        "description": "Short stat-card text when refund details could not be loaded"
+    },
+    "expenseRefundLoadingDetails": "Loading refund details…",
+    "@expenseRefundLoadingDetails": {
+        "description": "Shown in place of the refund section while refund details load"
+    },
+    "expenseRefundNeedsConnection": "Refund details need a connection",
+    "@expenseRefundNeedsConnection": {
+        "description": "Shown in place of the refund section when refund details could not be loaded"
+    }
 }

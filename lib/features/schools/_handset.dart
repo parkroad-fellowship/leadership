@@ -342,7 +342,7 @@ class _SchoolsPageHandsetState extends State<SchoolsPageHandset>
       title: school == null
           ? context.l10n.schoolsAdd
           : context.l10n.schoolsEdit,
-      child: SchoolFormViewHandset(school: school, onSaved: _loadData),
+      child: SchoolFormViewHandset(school: school, onSaved: () {}),
     );
   }
 }

@@ -37,6 +37,7 @@ import 'package:leadership/services/local_storage/hive/db/soul_hive_db_service.d
 import 'package:leadership/services/local_storage/hive/kv/auth_hive_service.dart';
 import 'package:leadership/services/local_storage/hive/kv/settings_hive_service.dart';
 import 'package:leadership/utils/constants.dart';
+import 'package:leadership/utils/crud/fetch_ledger.dart';
 
 class HiveService {
   factory HiveService() => instance ??= HiveService._();
@@ -267,6 +268,7 @@ class HiveService {
   // ----- Entity table management -----
 
   Future<void> clearAllTables() async {
+    FetchLedger.instance.clear();
     final services = <BaseHiveDbService<dynamic>>[
       _allocationEntries,
       _churches,
@@ -303,10 +305,12 @@ class HiveService {
 
   // Convenience methods that delegate to appropriate services
   void clearPrefs() {
+    FetchLedger.instance.clear();
     _auth.clearAuthData();
   }
 
   void clearBox() {
+    FetchLedger.instance.clear();
     _auth.clear();
   }
 

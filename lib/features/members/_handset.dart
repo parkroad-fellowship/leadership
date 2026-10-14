@@ -311,7 +311,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: context.l10n.membersAdd,
-      child: MemberFormViewHandset(onSaved: _loadData),
+      child: MemberFormViewHandset(onSaved: () {}),
     );
   }
 

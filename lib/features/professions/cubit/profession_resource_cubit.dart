@@ -35,4 +35,8 @@ class ProfessionResourceCubit extends ResourceCubit<PRFProfession> {
   Future<void> deleteProfession({required String ulid}) {
     return delete(ulid: ulid, matchById: (p) => p.ulid == ulid);
   }
+
+  /// Reference data changes rarely; pull-to-refresh still forces a reload.
+  @override
+  Duration get staleAfter => const Duration(hours: 12);
 }

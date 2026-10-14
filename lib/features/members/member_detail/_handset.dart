@@ -34,7 +34,9 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     );
   }
 
-  void _reloadData() {
+  /// Only used by the not-found retry; the member itself comes from the
+  /// list cubit (Hive-backed), so opening the page loads nothing.
+  void _retryLoad() {
     context.read<MemberResourceCubit>().loadAll();
   }
 
@@ -54,7 +56,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                 navBarTitle: l10n.membersDetailLoadingTitle,
                 title: l10n.membersLoadError,
                 onBack: () => context.router.maybePop(),
-                onRetry: _reloadData,
+                onRetry: _retryLoad,
               ),
               ResourceListLoaded<PRFMember>() => PRFEmptyView(
                 navBarTitle: l10n.membersDetailLoadingTitle,
@@ -567,7 +569,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     PRFBottomSheet.show<void>(
       context,
       title: context.l10n.membersEdit,
-      child: MemberFormViewHandset(member: member, onSaved: _reloadData),
+      child: MemberFormViewHandset(member: member, onSaved: () {}),
     );
   }
 

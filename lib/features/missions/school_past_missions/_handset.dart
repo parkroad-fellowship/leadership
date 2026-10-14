@@ -109,8 +109,11 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
                         description: l10n.noPastMissions,
                       )
                     : RefreshIndicator(
-                        onRefresh: () =>
-                            context.read<PastMissionResourceCubit>().loadAll(),
+                        onRefresh: () {
+                          final cubit = context.read<PastMissionResourceCubit>()
+                            ..invalidate();
+                          return cubit.loadAll();
+                        },
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(

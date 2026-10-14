@@ -65,12 +65,56 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
 
   late TabController _tabController;
   int _currentTab = 0;
+
+  // Indices follow the TabBar order: Overview, People, Feedback, Finance.
+  // Sessions live inside People (nested tab) and load with it; debrief notes,
+  // souls and questions live inside Feedback.
+  static const int _peopleTab = 1;
+  static const int _feedbackTab = 2;
+
+  final Set<int> _loadedTabs = {};
+
+  void _ensureTabLoaded(int index) {
+    if (!_loadedTabs.add(index)) return;
+    final ulid = missionUlid;
+    switch (index) {
+      case _peopleTab:
+        context.read<MissionSubscriptionResourceCubit>().loadForMission(
+          missionUlid: ulid,
+        );
+        context.read<MissionOfflineMemberResourceCubit>().loadForMission(
+          missionUlid: ulid,
+        );
+        context.read<MissionSessionResourceCubit>().loadForMission(
+          missionUlid: ulid,
+        );
+      case _feedbackTab:
+        context.read<MissionQuestionResourceCubit>().loadForMission(
+          missionUlid: ulid,
+        );
+        context.read<DebriefNoteResourceCubit>().loadForMission(
+          missionUlid: ulid,
+        );
+        context.read<SoulResourceCubit>().loadForMission(missionUlid: ulid);
+        // Class groups are only used by souls (Feedback tab).
+        final mission = _currentMissionFromState(
+          context.read<MissionDetailCubit>().state,
+        );
+        if (mission != null) {
+          _loadClassGroupsForMission(mission);
+        }
+    }
+  }
+
   PRFInstitutionType? _loadedClassGroupInstitutionType;
 
   void _changeTab() {
     setState(() {
       _currentTab = _tabController.index;
     });
+    // TabController notifies twice per animated change; load once.
+    if (_tabController.indexIsChanging) return;
+    _ensureTabLoaded(_tabController.index);
   }
 
   Future<void> _showEditMissionSheet(PRFMission mission) async {
@@ -85,19 +129,29 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   void initState() {
     super.initState();
 
-    // Fetch mission data
+    // Mission lists carry a lean payload, so always fetch the full mission
+    // (contacts, accounting event, weather) once on open. The cached copy
+    // still renders immediately through the Hive watch.
     context.read<MissionDetailCubit>().loadOne(
       id: missionUlid,
       matchById: (m) => m.ulid == missionUlid,
+      refresh: true,
     );
-    _loadMissionSubdomainData();
 
     _tabController = TabController(length: tabCount, vsync: this);
     _tabController.addListener(_changeTab);
+    _ensureTabLoaded(_tabController.index);
   }
 
   PRFMission? _currentMissionFromState(ResourceState<PRFMission> state) {
-    return state.mapOrNull(itemLoaded: (s) => s.item, itemError: (s) => s.item);
+    // `itemLoading` keeps the cached mission on screen while the on-open
+    // refresh runs. The cubit is app-scoped, so its item may still be the
+    // previously viewed mission; only show it when it is this one.
+    return state.mapOrNull(
+      itemLoaded: (s) => s.item,
+      itemError: (s) => s.item,
+      itemLoading: (s) => s.item?.ulid == missionUlid ? s.item : null,
+    );
   }
 
   @override
@@ -106,6 +160,17 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       ..removeListener(_changeTab)
       ..dispose();
     super.dispose();
+  }
+
+  /// Pull-to-refresh: forget freshness so every sub-cubit refetches.
+  Future<void> _refreshMissionSubdomainData() {
+    context.read<MissionQuestionResourceCubit>().invalidate();
+    context.read<DebriefNoteResourceCubit>().invalidate();
+    context.read<SoulResourceCubit>().invalidate();
+    context.read<MissionSubscriptionResourceCubit>().invalidate();
+    context.read<MissionSessionResourceCubit>().invalidate();
+    context.read<MissionOfflineMemberResourceCubit>().invalidate();
+    return _loadMissionSubdomainData();
   }
 
   Future<void> _loadMissionSubdomainData() {
@@ -148,6 +213,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     );
   }
 
+  /// The sub-resource cubits are app-global, so right after opening another
+  /// mission they still hold the previous mission's rows. Every builder
+  /// filters by this mission's ulid so those rows are never painted here.
   List<T> _itemsFromResourceState<T>(ResourceState<T> state) {
     return state.maybeWhen(
       listLoaded: (items, _, _) => items,
@@ -654,7 +722,8 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
     return BlocListener<MissionDetailCubit, ResourceState<PRFMission>>(
       listener: (context, state) {
         final mission = _currentMissionFromState(state);
-        if (mission != null) {
+        // Class groups are needed only once the Feedback tab has been shown.
+        if (mission != null && _loadedTabs.contains(_feedbackTab)) {
           _loadClassGroupsForMission(mission);
         }
       },
@@ -711,6 +780,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
                                       .loadOne(
                                         id: missionUlid,
                                         matchById: (m) => m.ulid == missionUlid,
+                                        refresh: true,
                                       ),
                                   icon: Icon(
                                     Icons.refresh_rounded,
@@ -906,7 +976,7 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   Widget _buildMissionSubscribersTab(PRFMission mission) {
     return MissionSubscribersTab(
       mission: mission,
-      onRefresh: _loadMissionSubdomainData,
+      onRefresh: _refreshMissionSubdomainData,
       subscriptionsSection: _buildMissionSubscriptionsSection(mission),
       offlineMembersSection: _buildOfflineMembersSection(mission),
     );
@@ -918,16 +988,20 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       ResourceState<PRFMissionQuestion>
     >(
       builder: (context, state) {
-        final questions = _itemsFromResourceState(state);
+        final questions = _itemsFromResourceState(
+          state,
+        ).where((q) => q.mission?.ulid == missionUlid).toList();
         final error = _resourceErrorMessage(state);
 
         return MissionResourceTabView(
           isLoading: state is ResourceListLoading<PRFMissionQuestion>,
           error: error,
           isEmpty: questions.isEmpty,
-          onRefresh: () => context
-              .read<MissionQuestionResourceCubit>()
-              .loadForMission(missionUlid: missionUlid),
+          onRefresh: () {
+            final cubit = context.read<MissionQuestionResourceCubit>()
+              ..invalidate();
+            return cubit.loadForMission(missionUlid: missionUlid);
+          },
           onAdd: _promptAddQuestion,
           addButtonLabel: context.l10n.mdAddQuestion,
           addButtonIcon: Icons.add_comment_outlined,
@@ -957,16 +1031,20 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   Widget _buildMissionDebriefTab() {
     return BlocBuilder<DebriefNoteResourceCubit, ResourceState<PRFDebriefNote>>(
       builder: (context, state) {
-        final notes = _itemsFromResourceState(state);
+        final notes = _itemsFromResourceState(
+          state,
+        ).where((n) => n.mission?.ulid == missionUlid).toList();
         final error = _resourceErrorMessage(state);
 
         return MissionResourceTabView(
           isLoading: state is ResourceListLoading<PRFDebriefNote>,
           error: error,
           isEmpty: notes.isEmpty,
-          onRefresh: () => context
-              .read<DebriefNoteResourceCubit>()
-              .loadForMission(missionUlid: missionUlid),
+          onRefresh: () {
+            final cubit = context.read<DebriefNoteResourceCubit>()
+              ..invalidate();
+            return cubit.loadForMission(missionUlid: missionUlid);
+          },
           onAdd: _promptAddDebriefNote,
           addButtonLabel: context.l10n.addDebriefNote,
           addButtonIcon: Icons.rate_review_outlined,
@@ -996,16 +1074,19 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
   Widget _buildSoulsTab() {
     return BlocBuilder<SoulResourceCubit, ResourceState<PRFSoul>>(
       builder: (context, state) {
-        final souls = _itemsFromResourceState(state);
+        final souls = _itemsFromResourceState(
+          state,
+        ).where((s) => s.mission?.ulid == missionUlid).toList();
         final error = _resourceErrorMessage(state);
 
         return MissionResourceTabView(
           isLoading: state is ResourceListLoading<PRFSoul>,
           error: error,
           isEmpty: souls.isEmpty,
-          onRefresh: () => context.read<SoulResourceCubit>().loadForMission(
-            missionUlid: missionUlid,
-          ),
+          onRefresh: () {
+            final cubit = context.read<SoulResourceCubit>()..invalidate();
+            return cubit.loadForMission(missionUlid: missionUlid);
+          },
           onAdd: _promptAddSoul,
           addButtonLabel: context.l10n.mdRecordSoul,
           addButtonIcon: Icons.favorite_outline,
@@ -1038,7 +1119,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       ResourceState<PRFMissionSubscription>
     >(
       builder: (context, state) {
-        final subscriptions = _itemsFromResourceState(state);
+        final subscriptions = _itemsFromResourceState(
+          state,
+        ).where((s) => s.mission?.ulid == mission.ulid).toList();
         final error = _resourceErrorMessage(state);
         return MissionSubscriptionsSection(
           subscriptions: subscriptions,
@@ -1059,7 +1142,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       ResourceState<PRFMissionOfflineMember>
     >(
       builder: (context, state) {
-        final members = _itemsFromResourceState(state);
+        final members = _itemsFromResourceState(
+          state,
+        ).where((m) => m.mission?.ulid == mission.ulid).toList();
         final error = _resourceErrorMessage(state);
         return MissionOfflineMembersSection(
           offlineMembers: members,
@@ -1405,7 +1490,9 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
       ResourceState<PRFMissionSession>
     >(
       builder: (context, state) {
-        final sessions = _itemsFromResourceState(state);
+        final sessions = _itemsFromResourceState(
+          state,
+        ).where((s) => s.mission?.ulid == missionUlid).toList();
         final error = _resourceErrorMessage(state);
         final theme = Theme.of(context);
 
@@ -1415,9 +1502,11 @@ class _MissionsDetailsPageHandsetState extends State<MissionsDetailsPageHandset>
         }
 
         return RefreshIndicator(
-          onRefresh: () => context
-              .read<MissionSessionResourceCubit>()
-              .loadForMission(missionUlid: missionUlid),
+          onRefresh: () {
+            final cubit = context.read<MissionSessionResourceCubit>()
+              ..invalidate();
+            return cubit.loadForMission(missionUlid: missionUlid);
+          },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(

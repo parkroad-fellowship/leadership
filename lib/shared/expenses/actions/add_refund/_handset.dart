@@ -187,7 +187,7 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                               context,
                               l10n.expenseRefundRecorded,
                             );
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(true);
                           }
                         },
                         error: (message, items) {

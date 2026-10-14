@@ -2,6 +2,7 @@ import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/services/api/school_contact_service.dart';
 import 'package:leadership/services/local_storage/hive/db/contact_hive_db_service.dart';
 import 'package:leadership/utils/crud/resource_cubit.dart';
+import 'package:leadership/utils/crud/resource_state.dart';
 
 class ContactCubit extends ResourceCubit<PRFContact> {
   ContactCubit({
@@ -27,8 +28,8 @@ class ContactCubit extends ResourceCubit<PRFContact> {
     required String schoolUlid,
     String? email,
     String? contactTypeUlid,
-  }) {
-    return create(
+  }) async {
+    await create(
       data: {
         'name': name,
         'phone': phone,
@@ -38,6 +39,22 @@ class ContactCubit extends ResourceCubit<PRFContact> {
           'contact_type_ulid': contactTypeUlid,
       },
     );
+    await _settleAfterSave();
+  }
+
+  /// Nothing subscribes this cubit to the Hive stream any more, so a
+  /// successful save would leave it in `mutating`. A failed save has already
+  /// emitted `error`, which this leaves alone.
+  Future<void> _settleAfterSave() async {
+    if (isClosed || state is! ResourceMutating<PRFContact>) return;
+    List<PRFContact> items;
+    try {
+      items = await dbService.list();
+    } catch (_) {
+      items = currentItems;
+    }
+    if (isClosed || state is! ResourceMutating<PRFContact>) return;
+    emit(ResourceState.listLoaded(items: items));
   }
 
   Future<void> updateContact({
@@ -46,8 +63,8 @@ class ContactCubit extends ResourceCubit<PRFContact> {
     required String phone,
     String? email,
     String? contactTypeUlid,
-  }) {
-    return update(
+  }) async {
+    await update(
       id: ulid,
       data: {
         'name': name,
@@ -58,6 +75,7 @@ class ContactCubit extends ResourceCubit<PRFContact> {
       },
       matchById: (c) => c.ulid == ulid,
     );
+    await _settleAfterSave();
   }
 
   Future<void> deleteContact({required String ulid}) {
