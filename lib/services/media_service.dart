@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:leadership/enums/media_type.dart';
 import 'package:leadership/enums/prf_media_model.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/models/remote/prf_media.dart';
 import 'package:leadership/models/remote/prf_media_dto.dart';
@@ -51,6 +52,10 @@ abstract class MediaService {
     required MediaType mediaType,
   });
 }
+
+/// Plain-language message for picker failures in methods that have no
+/// [BuildContext] to localise with. Never expose raw exception text.
+const String _selectFailedMessage = "Couldn't add that file. Please try again.";
 
 class MediaServiceImpl implements MediaService {
   final _networkUtil = NetworkUtil();
@@ -142,7 +147,7 @@ class MediaServiceImpl implements MediaService {
       return uploadAssets;
     } catch (e) {
       Logger().e('Error selecting assets: $e');
-      throw Failure(message: 'Failed to select media: $e');
+      throw Failure(message: _selectFailedMessage);
     }
   }
 
@@ -155,85 +160,29 @@ class MediaServiceImpl implements MediaService {
     int count = 9,
   }) async {
     try {
-      // Show bottom sheet to let user choose between camera and gallery
-      final source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      // Ask the user whether to use the camera or the gallery.
+      final l10n = context.l10n;
+      final isVideo = mediaType == MediaType.video;
+      final choice = await showPRFMediaSourceSheet(
+        context,
+        labels: PRFMediaSourceLabels(
+          title: isVideo ? l10n.mediaSourceTitleVideo : l10n.mediaSourceTitle,
+          camera: l10n.mediaSourceCamera,
+          cameraDescription: isVideo
+              ? l10n.mediaSourceRecordVideo
+              : l10n.mediaSourceTakePhoto,
+          gallery: l10n.mediaSourceGallery,
+          galleryDescription: count > 1
+              ? l10n.mediaSourceChooseMany(count)
+              : l10n.mediaSourceChooseOne,
         ),
-        builder: (context) {
-          final theme = Theme.of(context);
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Text(
-                    'Choose Source',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    title: const Text('Camera'),
-                    subtitle: Text(
-                      mediaType == MediaType.video
-                          ? 'Record a video'
-                          : 'Take a photo',
-                    ),
-                    onTap: () => Navigator.pop(context, ImageSource.camera),
-                  ),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.secondary.withValues(
-                          alpha: 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.photo_library_outlined,
-                        color: theme.colorScheme.secondary,
-                      ),
-                    ),
-                    title: const Text('Gallery'),
-                    subtitle: Text(
-                      count > 1
-                          ? 'Select up to $count items'
-                          : 'Choose from your library',
-                    ),
-                    onTap: () => Navigator.pop(context, ImageSource.gallery),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          );
-        },
       );
+
+      final source = switch (choice) {
+        PRFMediaSource.camera => ImageSource.camera,
+        PRFMediaSource.gallery => ImageSource.gallery,
+        PRFMediaSource.file || null => null,
+      };
 
       if (source == null) {
         return [];
@@ -245,7 +194,7 @@ class MediaServiceImpl implements MediaService {
         // Request camera permission
         final cameraStatus = await Permission.camera.request();
         if (!cameraStatus.isGranted) {
-          throw Failure(message: 'Camera permission denied');
+          throw Failure(message: l10n.mediaCameraPermissionDenied);
         }
 
         XFile? capturedFile;
@@ -307,7 +256,7 @@ class MediaServiceImpl implements MediaService {
       if (e is Failure) {
         rethrow;
       }
-      throw Failure(message: 'Failed to select media: $e');
+      throw Failure(message: _selectFailedMessage);
     }
   }
 
@@ -324,9 +273,14 @@ class MediaServiceImpl implements MediaService {
           allowedExtensions: ['mp3', 'aac', 'ogg', 'mp4', 'wav', 'flac'],
         ).catchError((dynamic error) {
           if (error is PlatformException && error.code == 'multiple_request') {
-            throw Failure(message: 'Another file selection is in progress');
+            throw Failure(
+              message:
+                  'A file picker is already open. Finish or close it, '
+                  'then try again.',
+            );
           }
-          throw Failure(message: error.toString());
+          Logger().e('Error selecting audio files: $error');
+          throw Failure(message: _selectFailedMessage);
         });
 
     final uploadAssets = <PRFMediaDTO>[];
@@ -400,7 +354,7 @@ class MediaServiceImpl implements MediaService {
       return [];
     } catch (e) {
       Logger().e('Error selecting documents: $e');
-      throw Failure(message: 'Failed to select PDF files: $e');
+      throw Failure(message: _selectFailedMessage);
     }
   }
 
@@ -411,11 +365,12 @@ class MediaServiceImpl implements MediaService {
     required PRFMediaModel model,
     required MediaType mediaType,
   }) async {
+    final l10n = context.l10n;
     try {
       // Request camera permission
       final cameraStatus = await Permission.camera.request();
       if (!cameraStatus.isGranted) {
-        throw Failure(message: 'Camera permission denied');
+        throw Failure(message: l10n.mediaCameraPermissionDenied);
       }
 
       // Use image_picker for camera capture - it handles permissions gracefully
@@ -456,7 +411,7 @@ class MediaServiceImpl implements MediaService {
       if (e is Failure) {
         rethrow;
       }
-      throw Failure(message: 'Failed to capture from camera: $e');
+      throw Failure(message: l10n.mediaCaptureFailed);
     }
   }
 }

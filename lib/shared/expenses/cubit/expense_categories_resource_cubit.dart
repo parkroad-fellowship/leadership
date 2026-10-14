@@ -15,4 +15,8 @@ class ExpenseCategoriesResourceCubit extends ResourceCubit<PRFExpenseCategory> {
   }) {
     return dbService.list();
   }
+
+  /// Reference data changes rarely; pull-to-refresh still forces a reload.
+  @override
+  Duration get staleAfter => const Duration(hours: 12);
 }

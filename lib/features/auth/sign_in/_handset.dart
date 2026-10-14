@@ -44,17 +44,8 @@ class _SignInHandsetState extends State<SignInHandset> {
           loaded: (socialLoginDTO) => context.read<SocialLoginCubit>().login(
             socialAuthDTO: socialLoginDTO,
           ),
-          error: (message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: theme.colorScheme.error,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                ),
-              ),
-            );
+          error: (_) {
+            PRFSnackbar.error(context, l10n.authGoogleSignInFailed);
           },
         );
       },
@@ -64,17 +55,8 @@ class _SignInHandsetState extends State<SignInHandset> {
             orElse: () {},
             loaded: () =>
                 context.router.pushPath(PRFLeadershipRouter.decisionRoute),
-            error: (message) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(message),
-                  backgroundColor: theme.colorScheme.error,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  ),
-                ),
-              );
+            error: (_) {
+              PRFSnackbar.error(context, l10n.authGoogleSignInFailed);
             },
           );
         },
@@ -104,19 +86,15 @@ class _SignInHandsetState extends State<SignInHandset> {
                                   PRFSpacingTokens.lg,
                                 ),
                                 decoration: BoxDecoration(
+                                  // Fixed white plate: the logo artwork is
+                                  // drawn for a light background in both modes.
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(
                                     PRFRadiusTokens.lg,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
+                                  boxShadow: PRFShadowTokens.card(
+                                    theme.colorScheme.shadow,
+                                  ),
                                 ),
                                 child: ExtendedImage.asset(
                                   'assets/images/app-logo.png',
@@ -126,7 +104,7 @@ class _SignInHandsetState extends State<SignInHandset> {
                               ),
                             ),
 
-                            const SizedBox(height: 48),
+                            const SizedBox(height: PRFSpacingTokens.xxxl),
 
                             // Welcome Text
                             Text(
@@ -134,7 +112,6 @@ class _SignInHandsetState extends State<SignInHandset> {
                               style: theme.textTheme.headlineLarge?.copyWith(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 32,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -145,12 +122,11 @@ class _SignInHandsetState extends State<SignInHandset> {
                               l10n.welcomeBack,
                               style: theme.textTheme.bodyLarge?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
-                                fontSize: 16,
                               ),
                               textAlign: TextAlign.center,
                             ),
 
-                            const SizedBox(height: 48),
+                            const SizedBox(height: PRFSpacingTokens.xxxl),
 
                             FutureBuilder(
                               future: getIt<PRFFirebaseService>().canShowAuth(),
@@ -164,6 +140,10 @@ class _SignInHandsetState extends State<SignInHandset> {
                                       // Email Input
                                       PRFTextField(
                                         hintText: l10n.enterEmail,
+                                        labelText: l10n.email,
+                                        autofillHints: const [
+                                          AutofillHints.email,
+                                        ],
                                         controller: _emailController,
                                         type: PRFTextFieldType.email,
                                         enabled: !_isLoading,
@@ -176,6 +156,9 @@ class _SignInHandsetState extends State<SignInHandset> {
                                       // Password Input
                                       PRFTextField(
                                         hintText: l10n.enterPassword,
+                                        autofillHints: const [
+                                          AutofillHints.password,
+                                        ],
                                         obscureNotifier: _hidePasswordNotifier,
                                         controller: _passwordController,
                                         type: PRFTextFieldType.password,
@@ -198,26 +181,13 @@ class _SignInHandsetState extends State<SignInHandset> {
                                                   PRFLeadershipRouter
                                                       .landingRoute,
                                                 ),
-                                            error: (message) {
+                                            error: (_) {
                                               setState(() {
                                                 _isLoading = !_isLoading;
                                               });
-                                              ScaffoldMessenger.of(
+                                              PRFSnackbar.error(
                                                 context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(message),
-                                                  backgroundColor:
-                                                      theme.colorScheme.error,
-                                                  behavior:
-                                                      SnackBarBehavior.floating,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          PRFRadiusTokens.sm,
-                                                        ),
-                                                  ),
-                                                ),
+                                                l10n.authSignInFailed,
                                               );
                                             },
                                             orElse: () {},
@@ -229,18 +199,9 @@ class _SignInHandsetState extends State<SignInHandset> {
                                               if (_emailController
                                                   .text
                                                   .isEmpty) {
-                                                ScaffoldMessenger.of(
+                                                PRFSnackbar.error(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      l10n.enterEmail,
-                                                    ),
-                                                    backgroundColor:
-                                                        theme.colorScheme.error,
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                  ),
+                                                  l10n.authEnterEmail,
                                                 );
                                                 Gaimon.warning();
                                                 return;
@@ -249,18 +210,9 @@ class _SignInHandsetState extends State<SignInHandset> {
                                               if (_passwordController
                                                   .text
                                                   .isEmpty) {
-                                                ScaffoldMessenger.of(
+                                                PRFSnackbar.error(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      l10n.enterPassword,
-                                                    ),
-                                                    backgroundColor:
-                                                        theme.colorScheme.error,
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                  ),
+                                                  l10n.authEnterPassword,
                                                 );
                                                 Gaimon.warning();
                                                 return;
@@ -303,14 +255,13 @@ class _SignInHandsetState extends State<SignInHandset> {
                                               horizontal: PRFSpacingTokens.lg,
                                             ),
                                             child: Text(
-                                              'OR',
+                                              l10n.authOr.toUpperCase(),
                                               style: theme.textTheme.labelMedium
                                                   ?.copyWith(
                                                     color: theme
                                                         .colorScheme
                                                         .onSurfaceVariant,
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 14,
                                                   ),
                                             ),
                                           ),
@@ -355,7 +306,6 @@ class _SignInHandsetState extends State<SignInHandset> {
                                   l10n.version(Misc.getAppVersion()),
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant,
-                                    fontSize: 12,
                                   ),
                                 ),
                               ),
@@ -387,12 +337,13 @@ class GoogleSignInButton extends StatelessWidget {
             return BlocBuilder<SocialLoginCubit, SocialLoginState>(
               builder: (context, socialSignInState) {
                 final (isLoading, title) = signInWithGoogleState.maybeWhen(
-                  loading: () => (true, 'Please wait ...'),
+                  loading: () => (true, context.l10n.authPleaseWait),
                   orElse: () => socialSignUpState.maybeWhen(
-                    loading: () => (true, 'Please wait ...'),
+                    loading: () => (true, context.l10n.authPleaseWait),
                     orElse: () => socialSignInState.maybeWhen(
-                      loading: () => (true, 'Please wait ...'),
-                      orElse: () => (false, 'Continue with Google'),
+                      loading: () => (true, context.l10n.authPleaseWait),
+                      orElse: () =>
+                          (false, context.l10n.authContinueWithGoogle),
                     ),
                   ),
                 );

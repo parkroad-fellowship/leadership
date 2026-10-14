@@ -18,6 +18,8 @@ class SignOutCubit extends Cubit<SignOutState> {
 
     try {
       _hiveService.clearPrefs();
+      // Wipe cached rows so the next user never sees this user's data.
+      await _hiveService.clearAllTables();
       emit(const SignOutState.loaded());
     } catch (e) {
       emit(const SignOutState.loaded());

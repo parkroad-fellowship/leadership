@@ -90,10 +90,12 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       try {
         final fcmToken = await getIt<FirebaseMessagingService>()
             .retrieveFCMToken();
-        if (fcmToken.isNotEmpty) {
+        final lastSent = getIt<HiveService>().auth.retrieveFcmTokenSent();
+        if (fcmToken.isNotEmpty && fcmToken != lastSent) {
           await getIt<AuthService>().updateProfile(
             updateDTO: UserUpdateDTO(fcmTokens: [fcmToken]),
           );
+          getIt<HiveService>().auth.storeFcmTokenSent(fcmToken);
         }
       } catch (e) {
         Logger().e('Firebase Messaging init error: $e');

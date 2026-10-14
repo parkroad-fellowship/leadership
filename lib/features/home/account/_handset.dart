@@ -45,7 +45,14 @@ class AccountPageHandset extends StatelessWidget {
                     ),
                     actions: [
                       Animate(
-                        effects: [ShimmerEffect(duration: 1.seconds)],
+                        effects: [
+                          ShimmerEffect(
+                            duration: PRFMotionTokens.resolve(
+                              context,
+                              1.seconds,
+                            ),
+                          ),
+                        ],
                         child: BlocListener<SignOutCubit, SignOutState>(
                           listener: (context, state) {
                             state.maybeWhen(
@@ -55,41 +62,22 @@ class AccountPageHandset extends StatelessWidget {
                               orElse: () {},
                             );
                           },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.onPrimary.withValues(
-                                alpha: 0.12,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.md,
-                              ),
-                              border: Border.all(
-                                color: theme.colorScheme.onPrimary.withValues(
-                                  alpha: 0.28,
-                                ),
-                              ),
-                            ),
-                            child: IconButton(
-                              onPressed: () async {
-                                final confirmed =
-                                    await PRFConfirmationDialog.show(
-                                      context,
-                                      title: l10n.signOut,
-                                      message:
-                                          'Are you sure you want to sign out?',
-                                      confirmLabel: l10n.signOut,
-                                    );
-                                if (confirmed == true && context.mounted) {
-                                  await context.read<SignOutCubit>().signOut();
-                                }
-                              },
-                              icon: Icon(
-                                Icons.logout_rounded,
-                                color: theme.colorScheme.onPrimary,
-                                size: 20,
-                              ),
-                              tooltip: l10n.signOut,
-                            ),
+                          child: PRFNavBarAction(
+                            label: l10n.signOut,
+                            icon: Icons.logout_rounded,
+                            variant: PRFNavBarActionVariant.neutral,
+                            onPressed: () async {
+                              final confirmed =
+                                  await PRFConfirmationDialog.show(
+                                    context,
+                                    title: l10n.signOut,
+                                    message: l10n.accountSignOutConfirm,
+                                    confirmLabel: l10n.signOut,
+                                  );
+                              if (confirmed == true && context.mounted) {
+                                await context.read<SignOutCubit>().signOut();
+                              }
+                            },
                           ),
                         ),
                       ),
@@ -115,15 +103,9 @@ class AccountPageHandset extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.shadow.withValues(
-                              alpha: 0.08,
-                            ),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: PRFShadowTokens.card(
+                          theme.colorScheme.shadow,
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -138,10 +120,10 @@ class AccountPageHandset extends StatelessWidget {
                                   gradient: LinearGradient(
                                     colors: [
                                       theme.colorScheme.primary.withValues(
-                                        alpha: 0.1,
+                                        alpha: PRFOpacities.subtle,
                                       ),
                                       theme.colorScheme.secondary.withValues(
-                                        alpha: 0.1,
+                                        alpha: PRFOpacities.subtle,
                                       ),
                                     ],
                                     begin: Alignment.topLeft,
@@ -149,7 +131,7 @@ class AccountPageHandset extends StatelessWidget {
                                   ),
                                   border: Border.all(
                                     color: theme.colorScheme.primary.withValues(
-                                      alpha: 0.3,
+                                      alpha: PRFOpacities.glow,
                                     ),
                                     width: 3,
                                   ),
@@ -179,7 +161,8 @@ class AccountPageHandset extends StatelessWidget {
                                                     stackTrace,
                                                   ) => Icon(
                                                     Icons.person_rounded,
-                                                    size: 50,
+                                                    size:
+                                                        PRFSizeTokens.iconXxxl,
                                                     color: theme
                                                         .colorScheme
                                                         .primary,
@@ -187,7 +170,7 @@ class AccountPageHandset extends StatelessWidget {
                                             )
                                           : Icon(
                                               Icons.person_rounded,
-                                              size: 50,
+                                              size: PRFSizeTokens.iconXxxl,
                                               color: theme.colorScheme.primary,
                                             );
                                     },
@@ -207,7 +190,7 @@ class AccountPageHandset extends StatelessWidget {
                               final profile = getIt<HiveService>().auth
                                   .retrieveProfile();
                               return Text(
-                                profile?.name ?? 'User',
+                                profile?.name ?? l10n.accountFallbackName,
                                 style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: theme.colorScheme.onSurface,
@@ -236,7 +219,12 @@ class AccountPageHandset extends StatelessWidget {
                       ),
                     )
                     .animate()
-                    .fadeIn(duration: PRFMotionTokens.slow)
+                    .fadeIn(
+                      duration: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.slow,
+                      ),
+                    )
                     .slideY(begin: 0.1, end: 0),
           ),
 
@@ -255,51 +243,57 @@ class AccountPageHandset extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.shadow.withValues(
-                              alpha: 0.08,
-                            ),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: PRFShadowTokens.card(
+                          theme.colorScheme.shadow,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.dark_mode_outlined,
-                            color: theme.colorScheme.primary,
-                            size: 24,
-                          ),
-                          const SizedBox(width: PRFSpacingTokens.md),
-                          Expanded(
-                            child: Text(
-                              'Dark Mode',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface,
+                      child: MergeSemantics(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.dark_mode_outlined,
+                              color: theme.colorScheme.primary,
+                              size: PRFSizeTokens.iconLg,
+                            ),
+                            const SizedBox(width: PRFSpacingTokens.md),
+                            Expanded(
+                              child: Text(
+                                l10n.accountDarkMode,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
                             ),
-                          ),
-                          BlocBuilder<ThemeCubit, ThemeState>(
-                            builder: (context, state) {
-                              final themeCubit = context.read<ThemeCubit>();
-                              return Switch.adaptive(
-                                value: themeCubit.isDarkMode,
-                                onChanged: (value) => themeCubit.setThemeMode(
-                                  value
-                                      ? PRFThemeMode.dark
-                                      : PRFThemeMode.light,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                            BlocBuilder<ThemeCubit, ThemeState>(
+                              builder: (context, state) {
+                                final themeCubit = context.read<ThemeCubit>();
+                                return Switch.adaptive(
+                                  value: themeCubit.isDarkMode,
+                                  onChanged: (value) => themeCubit.setThemeMode(
+                                    value
+                                        ? PRFThemeMode.dark
+                                        : PRFThemeMode.light,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     )
-                    .animate(delay: 50.ms)
-                    .fadeIn(duration: PRFMotionTokens.slow)
+                    .animate(
+                      delay: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.stagger1,
+                      ),
+                    )
+                    .fadeIn(
+                      duration: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.slow,
+                      ),
+                    )
                     .slideY(begin: 0.1, end: 0),
           ),
 
@@ -329,15 +323,9 @@ class AccountPageHandset extends StatelessWidget {
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.xl,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.shadow.withValues(
-                                  alpha: 0.08,
-                                ),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            boxShadow: PRFShadowTokens.card(
+                              theme.colorScheme.shadow,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,11 +335,11 @@ class AccountPageHandset extends StatelessWidget {
                                   Icon(
                                     Icons.person_outline_rounded,
                                     color: theme.colorScheme.primary,
-                                    size: 24,
+                                    size: PRFSizeTokens.iconLg,
                                   ),
                                   const SizedBox(width: PRFSpacingTokens.md),
                                   Text(
-                                    'Personal Information',
+                                    l10n.accountPersonalInformation,
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w600,
                                       color: theme.colorScheme.onSurface,
@@ -376,8 +364,18 @@ class AccountPageHandset extends StatelessWidget {
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger1)
-                        .fadeIn(duration: PRFMotionTokens.slow)
+                        .animate(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger2,
+                          ),
+                        )
+                        .fadeIn(
+                          duration: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.slow,
+                          ),
+                        )
                         .slideY(begin: 0.1, end: 0),
               );
             },
@@ -398,15 +396,9 @@ class AccountPageHandset extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.shadow.withValues(
-                              alpha: 0.08,
-                            ),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: PRFShadowTokens.card(
+                          theme.colorScheme.shadow,
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -471,8 +463,18 @@ class AccountPageHandset extends StatelessWidget {
                         ],
                       ),
                     )
-                    .animate(delay: PRFMotionTokens.stagger3)
-                    .fadeIn(duration: PRFMotionTokens.slow)
+                    .animate(
+                      delay: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.stagger3,
+                      ),
+                    )
+                    .fadeIn(
+                      duration: PRFMotionTokens.resolve(
+                        context,
+                        PRFMotionTokens.slow,
+                      ),
+                    )
                     .slideY(begin: 0.1, end: 0),
           ),
 
@@ -499,7 +501,9 @@ class AccountPageHandset extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.muted,
+          ),
         ),
       ),
       child: Row(
@@ -508,10 +512,16 @@ class AccountPageHandset extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(PRFSpacingTokens.sm),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(
+                alpha: PRFOpacities.subtle,
+              ),
               borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
             ),
-            child: Icon(icon, color: theme.colorScheme.primary, size: 20),
+            child: Icon(
+              icon,
+              color: theme.colorScheme.primary,
+              size: PRFSizeTokens.iconMd,
+            ),
           ),
           const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
@@ -561,62 +571,72 @@ class ChangeProfilePictureButton extends StatelessWidget {
         return Positioned(
           bottom: 0,
           right: 0,
-          child: GestureDetector(
-            onTap: () =>
-                context.read<ChangeProfilePictureCubit>().changeProfilePicture(
-                  context: context,
-                  modelUlid: member.ulid,
-                  model: PRFMediaModel.memberProfilePictures,
-                  mediaType: MediaType.image,
-                ),
-            child: Container(
-              padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-              decoration: BoxDecoration(
+          child: Tooltip(
+            message: l10n.accountChangePhoto,
+            child: Semantics(
+              button: true,
+              label: l10n.accountChangePhoto,
+              excludeSemantics: true,
+              child: Material(
                 color: theme.colorScheme.primary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child:
-                  BlocConsumer<
-                    ChangeProfilePictureCubit,
-                    ChangeProfilePictureState
-                  >(
-                    listener: (context, state) {
-                      state.mapOrNull(
-                        loaded: (_) {
-                          Gaimon.success();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.successfullyUpdated)),
-                          );
-                        },
-                        error: (error) {
-                          Gaimon.error();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error.message)),
-                          );
-                        },
-                      );
-                    },
-                    builder: (context, state) => state.maybeWhen(
-                      orElse: () => const Icon(
-                        Icons.camera_alt_rounded,
-                        size: 20,
-                        color: Colors.white,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                elevation: PRFElevationTokens.sm,
+                shadowColor: theme.colorScheme.shadow,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => context
+                      .read<ChangeProfilePictureCubit>()
+                      .changeProfilePicture(
+                        context: context,
+                        modelUlid: member.ulid,
+                        model: PRFMediaModel.memberProfilePictures,
+                        mediaType: MediaType.image,
                       ),
-                      loading: () => SizedBox.square(
-                        dimension: 20,
-                        child: PRFCircularProgressIndicator(
-                          color: theme.colorScheme.surface,
-                        ),
-                      ),
+                  child: SizedBox.square(
+                    dimension: PRFSizeTokens.minTouchTarget,
+                    child: Center(
+                      child:
+                          BlocConsumer<
+                            ChangeProfilePictureCubit,
+                            ChangeProfilePictureState
+                          >(
+                            listener: (context, state) {
+                              state.mapOrNull(
+                                loaded: (_) {
+                                  Gaimon.success();
+                                  PRFSnackbar.success(
+                                    context,
+                                    l10n.successfullyUpdated,
+                                  );
+                                },
+                                error: (_) {
+                                  Gaimon.error();
+                                  PRFSnackbar.error(
+                                    context,
+                                    l10n.accountChangePhotoFailed,
+                                  );
+                                },
+                              );
+                            },
+                            builder: (context, state) => state.maybeWhen(
+                              orElse: () => Icon(
+                                Icons.camera_alt_rounded,
+                                size: PRFSizeTokens.iconMd,
+                                color: theme.colorScheme.onPrimary,
+                              ),
+                              loading: () => SizedBox.square(
+                                dimension: PRFSizeTokens.iconMd,
+                                child: PRFCircularProgressIndicator(
+                                  color: theme.colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
                     ),
                   ),
+                ),
+              ),
             ),
           ),
         );

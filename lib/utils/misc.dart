@@ -3,13 +3,13 @@ import 'dart:math';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart'
-    show BuildContext, MediaQuery, ScaffoldMessenger, SnackBar, Text, TimeOfDay;
+import 'package:flutter/material.dart' show BuildContext, TimeOfDay;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/di/di_container.dart';
 import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/enums/prf_supported_platform.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/http/network.dart';
 import 'package:leadership/utils/multiplatform/file_download/download_bytes.dart'
@@ -18,6 +18,7 @@ import 'package:leadership/utils/slugify.dart' as slugify;
 import 'package:leadership/versioning/build_version.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:prf_design/prf_design.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:url_launcher/url_launcher.dart';
@@ -290,65 +291,6 @@ class Misc {
     }
   }
 
-  static double getScaleFactor(
-    BuildContext context, {
-    double? customBaseWidth,
-    double? minScale,
-    double? maxScale,
-  }) {
-    try {
-      final screenWidth = MediaQuery.of(context).size.width;
-      final deviceType = getDeviceType(context);
-
-      // Dynamic base widths based on device type
-      final baseWidth =
-          customBaseWidth ??
-          switch (deviceType) {
-            DeviceType.phone => 375.0,
-            DeviceType.tablet => 600.0,
-            DeviceType.desktop => 1200.0,
-          };
-
-      final scaleFactor = screenWidth / baseWidth;
-
-      // Dynamic scale ranges based on device type
-      final minScaleValue =
-          minScale ??
-          switch (deviceType) {
-            DeviceType.phone => 0.8,
-            DeviceType.tablet => 0.7,
-            DeviceType.desktop => 0.6,
-          };
-
-      final maxScaleValue =
-          maxScale ??
-          switch (deviceType) {
-            DeviceType.phone => 1.4,
-            DeviceType.tablet => 1.6,
-            DeviceType.desktop => 2.0,
-          };
-
-      return scaleFactor.clamp(minScaleValue, maxScaleValue);
-    } catch (e) {
-      return 1; // Fallback to no scaling
-    }
-  }
-
-  /// Get device type based on screen size
-  static DeviceType getDeviceType(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    if (screenWidth >= 1200) return DeviceType.desktop;
-    if (screenWidth >= 600) return DeviceType.tablet;
-    return DeviceType.phone;
-  }
-
-  /// Check if device is in landscape mode
-  static bool isLandscape(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return size.width > size.height;
-  }
-
   /// Format file size in human readable format
   static String formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
@@ -513,14 +455,12 @@ class Misc {
 
     final now = DateTime.now();
     final window = timeWindow ?? const Duration(seconds: 2);
-    final message = exitMessage ?? 'Press back again to exit';
+    final message = exitMessage ?? context.l10n.pressBackAgainToExit;
 
     if (_lastBackPressed == null ||
         now.difference(_lastBackPressed!) > window) {
       _lastBackPressed = now;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message), duration: window));
+      PRFSnackbar.info(context, message, duration: window);
     } else {
       SystemNavigator.pop();
     }
@@ -605,6 +545,3 @@ class Misc {
     return '$hour:$minute';
   }
 }
-
-/// Device type enumeration
-enum DeviceType { phone, tablet, desktop }

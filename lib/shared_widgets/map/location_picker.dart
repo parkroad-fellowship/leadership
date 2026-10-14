@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:leadership/l10n/l10n.dart';
+import 'package:leadership/shared_widgets/map/map_attribution.dart';
+import 'package:prf_design/prf_design.dart';
 
 /// A widget that allows users to pick a location on a map.
 /// Tapping on the map will place a marker and return the coordinates.
@@ -77,9 +80,18 @@ class _LocationPickerState extends State<LocationPicker> {
     widget.onLocationSelected(point.latitude, point.longitude);
   }
 
+  void _zoomBy(double delta) {
+    _mapController.move(
+      _mapController.camera.center,
+      _mapController.camera.zoom + delta,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final selected = _selectedLocation;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,186 +99,137 @@ class _LocationPickerState extends State<LocationPicker> {
         Container(
           height: widget.height,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.smd),
             border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.3),
+              color: theme.colorScheme.outline.withValues(
+                alpha: PRFOpacities.glow,
+              ),
             ),
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
-              FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _initialCenter,
-                  initialZoom: _defaultZoom,
-                  onTap: _onTap,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'org.parkroadfellowship.leadership',
+              Semantics(
+                label: l10n.mapLocationLabel,
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: _initialCenter,
+                    initialZoom: _defaultZoom,
+                    onTap: _onTap,
                   ),
-                  if (_selectedLocation != null)
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: _selectedLocation!,
-                          width: 40,
-                          height: 40,
-                          child: Icon(
-                            Icons.location_pin,
-                            color: theme.colorScheme.primary,
-                            size: 40,
-                          ),
-                        ),
-                      ],
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'org.parkroadfellowship.leadership',
                     ),
-                ],
+                    if (selected != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: selected,
+                            width: PRFSizeTokens.iconXxl,
+                            height: PRFSizeTokens.iconXxl,
+                            child: Icon(
+                              Icons.location_pin,
+                              color: theme.colorScheme.primary,
+                              size: PRFSizeTokens.iconXxl,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
               // Attribution badge (required by OSM tile policy)
-              Positioned(
-                right: 8,
-                bottom: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text.rich(
-                    TextSpan(
-                      text: '© ',
-                      style: theme.textTheme.labelSmall,
-                      children: [
-                        TextSpan(
-                          text: 'OpenStreetMap',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.blue.shade700,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' contributors',
-                          style: theme.textTheme.labelSmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              const Positioned(
+                right: PRFSpacingTokens.sm,
+                bottom: PRFSpacingTokens.sm,
+                child: MapAttribution(),
               ),
               // Zoom controls
               Positioned(
-                right: 8,
-                bottom: 32,
+                right: PRFSpacingTokens.sm,
+                bottom: PRFSpacingTokens.xxl,
                 child: Column(
                   children: [
-                    _buildMapButton(
+                    MapControlButton(
                       icon: Icons.add,
-                      onPressed: () {
-                        final currentZoom = _mapController.camera.zoom;
-                        _mapController.move(
-                          _mapController.camera.center,
-                          currentZoom + 1,
-                        );
-                      },
+                      label: l10n.mapZoomIn,
+                      onPressed: () => _zoomBy(1),
                     ),
-                    const SizedBox(height: 4),
-                    _buildMapButton(
+                    const SizedBox(height: PRFSpacingTokens.sm),
+                    MapControlButton(
                       icon: Icons.remove,
-                      onPressed: () {
-                        final currentZoom = _mapController.camera.zoom;
-                        _mapController.move(
-                          _mapController.camera.center,
-                          currentZoom - 1,
-                        );
-                      },
+                      label: l10n.mapZoomOut,
+                      onPressed: () => _zoomBy(-1),
                     ),
                   ],
                 ),
               ),
               // Center on selected location button
-              if (_selectedLocation != null)
+              if (selected != null)
                 Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: _buildMapButton(
+                  left: PRFSpacingTokens.sm,
+                  bottom: PRFSpacingTokens.sm,
+                  child: MapControlButton(
                     icon: Icons.my_location,
-                    onPressed: () {
-                      _mapController.move(_selectedLocation!, _defaultZoom);
-                    },
+                    label: l10n.mapGoToPin,
+                    onPressed: () =>
+                        _mapController.move(selected, _defaultZoom),
                   ),
                 ),
             ],
           ),
         ),
-        if (_selectedLocation != null) ...[
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.check_circle,
-                  size: 16,
-                  color: theme.colorScheme.primary,
+        const SizedBox(height: PRFSpacingTokens.sm),
+        if (selected != null)
+          Semantics(
+            liveRegion: true,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.md,
+                vertical: PRFSpacingTokens.sm,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: PRFOpacities.glow,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Selected: '
-                    '${_selectedLocation!.latitude.toStringAsFixed(6)}, '
-                    '${_selectedLocation!.longitude.toStringAsFixed(6)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w500,
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    size: PRFSizeTokens.iconSm,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: PRFSpacingTokens.sm),
+                  Expanded(
+                    child: Text(
+                      l10n.mapSelectedLocation(
+                        selected.latitude.toStringAsFixed(6),
+                        selected.longitude.toStringAsFixed(6),
+                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ] else ...[
-          const SizedBox(height: 8),
+          )
+        else
           Text(
-            'Tap on the map to select a location',
+            l10n.mapTapToSelect,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
-        ],
       ],
-    );
-  }
-
-  Widget _buildMapButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      elevation: 2,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          child: Icon(
-            icon,
-            size: 20,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-      ),
     );
   }
 }

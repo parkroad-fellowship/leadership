@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
+import 'package:leadership/shared/requisitions/widgets/approval_status_style.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -20,8 +22,15 @@ class TimelineRequisitionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = requisition.approvalStatus.color(theme);
+    final l10n = context.l10n;
+    final statusSet = requisition.approvalStatus.statusSet(context);
+    final statusLabel = requisition.approvalStatus.label(l10n);
     final requisitionDate = requisition.requisitionDate;
+    final amount = l10n.requisitionsAmountKes(
+      Misc.formatCash(requisition.totalAmount),
+    );
+    final formattedDate = Misc.formatDate(requisitionDate, 'Africa/Nairobi');
+    final radius = BorderRadius.circular(PRFRadiusTokens.xl);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,45 +40,41 @@ class TimelineRequisitionCard extends StatelessWidget {
           child: Column(
             children: [
               // Date badge
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [statusColor, statusColor.withValues(alpha: 0.8)],
+              ExcludeSemantics(
+                child: Container(
+                  constraints: const BoxConstraints(
+                    minWidth: 46,
+                    minHeight: 46,
                   ),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                  boxShadow: [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      requisitionDate.day.toString(),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
+                  padding: const EdgeInsets.all(PRFSpacingTokens.xs),
+                  decoration: BoxDecoration(
+                    color: statusSet.main,
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+                    boxShadow: PRFShadowTokens.badge(statusSet.main),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        requisitionDate.day.toString(),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: statusSet.onColor,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    Text(
-                      Misc.getMonthAbbreviation(requisitionDate.month),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontWeight: FontWeight.w500,
+                      Text(
+                        Misc.getMonthAbbreviation(requisitionDate.month),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: statusSet.onColor,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              // Timeline line with flexible height
+              // Timeline line
               if (!isLast)
                 Container(
                   width: 2,
@@ -82,11 +87,13 @@ class TimelineRequisitionCard extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        statusColor.withValues(alpha: 0.6),
-                        theme.colorScheme.outline.withValues(alpha: 0.2),
+                        statusSet.main.withValues(
+                          alpha: PRFOpacities.prominent,
+                        ),
+                        theme.colorScheme.outlineVariant,
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(1),
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.xs),
                   ),
                 ),
             ],
@@ -96,229 +103,209 @@ class TimelineRequisitionCard extends StatelessWidget {
         const SizedBox(width: PRFSpacingTokens.md),
 
         Expanded(
-          child: GestureDetector(
-            onTap: onTap,
-            child: Container(
-              margin: EdgeInsets.only(bottom: isLast ? 0 : PRFSpacingTokens.md),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 14,
-                    offset: const Offset(0, 3),
-                  ),
-                  BoxShadow(
-                    color: statusColor.withValues(alpha: 0.05),
-                    blurRadius: 24,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : PRFSpacingTokens.md),
+            child: Semantics(
+              button: true,
+              label: l10n.requisitionsCardSemantics(
+                amount,
+                statusLabel,
+                formattedDate,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header with gradient
-                    Container(
-                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            statusColor.withValues(alpha: 0.1),
-                            statusColor.withValues(alpha: 0.05),
-                          ],
+              onTap: onTap,
+              excludeSemantics: true,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
+                ),
+                child: Material(
+                  color: theme.colorScheme.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: radius,
+                    side: BorderSide(color: theme.colorScheme.outlineVariant),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: onTap,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header: amount + status
+                        ColoredBox(
+                          color: statusSet.main.withValues(
+                            alpha: PRFOpacities.subtle,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(
+                                    PRFSpacingTokens.xs,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(
+                                      PRFRadiusTokens.sm,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.business_outlined,
+                                    size: PRFSizeTokens.iconSm,
+                                    color: theme.colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.sm),
+                                Expanded(
+                                  child: Text(
+                                    amount,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.sm),
+                                PRFStatusBadge(
+                                  label: statusLabel,
+                                  color: statusSet.main,
+                                  foregroundColor: statusSet.onColor,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Responsible Desk
-                          Row(
+
+                        // Details
+                        Padding(
+                          padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Date
                               Container(
                                 padding: const EdgeInsets.all(
-                                  PRFSpacingTokens.xs,
+                                  PRFSpacingTokens.md,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(
-                                    PRFRadiusTokens.sm,
+                                    PRFRadiusTokens.md,
+                                  ),
+                                  border: Border.all(
+                                    color: theme.colorScheme.outlineVariant,
                                   ),
                                 ),
-                                child: Icon(
-                                  Icons.business_outlined,
-                                  size: 16,
-                                  color: theme.colorScheme.onPrimaryContainer,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today_rounded,
+                                      size: PRFSizeTokens.iconMd,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: PRFSpacingTokens.md),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            l10n.requisitionsRequestedOn,
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          ),
+                                          const SizedBox(
+                                            height: PRFSpacingTokens.xs,
+                                          ),
+                                          Text(
+                                            formattedDate,
+                                            style: theme.textTheme.titleSmall
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurface,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: PRFSpacingTokens.sm),
-                              Expanded(
-                                child: Text(
-                                  'KES '
-                                  '${Misc.formatCash(requisition.totalAmount)}',
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface,
+
+                              if (requisition.remarks?.isNotEmpty ?? false) ...[
+                                const SizedBox(height: PRFSpacingTokens.md),
+                                Text(
+                                  requisition.remarks!,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
-                                  maxLines: 1,
+                                  maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              const Spacer(),
+                              ],
+
+                              const SizedBox(height: PRFSpacingTokens.md),
+
+                              // View details affordance (whole card is tappable)
                               Container(
+                                width: double.infinity,
+                                constraints: const BoxConstraints(
+                                  minHeight: PRFSizeTokens.minTouchTarget,
+                                ),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: PRFSpacingTokens.sm,
-                                  vertical: PRFSpacingTokens.xs,
+                                  horizontal: PRFSpacingTokens.md,
+                                  vertical: PRFSpacingTokens.sm,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.2),
+                                  color: statusSet.background,
                                   borderRadius: BorderRadius.circular(
                                     PRFRadiusTokens.sm,
                                   ),
-                                ),
-                                child: Text(
-                                  requisition.approvalStatus.name,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: statusColor,
-                                    fontWeight: FontWeight.w600,
+                                  border: Border.all(
+                                    color: statusSet.main.withValues(
+                                      alpha: PRFOpacities.glow,
+                                    ),
                                   ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        l10n.viewDetails,
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: statusSet.foreground,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: PRFSpacingTokens.sm),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: PRFSizeTokens.iconMd,
+                                      color: statusSet.foreground,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-
-                    // Details
-                    Padding(
-                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Date and Time
-                          Container(
-                            padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.md,
-                              ),
-                              border: Border.all(
-                                color: theme.colorScheme.outline.withValues(
-                                  alpha: 0.2,
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.calendar_today_rounded,
-                                  size: 20,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.md),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Requested on',
-                                        style: theme.textTheme.labelSmall
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                            ),
-                                      ),
-                                      const SizedBox(
-                                        height: PRFSpacingTokens.xs,
-                                      ),
-                                      Text(
-                                        Misc.formatDate(
-                                          requisitionDate,
-                                          'Africa/Nairobi',
-                                        ),
-                                        style: theme.textTheme.titleSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color:
-                                                  theme.colorScheme.onSurface,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          if (requisition.remarks?.isNotEmpty ?? false) ...[
-                            const SizedBox(height: PRFSpacingTokens.md),
-                            Text(
-                              requisition.remarks!,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-
-                          const SizedBox(height: PRFSpacingTokens.md),
-
-                          // View Details button
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: PRFSpacingTokens.md,
-                              vertical: PRFSpacingTokens.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  statusColor.withValues(alpha: 0.1),
-                                  statusColor.withValues(alpha: 0.05),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.sm,
-                              ),
-                              border: Border.all(
-                                color: statusColor.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'View Details',
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: statusColor,
-                                  ),
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.sm),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 18,
-                                  color: statusColor,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

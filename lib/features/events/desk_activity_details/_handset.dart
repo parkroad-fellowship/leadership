@@ -46,7 +46,9 @@ class _DeskEventDetailsPageHandsetState
 
   @override
   void dispose() {
-    _tabController.removeListener(_changeTab);
+    _tabController
+      ..removeListener(_changeTab)
+      ..dispose();
     super.dispose();
   }
 
@@ -78,7 +80,7 @@ class _DeskEventDetailsPageHandsetState
                       PRFSpacingTokens.sm,
                     ),
                     child: Transform.translate(
-                      offset: const Offset(0, -6),
+                      offset: const Offset(0, -PRFSpacingTokens.xs),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: TabBar(
@@ -87,10 +89,10 @@ class _DeskEventDetailsPageHandsetState
                           isScrollable: true,
                           labelColor: theme.colorScheme.onPrimary,
                           unselectedLabelColor: theme.colorScheme.onPrimary
-                              .withValues(alpha: 0.65),
+                              .withValues(alpha: PRFOpacities.stronger),
                           indicatorColor: theme.colorScheme.secondary,
                           dividerColor: theme.colorScheme.onPrimary.withValues(
-                            alpha: 0.2,
+                            alpha: PRFOpacities.muted,
                           ),
                           labelStyle: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
@@ -144,8 +146,8 @@ class _DeskEventDetailsPageHandsetState
         0 =>
           Misc.userCan(PRFPermissions.createRequisition)
               ? FloatingActionButton.extended(
-                  backgroundColor: PRFColors.lime300,
-                  foregroundColor: PRFColors.navy900,
+                  backgroundColor: theme.colorScheme.secondary,
+                  foregroundColor: theme.colorScheme.onSecondary,
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     if (event.accountingEvent != null) {

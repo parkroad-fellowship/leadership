@@ -36,4 +36,8 @@ class ClassGroupResourceCubit extends ResourceCubit<PRFClassGroup> {
       limit: 500,
     );
   }
+
+  /// Reference data changes rarely; pull-to-refresh still forces a reload.
+  @override
+  Duration get staleAfter => const Duration(hours: 12);
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:leadership/features/missions/mission_details/widgets/domain_tab_section.dart';
+import 'package:leadership/l10n/l10n.dart';
+import 'package:prf_design/prf_design.dart';
 
 class FinanceMissionDetailsSection extends StatelessWidget {
   const FinanceMissionDetailsSection({
@@ -17,9 +18,9 @@ class FinanceMissionDetailsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MissionDomainTabSection(
-      title: 'Finance',
-      subtitle: 'Requisitions and expenses linked to this mission.',
+    return PRFDomainTabSection(
+      title: context.l10n.missionDetailsFinance,
+      subtitle: context.l10n.missionDetailsFinanceSubtitle,
       tabs: [
         Tab(text: requisitionsLabel),
         Tab(text: expensesLabel),

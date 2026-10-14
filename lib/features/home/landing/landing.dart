@@ -54,7 +54,7 @@ class _LandingPageState extends State<LandingPage> {
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
         isNeutralCard: true,
-        deskGroup: 'My Desk',
+        deskGroup: l10n.homeMyDesk,
       ),
       LandingActionItem(
         title: l10n.viewMissions,
@@ -62,7 +62,7 @@ class _LandingPageState extends State<LandingPage> {
         onTap: () => context.router.pushPath(PRFLeadershipRouter.missionsRoute),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
-        deskGroup: 'Missions Desk',
+        deskGroup: l10n.homeMissionsDesk,
       ),
       LandingActionItem(
         title: l10n.manageRequisitions,
@@ -73,7 +73,7 @@ class _LandingPageState extends State<LandingPage> {
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.createEvent),
         isNeutralCard: true,
-        deskGroup: 'My Desk',
+        deskGroup: l10n.homeMyDesk,
       ),
       LandingActionItem(
         title: l10n.viewCommitteeActivities,
@@ -82,7 +82,7 @@ class _LandingPageState extends State<LandingPage> {
             context.router.pushPath(PRFLeadershipRouter.deskActivitiesRoute),
         animationDelay: 700,
         isVisible: Misc.userCan(PRFPermissions.viewAnyCommitteeItem),
-        deskGroup: 'Committee Desk',
+        deskGroup: l10n.homeCommitteeDesk,
       ),
       LandingActionItem(
         title: l10n.manageSchools,
@@ -159,7 +159,7 @@ class _LandingPageState extends State<LandingPage> {
         onTap: () => context.router.pushPath(PRFLeadershipRouter.membersRoute),
         animationDelay: 700,
         isVisible: true,
-        deskGroup: 'Organising Secretary',
+        deskGroup: l10n.homeOrganisingSecretary,
       ),
     ];
 

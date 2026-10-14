@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/churches/actions/church_form/_handset.dart';
 import 'package:leadership/features/churches/cubit/church_resource_cubit.dart';
-import 'package:leadership/features/churches/widgets/church_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_church.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -47,6 +48,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -59,13 +61,12 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
             ),
             ResourceListLoaded<PRFChurch>(:final items) when items.isEmpty =>
               PRFEmptyView(
-                label: 'No Churches Yet',
-                description:
-                    'Get started by adding your first church to the system',
+                label: l10n.churchesEmptyTitle,
+                description: l10n.churchesEmptyMessage,
                 icon: Icons.church_outlined,
-                navBarTitle: 'Churches',
+                navBarTitle: l10n.churchesTitle,
                 onBackPressed: _goBackToHome,
-                actionLabel: 'Add Church',
+                actionLabel: l10n.churchesAdd,
                 onActionPressed: () => _showForm(context, null),
               ),
             ResourceListLoaded<PRFChurch>(:final items) => _buildBody(
@@ -78,14 +79,11 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
             ),
             ResourceError<PRFChurch>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFChurch>(:final message) => PRFEmptyView(
-              label: 'Error Loading Churches',
-              description: message,
-              icon: Icons.error_outline,
-              navBarTitle: 'Churches',
-              onBackPressed: _goBackToHome,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
+            ResourceError<PRFChurch>() => PRFLeadershipErrorScreen(
+              navBarTitle: l10n.churchesTitle,
+              title: l10n.churchesLoadError,
+              onBack: _goBackToHome,
+              onRetry: _loadData,
             ),
             _ => const SizedBox.shrink(),
           };
@@ -123,7 +121,8 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No churches match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -139,11 +138,16 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filtered[index];
-                  return ChurchCard(
-                    church: item,
-                    index: index,
+                  return PRFListItemCard(
+                    title: item.name,
+                    icon: Icons.church_outlined,
+                    isActive: item.isActive == PRFActiveStatus.active,
+                    activeLabel: context.l10n.commonActive,
+                    inactiveLabel: context.l10n.commonInactive,
+                    deleteLabel: context.l10n.delete,
                     onTap: () => _showForm(context, item),
                     onDelete: () => _confirmDelete(context, item),
+                    animationIndex: index,
                   );
                 }, childCount: filtered.length),
               ),
@@ -163,13 +167,14 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Churches',
+            title: context.l10n.churchesTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showForm(context, null),
+                tooltip: context.l10n.churchesAddTooltip,
+                onPressed: () => _showForm(context, null),
               ),
             ],
           ),
@@ -184,7 +189,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total',
+                    label: context.l10n.churchesTotal,
                     value: '$totalCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -203,18 +208,14 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search churches...',
+        hintText: context.l10n.churchesSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -240,7 +241,7 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -256,7 +257,9 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -275,19 +278,21 @@ class _ChurchesPageHandsetState extends State<ChurchesPageHandset>
   void _showForm(BuildContext context, PRFChurch? church) {
     PRFBottomSheet.show<void>(
       context,
-      title: church == null ? 'Add Church' : 'Edit Church',
+      title: church == null
+          ? context.l10n.churchesAdd
+          : context.l10n.churchesEdit,
       child: ChurchFormViewHandset(church: church, onSaved: _loadData),
     );
   }
 
   Future<void> _confirmDelete(BuildContext context, PRFChurch church) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Church',
-      message:
-          'Are you sure you want to delete "${church.name}"? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.churchesDeleteTitle,
+      message: l10n.lookupDeleteMessage(church.name),
+      confirmLabel: l10n.churchesDeleteConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 

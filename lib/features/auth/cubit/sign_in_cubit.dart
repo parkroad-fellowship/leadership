@@ -62,6 +62,7 @@ class SigninCubit extends Cubit<SignInState> {
       await _authService.updateProfile(
         updateDTO: UserUpdateDTO(fcmTokens: [fcmToken]),
       );
+      _hiveService.auth.storeFcmTokenSent(fcmToken);
     }
   }
 }

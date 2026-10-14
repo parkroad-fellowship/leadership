@@ -35,4 +35,8 @@ class ChurchResourceCubit extends ResourceCubit<PRFChurch> {
   Future<void> deleteChurch({required String ulid}) {
     return delete(ulid: ulid, matchById: (c) => c.ulid == ulid);
   }
+
+  /// Reference data changes rarely; pull-to-refresh still forces a reload.
+  @override
+  Duration get staleAfter => const Duration(hours: 12);
 }

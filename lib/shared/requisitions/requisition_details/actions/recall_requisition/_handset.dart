@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared/requisitions/cubit/requisition_detail_cubit.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -24,8 +25,6 @@ class _RecallRequisitionViewHandsetState
   final _notesController = TextEditingController();
   bool _isLoading = false;
 
-  bool get _canRecall => !_isLoading;
-
   @override
   void initState() {
     super.initState();
@@ -40,17 +39,11 @@ class _RecallRequisitionViewHandsetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.orange.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
-          ],
-        ),
-      ),
+    final l10n = context.l10n;
+    final warning = context.statusColors.warning;
+
+    return DecoratedBox(
+      decoration: requisitionSheetBackground(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
@@ -58,142 +51,51 @@ class _RecallRequisitionViewHandsetState
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
 
-              // Header Card
-              Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.orange,
-                          Colors.orange.withValues(alpha: 0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.orange.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.undo_outlined,
-                          size: 32,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.sm),
-                        Text(
-                          'Recall Requisition',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.xs),
-                        Text(
-                          'Withdraw this requisition from the approval process',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+              requisitionActionHeader(
+                context,
+                icon: Icons.undo_outlined,
+                title: l10n.recallRequisition,
+                subtitle: l10n.recallRequisitionDesc,
+                background: warning.main,
+                foreground: warning.onColor,
+              ).entrance(context, slide: const Offset(0, -0.3)),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Info Section
-              Container(
-                    padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                      border: Border.all(
-                        color: Colors.orange.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Colors.orange,
-                          size: 20,
-                        ),
-                        const SizedBox(width: PRFSpacingTokens.md),
-                        Expanded(
-                          child: Text(
-                            'Once recalled, you can recreate '
-                            'this requisition for '
-                            'approval later.',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.orange.withValues(alpha: 0.9),
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate(delay: PRFMotionTokens.stagger2)
-                  .slideX(begin: -0.2)
-                  .fadeIn(),
-
-              const SizedBox(height: PRFSpacingTokens.xxl),
-
-              // Notes Section (Optional)
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child:
-                    PRFFormSection(
-                          icon: Icons.notes_outlined,
-                          title: 'Recall Notes',
-                          child: PRFTextField(
-                            controller: _notesController,
-                            hintText:
-                                'Enter your reason for recalling '
-                                'this requisition...',
-                            minLines: 3,
-                            maxLines: 6,
-                            type: PRFTextFieldType.textArea,
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+              requisitionStatusBanner(
+                context,
+                colors: warning,
+                icon: Icons.info_outline,
+                message: l10n.requisitionActionRecallInfo,
+              ).entrance(
+                context,
+                delay: PRFMotionTokens.stagger2,
+                slide: const Offset(-0.2, 0),
               ),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Action Buttons
+              requisitionFormCard(
+                context,
+                child: PRFFormSection(
+                  icon: Icons.notes_outlined,
+                  title: l10n.requisitionActionRecallNotesTitle,
+                  child: PRFTextField(
+                    controller: _notesController,
+                    hintText: l10n.requisitionActionRecallNotesHint,
+                    minLines: 3,
+                    maxLines: 6,
+                    type: PRFTextFieldType.textArea,
+                  ),
+                ),
+              ).entrance(
+                context,
+                delay: PRFMotionTokens.stagger4,
+                slide: const Offset(-0.2, 0),
+              ),
+
+              const SizedBox(height: PRFSpacingTokens.xxl),
+
               BlocListener<
                 RequisitionDetailCubit,
                 ResourceState<PRFRequisition>
@@ -201,50 +103,47 @@ class _RecallRequisitionViewHandsetState
                 listener: (context, state) {
                   switch (state) {
                     case ResourceItemLoading<PRFRequisition>():
-                      setState(() {
-                        _isLoading = true;
-                      });
+                      setState(() => _isLoading = true);
                     case ResourceItemLoaded<PRFRequisition>():
                       Navigator.of(context).pop();
-                      PRFSnackbar.success(
+                      PRFSnackbar.success(context, l10n.requisitionRecalled);
+                    case ResourceItemError<PRFRequisition>():
+                      setState(() => _isLoading = false);
+                      PRFSnackbar.error(
                         context,
-                        'Requisition recalled successfully',
+                        l10n.requisitionActionRecallFailed,
+                        onRetry: _recallRequisition,
                       );
-                    case ResourceItemError<PRFRequisition>(:final message):
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      PRFSnackbar.error(context, message);
                     default:
                       break;
                   }
                 },
                 child: Column(
                   children: [
-                    // Recall Button
                     PRFButton(
-                          onPressed: _recallRequisition,
-                          title: 'Recall Requisition',
-                          variant: PRFButtonVariant.destructive,
-                          disabled: !_canRecall,
-                          isLoading: _isLoading,
-                        )
-                        .animate(delay: PRFMotionTokens.enterShort)
-                        .slideY(begin: 0.3)
-                        .fadeIn(),
+                      onPressed: _confirmRecall,
+                      title: l10n.recallRequisition,
+                      variant: PRFButtonVariant.destructive,
+                      disabled: _isLoading,
+                      isLoading: _isLoading,
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(0, 0.3),
+                    ),
 
                     const SizedBox(height: PRFSpacingTokens.md),
 
-                    // Cancel Button
                     PRFButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          title: 'Cancel',
-                          variant: PRFButtonVariant.secondary,
-                          disabled: _isLoading,
-                        )
-                        .animate(delay: PRFMotionTokens.enterMedium)
-                        .slideY(begin: 0.3)
-                        .fadeIn(),
+                      onPressed: () => Navigator.of(context).pop(),
+                      title: l10n.cancel,
+                      variant: PRFButtonVariant.secondary,
+                      disabled: _isLoading,
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(0, 0.3),
+                    ),
                   ],
                 ),
               ),
@@ -255,6 +154,24 @@ class _RecallRequisitionViewHandsetState
         ),
       ),
     );
+  }
+
+  Future<void> _confirmRecall() async {
+    final l10n = context.l10n;
+    final requisition = context.read<RequisitionDetailCubit>().currentItem;
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: requisition == null
+          ? l10n.recallRequisition
+          : l10n.requisitionActionRecallConfirmTitle(
+              formatKes(requisition.totalAmount),
+            ),
+      message: l10n.confirmRecallRequisition,
+      confirmLabel: l10n.recallRequisition,
+      cancelLabel: l10n.cancel,
+      isDestructive: true,
+    );
+    if (confirmed == true && mounted) await _recallRequisition();
   }
 
   Future<void> _recallRequisition() async {

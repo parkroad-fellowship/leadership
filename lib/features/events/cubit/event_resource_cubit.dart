@@ -49,11 +49,17 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
     );
   }
 
+  bool _historyMode = false;
+
+  @override
+  bool get crawlAllPages => !_historyMode;
+
   PRFRequisition? _lastCreatedRequisition;
 
   PRFRequisition? get lastCreatedRequisition => _lastCreatedRequisition;
 
   Future<void> loadUpcomingEvents() {
+    _historyMode = false;
     return loadAll(
       filters: {
         'responsible_desks': _hiveService.responsibleDesks
@@ -66,8 +72,11 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
   }
 
   Future<void> loadPastEvents() {
+    _historyMode = true;
+    // Newest first so page 1 is the most recent history.
     return loadAll(
-      sortBy: 'start_date',
+      sortBy: '-start_date',
+      limit: 30,
       filters: {
         'responsible_desks': _hiveService.responsibleDesks
             .map((desk) => desk.apiKey)
@@ -135,5 +144,22 @@ class EventResourceCubit extends ResourceCubit<PRFEvent> {
     } catch (e) {
       emit(ResourceState.error(message: e.toString(), items: currentItems));
     }
+    await _settleAfterSave();
+  }
+
+  /// The create-activity sheet uses the app-level cubit, which never ran
+  /// [loadAll] and so has no Hive stream subscription: without this a
+  /// successful save would leave it in `mutating` and the sheet spinning.
+  /// A failed save has already emitted `error`, which this leaves alone.
+  Future<void> _settleAfterSave() async {
+    if (isClosed || state is! ResourceMutating<PRFEvent>) return;
+    List<PRFEvent> items;
+    try {
+      items = await dbService.list();
+    } catch (_) {
+      items = currentItems;
+    }
+    if (isClosed || state is! ResourceMutating<PRFEvent>) return;
+    emit(ResourceState.listLoaded(items: items));
   }
 }

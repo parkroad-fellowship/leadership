@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:leadership/enums/prf_header_action_button_variant.dart';
 import 'package:leadership/features/members/actions/member_form/_handset.dart';
 import 'package:leadership/features/members/cubit/member_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -34,24 +34,49 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     );
   }
 
-  void _reloadData() {
+  /// Only used by the not-found retry; the member itself comes from the
+  /// list cubit (Hive-backed), so opening the page loads nothing.
+  void _retryLoad() {
     context.read<MemberResourceCubit>().loadAll();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
       builder: (context, state) {
         final member = _member;
         if (member == null) {
           return Scaffold(
-            appBar: PRFAppBar(
-              title: 'Member Details',
-              onBack: () => context.router.maybePop(),
-            ),
-            body: const Center(child: PRFCircularProgressIndicator()),
+            backgroundColor: theme.colorScheme.surface,
+            body: switch (state) {
+              ResourceError<PRFMember>() => PRFLeadershipErrorScreen(
+                navBarTitle: l10n.membersDetailLoadingTitle,
+                title: l10n.membersLoadError,
+                onBack: () => context.router.maybePop(),
+                onRetry: _retryLoad,
+              ),
+              ResourceListLoaded<PRFMember>() => PRFEmptyView(
+                navBarTitle: l10n.membersDetailLoadingTitle,
+                onBackPressed: () => context.router.maybePop(),
+                label: l10n.membersNotFoundTitle,
+                description: l10n.membersNotFoundMessage,
+                icon: Icons.person_off_outlined,
+              ),
+              _ => Column(
+                children: [
+                  PRFBrandedNavBar(
+                    title: l10n.membersDetailLoadingTitle,
+                    onBack: () => context.router.maybePop(),
+                  ),
+                  const Expanded(
+                    child: Center(child: PRFCircularProgressIndicator()),
+                  ),
+                ],
+              ),
+            },
           );
         }
 
@@ -62,13 +87,15 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
               ColoredBox(
                 color: theme.colorScheme.primary,
                 child: PRFBrandedNavBar(
-                  title: 'Member',
+                  title: l10n.membersDetailTitle,
                   onBack: () => context.router.maybePop(),
                   actions: [
-                    PRFHeaderActionButton(
-                      label: 'Edit',
-                      variant: PRFHeaderActionButtonVariant.neutral,
-                      onTap: () => _showEditForm(member),
+                    PRFNavBarAction(
+                      label: l10n.edit,
+                      icon: Icons.edit_outlined,
+                      tooltip: l10n.membersEditTooltip,
+                      variant: PRFNavBarActionVariant.neutral,
+                      onPressed: () => _showEditForm(member),
                     ),
                   ],
                 ),
@@ -138,8 +165,10 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
           end: Alignment.bottomCenter,
           colors: [
             theme.colorScheme.primary,
-            PRFColors.navy600,
-            PRFColors.navy400,
+            // Tint toward onPrimary so the name stays readable (AA) on
+            // every stop in light and dark mode.
+            Color.lerp(theme.colorScheme.primary, onPrimary, 0.06)!,
+            Color.lerp(theme.colorScheme.primary, onPrimary, 0.12)!,
           ],
           stops: const [0.0, 0.5, 1.0],
         ),
@@ -150,13 +179,13 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
           children: [
             // Avatar
             Container(
-              width: 72,
-              height: 72,
+              width: PRFSizeTokens.iconHero + PRFSpacingTokens.sm,
+              height: PRFSizeTokens.iconHero + PRFSpacingTokens.sm,
               decoration: BoxDecoration(
-                color: onPrimary.withValues(alpha: 0.2),
+                color: onPrimary.withValues(alpha: PRFOpacities.muted),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: onPrimary.withValues(alpha: 0.2),
+                  color: onPrimary.withValues(alpha: PRFOpacities.muted),
                   width: 3,
                 ),
                 image: profileUrl != null
@@ -188,7 +217,6 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: onPrimary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 20,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -201,13 +229,13 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                 vertical: PRFSpacingTokens.xs,
               ),
               decoration: BoxDecoration(
-                color: onPrimary.withValues(alpha: 0.2),
+                color: onPrimary.withValues(alpha: PRFOpacities.muted),
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
               ),
               child: Text(
                 member.email,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: onPrimary.withValues(alpha: 0.95),
+                  color: onPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -221,7 +249,9 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    theme.colorScheme.surface.withValues(alpha: 0.8),
+                    theme.colorScheme.surface.withValues(
+                      alpha: PRFOpacities.stronger,
+                    ),
                     theme.colorScheme.surface,
                   ],
                 ),
@@ -241,19 +271,23 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     return _buildSectionCard(
       theme: theme,
       icon: Icons.person_outline,
-      title: 'PERSONAL',
+      title: context.l10n.membersSectionPersonal,
       children: [
         if (member.phoneNumber != null && member.phoneNumber!.isNotEmpty)
-          _infoRow(theme, 'Phone', member.phoneNumber!),
-        _infoRow(theme, 'Email', member.email),
+          _infoRow(theme, context.l10n.membersPhone, member.phoneNumber!),
+        _infoRow(theme, context.l10n.email, member.email),
         if (member.postalAddress != null && member.postalAddress!.isNotEmpty)
-          _infoRow(theme, 'Postal Address', member.postalAddress!),
+          _infoRow(
+            theme,
+            context.l10n.membersPostalAddress,
+            member.postalAddress!,
+          ),
         if (member.residence != null && member.residence!.isNotEmpty)
-          _infoRow(theme, 'Residence', member.residence!),
+          _infoRow(theme, context.l10n.membersResidence, member.residence!),
         if (member.bio != null && member.bio!.isNotEmpty)
-          _infoRow(theme, 'Bio', member.bio!),
+          _infoRow(theme, context.l10n.membersBio, member.bio!),
         if (member.linkedInUrl != null && member.linkedInUrl!.isNotEmpty)
-          _infoRow(theme, 'LinkedIn', member.linkedInUrl!),
+          _infoRow(theme, context.l10n.membersLinkedIn, member.linkedInUrl!),
       ],
     );
   }
@@ -266,19 +300,23 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     return _buildSectionCard(
       theme: theme,
       icon: Icons.church_outlined,
-      title: 'SPIRITUAL',
+      title: context.l10n.membersSectionSpiritual,
       children: [
         if (member.yearOfSalvation != null)
-          _infoRow(theme, 'Year of Salvation', '${member.yearOfSalvation}'),
+          _infoRow(
+            theme,
+            context.l10n.membersYearOfSalvation,
+            '${member.yearOfSalvation}',
+          ),
         _infoRow(
           theme,
-          'Church Volunteer',
-          member.churchVolunteer ? 'Yes' : 'No',
+          context.l10n.membersChurchVolunteer,
+          member.churchVolunteer ? context.l10n.yes : context.l10n.no,
         ),
         if (member.pastor != null && member.pastor!.isNotEmpty)
-          _infoRow(theme, 'Pastor', member.pastor!),
+          _infoRow(theme, context.l10n.membersPastor, member.pastor!),
         if (member.church != null)
-          _infoRow(theme, 'Church', member.church!.name),
+          _infoRow(theme, context.l10n.membersChurch, member.church!.name),
       ],
     );
   }
@@ -291,19 +329,35 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     return _buildSectionCard(
       theme: theme,
       icon: Icons.work_outline,
-      title: 'PROFESSIONAL',
+      title: context.l10n.membersSectionProfessional,
       children: [
         if (member.profession != null)
-          _infoRow(theme, 'Profession', member.profession!.name),
+          _infoRow(
+            theme,
+            context.l10n.membersProfession,
+            member.profession!.name,
+          ),
         if (member.professionInstitution != null &&
             member.professionInstitution!.isNotEmpty)
-          _infoRow(theme, 'Institution', member.professionInstitution!),
+          _infoRow(
+            theme,
+            context.l10n.membersInstitution,
+            member.professionInstitution!,
+          ),
         if (member.professionLocation != null &&
             member.professionLocation!.isNotEmpty)
-          _infoRow(theme, 'Location', member.professionLocation!),
+          _infoRow(
+            theme,
+            context.l10n.membersLocation,
+            member.professionLocation!,
+          ),
         if (member.professionContact != null &&
             member.professionContact!.isNotEmpty)
-          _infoRow(theme, 'Contact', member.professionContact!),
+          _infoRow(
+            theme,
+            context.l10n.membersContact,
+            member.professionContact!,
+          ),
       ],
     );
   }
@@ -316,12 +370,22 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     return _buildSectionCard(
       theme: theme,
       icon: Icons.groups_outlined,
-      title: 'DEMOGRAPHICS',
+      title: context.l10n.membersSectionDemographics,
       children: [
         if (member.gender != null)
-          _infoRow(theme, 'Gender', member.gender == 1 ? 'Male' : 'Female'),
+          _infoRow(
+            theme,
+            context.l10n.membersGender,
+            member.gender == 1
+                ? context.l10n.membersMale
+                : context.l10n.membersFemale,
+          ),
         if (member.maritalStatus != null)
-          _infoRow(theme, 'Marital Status', member.maritalStatus!.name),
+          _infoRow(
+            theme,
+            context.l10n.membersMaritalStatus,
+            member.maritalStatus!.name,
+          ),
       ],
     );
   }
@@ -334,7 +398,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     return _buildSectionCard(
       theme: theme,
       icon: Icons.groups_outlined,
-      title: 'DEPARTMENTS',
+      title: context.l10n.membersSectionDepartments,
       children: [
         Wrap(
           spacing: PRFSpacingTokens.xs,
@@ -349,10 +413,12 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                     ),
                   ),
                   backgroundColor: theme.colorScheme.primary.withValues(
-                    alpha: 0.08,
+                    alpha: PRFOpacities.subtle,
                   ),
                   side: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    color: theme.colorScheme.primary.withValues(
+                      alpha: PRFOpacities.glow,
+                    ),
                   ),
                 ),
               )
@@ -370,7 +436,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
     return _buildSectionCard(
       theme: theme,
       icon: Icons.card_giftcard_outlined,
-      title: 'GIFTS',
+      title: context.l10n.membersSectionGifts,
       children: [
         Wrap(
           spacing: PRFSpacingTokens.xs,
@@ -385,10 +451,12 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                     ),
                   ),
                   backgroundColor: theme.colorScheme.primary.withValues(
-                    alpha: 0.08,
+                    alpha: PRFOpacities.subtle,
                   ),
                   side: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    color: theme.colorScheme.primary.withValues(
+                      alpha: PRFOpacities.glow,
+                    ),
                   ),
                 ),
               )
@@ -415,7 +483,9 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.34),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
+          ),
         ),
       ),
       child: Column(
@@ -425,20 +495,21 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
             children: [
               Icon(
                 icon,
-                size: 16,
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.9,
-                ),
+                size: PRFSizeTokens.iconSm,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
-              Text(
-                title,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.9,
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    title.toUpperCase(),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSurfaceVariant,
+                      letterSpacing: 0.6,
+                    ),
                   ),
-                  letterSpacing: 0.6,
                 ),
               ),
             ],
@@ -450,7 +521,7 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
                 vertical: PRFSpacingTokens.sm,
               ),
               child: Text(
-                'No information available',
+                context.l10n.membersNoInformation,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -471,19 +542,17 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11,
+            style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
-              fontSize: 14,
               height: 1.45,
             ),
           ),
@@ -499,8 +568,8 @@ class _MemberDetailPageHandsetState extends State<MemberDetailPageHandset> {
   void _showEditForm(PRFMember member) {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Edit Member',
-      child: MemberFormViewHandset(member: member, onSaved: _reloadData),
+      title: context.l10n.membersEdit,
+      child: MemberFormViewHandset(member: member, onSaved: () {}),
     );
   }
 

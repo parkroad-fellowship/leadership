@@ -44,17 +44,8 @@ class _SignInTabletState extends State<SignInTablet> {
           loaded: (socialLoginDTO) => context.read<SocialLoginCubit>().login(
             socialAuthDTO: socialLoginDTO,
           ),
-          error: (message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: theme.colorScheme.error,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                ),
-              ),
-            );
+          error: (_) {
+            PRFSnackbar.error(context, l10n.authGoogleSignInFailed);
           },
         );
       },
@@ -64,17 +55,8 @@ class _SignInTabletState extends State<SignInTablet> {
             orElse: () {},
             loaded: () =>
                 context.router.pushPath(PRFLeadershipRouter.decisionRoute),
-            error: (message) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(message),
-                  backgroundColor: theme.colorScheme.error,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  ),
-                ),
-              );
+            error: (_) {
+              PRFSnackbar.error(context, l10n.authGoogleSignInFailed);
             },
           );
         },
@@ -90,7 +72,7 @@ class _SignInTabletState extends State<SignInTablet> {
                     ),
                     child: IntrinsicHeight(
                       child: Padding(
-                        padding: const EdgeInsets.all(48),
+                        padding: const EdgeInsets.all(PRFSpacingTokens.xxxl),
                         child: Row(
                           children: [
                             // Left side - Logo and branding
@@ -108,13 +90,17 @@ class _SignInTabletState extends State<SignInTablet> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.1),
+                                            .withValues(
+                                              alpha: PRFOpacities.subtle,
+                                            ),
                                         borderRadius: BorderRadius.circular(
                                           PRFRadiusTokens.xxl,
                                         ),
                                         border: Border.all(
                                           color: theme.colorScheme.primary
-                                              .withValues(alpha: 0.2),
+                                              .withValues(
+                                                alpha: PRFOpacities.muted,
+                                              ),
                                           width: 2,
                                         ),
                                       ),
@@ -182,12 +168,11 @@ class _SignInTabletState extends State<SignInTablet> {
               style: theme.textTheme.headlineLarge?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w700,
-                fontSize: 40,
               ),
               textAlign: TextAlign.center,
             ),
 
-            const SizedBox(height: 48),
+            const SizedBox(height: PRFSpacingTokens.xxxl),
 
             FutureBuilder(
               future: getIt<PRFFirebaseService>().canShowAuth(),
@@ -200,6 +185,8 @@ class _SignInTabletState extends State<SignInTablet> {
                       // Email Input
                       PRFTextField(
                         hintText: l10n.enterEmail,
+                        labelText: l10n.email,
+                        autofillHints: const [AutofillHints.email],
                         controller: _emailController,
                         type: PRFTextFieldType.email,
                         enabled: !_isLoading,
@@ -209,6 +196,7 @@ class _SignInTabletState extends State<SignInTablet> {
                       // Password Input
                       PRFTextField(
                         hintText: l10n.enterPassword,
+                        autofillHints: const [AutofillHints.password],
                         obscureNotifier: _hidePasswordNotifier,
                         controller: _passwordController,
                         type: PRFTextFieldType.password,
@@ -226,22 +214,11 @@ class _SignInTabletState extends State<SignInTablet> {
                             loaded: () => context.router.pushPath(
                               PRFLeadershipRouter.landingRoute,
                             ),
-                            error: (message) {
+                            error: (_) {
                               setState(() {
                                 _isLoading = !_isLoading;
                               });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(message),
-                                  backgroundColor: theme.colorScheme.error,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      PRFRadiusTokens.sm,
-                                    ),
-                                  ),
-                                ),
-                              );
+                              PRFSnackbar.error(context, l10n.authSignInFailed);
                             },
                             orElse: () {},
                           );
@@ -250,24 +227,15 @@ class _SignInTabletState extends State<SignInTablet> {
                           return PRFButton(
                             onPressed: () {
                               if (_emailController.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.enterEmail),
-                                    backgroundColor: theme.colorScheme.error,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
+                                PRFSnackbar.error(context, l10n.authEnterEmail);
                                 Gaimon.warning();
                                 return;
                               }
 
                               if (_passwordController.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.enterPassword),
-                                    backgroundColor: theme.colorScheme.error,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
+                                PRFSnackbar.error(
+                                  context,
+                                  l10n.authEnterPassword,
                                 );
                                 Gaimon.warning();
                                 return;
@@ -300,11 +268,10 @@ class _SignInTabletState extends State<SignInTablet> {
                               horizontal: PRFSpacingTokens.xl,
                             ),
                             child: Text(
-                              'OR',
+                              l10n.authOr.toUpperCase(),
                               style: theme.textTheme.labelMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
                               ),
                             ),
                           ),
@@ -326,7 +293,7 @@ class _SignInTabletState extends State<SignInTablet> {
               },
             ),
 
-            const SizedBox(height: 48),
+            const SizedBox(height: PRFSpacingTokens.xxxl),
 
             // Version
             Center(
@@ -343,7 +310,6 @@ class _SignInTabletState extends State<SignInTablet> {
                   l10n.version(Misc.getAppVersion()),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 14,
                   ),
                 ),
               ),
@@ -367,12 +333,13 @@ class GoogleSignIn extends StatelessWidget {
             return BlocBuilder<SocialLoginCubit, SocialLoginState>(
               builder: (context, socialSignInState) {
                 final (isLoading, title) = signInWithGoogleState.maybeWhen(
-                  loading: () => (true, 'Please wait ...'),
+                  loading: () => (true, context.l10n.authPleaseWait),
                   orElse: () => socialSignUpState.maybeWhen(
-                    loading: () => (true, 'Please wait ...'),
+                    loading: () => (true, context.l10n.authPleaseWait),
                     orElse: () => socialSignInState.maybeWhen(
-                      loading: () => (true, 'Please wait ...'),
-                      orElse: () => (false, 'Continue with Google'),
+                      loading: () => (true, context.l10n.authPleaseWait),
+                      orElse: () =>
+                          (false, context.l10n.authContinueWithGoogle),
                     ),
                   ),
                 );

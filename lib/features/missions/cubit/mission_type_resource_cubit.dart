@@ -43,4 +43,8 @@ class MissionTypeResourceCubit extends ResourceCubit<PRFMissionType> {
   Future<void> deleteMissionType({required String ulid}) {
     return delete(ulid: ulid, matchById: (mt) => mt.ulid == ulid);
   }
+
+  /// Reference data changes rarely; pull-to-refresh still forces a reload.
+  @override
+  Duration get staleAfter => const Duration(hours: 12);
 }

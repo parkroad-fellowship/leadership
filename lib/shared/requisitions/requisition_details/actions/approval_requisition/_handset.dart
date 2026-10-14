@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared/requisitions/cubit/requisition_detail_cubit.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -26,10 +27,6 @@ class _ApproveRequisitionViewHandsetState
   bool _isLoading = false;
   bool _isRejecting = false;
 
-  // Rejection requires notes, approval does not
-  bool get _canApprove => !_isLoading;
-  bool get _canReject => !_isLoading && _notesController.text.trim().isNotEmpty;
-
   @override
   void initState() {
     super.initState();
@@ -42,19 +39,19 @@ class _ApproveRequisitionViewHandsetState
     super.dispose();
   }
 
+  /// The requisition total, formatted, when the details are already loaded.
+  String? get _amount {
+    final requisition = context.read<RequisitionDetailCubit>().currentItem;
+    return requisition == null ? null : formatKes(requisition.totalAmount);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
-          ],
-        ),
-      ),
+    final l10n = context.l10n;
+    final amount = _amount;
+
+    return DecoratedBox(
+      decoration: requisitionSheetBackground(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
@@ -62,108 +59,47 @@ class _ApproveRequisitionViewHandsetState
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
 
-              // Header Card
-              Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.8),
-                        ],
+              requisitionActionHeader(
+                context,
+                icon: Icons.fact_check_outlined,
+                title: l10n.requisitionActionReviewTitle,
+                subtitle: l10n.requisitionActionReviewSubtitle,
+                footer: amount == null
+                    ? null
+                    : Text(
+                        l10n.requisitionActionTotalRequested(amount),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.fact_check_outlined,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.sm),
-                        Text(
-                          'Review Requisition',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.xs),
-                        Text(
-                          'Approve or reject this requisition request',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimary.withValues(alpha: 0.9),
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+              ).entrance(context, slide: const Offset(0, -0.3)),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Notes Section
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
+              requisitionFormCard(
+                context,
+                child: PRFFormSection(
+                  icon: Icons.notes_outlined,
+                  title: l10n.approvalNotes,
+                  child: PRFTextField(
+                    controller: _notesController,
+                    hintText: l10n.requisitionActionApprovalNotesHint,
+                    minLines: 3,
+                    maxLines: 6,
+                    type: PRFTextFieldType.textArea,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
-                child:
-                    PRFFormSection(
-                          icon: Icons.notes_outlined,
-                          title: 'Approval Notes',
-                          child: PRFTextField(
-                            controller: _notesController,
-                            hintText:
-                                'Enter your notes or reason for rejection...',
-                            minLines: 3,
-                            maxLines: 6,
-                            type: PRFTextFieldType.textArea,
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+              ).entrance(
+                context,
+                delay: PRFMotionTokens.stagger4,
+                slide: const Offset(-0.2, 0),
               ),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
-              // Action Buttons
               BlocListener<
                 RequisitionDetailCubit,
                 ResourceState<PRFRequisition>
@@ -171,55 +107,55 @@ class _ApproveRequisitionViewHandsetState
                 listener: (context, state) {
                   switch (state) {
                     case ResourceItemLoading<PRFRequisition>():
-                      setState(() {
-                        _isLoading = true;
-                      });
+                      setState(() => _isLoading = true);
                     case ResourceItemLoaded<PRFRequisition>():
-                      setState(() {
-                        _isLoading = false;
-                      });
+                      setState(() => _isLoading = false);
                       Navigator.of(context).pop();
                       PRFSnackbar.success(
                         context,
                         _isRejecting
-                            ? 'Requisition rejected successfully'
-                            : 'Requisition approved successfully',
+                            ? l10n.requisitionActionRejected
+                            : l10n.requisitionActionApproved,
                       );
-                    case ResourceItemError<PRFRequisition>(:final message):
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      PRFSnackbar.error(context, message);
+                    case ResourceItemError<PRFRequisition>():
+                      setState(() => _isLoading = false);
+                      PRFSnackbar.error(
+                        context,
+                        _isRejecting
+                            ? l10n.requisitionActionRejectFailed
+                            : l10n.requisitionActionApproveFailed,
+                        onRetry: _isRejecting ? _reject : _approve,
+                      );
                     default:
                       break;
                   }
                 },
                 child: Column(
                   children: [
-                    // Approve Button
                     PRFButton(
-                          onPressed: _approveRequisition,
-                          title: 'Approve Requisition',
-                          disabled: !_canApprove,
-                          isLoading: _isLoading && !_isRejecting,
-                        )
-                        .animate(delay: PRFMotionTokens.enterShort)
-                        .slideY(begin: 0.3)
-                        .fadeIn(),
+                      onPressed: _confirmApprove,
+                      title: l10n.requisitionActionApproveButton,
+                      disabled: _isLoading,
+                      isLoading: _isLoading && !_isRejecting,
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(0, 0.3),
+                    ),
 
                     const SizedBox(height: PRFSpacingTokens.md),
 
-                    // Reject Button
                     PRFButton(
-                          onPressed: _rejectRequisition,
-                          title: 'Reject Requisition',
-                          variant: PRFButtonVariant.destructive,
-                          disabled: !_canReject,
-                          isLoading: _isLoading && _isRejecting,
-                        )
-                        .animate(delay: PRFMotionTokens.enterMedium)
-                        .slideY(begin: 0.3)
-                        .fadeIn(),
+                      onPressed: _confirmReject,
+                      title: l10n.requisitionActionRejectButton,
+                      variant: PRFButtonVariant.destructive,
+                      disabled: _isLoading,
+                      isLoading: _isLoading && _isRejecting,
+                    ).entrance(
+                      context,
+                      delay: PRFMotionTokens.stagger5,
+                      slide: const Offset(0, 0.3),
+                    ),
                   ],
                 ),
               ),
@@ -232,10 +168,44 @@ class _ApproveRequisitionViewHandsetState
     );
   }
 
-  Future<void> _approveRequisition() async {
-    setState(() {
-      _isRejecting = false;
-    });
+  Future<void> _confirmApprove() async {
+    final l10n = context.l10n;
+    final amount = _amount;
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: amount == null
+          ? l10n.requisitionActionApproveButton
+          : l10n.requisitionActionApproveConfirmTitle(amount),
+      message: l10n.requisitionActionApproveConfirmMessage,
+      confirmLabel: l10n.requisitionActionApproveButton,
+      cancelLabel: l10n.cancel,
+    );
+    if (confirmed == true && mounted) await _approve();
+  }
+
+  Future<void> _confirmReject() async {
+    final l10n = context.l10n;
+    if (_notesController.text.trim().isEmpty) {
+      PRFSnackbar.warning(context, l10n.requisitionActionRejectNotesRequired);
+      Gaimon.warning();
+      return;
+    }
+    final amount = _amount;
+    final confirmed = await PRFConfirmationDialog.show(
+      context,
+      title: amount == null
+          ? l10n.requisitionActionRejectButton
+          : l10n.requisitionActionRejectConfirmTitle(amount),
+      message: l10n.requisitionActionRejectConfirmMessage,
+      confirmLabel: l10n.requisitionActionRejectButton,
+      cancelLabel: l10n.cancel,
+      isDestructive: true,
+    );
+    if (confirmed == true && mounted) await _reject();
+  }
+
+  Future<void> _approve() async {
+    setState(() => _isRejecting = false);
 
     await context.read<RequisitionDetailCubit>().approveRequisition(
       requisitionUlid: widget.requisitionUlid,
@@ -245,22 +215,11 @@ class _ApproveRequisitionViewHandsetState
     );
   }
 
-  Future<void> _rejectRequisition() async {
+  Future<void> _reject() async {
     final notes = _notesController.text.trim();
+    if (notes.isEmpty) return;
 
-    if (notes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Notes are required when rejecting a requisition'),
-        ),
-      );
-      Gaimon.warning();
-      return;
-    }
-
-    setState(() {
-      _isRejecting = true;
-    });
+    setState(() => _isRejecting = true);
 
     await context.read<RequisitionDetailCubit>().rejectRequisition(
       requisitionUlid: widget.requisitionUlid,

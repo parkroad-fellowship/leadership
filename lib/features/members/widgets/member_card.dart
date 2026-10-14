@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -38,39 +41,50 @@ class MemberCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final profileUrl = member.profilePicture?.temporaryURL;
+    final subtitle = _subtitle;
 
-    return GestureDetector(
+    final Widget row = Semantics(
+      button: true,
+      label: context.l10n.membersCardSemantics(member.fullName),
+      child: Material(
+        color: colorScheme.surface,
+        child: InkWell(
           onTap: onTap,
           child: Container(
+            constraints: const BoxConstraints(
+              minHeight: PRFSizeTokens.minTouchTarget,
+            ),
             padding: const EdgeInsets.symmetric(
               horizontal: PRFSpacingTokens.lg,
               vertical: PRFSpacingTokens.sm,
             ),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                ),
+                bottom: BorderSide(color: colorScheme.outlineVariant),
               ),
             ),
             child: Row(
               children: [
                 // Circle avatar with profile picture or initials
-                CircleAvatar(
-                  radius: 23,
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
-                  backgroundImage: profileUrl != null
-                      ? NetworkImage(profileUrl)
-                      : null,
-                  child: profileUrl == null
-                      ? Text(
-                          _initials,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        )
-                      : null,
+                ExcludeSemantics(
+                  child: CircleAvatar(
+                    radius: PRFSizeTokens.iconXxxl / 2,
+                    backgroundColor: colorScheme.primary.withValues(
+                      alpha: PRFOpacities.subtle,
+                    ),
+                    backgroundImage: profileUrl != null
+                        ? NetworkImage(profileUrl)
+                        : null,
+                    child: profileUrl == null
+                        ? Text(
+                            _initials,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          )
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: PRFSpacingTokens.md),
                 // Name + subtitle
@@ -87,10 +101,10 @@ class MemberCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (_subtitle != null) ...[
+                      if (subtitle != null) ...[
                         const SizedBox(height: PRFSpacingTokens.xs),
                         Text(
-                          _subtitle!,
+                          subtitle,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -120,12 +134,21 @@ class MemberCard extends StatelessWidget {
               ],
             ),
           ),
-        )
+        ),
+      ),
+    );
+
+    final duration = PRFMotionTokens.resolve(
+      context,
+      PRFMotionTokens.enterShort,
+    );
+    if (duration == Duration.zero) return row;
+
+    // Cap the stagger so long lists don't make people wait.
+    final delay = PRFMotionTokens.stagger1 * math.min(index, 8);
+    return row
         .animate()
-        .fadeIn(
-          duration: PRFMotionTokens.enterShort,
-          delay: Duration(milliseconds: 30 * index),
-        )
-        .slideX(begin: 0.05);
+        .fadeIn(duration: duration, delay: delay)
+        .slideX(begin: 0.05, duration: duration, delay: delay);
   }
 }

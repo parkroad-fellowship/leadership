@@ -17,15 +17,24 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
 
   Map<String, dynamic>? _lastListFilters;
 
+  bool _historyMode = false;
+
+  @override
+  bool get crawlAllPages => !_historyMode;
+
+  /// Lean list payload. `accountingEvent` and `weatherForecasts` are only
+  /// read on mission details, which fetches them via `MissionDetailCubit`.
+  ///
+  /// `school.schoolContacts.contactType` stays: list and details share the
+  /// mission Hive box and Hive merges top-level keys only, so a list row
+  /// without contacts would replace the cached `school` object and wipe the
+  /// contacts mission ground shows offline.
   @override
   List<String> get defaultIncludes => [
     'school',
-    'missionType',
     'school.schoolContacts.contactType',
-    'accountingEvent',
-    'schoolTerm',
-    'weatherForecasts',
     'missionType',
+    'schoolTerm',
   ];
 
   @override
@@ -48,13 +57,16 @@ class MissionResourceCubit extends ResourceCubit<PRFMission> {
   }
 
   Future<void> loadUpcomingMissions() {
+    _historyMode = false;
     _lastListFilters = {'upcoming': true};
     return loadAll(filters: _lastListFilters, sortBy: 'start_date');
   }
 
   Future<void> loadPastMissions() {
+    _historyMode = true;
     _lastListFilters = {'past': true};
-    return loadAll(filters: _lastListFilters, sortBy: 'start_date');
+    // Newest first so page 1 is the most recent history.
+    return loadAll(filters: _lastListFilters, sortBy: '-start_date', limit: 30);
   }
 
   Future<void> createMission({required PRFMissionDTO dto}) async {

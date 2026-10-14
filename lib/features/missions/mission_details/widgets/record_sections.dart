@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
 import 'package:leadership/models/remote/mission/prf_mission_offline_member.dart';
 import 'package:leadership/models/remote/mission/prf_mission_subscription.dart';
@@ -32,7 +33,7 @@ class MissionResourceTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     if (isLoading && isEmpty) {
       return const Center(child: PRFCircularProgressIndicator());
@@ -40,30 +41,11 @@ class MissionResourceTabView extends StatelessWidget {
 
     if (error != null && isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: PRFSpacingTokens.lg),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: PRFSpacingTokens.xl,
-              ),
-              child: Text(
-                error!,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ),
-            const SizedBox(height: PRFSpacingTokens.lg),
-            FilledButton.icon(
-              onPressed: onRefresh,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
-            ),
-          ],
+        child: PRFErrorView.inline(
+          title: l10n.missionRecordsLoadErrorTitle,
+          message: l10n.missionsLoadErrorMessage,
+          retryLabel: l10n.tryAgain,
+          onRetry: onRefresh,
         ),
       );
     }
@@ -80,33 +62,18 @@ class MissionResourceTabView extends StatelessWidget {
         ),
         children: [
           MissionSectionCard(
-            title: 'Mission Records',
+            title: l10n.missionRecordsTitle,
             subtitle: emptyDescription,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FilledButton.icon(
+                PRFButton(
                   onPressed: onAdd,
-                  icon: Icon(addButtonIcon),
-                  label: Text(addButtonLabel),
+                  title: addButtonLabel,
+                  icon: addButtonIcon,
                 ),
                 const SizedBox(height: PRFSpacingTokens.md),
-                if (error != null)
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-                    padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                    ),
-                    child: Text(
-                      error!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ),
+                if (error != null) const MissionSectionErrorBanner(),
                 if (isEmpty)
                   PRFEmptyView(label: emptyLabel, description: emptyDescription)
                 else
@@ -143,18 +110,20 @@ class MissionSectionCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.4),
+          color: theme.colorScheme.outline.withValues(alpha: PRFOpacities.high),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title.toUpperCase(),
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-              letterSpacing: 0.6,
+          Semantics(
+            header: true,
+            child: Text(
+              title,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
           const SizedBox(height: PRFSpacingTokens.xs),
@@ -205,7 +174,9 @@ class MissionResourceCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.38),
+            color: theme.colorScheme.outline.withValues(
+              alpha: PRFOpacities.prominent,
+            ),
           ),
         ),
         child: Row(
@@ -235,39 +206,18 @@ class MissionResourceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: PRFSpacingTokens.sm),
-            Tooltip(
-              message: editTooltip,
-              child: GestureDetector(
-                onTap: onEdit,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.sm,
-                    vertical: PRFSpacingTokens.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.11),
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.full),
-                  ),
-                  child: Text(
-                    'Edit',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
+            MissionRowAction(
+              label: context.l10n.edit,
+              tooltip: editTooltip,
+              icon: Icons.edit_outlined,
+              onPressed: onEdit,
             ),
-            const SizedBox(width: PRFSpacingTokens.xs),
-            Tooltip(
-              message: deleteTooltip,
-              child: IconButton(
-                onPressed: onDelete,
-                icon: Icon(
-                  Icons.delete_outline,
-                  color: theme.colorScheme.error,
-                ),
-              ),
+            MissionRowAction(
+              label: context.l10n.delete,
+              tooltip: deleteTooltip,
+              icon: Icons.delete_outline,
+              onPressed: onDelete,
+              destructive: true,
             ),
           ],
         ),
@@ -292,7 +242,7 @@ class MissionSubscribersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
     final capacity = mission.capacity;
     final registrationsOpen = mission.missionSubscriptionsNeeded;
     final filled = (capacity - registrationsOpen).clamp(0, capacity);
@@ -310,10 +260,8 @@ class MissionSubscribersTab extends StatelessWidget {
         ),
         children: [
           MissionSectionCard(
-            title: 'Subscriber Capacity',
-            subtitle:
-                'Track mission signup progress '
-                'and remaining slots.',
+            title: l10n.missionCapacityTitle,
+            subtitle: l10n.missionCapacitySubtitle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -321,7 +269,7 @@ class MissionSubscribersTab extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _PeopleMetric(
-                        label: 'Capacity',
+                        label: l10n.capacity,
                         value: '$capacity',
                         icon: Icons.groups_rounded,
                       ),
@@ -329,7 +277,7 @@ class MissionSubscribersTab extends StatelessWidget {
                     const SizedBox(width: PRFSpacingTokens.md),
                     Expanded(
                       child: _PeopleMetric(
-                        label: 'Filled',
+                        label: l10n.missionFilled,
                         value: '$filled',
                         icon: Icons.person_add_alt_rounded,
                       ),
@@ -337,7 +285,7 @@ class MissionSubscribersTab extends StatelessWidget {
                     const SizedBox(width: PRFSpacingTokens.md),
                     Expanded(
                       child: _PeopleMetric(
-                        label: 'Open',
+                        label: l10n.missionOpen,
                         value: '$registrationsOpen',
                         icon: Icons.pending_actions_rounded,
                       ),
@@ -345,23 +293,18 @@ class MissionSubscribersTab extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: PRFSpacingTokens.lg),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  child: LinearProgressIndicator(
-                    minHeight: 10,
-                    value: progress,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      theme.colorScheme.primary,
-                    ),
-                  ),
+                PRFLinearProgressIndicator(
+                  value: progress,
+                  height: PRFSpacingTokens.sm,
+                  borderRadius: PRFRadiusTokens.sm,
                 ),
                 const SizedBox(height: PRFSpacingTokens.sm),
                 Text(
-                  '${(progress * 100).toStringAsFixed(0)}'
-                  '% filled',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  l10n.missionPercentFilled(
+                    (progress * 100).toStringAsFixed(0),
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -399,46 +342,27 @@ class MissionSubscriptionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return MissionSectionCard(
-      title: 'Mission Subscribers',
-      subtitle: 'Manage fellowship members subscribed to this mission.',
+      title: l10n.missionSubscribersTitle,
+      subtitle: l10n.missionSubscribersSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: Text('${subscriptions.length} subscribed')),
-              FilledButton.icon(
-                onPressed: onSubscribe,
-                icon: const Icon(Icons.person_add_alt_rounded),
-                label: const Text('Subscribe Member'),
-              ),
-            ],
+          Text(l10n.missionSubscribedCount(subscriptions.length)),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          PRFButton(
+            onPressed: onSubscribe,
+            title: l10n.missionSubscribeMember,
+            icon: Icons.person_add_alt_rounded,
           ),
           const SizedBox(height: PRFSpacingTokens.md),
-          if (error != null)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-              padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              ),
-              child: Text(
-                error!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onErrorContainer,
-                ),
-              ),
-            ),
+          if (error != null) const MissionSectionErrorBanner(),
           if (subscriptions.isEmpty)
-            const PRFEmptyView(
-              label: 'No subscribers yet',
-              description:
-                  'Subscribe fellowship members to this mission from this tab.',
+            PRFEmptyView(
+              label: l10n.missionNoSubscribersYet,
+              description: l10n.missionNoSubscribersDesc,
             )
           else
             ...subscriptions.map(
@@ -447,7 +371,7 @@ class MissionSubscriptionsSection extends StatelessWidget {
                 subtitle:
                     '${subscription.missionRole.name} · '
                     '${subscription.status.name} · '
-                    'Subscribed on ${formatDate(subscription.createdAt)}',
+                    '${l10n.missionSubscribedOn(formatDate(subscription.createdAt))}',
                 onView: () => onViewSubscriber(subscription),
                 onRemove: () => onUnsubscribe(subscription),
               ),
@@ -475,6 +399,8 @@ class MissionSubscriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final name = subscription.member?.fullName ?? '';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
@@ -487,53 +413,68 @@ class MissionSubscriptionCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.38),
+            color: theme.colorScheme.outline.withValues(
+              alpha: PRFOpacities.prominent,
+            ),
           ),
         ),
         child: Row(
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    subscription.member!.fullName,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+              child: Semantics(
+                button: true,
+                label: l10n.missionViewSubscriberDetails(name),
+                excludeSemantics: true,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onView,
+                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: PRFSizeTokens.minTouchTarget,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            name,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            l10n.viewDetails,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            subtitle,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      alignment: Alignment.centerLeft,
-                      foregroundColor: theme.colorScheme.primary,
-                    ),
-                    onPressed: onView,
-                    child: const Text('View details'),
-                  ),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             IconButton(
-              tooltip: 'Edit role & status',
+              tooltip: l10n.missionEditRoleStatus,
               onPressed: onView,
               icon: Icon(Icons.edit_rounded, color: theme.colorScheme.primary),
             ),
-            IconButton(
-              tooltip: 'Remove subscriber',
+            MissionRowAction(
+              label: l10n.missionRemove,
+              tooltip: l10n.missionRemoveSubscriber,
+              icon: Icons.person_remove_alt_1,
               onPressed: onRemove,
-              icon: Icon(
-                Icons.person_remove_alt_1,
-                color: theme.colorScheme.error,
-              ),
+              destructive: true,
             ),
           ],
         ),
@@ -560,60 +501,34 @@ class MissionOfflineMembersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return MissionSectionCard(
-      title: 'Non-Member Missioners',
-      subtitle:
-          'People who joined the mission but '
-          "aren't registered members.",
+      title: l10n.missionNonMembersTitle,
+      subtitle: l10n.missionNonMembersSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${offlineMembers.length} missioner'
-                  '${offlineMembers.length == 1 ? '' : 's'}',
-                ),
-              ),
-              FilledButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.person_add_alt_outlined),
-                label: const Text('Add Missioner'),
-              ),
-            ],
+          Text(l10n.missionMissionersCount(offlineMembers.length)),
+          const SizedBox(height: PRFSpacingTokens.sm),
+          PRFButton(
+            onPressed: onAdd,
+            title: l10n.missionAddMissioner,
+            icon: Icons.person_add_alt_outlined,
+            variant: PRFButtonVariant.outlined,
           ),
           const SizedBox(height: PRFSpacingTokens.md),
-          if (error != null)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-              padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-              ),
-              child: Text(
-                error!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onErrorContainer,
-                ),
-              ),
-            ),
+          if (error != null) const MissionSectionErrorBanner(),
           if (offlineMembers.isEmpty)
-            const PRFEmptyView(
-              label: 'No non-member missioners',
-              description:
-                  'Add people who joined the mission '
-                  "but aren't registered members.",
+            PRFEmptyView(
+              label: l10n.missionNoNonMembers,
+              description: l10n.missionNoNonMembersDesc,
             )
           else
             ...offlineMembers.map(
               (member) => MissionOfflineMemberCard(
                 member: member,
-                subtitle: 'Added ${formatDate(member.createdAt)}',
+                subtitle: l10n.missionAddedOnDate(formatDate(member.createdAt)),
                 onRemove: () => onRemove(member),
               ),
             ),
@@ -650,7 +565,9 @@ class MissionOfflineMemberCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.38),
+            color: theme.colorScheme.outline.withValues(
+              alpha: PRFOpacities.prominent,
+            ),
           ),
         ),
         child: Row(
@@ -680,13 +597,12 @@ class MissionOfflineMemberCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              tooltip: 'Remove missioner',
+            MissionRowAction(
+              label: context.l10n.missionRemove,
+              tooltip: context.l10n.missionRemoveMissioner,
+              icon: Icons.person_remove_alt_1,
               onPressed: onRemove,
-              icon: Icon(
-                Icons.person_remove_alt_1,
-                color: theme.colorScheme.error,
-              ),
+              destructive: true,
             ),
           ],
         ),
@@ -719,7 +635,11 @@ class _PeopleMetric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          Icon(
+            icon,
+            size: PRFSizeTokens.iconMd,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             value,
@@ -734,6 +654,103 @@ class _PeopleMetric extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Plain-language banner shown when a record action fails while items are
+/// still on screen.
+class MissionSectionErrorBanner extends StatelessWidget {
+  const MissionSectionErrorBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
+        padding: const EdgeInsets.all(PRFSpacingTokens.md),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.errorContainer,
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+        ),
+        child: Text(
+          context.l10n.missionRecordsActionError,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onErrorContainer,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact, labelled row action (icon + word) with a 48dp touch target.
+class MissionRowAction extends StatelessWidget {
+  const MissionRowAction({
+    required this.label,
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+    this.destructive = false,
+    super.key,
+  });
+
+  final String label;
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback onPressed;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = destructive
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
+
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        label: tooltip,
+        excludeSemantics: true,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: PRFSizeTokens.minTouchTarget,
+                minWidth: PRFSizeTokens.minTouchTarget,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PRFSpacingTokens.xs,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: PRFSizeTokens.iconMd, color: color),
+                    Text(
+                      label,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

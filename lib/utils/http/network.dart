@@ -8,6 +8,7 @@ import 'package:leadership/models/remote/failure.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
 import 'package:leadership/utils/constants.dart';
 import 'package:leadership/utils/http/request_signer.dart';
+import 'package:leadership/utils/http/request_stats_interceptor.dart';
 import 'package:leadership/utils/http/retry_interceptor.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:leadership/utils/multiplatform/http_client_config/http_client_config.dart';
@@ -25,6 +26,10 @@ class NetworkUtil {
 
   // Cache for Dio instances to avoid recreation
   final Map<String, Dio> _dioCache = {};
+
+  /// Identical GETs that are already in flight share one request (e.g. two
+  /// widgets loading the same lookup at the same moment).
+  final Map<String, Future<Map<String, dynamic>>> _inFlightGets = {};
 
   Dio _getHttpClient({required String apiVersion}) {
     final cacheKey = apiVersion;
@@ -93,6 +98,10 @@ class NetworkUtil {
         },
       ),
     );
+
+    if (kDebugMode) {
+      dio.interceptors.add(RequestStatsInterceptor.instance);
+    }
 
     // Retry interceptor for transient failures
     dio.interceptors.add(RetryInterceptor(dio: dio));
@@ -256,8 +265,42 @@ class NetworkUtil {
     return response.data as Map<String, dynamic>;
   }
 
-  /// GET request with enhanced error handling
   Future<Map<String, dynamic>> get(
+    String url, {
+    String apiVersion = 'v1',
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+  }) {
+    final query =
+        (queryParameters?.entries.map((e) => '${e.key}=${e.value}').toList() ??
+              <String>[])
+          ..sort();
+    final key = '$apiVersion|$url|${query.join('&')}';
+    final existing = _inFlightGets[key];
+    if (existing != null) return existing;
+    late final Future<Map<String, dynamic>> future;
+    future =
+        _get(
+          url,
+          apiVersion: apiVersion,
+          queryParameters: queryParameters,
+          headers: headers,
+        ).whenComplete(() {
+          // A write may have cleared the map and a newer GET taken this key;
+          // only remove our own entry.
+          if (identical(_inFlightGets[key], future)) _inFlightGets.remove(key);
+        });
+    _inFlightGets[key] = future;
+    return future;
+  }
+
+  /// Called when any write finishes (success or failure) so GETs issued
+  /// after the write start a fresh request instead of joining a GET that
+  /// began before the write. Callers already awaiting keep their futures.
+  void _clearInFlightGetsAfterWrite() => _inFlightGets.clear();
+
+  /// GET request with enhanced error handling
+  Future<Map<String, dynamic>> _get(
     String url, {
     String apiVersion = 'v1',
     Map<String, dynamic>? queryParameters,
@@ -305,6 +348,8 @@ class NetworkUtil {
       throw Failure(message: 'Request timeout');
     } on DioException catch (err) {
       _handleError(err, 'POST', url);
+    } finally {
+      _clearInFlightGetsAfterWrite();
     }
   }
 
@@ -332,6 +377,8 @@ class NetworkUtil {
       throw Failure(message: 'Request timeout');
     } on DioException catch (err) {
       _handleError(err, 'PUT', url);
+    } finally {
+      _clearInFlightGetsAfterWrite();
     }
   }
 
@@ -359,6 +406,8 @@ class NetworkUtil {
       throw Failure(message: 'Request timeout');
     } on DioException catch (err) {
       _handleError(err, 'PATCH', url);
+    } finally {
+      _clearInFlightGetsAfterWrite();
     }
   }
 
@@ -390,6 +439,8 @@ class NetworkUtil {
       throw Failure(message: 'Request timeout');
     } on DioException catch (err) {
       _handleError(err, 'DELETE', url);
+    } finally {
+      _clearInFlightGetsAfterWrite();
     }
   }
 
@@ -424,6 +475,8 @@ class NetworkUtil {
       throw Failure(message: 'Upload timeout');
     } on DioException catch (err) {
       _handleError(err, 'POST_UPLOAD', url);
+    } finally {
+      _clearInFlightGetsAfterWrite();
     }
   }
 
@@ -465,6 +518,8 @@ class NetworkUtil {
       throw Failure(message: 'Upload timeout');
     } on DioException catch (err) {
       _handleError(err, 'POST_MULTI_UPLOAD', url);
+    } finally {
+      _clearInFlightGetsAfterWrite();
     }
   }
 

@@ -28,6 +28,11 @@ class AuthHiveService extends BaseHiveKVService {
     return token;
   }
 
+  // FCM token last sent to the API, so cold starts skip unchanged tokens.
+  void storeFcmTokenSent(String token) => put('fcmTokenSent', token);
+
+  String? retrieveFcmTokenSent() => get<String>('fcmTokenSent');
+
   bool isLoggedOut() {
     return Hive.box<dynamic>(
               PRFLeadershipConfig.instance!.values.globalHiveAuthBox,
@@ -53,6 +58,6 @@ class AuthHiveService extends BaseHiveKVService {
 
   // Clear auth data
   void clearAuthData() {
-    deleteAll(['accessToken', 'accessToken_expiry', 'profile']);
+    deleteAll(['accessToken', 'accessToken_expiry', 'profile', 'fcmTokenSent']);
   }
 }

@@ -49,12 +49,19 @@ class RetryInterceptor extends Interceptor {
     return handler.next(err);
   }
 
+  static const _idempotent = {'GET', 'HEAD', 'OPTIONS'};
+
+  /// Only idempotent reads are retried: replaying a POST after a timeout can
+  /// create the record twice.
   bool _shouldRetry(DioException err) {
+    if (!_idempotent.contains(err.requestOptions.method.toUpperCase())) {
+      return false;
+    }
     return err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.sendTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.connectionError ||
         (err.response?.statusCode != null &&
-            [500, 502, 503, 504].contains(err.response!.statusCode));
+            const [500, 502, 503, 504].contains(err.response!.statusCode));
   }
 }

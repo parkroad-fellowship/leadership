@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_refund.dart';
 import 'package:leadership/shared/expenses/cubit/refund_resource_cubit.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
@@ -39,14 +40,18 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    Duration motion(Duration d) => PRFMotionTokens.resolve(context, d);
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
+            theme.colorScheme.tertiary.withValues(alpha: PRFOpacities.faint),
+            theme.colorScheme.surface,
           ],
         ),
       ),
@@ -62,58 +67,44 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.tertiary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.tertiary.withValues(alpha: 0.8),
-                        ],
-                      ),
+                      color: theme.colorScheme.tertiary,
                       borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.tertiary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      boxShadow: PRFShadowTokens.badge(
+                        theme.colorScheme.tertiary,
+                      ),
                     ),
                     child: Column(
                       children: [
                         Icon(
                           Icons.account_balance_wallet,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.onTertiary,
+                          size: PRFSizeTokens.iconXl,
+                          color: theme.colorScheme.onTertiary,
                         ),
                         const SizedBox(height: PRFSpacingTokens.sm),
                         Text(
-                          'Add Refund Entry',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onTertiary,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          l10n.expenseRefundTitle,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            color: theme.colorScheme.onTertiary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: PRFSpacingTokens.xs),
                         Text(
-                          'Record a new refund entry for this accounting event',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onTertiary.withValues(alpha: 0.9),
-                              ),
+                          l10n.expenseRefundSubtitle,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onTertiary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   )
                   .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+                  .slideY(
+                    begin: -0.3,
+                    duration: motion(PRFMotionTokens.enterShort),
+                  )
+                  .fadeIn(),
 
               const SizedBox(height: PRFSpacingTokens.xxl),
 
@@ -121,50 +112,39 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
               Container(
                 padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
+                  boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
                 ),
                 child: Column(
                   children: [
                     PRFFormSection(
                           icon: Icons.attach_money,
-                          title: 'Refund Amount',
+                          title: l10n.expenseRefundAmountSection,
                           isRequired: true,
                           child: _buildNumberField(
                             controller: _amountController,
-                            label: 'Amount',
-                            hint: 'Enter refund amount',
+                            label: l10n.amount,
+                            hint: l10n.expenseRefundAmountHint,
                             prefix: 'KES ',
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger2)
-                        .slideX(begin: -0.2)
+                        .animate(delay: motion(PRFMotionTokens.stagger2))
+                        .slideX(
+                          begin: -0.2,
+                          duration: motion(PRFMotionTokens.enterShort),
+                        )
                         .fadeIn(),
 
                     PRFFormSection(
                           icon: Icons.description,
-                          title: 'Confirmation Message',
+                          title: l10n.confirmationMessage,
                           isRequired: true,
                           child: Column(
                             children: [
                               PRFTextField(
-                                hintText:
-                                    'Enter confirmation message or '
-                                    'reference number',
+                                hintText: l10n.expenseRefundConfirmationHint,
                                 controller: _confirmationController,
                                 maxLines: 6,
                                 textInputAction: TextInputAction.done,
@@ -174,8 +154,11 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger4)
-                        .slideX(begin: -0.2)
+                        .animate(delay: motion(PRFMotionTokens.stagger4))
+                        .slideX(
+                          begin: -0.2,
+                          duration: motion(PRFMotionTokens.enterShort),
+                        )
                         .fadeIn(),
                   ],
                 ),
@@ -200,30 +183,18 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                             setState(() {
                               _isLoading = false;
                             });
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Refund entry added successfully',
-                                ),
-                                duration: Duration(seconds: 2),
-                              ),
+                            PRFSnackbar.success(
+                              context,
+                              l10n.expenseRefundRecorded,
                             );
+                            Navigator.of(context).pop(true);
                           }
                         },
                         error: (message, items) {
                           setState(() {
                             _isLoading = false;
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error: $message'),
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.error,
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
+                          PRFSnackbar.error(context, l10n.expenseRefundFailed);
                         },
                         orElse: () {},
                       );
@@ -231,14 +202,17 @@ class _AddRefundViewHandsetState extends State<AddRefundViewHandset> {
                     builder: (context, state) {
                       return PRFButton(
                         onPressed: _submitForm,
-                        title: 'Add Refund Entry',
+                        title: l10n.expenseAddRefund,
                         disabled: !_isFormValid,
                         isLoading: _isLoading,
                       );
                     },
                   )
-                  .animate(delay: PRFMotionTokens.stagger5)
-                  .slideY(begin: 0.3)
+                  .animate(delay: motion(PRFMotionTokens.stagger5))
+                  .slideY(
+                    begin: 0.3,
+                    duration: motion(PRFMotionTokens.enterShort),
+                  )
                   .fadeIn(),
 
               const SizedBox(height: PRFSpacingTokens.xxxl),

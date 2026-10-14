@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -12,7 +14,7 @@ import 'package:leadership/services/api/event_service.dart';
 import 'package:leadership/services/api/requisition_service.dart';
 import 'package:leadership/services/local_storage/hive/db/event_hive_db_service.dart';
 import 'package:leadership/services/local_storage/hive/hive_service.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/load_more_on_scroll.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:leadership/utils/mixins/timezone_mixin.dart';
@@ -49,10 +51,12 @@ class _EventsHandsetState extends State<EventsHandset>
       requisitionService: getIt<RequisitionService>(),
       hiveService: getIt<HiveService>(),
       hiveDbService: getIt<EventHiveDbService>(),
-    )..loadPastEvents();
+    );
 
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
+      // TabController notifies twice per animated change; act once.
+      if (_tabController.indexIsChanging) return;
       if (_tabController.index == 0) {
         _upcomingCubit.loadUpcomingEvents();
       } else {
@@ -88,9 +92,11 @@ class _EventsHandsetState extends State<EventsHandset>
                   ),
                   actions: [
                     if (Misc.userCan(PRFPermissions.createEvent))
-                      PRFHeaderActionButton(
-                        label: '+ New',
-                        onTap: _showCreateEventForm,
+                      PRFNavBarAction(
+                        label: l10n.eventsNewActivity,
+                        icon: Icons.add,
+                        tooltip: l10n.eventsNewActivityTooltip,
+                        onPressed: _showCreateEventForm,
                       ),
                   ],
                 ),
@@ -102,7 +108,7 @@ class _EventsHandsetState extends State<EventsHandset>
                     PRFSpacingTokens.sm,
                   ),
                   child: Transform.translate(
-                    offset: const Offset(0, -6),
+                    offset: const Offset(0, -PRFSpacingTokens.xs),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: TabBar(
@@ -110,10 +116,10 @@ class _EventsHandsetState extends State<EventsHandset>
                         isScrollable: true,
                         labelColor: theme.colorScheme.onPrimary,
                         unselectedLabelColor: theme.colorScheme.onPrimary
-                            .withValues(alpha: 0.65),
+                            .withValues(alpha: PRFOpacities.stronger),
                         indicatorColor: theme.colorScheme.secondary,
                         dividerColor: theme.colorScheme.onPrimary.withValues(
-                          alpha: 0.2,
+                          alpha: PRFOpacities.muted,
                         ),
                         labelStyle: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
@@ -161,44 +167,35 @@ class _EventsHandsetState extends State<EventsHandset>
     );
   }
 
+  Widget _buildLoadError(BuildContext context, VoidCallback onRetry) {
+    final l10n = context.l10n;
+    return PRFErrorView(
+      failure: PRFFailure(message: l10n.missionsLoadErrorMessage),
+      title: l10n.eventsLoadErrorTitle,
+      retryLabel: l10n.tryAgain,
+      onRetry: onRetry,
+    );
+  }
+
   Widget _buildEventsTimeline(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
 
     return BlocBuilder<EventResourceCubit, ResourceState<PRFEvent>>(
       builder: (context, state) {
         return state.maybeWhen(
-          orElse: () => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          error: (message, _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
+          orElse: () => const Center(child: PRFCircularProgressIndicator()),
+          error: (_, _) => _buildLoadError(
+            context,
+            () => context.read<EventResourceCubit>().loadUpcomingEvents(),
           ),
           listLoaded: (events, _, _) {
             if (events.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () =>
-                    context.read<EventResourceCubit>().loadUpcomingEvents(),
+                onRefresh: () {
+                  final cubit = context.read<EventResourceCubit>()
+                    ..invalidate();
+                  return cubit.loadUpcomingEvents();
+                },
                 child: PRFEmptyView(
                   label: l10n.noActivities,
                   description: l10n.createActivity,
@@ -210,8 +207,10 @@ class _EventsHandsetState extends State<EventsHandset>
               ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<EventResourceCubit>().loadUpcomingEvents(),
+              onRefresh: () {
+                final cubit = context.read<EventResourceCubit>()..invalidate();
+                return cubit.loadUpcomingEvents();
+              },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
@@ -233,8 +232,14 @@ class _EventsHandsetState extends State<EventsHandset>
                       )
                       .animate()
                       .fadeIn(
-                        delay: Duration(milliseconds: index * 100),
-                        duration: PRFMotionTokens.enterShort,
+                        delay: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.stagger2 * math.min(index, 8),
+                        ),
+                        duration: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.enterShort,
+                        ),
                       )
                       .slideX(
                         begin: 0.3,
@@ -252,83 +257,84 @@ class _EventsHandsetState extends State<EventsHandset>
 
   Widget _buildPastEventTimeline(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
 
     return BlocBuilder<EventResourceCubit, ResourceState<PRFEvent>>(
       builder: (context, state) {
         return state.maybeWhen(
-          orElse: () => Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          error: (message, _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: PRFSpacingTokens.lg),
-                Text(
-                  message,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
+          orElse: () => const Center(child: PRFCircularProgressIndicator()),
+          error: (_, _) => _buildLoadError(
+            context,
+            () => context.read<EventResourceCubit>().loadPastEvents(),
           ),
           listLoaded: (events, _, _) {
             if (events.isEmpty) {
               return RefreshIndicator(
-                onRefresh: () =>
-                    context.read<EventResourceCubit>().loadPastEvents(),
+                onRefresh: () {
+                  final cubit = context.read<EventResourceCubit>()
+                    ..invalidate();
+                  return cubit.loadPastEvents();
+                },
                 child: PRFEmptyView(
                   label: l10n.noActivities,
-                  description: l10n.createActivity,
+                  description: l10n.eventsEmptyPastDesc,
                 ),
               );
             }
 
-            final sorted = events.reversed.toList();
+            final sorted = List<PRFEvent>.from(events)
+              ..sort((a, b) => b.startDate.compareTo(a.startDate));
+            final hasMore = context.read<EventResourceCubit>().hasMorePages;
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<EventResourceCubit>().loadPastEvents(),
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PRFSpacingTokens.lg,
-                  vertical: PRFSpacingTokens.xl,
-                ),
-                itemCount: sorted.length,
-                itemBuilder: (context, index) {
-                  final event = sorted[index];
-                  final isLast = index == events.length - 1;
-
-                  return TimelineEventCard(
-                        event: event,
-                        isLast: isLast,
-                        index: index,
-                        onTap: () => context.router.push(
-                          DeskEventDetailsRoute(event: event),
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(
-                        delay: Duration(milliseconds: index * 100),
-                        duration: PRFMotionTokens.enterShort,
-                      )
-                      .slideX(
-                        begin: 0.3,
-                        end: 0,
-                        curve: PRFMotionTokens.emphasized,
+              onRefresh: () {
+                final cubit = context.read<EventResourceCubit>()..invalidate();
+                return cubit.loadPastEvents();
+              },
+              child: LoadMoreOnScroll(
+                onEndReached: () =>
+                    context.read<EventResourceCubit>().loadNextPage(),
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.lg,
+                    vertical: PRFSpacingTokens.xl,
+                  ),
+                  itemCount: sorted.length + (hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == sorted.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(PRFSpacingTokens.lg),
+                        child: Center(child: PRFCircularProgressIndicator()),
                       );
-                },
+                    }
+                    final event = sorted[index];
+                    final isLast = index == events.length - 1;
+
+                    return TimelineEventCard(
+                          event: event,
+                          isLast: isLast,
+                          index: index,
+                          onTap: () => context.router.push(
+                            DeskEventDetailsRoute(event: event),
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger2 * math.min(index, 8),
+                          ),
+                          duration: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.enterShort,
+                          ),
+                        )
+                        .slideX(
+                          begin: 0.3,
+                          end: 0,
+                          curve: PRFMotionTokens.emphasized,
+                        );
+                  },
+                ),
               ),
             );
           },
@@ -363,365 +369,274 @@ class TimelineEventCard extends StatelessWidget with TimezoneMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final statusColors = context.statusColors;
+    final isDark = theme.brightness == Brightness.dark;
     final now = DateTime.now();
     final startDate = event.startDate;
     final endDate = event.endDate;
-    final isUpcoming = startDate.isAfter(now);
-    final isPast = endDate.isBefore(now.subtract(const Duration(days: 1)));
-    final isOngoing = startDate.isBefore(now) && endDate.isAfter(now);
+    // Day-inclusive: an activity is ongoing when today falls on or between
+    // its start and end days.
+    final startedByToday =
+        startDate.isBefore(now) || _isSameDay(startDate, now);
+    final endsTodayOrLater = endDate.isAfter(now) || _isSameDay(endDate, now);
+    final isOngoing = startedByToday && endsTodayOrLater;
+    final isUpcoming = !startedByToday;
     final isMultiDay = !_isSameDay(startDate, endDate);
 
-    // Premium status color system
-    final statusColor = isSubscribed
-        ? PRFColors.limeGreen
+    final statusSet = isSubscribed
+        ? statusColors.success
         : isOngoing
-        ? PRFColors
-              .limeGreen // Active green
+        ? statusColors.inProgress
         : isUpcoming
-        ? theme.colorScheme.primary
-        : isPast
-        ? theme.colorScheme.onSurfaceVariant
-        : theme.colorScheme.secondary;
+        ? statusColors.scheduled
+        : statusColors.completed;
+    final statusColor = statusSet.main;
+    final actionColor = statusSet.foreground;
+
+    final dateText = isMultiDay
+        ? '${Misc.formatDate(startDate, timezone)} - '
+              '${Misc.formatDate(endDate, timezone)}'
+        : Misc.formatDate(startDate, timezone);
+    final timeText = l10n.eventsTimeRangeDaily(
+      Misc.formatTime(event.startTime, timezone),
+      Misc.formatTime(event.endTime, timezone),
+    );
+    final radius = BorderRadius.circular(PRFRadiusTokens.md);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 46,
-          child: Column(
-            children: [
-              // Multi-day date badge
-              Container(
-                width: 40,
-                height: isMultiDay ? 85 : 42,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [statusColor, statusColor.withValues(alpha: 0.8)],
-                  ),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                  boxShadow: [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isMultiDay) ...[
-                      // Start date
-                      Text(
-                        startDate.day.toString(),
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        Misc.getMonthAbbreviation(startDate.month),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Container(
-                        width: 12,
-                        height: 1,
-                        color: Colors.white.withValues(alpha: 0.7),
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                      ),
-                      // End date
-                      Text(
-                        endDate.day.toString(),
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        Misc.getMonthAbbreviation(endDate.month),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ] else ...[
-                      // Single day
-                      Text(
-                        startDate.day.toString(),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        Misc.getMonthAbbreviation(startDate.month),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              // Timeline line with flexible height
-              if (!isLast)
-                Container(
-                  width: 2,
-                  height: 34,
-                  margin: const EdgeInsets.symmetric(
-                    vertical: PRFSpacingTokens.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        statusColor.withValues(alpha: 0.6),
-                        theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
-            ],
-          ),
+        PRFTimelineDateBadge(
+          startDate: startDate,
+          endDate: isMultiDay ? endDate : null,
+          statusColor: statusColor,
+          isLast: isLast,
+          badgeWidth: 40,
+          connectorHeight: 34,
         ),
-
-        const SizedBox(width: PRFSpacingTokens.md),
-
+        const SizedBox(width: PRFSpacingTokens.sm),
         Expanded(
-          child: GestureDetector(
-            onTap: onTap,
-            child: Container(
-              margin: EdgeInsets.only(bottom: isLast ? 0 : PRFSpacingTokens.sm),
-              decoration: BoxDecoration(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : PRFSpacingTokens.sm),
+            child: Semantics(
+              button: true,
+              label: '${event.name}, $dateText',
+              hint: l10n.viewDetails,
+              excludeSemantics: true,
+              child: Material(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                border: Border.all(color: statusColor.withValues(alpha: 0.2)),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Premium header with gradient
-                    Container(
-                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            statusColor.withValues(alpha: 0.1),
-                            statusColor.withValues(alpha: 0.05),
-                          ],
+                borderRadius: radius,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onTap,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      borderRadius: radius,
+                      border: Border.all(
+                        color: statusColor.withValues(
+                          alpha: PRFOpacities.muted,
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Event name and status
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  event.name,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                      boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                statusColor.withValues(
+                                  alpha: PRFOpacities.subtle,
                                 ),
-                              ),
-                              const SizedBox(width: PRFSpacingTokens.sm),
-                            ],
-                          ),
-
-                          const SizedBox(height: PRFSpacingTokens.sm),
-
-                          // Event venue with icon
-                          if (event.venue != null)
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(
-                                      PRFRadiusTokens.sm,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.location_on_rounded,
-                                    size: 16,
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                  ),
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.sm),
-                                Expanded(
-                                  child: Text(
-                                    event.venue!,
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                statusColor.withValues(
+                                  alpha: PRFOpacities.faint,
                                 ),
                               ],
                             ),
-                        ],
-                      ),
-                    ),
-
-                    // Event details
-                    Padding(
-                      padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Date range display
-                          Container(
-                            padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.md,
-                              ),
-                              border: Border.all(
-                                color: theme.colorScheme.outline.withValues(
-                                  alpha: 0.2,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                event.name,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: theme.colorScheme.onSurface,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.calendar_today_rounded,
-                                  size: 20,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.md),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        isMultiDay
-                                            // ignore: lines_longer_than_80_chars
-                                            ? '${Misc.formatDate(startDate, timezone)} - ${Misc.formatDate(endDate, timezone)}'
-                                            : Misc.formatDate(
-                                                startDate,
-                                                timezone,
-                                              ),
+                              if (event.venue != null) ...[
+                                const SizedBox(height: PRFSpacingTokens.sm),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(
+                                        PRFSpacingTokens.xs,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            theme.colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(
+                                          PRFRadiusTokens.sm,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.location_on_rounded,
+                                        size: PRFSizeTokens.iconSm,
+                                        color: theme
+                                            .colorScheme
+                                            .onPrimaryContainer,
+                                      ),
+                                    ),
+                                    const SizedBox(width: PRFSpacingTokens.sm),
+                                    Expanded(
+                                      child: Text(
+                                        event.venue!,
                                         style: theme.textTheme.titleSmall
                                             ?.copyWith(
                                               fontWeight: FontWeight.w600,
                                               color:
                                                   theme.colorScheme.onSurface,
                                             ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      const SizedBox(
-                                        height: PRFSpacingTokens.xs,
-                                      ),
-                                      Text(
-                                        // ignore: lines_longer_than_80_chars
-                                        '${Misc.formatTime(event.startTime, timezone)} - ${Misc.formatTime(event.endTime, timezone)} daily',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ],
-                            ),
+                            ],
                           ),
-
-                          const SizedBox(height: PRFSpacingTokens.md),
-
-                          // Description preview
-                          if (event.description.isNotEmpty)
-                            Text(
-                              event.description.split('\n').first,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(PRFSpacingTokens.md),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(
+                                  PRFSpacingTokens.sm,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: radius,
+                                  border: Border.all(
+                                    color: theme.colorScheme.outline.withValues(
+                                      alpha: PRFOpacities.muted,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today_rounded,
+                                      size: PRFSizeTokens.iconMd,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: PRFSpacingTokens.md),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            dateText,
+                                            style: theme.textTheme.titleSmall
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurface,
+                                                ),
+                                          ),
+                                          const SizedBox(
+                                            height: PRFSpacingTokens.xs,
+                                          ),
+                                          Text(
+                                            timeText,
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-
-                          const SizedBox(height: PRFSpacingTokens.md),
-
-                          // Action button
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: PRFSpacingTokens.lg,
-                              vertical: PRFSpacingTokens.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  statusColor.withValues(alpha: 0.1),
-                                  statusColor.withValues(alpha: 0.05),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.sm,
-                              ),
-                              border: Border.all(
-                                color: statusColor.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
+                              const SizedBox(height: PRFSpacingTokens.md),
+                              if (event.description.isNotEmpty)
                                 Text(
-                                  'View Details',
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: statusColor,
+                                  event.description.split('\n').first,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              const SizedBox(height: PRFSpacingTokens.md),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: PRFSpacingTokens.lg,
+                                  vertical: PRFSpacingTokens.sm,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withValues(
+                                    alpha: isDark
+                                        ? PRFOpacities.muted
+                                        : PRFOpacities.subtle,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    PRFRadiusTokens.sm,
+                                  ),
+                                  border: Border.all(
+                                    color: statusColor.withValues(
+                                      alpha: PRFOpacities.glow,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: PRFSpacingTokens.xs),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 14,
-                                  color: statusColor,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      l10n.viewDetails,
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: actionColor,
+                                          ),
+                                    ),
+                                    const SizedBox(width: PRFSpacingTokens.xs),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: PRFSizeTokens.iconSm,
+                                      color: actionColor,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

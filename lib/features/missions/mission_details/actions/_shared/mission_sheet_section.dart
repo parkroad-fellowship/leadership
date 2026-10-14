@@ -24,18 +24,20 @@ class MissionSheetSection extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.4),
+          color: theme.colorScheme.outline.withValues(alpha: PRFOpacities.high),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title.toUpperCase(),
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-              letterSpacing: 0.6,
+          Semantics(
+            header: true,
+            child: Text(
+              title,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
           const SizedBox(height: PRFSpacingTokens.xs),

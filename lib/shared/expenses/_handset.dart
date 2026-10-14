@@ -13,13 +13,14 @@ import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_allocation_entry.dart';
 import 'package:leadership/models/remote/prf_media.dart';
-import 'package:leadership/models/remote/prf_media_dto.dart';
 import 'package:leadership/models/remote/prf_refund.dart';
 import 'package:leadership/shared/expenses/actions/add_expense/_handset.dart';
 import 'package:leadership/shared/expenses/actions/add_refund/_handset.dart';
 import 'package:leadership/shared/expenses/actions/add_token/_handset.dart';
+import 'package:leadership/shared/expenses/actions/delete_expense/delete_expense_dialog.dart';
 import 'package:leadership/shared/expenses/actions/edit_expense/_handset.dart';
 import 'package:leadership/shared/expenses/actions/send_financial_report/_handset.dart';
+import 'package:leadership/shared/expenses/cubit/accounting_event_cubit.dart';
 import 'package:leadership/shared/expenses/cubit/allocation_entry_resource_cubit.dart';
 import 'package:leadership/shared/expenses/widgets/reciept_preview.dart';
 import 'package:leadership/shared/media_upload/cubit/select_media_cubit.dart';
@@ -56,10 +57,26 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     _loadData();
   }
 
-  void _loadData() {
+  /// [force] bypasses the freshness window. Use it when the server changed
+  /// something Hive does not know about yet (receipt upload) or the user
+  /// explicitly asked to refresh.
+  void _loadData({bool force = false}) {
     context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
       accountingEventUlid: accountingEventUlid,
+      force: force,
     );
+  }
+
+  /// Refetch the event so the totals the server computes stay current.
+  void _reloadEvent() {
+    context.read<AccountingEventCubit>().load(accountingEventUlid, force: true);
+  }
+
+  /// Refresh button, error retry and after mutations: always go to the
+  /// network (mutation responses carry fewer includes than the list).
+  void _refreshAll() {
+    _loadData(force: true);
+    _reloadEvent();
   }
 
   @override
@@ -81,13 +98,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 final operation = _pendingMutationOperation;
                 _pendingMutationOperation = null;
                 if (operation == ResourceOperation.create) {
-                  _loadData();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Entry added successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  _refreshAll();
+                  PRFSnackbar.success(context, l10n.expenseEntrySaved);
                 }
                 if (operation == ResourceOperation.update) {
                   if (_deletingReceiptUuid != null) {
@@ -95,31 +107,16 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                       _deletingReceiptUuid = null;
                     });
                     _loadData();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Receipt deleted successfully'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                    PRFSnackbar.success(context, l10n.expenseReceiptDeleted);
                     return;
                   }
 
-                  _loadData();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Expense updated successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  _refreshAll();
+                  PRFSnackbar.success(context, l10n.expenseUpdated);
                 }
                 if (operation == ResourceOperation.delete) {
-                  _loadData();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Expense deleted successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  _refreshAll();
+                  PRFSnackbar.success(context, l10n.expenseDeleted);
                 }
               },
               error: (message, items) {
@@ -128,12 +125,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                     _deletingReceiptUuid = null;
                   });
                 }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
+                PRFSnackbar.error(context, l10n.expenseSaveFailed);
               },
               orElse: () {},
             );
@@ -144,21 +136,13 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
             state.maybeWhen(
               orElse: () {},
               loaded: () {
-                _loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Receipt uploaded successfully'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                // The upload never writes Hive, so only a forced fetch
+                // brings the new receipt in.
+                _loadData(force: true);
+                PRFSnackbar.success(context, l10n.expenseReceiptUploaded);
               },
               error: (message) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to upload receipt: $message'),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
+                PRFSnackbar.error(context, l10n.expenseReceiptUploadFailed);
               },
             );
           },
@@ -190,27 +174,29 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   ),
                   child: PRFLinearProgressIndicator(),
                 ),
-                error: (message, items) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PRFSpacingTokens.lg,
-                  ),
-                  child: PRFEmptyView(
-                    label: 'Error',
-                    description: message,
-                    icon: Icons.error_outline,
-                    actionLabel: 'Retry',
-                    onActionPressed: _loadData,
-                  ),
-                ),
+                // Keep showing what we have when a refresh or change fails
+                // (the listener already explains it); only an empty screen
+                // becomes a full error state.
+                error: (message, items) => items.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+                        child: PRFErrorView.inline(
+                          title: l10n.expenseLoadErrorTitle,
+                          message: l10n.expenseLoadErrorMessage,
+                          retryLabel: l10n.tryAgain,
+                          onRetry: _refreshAll,
+                        ),
+                      )
+                    : _buildLoadedView(context, l10n, items),
                 orElse: () {
                   if (entries.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: PRFSpacingTokens.lg,
                       ),
                       child: PRFEmptyView(
-                        label: 'No Expenses Yet',
-                        description: 'Start by adding your first expense',
+                        label: l10n.expenseEmptyTitle,
+                        description: l10n.expenseEmptyDescription,
                         icon: Icons.receipt_long_outlined,
                       ),
                     );
@@ -229,41 +215,76 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     AppLocalizations l10n,
     List<PRFAllocationEntry> entries,
   ) {
-    final accountingEvent = entries.isNotEmpty
-        ? entries.first.accountingEvent
-        : null;
+    // The event (with refunds) comes from AccountingEventCubit. Until it
+    // arrives, or when offline, fall back to the plain event embedded in the
+    // cached rows so credits, debits and balance still show. That fallback
+    // has no refunds, so refund-dependent figures are withheld until the
+    // cubit's event is available: never show a money figure that may be
+    // wrong.
+    final eventState = context.watch<AccountingEventCubit>().state;
+    final accountingEvent =
+        eventState.event ?? entries.firstOrNull?.accountingEvent;
+    // A failed (forced) reload keeps the previous event, whose refunds may
+    // be out of date: treat it as unavailable rather than show old figures.
+    final refundsReady = eventState.event != null && eventState.error == null;
+    final refundsFailed = eventState.error != null;
+    Duration motion(Duration d) => PRFMotionTokens.resolve(context, d);
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: _buildHeader(context, l10n, accountingEvent!),
-        ),
-        // Financial Overview Header
-        SliverToBoxAdapter(
-          child: _buildFinancialOverview(context, l10n, accountingEvent)
-              .animate()
-              .slideY(begin: -0.3)
-              .fadeIn(duration: PRFMotionTokens.enterShort),
-        ),
+        if (accountingEvent != null) ...[
+          SliverToBoxAdapter(child: _buildHeader(context, l10n)),
+          // Financial Overview Header
+          SliverToBoxAdapter(
+            child:
+                _buildFinancialOverview(
+                      context,
+                      l10n,
+                      accountingEvent,
+                      refundPlaceholder: refundsReady
+                          ? null
+                          : refundsFailed
+                          ? l10n.expenseRefundStatOffline
+                          : l10n.expenseRefundLoading,
+                    )
+                    .animate()
+                    .slideY(
+                      begin: -0.3,
+                      duration: motion(PRFMotionTokens.enterShort),
+                    )
+                    .fadeIn(),
+          ),
 
-        // Quick Actions
-        SliverToBoxAdapter(
-          child: _buildQuickActions(context, l10n, accountingEvent)
-              .animate(delay: PRFMotionTokens.stagger2)
-              .slideY(begin: 0.3)
-              .fadeIn(),
-        ),
+          // Quick Actions
+          SliverToBoxAdapter(
+            child: _buildQuickActions(context, l10n, accountingEvent)
+                .animate(delay: motion(PRFMotionTokens.stagger2))
+                .slideY(
+                  begin: 0.3,
+                  duration: motion(PRFMotionTokens.enterShort),
+                )
+                .fadeIn(),
+          ),
 
-        // Refund Information (show when balance > 0)
-        SliverToBoxAdapter(
-          child: _buildRefundInformation(context, l10n, accountingEvent),
-        ),
+          // Refund Information (needs the event's refunds)
+          SliverToBoxAdapter(
+            child: refundsReady
+                ? _buildRefundInformation(context, l10n, accountingEvent)
+                : _buildRefundUnavailable(
+                    context,
+                    refundsFailed
+                        ? l10n.expenseRefundNeedsConnection
+                        : l10n.expenseRefundLoadingDetails,
+                    loading: !refundsFailed,
+                  ),
+          ),
+        ],
 
         // Breakdown Toggle
         SliverToBoxAdapter(
           child: _buildBreakdownToggle(context, entries)
-              .animate(delay: PRFMotionTokens.stagger4)
-              .slideX(begin: -0.2)
+              .animate(delay: motion(PRFMotionTokens.stagger4))
+              .slideX(begin: -0.2, duration: motion(PRFMotionTokens.enterShort))
               .fadeIn(),
         ),
 
@@ -275,7 +296,10 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               delegate: SliverChildBuilderDelegate((context, index) {
                 return _buildExpenseCard(context, entries[index])
                     .animate()
-                    .fadeIn(duration: 300.ms, delay: (index * 50).ms)
+                    .fadeIn(
+                      duration: motion(PRFMotionTokens.enterShort),
+                      delay: motion((index.clamp(0, 8) * 50).ms),
+                    )
                     .slideX(begin: 0.2, end: 0);
               }, childCount: entries.length),
             ),
@@ -284,28 +308,35 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         // Empty state when breakdown is shown but no entries
         if (_showBreakdown && entries.isEmpty)
           SliverToBoxAdapter(
-            child: const PRFEmptyView(
-              label: 'No Expenses Yet',
-              description: 'Start by adding your first expense',
+            child: PRFEmptyView(
+              label: l10n.expenseEmptyTitle,
+              description: l10n.expenseEmptyDescription,
               icon: Icons.receipt_long_outlined,
-            ).animate().fadeIn(duration: PRFMotionTokens.enterShort),
+            ).animate().fadeIn(duration: motion(PRFMotionTokens.enterShort)),
           ),
 
         // Bottom spacing
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: PRFSpacingTokens.xxxl * 2),
+        ),
       ],
     );
   }
 
+  /// [refundPlaceholder] replaces the amount-to-refund figure when the
+  /// event's refunds are not loaded yet (or failed to load).
   Widget _buildFinancialOverview(
     BuildContext context,
     AppLocalizations l10n,
-    PRFAccountingEvent accountingEvent,
-  ) {
+    PRFAccountingEvent accountingEvent, {
+    String? refundPlaceholder,
+  }) {
     final theme = Theme.of(context);
+    final onPrimary = theme.colorScheme.onPrimary;
     final spentPercentage = accountingEvent.credits > 0
         ? (accountingEvent.debits / accountingEvent.credits)
         : 0.0;
+    Duration motion(Duration d) => PRFMotionTokens.resolve(context, d);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
@@ -319,19 +350,15 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   gradient: LinearGradient(
                     colors: [
                       theme.colorScheme.primary,
-                      theme.colorScheme.primary.withValues(alpha: 0.8),
+                      theme.colorScheme.primary.withValues(
+                        alpha: PRFOpacities.stronger,
+                      ),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
+                  boxShadow: PRFShadowTokens.badge(theme.colorScheme.primary),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,27 +366,34 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          l10n.currentBalance,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
+                        Flexible(
+                          child: Text(
+                            l10n.currentBalance,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: onPrimary,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: PRFSpacingTokens.sm),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: PRFSpacingTokens.md,
+                            vertical: PRFSpacingTokens.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: onPrimary.withValues(
+                              alpha: PRFOpacities.muted,
+                            ),
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.md,
                             ),
                           ),
                           child: Text(
-                            '${(spentPercentage * 100).toStringAsFixed(1)}% spent',
+                            l10n.expensePercentSpent(
+                              (spentPercentage * 100).toStringAsFixed(1),
+                            ),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white,
+                              color: onPrimary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -373,34 +407,24 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                         symbol: 'KES ',
                       ).format(accountingEvent.balance),
                       style: theme.textTheme.headlineLarge?.copyWith(
-                        color: Colors.white,
+                        color: onPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: PRFSpacingTokens.lg),
-                    // Progress bar
-                    Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: spentPercentage.clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
+                    // Share of received money already spent.
+                    PRFLinearProgressIndicator(
+                      value: spentPercentage.clamp(0.0, 1.0),
+                      color: onPrimary,
+                      backgroundColor: onPrimary.withValues(
+                        alpha: PRFOpacities.glow,
                       ),
                     ),
                   ],
                 ),
               )
               .animate()
-              .fadeIn(duration: PRFMotionTokens.enterShort)
+              .fadeIn(duration: motion(PRFMotionTokens.enterShort))
               .slideY(begin: 0.3, end: 0),
 
           const SizedBox(height: PRFSpacingTokens.lg),
@@ -417,7 +441,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                     symbol: 'KES ',
                   ).format(accountingEvent.credits),
                   Icons.trending_up,
-                  theme.colorScheme.secondary,
+                  context.statusColors.success.main,
                 ),
               ),
               const SizedBox(width: PRFSpacingTokens.xs),
@@ -438,10 +462,14 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 child: _buildStatCard(
                   context,
                   l10n.amountToRefund,
-                  NumberFormat.currency(locale: 'en_KE', symbol: 'KES ').format(
-                    accountingEvent.latestRefund?.deficitAmount ??
-                        accountingEvent.amountToRefund,
-                  ),
+                  refundPlaceholder ??
+                      NumberFormat.currency(
+                        locale: 'en_KE',
+                        symbol: 'KES ',
+                      ).format(
+                        accountingEvent.latestRefund?.deficitAmount ??
+                            accountingEvent.amountToRefund,
+                      ),
                   Icons.refresh,
                   theme.colorScheme.outline,
                 ),
@@ -466,9 +494,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-            border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.2),
-            ),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,10 +504,10 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   Container(
                     padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
+                      color: color.withValues(alpha: PRFOpacities.subtle),
                       borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                     ),
-                    child: Icon(icon, size: 16, color: color),
+                    child: Icon(icon, size: PRFSizeTokens.iconSm, color: color),
                   ),
                   const Spacer(),
                 ],
@@ -506,7 +532,10 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           ),
         )
         .animate()
-        .fadeIn(delay: PRFMotionTokens.stagger2, duration: 400.ms)
+        .fadeIn(
+          delay: PRFMotionTokens.resolve(context, PRFMotionTokens.stagger2),
+          duration: PRFMotionTokens.resolve(context, 400.ms),
+        )
         .slideX(begin: 0.3, end: 0);
   }
 
@@ -515,42 +544,22 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     AppLocalizations l10n,
     PRFAccountingEvent accountingEvent,
   ) {
-    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(PRFSpacingTokens.lg),
       child: Row(
         children: [
           Expanded(
-            child: ElevatedButton.icon(
+            child: PRFButton(
               onPressed: () => _showAddTokenModal(context, accountingEvent),
-              icon: const Icon(Icons.add_circle_outline),
-              label: Text(l10n.addToken),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.secondary,
-                foregroundColor: theme.colorScheme.onSecondary,
-                padding: const EdgeInsets.symmetric(
-                  vertical: PRFSpacingTokens.lg,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                ),
-              ),
+              title: l10n.addToken,
+              variant: PRFButtonVariant.secondary,
             ),
           ),
           const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
-            child: OutlinedButton.icon(
+            child: PRFButton(
               onPressed: () => _showAddExpenseModal(context),
-              icon: const Icon(Icons.receipt_long),
-              label: Text(l10n.addExpense),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  vertical: PRFSpacingTokens.lg,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                ),
-              ),
+              title: l10n.addExpense,
             ),
           ),
         ],
@@ -572,49 +581,58 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         elevation: 1,
         child: InkWell(
           onTap: () => setState(() => _showBreakdown = !_showBreakdown),
+          excludeFromSemantics: true,
           borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-          child: Padding(
-            padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.list_alt,
-                  color: theme.colorScheme.onSurface,
-                  size: 24,
-                ),
-                const SizedBox(width: PRFSpacingTokens.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Transaction Breakdown',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        _showBreakdown
-                            ? 'Tap to hide details'
-                            : 'Tap to view ${entries.length} transactions',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.6,
+          child: Semantics(
+            button: true,
+            expanded: _showBreakdown,
+            onTap: () => setState(() => _showBreakdown = !_showBreakdown),
+            child: Padding(
+              padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.list_alt,
+                    color: theme.colorScheme.onSurface,
+                    size: PRFSizeTokens.iconLg,
+                  ),
+                  const SizedBox(width: PRFSpacingTokens.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.l10n.expenseTransactionsTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    ],
+                        Text(
+                          _showBreakdown
+                              ? context.l10n.expenseHideTransactions
+                              : context.l10n.expenseShowTransactions(
+                                  entries.length,
+                                ),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                AnimatedRotation(
-                  duration: PRFMotionTokens.standard,
-                  turns: _showBreakdown ? 0.5 : 0,
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  AnimatedRotation(
+                    duration: PRFMotionTokens.resolve(
+                      context,
+                      PRFMotionTokens.standard,
+                    ),
+                    turns: _showBreakdown ? 0.5 : 0,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -634,16 +652,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: Material(
         color: Colors.transparent,
@@ -661,16 +671,16 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                     decoration: BoxDecoration(
                       color: isCredit
                           ? theme.colorScheme.primaryContainer.withValues(
-                              alpha: 0.3,
+                              alpha: PRFOpacities.glow,
                             )
                           : theme.colorScheme.errorContainer.withValues(
-                              alpha: 0.3,
+                              alpha: PRFOpacities.glow,
                             ),
                       borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                     ),
                     child: Icon(
                       isCredit ? Icons.trending_up : Icons.trending_down,
-                      size: 16,
+                      size: PRFSizeTokens.iconSm,
                       color: isCredit
                           ? theme.colorScheme.primary
                           : theme.colorScheme.error,
@@ -740,65 +750,25 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   ),
                   // Delete Button for Debit Entries Only
                   if (!isCredit) ...[
-                    const SizedBox(width: PRFSpacingTokens.sm),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _showDeleteConfirmation(context, entry),
-                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                        child: Container(
-                          padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.errorContainer.withValues(
-                              alpha: 0.5,
-                            ),
-                            borderRadius: BorderRadius.circular(
-                              PRFRadiusTokens.md,
-                            ),
-                            border: Border.all(
-                              color: theme.colorScheme.error.withValues(
-                                alpha: 0.3,
-                              ),
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
-                      ),
+                    const SizedBox(width: PRFSpacingTokens.xs),
+                    _buildCardIconButton(
+                      context,
+                      icon: Icons.delete_outline,
+                      tooltip: l10n.expenseDeleteTooltip,
+                      foreground: theme.colorScheme.error,
+                      background: theme.colorScheme.errorContainer,
+                      onPressed: () => _showDeleteConfirmation(context, entry),
                     ),
                   ],
                   // Edit Button
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _showExpenseDetails(context, entry),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                      child: Container(
-                        padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer.withValues(
-                            alpha: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            PRFRadiusTokens.md,
-                          ),
-                          border: Border.all(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.3,
-                            ),
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.edit_outlined,
-                          size: 18,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(width: PRFSpacingTokens.xs),
+                  _buildCardIconButton(
+                    context,
+                    icon: Icons.edit_outlined,
+                    tooltip: l10n.expenseEditTooltip,
+                    foreground: theme.colorScheme.onPrimaryContainer,
+                    background: theme.colorScheme.primaryContainer,
+                    onPressed: () => _showExpenseDetails(context, entry),
                   ),
                 ],
               ),
@@ -830,20 +800,51 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
+  /// A 48dp, tooltip-labelled icon action on an expense card.
+  Widget _buildCardIconButton(
+    BuildContext context, {
+    required IconData icon,
+    required String tooltip,
+    required Color foreground,
+    required Color background,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: Icon(icon, size: PRFSizeTokens.iconMd),
+      style: IconButton.styleFrom(
+        foregroundColor: foreground,
+        backgroundColor: background,
+        minimumSize: const Size.square(PRFSizeTokens.minTouchTarget),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+        ),
+      ),
+    );
+  }
+
   Widget _buildReceiptAttachments(
     BuildContext context,
     String allocationEntryUlid,
     List<PRFMedia> receipts,
   ) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    const thumbSize = 76.0;
+    const itemSize = thumbSize + PRFSpacingTokens.lg + PRFSpacingTokens.xs;
 
     return Container(
       padding: const EdgeInsets.all(PRFSpacingTokens.lg),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: theme.colorScheme.primaryContainer.withValues(
+          alpha: PRFOpacities.glow,
+        ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+          color: theme.colorScheme.primary.withValues(
+            alpha: PRFOpacities.muted,
+          ),
         ),
       ),
       child: Column(
@@ -852,31 +853,34 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(PRFSpacingTokens.xs),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  color: theme.colorScheme.primary.withValues(
+                    alpha: PRFOpacities.hairline,
+                  ),
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 ),
                 child: Icon(
                   Icons.receipt_long,
-                  size: 16,
+                  size: PRFSizeTokens.iconSm,
                   color: theme.colorScheme.primary,
                 ),
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
-              Text(
-                '${receipts.length} '
-                'Attachment${receipts.length == 1 ? '' : 's'}',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  l10n.expenseAttachments(receipts.length),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: PRFSpacingTokens.md),
+          const SizedBox(height: PRFSpacingTokens.sm),
           SizedBox(
-            height: 80,
+            height: itemSize,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: receipts.length,
@@ -887,215 +891,194 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 );
 
                 final isDeleting = _deletingReceiptUuid == receipt.uuid;
+                final thumbRadius = BorderRadius.circular(PRFRadiusTokens.lg);
 
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                // The thumbnail sits bottom-left; the delete control's 48dp
+                // hit area sits top-right, overlapping only the corner.
+                return SizedBox(
+                  width: itemSize,
+                  height: itemSize,
                   child: Stack(
-                    clipBehavior: Clip.none,
                     children: [
-                      GestureDetector(
-                        onTap: isPdf
-                            ? () => _openPdfDocument(
-                                context,
-                                receipt.temporaryURL,
-                              )
-                            : () =>
-                                  _showReceiptPreview(context, receipts, index),
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              PRFRadiusTokens.lg,
-                            ),
-                            border: Border.all(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: 0.3,
-                              ),
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.1,
+                      Positioned(
+                        left: 0,
+                        bottom: 0,
+                        width: thumbSize,
+                        height: thumbSize,
+                        child: Semantics(
+                          button: true,
+                          label: l10n.expenseOpenReceipt(index + 1),
+                          excludeSemantics: true,
+                          child: Material(
+                            color: Colors.transparent,
+                            borderRadius: thumbRadius,
+                            clipBehavior: Clip.antiAlias,
+                            child: InkWell(
+                              onTap: isPdf
+                                  ? () => _openPdfDocument(
+                                      context,
+                                      receipt.temporaryURL,
+                                    )
+                                  : () => _showReceiptPreview(
+                                      context,
+                                      receipts,
+                                      index,
+                                    ),
+                              borderRadius: thumbRadius,
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  borderRadius: thumbRadius,
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: PRFOpacities.glow,
+                                    ),
+                                    width: 2,
+                                  ),
+                                  color: isPdf
+                                      ? theme.colorScheme.tertiaryContainer
+                                      : theme
+                                            .colorScheme
+                                            .surfaceContainerHighest,
                                 ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: isPdf
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.tertiary
-                                        .withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.file_present,
-                                        size: 28,
-                                        color: theme.colorScheme.tertiary,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'PDF',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color:
-                                                  theme.colorScheme.onSurface,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Stack(
-                                    children: [
-                                      Image.network(
+                                child: isPdf
+                                    ? Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.file_present,
+                                            size: PRFSizeTokens.iconXl,
+                                            color: theme
+                                                .colorScheme
+                                                .onTertiaryContainer,
+                                          ),
+                                          Text(
+                                            'PDF',
+                                            style: theme.textTheme.labelSmall
+                                                ?.copyWith(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onTertiaryContainer,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ],
+                                      )
+                                    : Image.network(
                                         receipt.temporaryURL,
                                         fit: BoxFit.cover,
                                         width: double.infinity,
                                         height: double.infinity,
                                         errorBuilder:
                                             (context, error, stackTrace) {
-                                              return ColoredBox(
+                                              return Icon(
+                                                Icons.image_not_supported,
                                                 color: theme
                                                     .colorScheme
-                                                    .surfaceContainerHighest,
-                                                child: Icon(
-                                                  Icons.image_not_supported,
-                                                  color: theme
-                                                      .colorScheme
-                                                      .onSurface
-                                                      .withValues(alpha: 0.4),
-                                                  size: 24,
+                                                    .onSurfaceVariant,
+                                                size: PRFSizeTokens.iconLg,
+                                              );
+                                            },
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
+                                              final total = loadingProgress
+                                                  .expectedTotalBytes;
+                                              return Center(
+                                                child: PRFCircularProgressIndicator(
+                                                  size: PRFSizeTokens.iconMd,
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                  value: total != null
+                                                      ? loadingProgress
+                                                                .cumulativeBytesLoaded /
+                                                            total
+                                                      : null,
                                                 ),
                                               );
                                             },
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return ColoredBox(
-                                            color: theme
-                                                .colorScheme
-                                                .surfaceContainerHighest,
-                                            child: Center(
-                                              child: SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  color:
-                                                      theme.colorScheme.primary,
-                                                  value:
-                                                      loadingProgress
-                                                              .expectedTotalBytes !=
-                                                          null
-                                                      ? loadingProgress
-                                                                .cumulativeBytesLoaded /
-                                                            loadingProgress
-                                                                .expectedTotalBytes!
-                                                      : null,
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
                                       ),
-                                      // Overlay for better tap indication
-                                      Positioned.fill(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              colors: [
-                                                Colors.transparent,
-                                                Colors.black.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                        ),
-                      ),
-                      // Delete button
-                      Positioned(
-                        top: -6,
-                        right: -6,
-                        child: GestureDetector(
-                          onTap: () => _showDeleteReceiptConfirmation(
-                            context,
-                            allocationEntryUlid,
-                            receipt,
-                          ),
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.error,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.colorScheme.surface,
-                                width: 2,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.close,
-                              size: 14,
-                              color: theme.colorScheme.onError,
                             ),
                           ),
                         ),
                       ),
                       // Loading overlay during deletion
                       if (isDeleting)
-                        Positioned.fill(
-                          child: Container(
-                            width: 70,
-                            height: 70,
+                        Positioned(
+                          left: 0,
+                          bottom: 0,
+                          width: thumbSize,
+                          height: thumbSize,
+                          child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.lg,
+                              color: theme.colorScheme.scrim.withValues(
+                                alpha: PRFOpacities.half,
+                              ),
+                              borderRadius: thumbRadius,
+                            ),
+                            child: Center(
+                              child: PRFCircularProgressIndicator(
+                                size: PRFSizeTokens.iconMd,
+                                color: theme.colorScheme.surface,
                               ),
                             ),
-                            child: const Center(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                          ),
+                        ),
+                      // Delete button (48dp hit area, 28dp visual)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Tooltip(
+                          message: l10n.expenseDeleteReceiptLabel(index + 1),
+                          child: Semantics(
+                            button: true,
+                            label: l10n.expenseDeleteReceiptLabel(index + 1),
+                            excludeSemantics: true,
+                            child: InkResponse(
+                              onTap: isDeleting
+                                  ? null
+                                  : () => _showDeleteReceiptConfirmation(
+                                      context,
+                                      allocationEntryUlid,
+                                      receipt,
+                                    ),
+                              radius: PRFSizeTokens.minTouchTarget / 2,
+                              child: SizedBox.square(
+                                dimension: PRFSizeTokens.minTouchTarget,
+                                child: Center(
+                                  child: Container(
+                                    width:
+                                        PRFSizeTokens.iconLg +
+                                        PRFSpacingTokens.xs,
+                                    height:
+                                        PRFSizeTokens.iconLg +
+                                        PRFSpacingTokens.xs,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.error,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: theme.colorScheme.surface,
+                                        width: 2,
+                                      ),
+                                      boxShadow: PRFShadowTokens.card(
+                                        theme.colorScheme.shadow,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: PRFSizeTokens.iconSm,
+                                      color: theme.colorScheme.onError,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
+                      ),
                     ],
                   ),
                 );
@@ -1112,13 +1095,13 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     String allocationEntryUlid,
     PRFMedia receipt,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Receipt',
-      message:
-          'Are you sure you want to delete this receipt? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.expenseDeleteReceiptTitle,
+      message: l10n.expenseDeleteReceiptMessage,
+      confirmLabel: l10n.expenseDeleteReceiptConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 
@@ -1138,217 +1121,90 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     PRFAllocationEntry entry,
   ) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final warning = context.statusColors.warning;
 
     return Container(
       padding: const EdgeInsets.all(PRFSpacingTokens.lg),
       decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+        color: warning.background,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.error.withValues(alpha: 0.3),
+          color: warning.main.withValues(alpha: PRFOpacities.glow),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(PRFSpacingTokens.sm),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.error.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-            ),
-            child: Icon(
-              Icons.receipt_outlined,
-              size: 20,
-              color: theme.colorScheme.error,
-            ),
-          ),
-          const SizedBox(width: PRFSpacingTokens.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Receipt Missing',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  'Attach receipt or documentation',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          BlocBuilder<UploadMediaCubit, UploadMediaState>(
-            builder: (context, uploadState) {
-              return uploadState.maybeWhen(
-                orElse: () => Row(
-                  mainAxisSize: MainAxisSize.min,
+          Row(
+            children: [
+              Icon(
+                Icons.receipt_outlined,
+                size: PRFSizeTokens.iconMd,
+                color: warning.foreground,
+              ),
+              const SizedBox(width: PRFSpacingTokens.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Attach Image Button
-                    Material(
-                      color: theme.colorScheme.error,
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                      child: InkWell(
-                        onTap: () async {
-                          try {
-                            await context
-                                .read<SelectMediaCubit>()
-                                .selectMediaWithSource(
-                                  context: context,
-                                  modelUlid: entry.ulid,
-                                  model: PRFMediaModel.allocationEntryReceipts,
-                                  mediaType: MediaType.image,
-                                );
-
-                            // ignore: use_build_context_synchronously
-                            final dtos = context
-                                .read<SelectMediaCubit>()
-                                .state
-                                .maybeWhen(
-                                  orElse: () => <PRFMediaDTO>[],
-                                  loaded: (dtos) => dtos,
-                                );
-
-                            // Get the selected media from the cubit state
-                            // ignore: use_build_context_synchronously
-                            context.read<SelectMediaCubit>().state.maybeWhen(
-                              orElse: () {},
-                              loaded: (_) {
-                                if (context.mounted) {
-                                  context.read<UploadMediaCubit>().uploadMedia(
-                                    imageDTOs: dtos,
-                                  );
-                                }
-                              },
-                            );
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to select image: $e'),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.error,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.image_outlined,
-                                size: 16,
-                                color: theme.colorScheme.onError,
-                              ),
-                              const SizedBox(width: PRFSpacingTokens.xs),
-                              Text(
-                                'Image',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onError,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                    Text(
+                      l10n.expenseReceiptMissingTitle,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: warning.foreground,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: PRFSpacingTokens.sm),
-                    // Attach PDF Button
-                    Material(
-                      color: theme.colorScheme.tertiary,
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                      child: InkWell(
-                        onTap: () async {
-                          try {
-                            await context
-                                .read<SelectMediaCubit>()
-                                .selectDocuments(
-                                  modelUlid: entry.ulid,
-                                  model: PRFMediaModel.allocationEntryReceipts,
-                                );
-
-                            // ignore: use_build_context_synchronously
-                            final dtos = context
-                                .read<SelectMediaCubit>()
-                                .state
-                                .maybeWhen(
-                                  orElse: () => <PRFMediaDTO>[],
-                                  loaded: (dtos) => dtos,
-                                );
-
-                            // Get the selected documents from the cubit state
-                            // ignore: use_build_context_synchronously
-                            context.read<SelectMediaCubit>().state.maybeWhen(
-                              orElse: () {},
-                              loaded: (_) {
-                                if (context.mounted) {
-                                  context.read<UploadMediaCubit>().uploadMedia(
-                                    imageDTOs: dtos,
-                                  );
-                                }
-                              },
-                            );
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to select PDF: $e'),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.error,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.file_present_outlined,
-                                size: 16,
-                                color: theme.colorScheme.onTertiary,
-                              ),
-                              const SizedBox(width: PRFSpacingTokens.xs),
-                              Text(
-                                'PDF',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onTertiary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                    Text(
+                      l10n.expenseReceiptMissingDescription,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: warning.foreground,
                       ),
                     ),
                   ],
                 ),
-                loading: () => SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: PRFCircularProgressIndicator(
-                    color: theme.colorScheme.primary,
+              ),
+            ],
+          ),
+          const SizedBox(height: PRFSpacingTokens.md),
+          BlocBuilder<UploadMediaCubit, UploadMediaState>(
+            builder: (context, uploadState) {
+              return uploadState.maybeWhen(
+                orElse: () => Row(
+                  children: [
+                    Expanded(
+                      child: PRFButton(
+                        onPressed: () => _attachReceiptPhoto(context, entry),
+                        title: l10n.expenseAddPhoto,
+                      ),
+                    ),
+                    const SizedBox(width: PRFSpacingTokens.sm),
+                    Expanded(
+                      child: PRFButton(
+                        onPressed: () => _attachReceiptPdf(context, entry),
+                        title: l10n.expenseAddPdf,
+                        variant: PRFButtonVariant.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+                loading: () => Semantics(
+                  liveRegion: true,
+                  label: l10n.expenseUploadingReceipt,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.expenseUploadingReceipt,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: warning.foreground,
+                        ),
+                      ),
+                      const SizedBox(height: PRFSpacingTokens.xs),
+                      PRFLinearProgressIndicator(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -1356,6 +1212,58 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _attachReceiptPhoto(
+    BuildContext context,
+    PRFAllocationEntry entry,
+  ) async {
+    final selectMedia = context.read<SelectMediaCubit>();
+    final uploadMedia = context.read<UploadMediaCubit>();
+    final failedMessage = context.l10n.expensePhotoPickFailed;
+    try {
+      await selectMedia.selectMediaWithSource(
+        context: context,
+        modelUlid: entry.ulid,
+        model: PRFMediaModel.allocationEntryReceipts,
+        mediaType: MediaType.image,
+      );
+      _uploadSelected(context, selectMedia, uploadMedia);
+    } on Exception {
+      if (context.mounted) PRFSnackbar.error(context, failedMessage);
+    }
+  }
+
+  Future<void> _attachReceiptPdf(
+    BuildContext context,
+    PRFAllocationEntry entry,
+  ) async {
+    final selectMedia = context.read<SelectMediaCubit>();
+    final uploadMedia = context.read<UploadMediaCubit>();
+    final failedMessage = context.l10n.expensePdfPickFailed;
+    try {
+      await selectMedia.selectDocuments(
+        modelUlid: entry.ulid,
+        model: PRFMediaModel.allocationEntryReceipts,
+      );
+      _uploadSelected(context, selectMedia, uploadMedia);
+    } on Exception {
+      if (context.mounted) PRFSnackbar.error(context, failedMessage);
+    }
+  }
+
+  /// Uploads whatever the picker left in [selectMedia] (nothing if the user
+  /// cancelled).
+  void _uploadSelected(
+    BuildContext context,
+    SelectMediaCubit selectMedia,
+    UploadMediaCubit uploadMedia,
+  ) {
+    if (!context.mounted) return;
+    selectMedia.state.maybeWhen(
+      orElse: () {},
+      loaded: (dtos) => uploadMedia.uploadMedia(imageDTOs: dtos),
     );
   }
 
@@ -1367,11 +1275,17 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       );
       final bytes = Uint8List.fromList(response.data!);
       if (!context.mounted) return;
-      await PRFPdfViewer.show(context, bytes: bytes, title: 'Receipt PDF');
+      await PRFPdfViewer.show(
+        context,
+        bytes: bytes,
+        title: context.l10n.expenseReceiptPdfTitle,
+      );
     } on Exception {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load PDF document.')),
+      PRFSnackbar.error(
+        context,
+        context.l10n.expensePdfLoadFailed,
+        onRetry: () => _openPdfDocument(context, pdfUrl),
       );
     }
   }
@@ -1413,90 +1327,16 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   }
 
   void _showDeleteConfirmation(BuildContext context, PRFAllocationEntry entry) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return PRFConfirmationDialog(
-          title: 'Delete Expense',
+          title: l10n.expenseDeleteTitle,
           isDestructive: true,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Are you sure you want to delete this expense?',
-                style: theme.textTheme.bodyLarge,
-              ),
-              const SizedBox(height: PRFSpacingTokens.lg),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer.withValues(
-                    alpha: 0.3,
-                  ),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                  border: Border.all(
-                    color: theme.colorScheme.error.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      entry.expenseCategory?.name ?? 'Unknown Category',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: PRFSpacingTokens.sm),
-                    Text(
-                      NumberFormat.currency(
-                        symbol: 'KES ',
-                        decimalDigits: 0,
-                      ).format(entry.amount),
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: theme.colorScheme.error,
-                      ),
-                    ),
-                    if (entry.narration.isNotEmpty) ...[
-                      const SizedBox(height: PRFSpacingTokens.sm),
-                      Text(
-                        entry.narration,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.7,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: PRFSpacingTokens.lg),
-              Text(
-                'This action cannot be undone.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.error,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
+          content: ExpenseDeleteSummary(entry: entry),
           customActions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
             BlocConsumer<
               AllocationEntryResourceCubit,
               ResourceState<PRFAllocationEntry>
@@ -1525,21 +1365,29 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                   orElse: () => false,
                 );
 
-                if (isDeleting) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: PRFSpacingTokens.lg,
-                      vertical: PRFSpacingTokens.sm,
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PRFButton(
+                      onPressed: () => context
+                          .read<AllocationEntryResourceCubit>()
+                          .deleteAllocationEntry(
+                            allocationEntryUlid: entry.ulid,
+                          ),
+                      title: l10n.expenseDeleteConfirm,
+                      variant: PRFButtonVariant.destructive,
+                      isLoading: isDeleting,
+                      disabled: isDeleting,
                     ),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                    const SizedBox(height: PRFSpacingTokens.md),
+                    PRFButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      title: l10n.cancel,
+                      variant: PRFButtonVariant.secondary,
+                      disabled: isDeleting,
                     ),
-                  );
-                }
-
-                return _buildDeleteButton(theme, context, entry);
+                  ],
+                );
               },
             ),
           ],
@@ -1548,33 +1396,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  Widget _buildDeleteButton(
-    ThemeData theme,
-    BuildContext context,
-    PRFAllocationEntry entry,
-  ) {
-    return ElevatedButton.icon(
-      onPressed: () {
-        context.read<AllocationEntryResourceCubit>().deleteAllocationEntry(
-          allocationEntryUlid: entry.ulid,
-        );
-      },
-      icon: const Icon(Icons.delete_outline, size: 18),
-      label: const Text('Delete'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: theme.colorScheme.error,
-        foregroundColor: theme.colorScheme.onError,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.lg,
-          vertical: PRFSpacingTokens.sm,
-        ),
-      ),
-    );
-  }
-
+  // No reload after the token sheet closes: the token is persisted to Hive
+  // (the entries list re-emits) and the allocation listener above refetches
+  // the event totals when the save completes.
   void _showAddTokenModal(
     BuildContext context,
     PRFAccountingEvent accountingEvent,
@@ -1586,30 +1410,28 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: AddTokenViewHandset(accountingEventUlid: accountingEvent.ulid),
       ),
-    ).then((_) {
-      if (context.mounted) {
-        context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
-          accountingEventUlid: accountingEvent.ulid,
-        );
-      }
-    });
+    );
   }
 
   void _showAddRefundModal(
     BuildContext context,
     PRFAccountingEvent accountingEvent,
   ) {
-    PRFBottomSheet.show<void>(
+    PRFBottomSheet.show<bool>(
       context,
-      title: 'Add Refund',
+      title: context.l10n.expenseAddRefund,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
         child: AddRefundViewHandset(accountingEventUlid: accountingEvent.ulid),
       ),
-    ).then((_) {
-      if (context.mounted) {
-        context.read<AllocationEntryResourceCubit>().refreshForAccountingEvent(
-          accountingEventUlid: accountingEvent.ulid,
+    ).then((saved) {
+      // Only a saved refund changes anything. Refunds save through
+      // RefundResourceCubit, so the allocation listener never sees them;
+      // refetch the event (it carries the refunds and server totals).
+      if ((saved ?? false) && context.mounted) {
+        context.read<AccountingEventCubit>().load(
+          accountingEvent.ulid,
+          force: true,
         );
       }
     });
@@ -1629,15 +1451,21 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      theme.colorScheme.tertiary.withValues(alpha: 0.1),
-                      theme.colorScheme.tertiary.withValues(alpha: 0.05),
+                      theme.colorScheme.tertiary.withValues(
+                        alpha: PRFOpacities.subtle,
+                      ),
+                      theme.colorScheme.tertiary.withValues(
+                        alpha: PRFOpacities.faint,
+                      ),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
                   border: Border.all(
-                    color: theme.colorScheme.tertiary.withValues(alpha: 0.3),
+                    color: theme.colorScheme.tertiary.withValues(
+                      alpha: PRFOpacities.glow,
+                    ),
                   ),
                 ),
                 child: Column(
@@ -1649,7 +1477,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                           padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.tertiary.withValues(
-                              alpha: 0.2,
+                              alpha: PRFOpacities.muted,
                             ),
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.sm,
@@ -1658,7 +1486,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                           child: Icon(
                             Icons.account_balance_wallet,
                             color: theme.colorScheme.tertiary,
-                            size: 20,
+                            size: PRFSizeTokens.iconMd,
                           ),
                         ),
                         const SizedBox(width: PRFSpacingTokens.md),
@@ -1684,8 +1512,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: PRFSpacingTokens.md,
+                            vertical: PRFSpacingTokens.xs,
                           ),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.tertiary,
@@ -1702,7 +1530,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                                   accountingEvent.amountToRefund,
                             ),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white,
+                              color: theme.colorScheme.onTertiary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -1716,9 +1544,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
                         border: Border.all(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.2,
-                          ),
+                          color: theme.colorScheme.outlineVariant,
                         ),
                       ),
                       child: Column(
@@ -1728,13 +1554,15 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                               Icon(
                                 Icons.payment,
                                 color: theme.colorScheme.primary,
-                                size: 20,
+                                size: PRFSizeTokens.iconMd,
                               ),
                               const SizedBox(width: PRFSpacingTokens.sm),
-                              Text(
-                                l10n.refundDetails,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                              Expanded(
+                                child: Text(
+                                  l10n.refundDetails,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1761,7 +1589,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                       padding: const EdgeInsets.all(PRFSpacingTokens.md),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primaryContainer.withValues(
-                          alpha: 0.3,
+                          alpha: PRFOpacities.glow,
                         ),
                         borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                       ),
@@ -1770,7 +1598,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                           Icon(
                             Icons.info_outline,
                             color: theme.colorScheme.primary,
-                            size: 16,
+                            size: PRFSizeTokens.iconSm,
                           ),
                           const SizedBox(width: PRFSpacingTokens.sm),
                           Expanded(
@@ -1785,24 +1613,10 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                       ),
                     ),
                     const SizedBox(height: PRFSpacingTokens.md),
-                    ElevatedButton.icon(
+                    PRFButton(
                       onPressed: () =>
                           _showAddRefundModal(context, accountingEvent),
-                      icon: const Icon(Icons.account_balance_wallet),
-                      label: const Text('Add Refund'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.tertiary,
-                        foregroundColor: theme.colorScheme.onTertiary,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            PRFRadiusTokens.md,
-                          ),
-                        ),
-                      ),
+                      title: l10n.expenseAddRefund,
                     ),
                     const SizedBox(height: PRFSpacingTokens.md),
                     if (accountingEvent.refunds.isNotEmpty)
@@ -1817,8 +1631,53 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 ),
               )
               .animate()
-              .fadeIn(duration: PRFMotionTokens.enterShort)
+              .fadeIn(
+                duration: PRFMotionTokens.resolve(
+                  context,
+                  PRFMotionTokens.enterShort,
+                ),
+              )
               .slideY(begin: 0.2, end: 0),
+    );
+  }
+
+  Widget _buildRefundUnavailable(
+    BuildContext context,
+    String message, {
+    required bool loading,
+  }) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
+      child: Container(
+        padding: const EdgeInsets.all(PRFSpacingTokens.lg),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            if (loading)
+              const PRFCircularProgressIndicator(size: PRFSizeTokens.iconSm)
+            else
+              Icon(
+                Icons.cloud_off_outlined,
+                color: theme.colorScheme.onSurfaceVariant,
+                size: PRFSizeTokens.iconSm,
+              ),
+            const SizedBox(width: PRFSpacingTokens.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1832,9 +1691,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1844,18 +1701,21 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               Icon(
                 Icons.receipt_long,
                 color: theme.colorScheme.primary,
-                size: 20,
+                size: PRFSizeTokens.iconMd,
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               Text(
-                'Refund Entries',
+                context.l10n.expenseRefundEntries,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: PRFSpacingTokens.sm),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PRFSpacingTokens.sm,
+                  vertical: PRFSpacingTokens.xs,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
@@ -1876,8 +1736,8 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
             physics: const NeverScrollableScrollPhysics(),
             itemCount: refunds.length,
             separatorBuilder: (context, index) => Divider(
-              color: theme.colorScheme.outline.withValues(alpha: 0.1),
-              height: 16,
+              color: theme.colorScheme.outlineVariant,
+              height: PRFSpacingTokens.lg,
             ),
             itemBuilder: (context, index) {
               final refund = refunds.reversed.elementAt(index);
@@ -1901,10 +1761,13 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.sm,
+                vertical: PRFSpacingTokens.xs,
+              ),
               decoration: BoxDecoration(
                 color: theme.colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(PRFRadiusTokens.xs),
               ),
               child: Text(
                 '#$entryNumber',
@@ -1920,7 +1783,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Amount',
+                    context.l10n.amount,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -1944,7 +1807,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         _buildRefundDetailValue(
           context,
           theme,
-          'Deficit Amount',
+          context.l10n.expenseDeficitAmount,
           NumberFormat.currency(
             locale: 'en_KE',
             symbol: 'KES ',
@@ -1954,7 +1817,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         _buildRefundDetailValue(
           context,
           theme,
-          'Confirmation',
+          context.l10n.expenseConfirmation,
           refund.confirmationMessage,
           isCopyable: true,
         ),
@@ -1962,7 +1825,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
         _buildRefundDetailValue(
           context,
           theme,
-          'Date',
+          context.l10n.date,
           Misc.formatDateTime(refund.createdAt, timezone),
         ),
       ],
@@ -2004,16 +1867,14 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
           IconButton(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Copied to clipboard'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              PRFSnackbar.info(context, context.l10n.expenseCopied);
             },
-            icon: Icon(Icons.copy, size: 16, color: theme.colorScheme.primary),
-            padding: const EdgeInsets.all(PRFSpacingTokens.xs),
-            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+            tooltip: context.l10n.expenseCopyConfirmation,
+            icon: Icon(
+              Icons.copy,
+              size: PRFSizeTokens.iconMd,
+              color: theme.colorScheme.primary,
+            ),
           ),
       ],
     );
@@ -2028,7 +1889,11 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+        Icon(
+          icon,
+          size: PRFSizeTokens.iconSm,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: PRFSpacingTokens.sm),
         Expanded(
           child: Text(
@@ -2038,44 +1903,53 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
             ),
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: value));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Copied "$value" to clipboard'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.3),
-              ),
+        Semantics(
+          button: true,
+          label: context.l10n.expenseCopyValue(label, value),
+          excludeSemantics: true,
+          child: Material(
+            color: theme.colorScheme.surfaceContainerHighest,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+              side: BorderSide(color: theme.colorScheme.outlineVariant),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  value,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
+            child: InkWell(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: value));
+                PRFSnackbar.info(
+                  context,
+                  context.l10n.expenseCopiedValue(value),
+                );
+              },
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: PRFSizeTokens.minTouchTarget,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PRFSpacingTokens.md,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        value,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const SizedBox(width: PRFSpacingTokens.sm),
+                      Icon(
+                        Icons.copy,
+                        size: PRFSizeTokens.iconSm,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: PRFSpacingTokens.xs),
-                Icon(
-                  Icons.copy,
-                  size: 12,
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.7,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -2083,11 +1957,7 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    AppLocalizations l10n,
-    PRFAccountingEvent accountingEvent,
-  ) {
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(PRFSpacingTokens.lg),
@@ -2124,32 +1994,36 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
               );
 
               return IconButton.filled(
-                onPressed: () => context
-                    .read<AllocationEntryResourceCubit>()
-                    .refreshForAccountingEvent(
-                      accountingEventUlid: accountingEvent.ulid,
-                    ),
+                tooltip: l10n.expenseRefreshTooltip,
+                onPressed: isRefreshing ? null : _refreshAll,
                 icon: isRefreshing
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    ? PRFCircularProgressIndicator(
+                        size: PRFSizeTokens.iconMd,
+                        color: theme.colorScheme.onPrimaryContainer,
                       )
-                    : const Icon(Icons.refresh, color: Colors.white),
+                    : const Icon(Icons.refresh),
                 style: IconButton.styleFrom(
                   backgroundColor: theme.colorScheme.primaryContainer,
+                  foregroundColor: theme.colorScheme.onPrimaryContainer,
+                  disabledBackgroundColor: theme.colorScheme.primaryContainer,
+                  minimumSize: const Size.square(PRFSizeTokens.minTouchTarget),
                 ),
               );
             },
           ),
-          if (widget.showFinancialReport)
+          if (widget.showFinancialReport) ...[
+            const SizedBox(width: PRFSpacingTokens.xs),
             IconButton.filled(
+              tooltip: l10n.expenseSendReportTooltip,
               onPressed: () => _showSendReportModal(context),
-              icon: const Icon(Icons.email, color: Colors.white),
+              icon: const Icon(Icons.email_outlined),
               style: IconButton.styleFrom(
                 backgroundColor: theme.colorScheme.secondaryContainer,
+                foregroundColor: theme.colorScheme.onSecondaryContainer,
+                minimumSize: const Size.square(PRFSizeTokens.minTouchTarget),
               ),
             ),
+          ],
         ],
       ),
     );
@@ -2158,9 +2032,9 @@ class _ExpensesViewHandsetState extends State<ExpensesViewHandset>
   void _showSendReportModal(BuildContext context) {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Send Financial Report',
+      title: context.l10n.expenseSendReportTitle,
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.8,
+        height: MediaQuery.sizeOf(context).height * 0.8,
         child: SendFinancialReportViewHandset(
           accountingEventUlid: accountingEventUlid,
         ),

@@ -1,6 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:leadership/enums/prf_approval_status.dart';
@@ -19,6 +20,8 @@ import 'package:leadership/shared/requisitions/requisition_details/actions/edit_
 import 'package:leadership/shared/requisitions/requisition_details/actions/edit_requisition_item/edit_requisition_item.dart';
 import 'package:leadership/shared/requisitions/requisition_details/actions/recall_requisition/recall_requisition.dart';
 import 'package:leadership/shared/requisitions/requisition_details/actions/request_review/_handset.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
+import 'package:leadership/shared/requisitions/widgets/approval_status_style.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:leadership/utils/mixins/current_member_mixin.dart';
@@ -51,16 +54,20 @@ class _RequisitionDetailsPageHandsetState
       matchById: (item) => item.ulid == widget.requisitionUlid,
     );
 
-    context.read<RequisitionItemResourceCubit>().loadForRequisition(
-      requisitionUlid: widget.requisitionUlid,
-    );
+    _reloadItems();
   }
 
   PRFRequisition? _currentRequisitionFromState(
     ResourceState<PRFRequisition> state,
   ) {
+    // Keep showing the last known requisition while it refreshes or after a
+    // failed action, so the page and its actions don't disappear.
     return switch (state) {
       ResourceItemLoaded<PRFRequisition>(:final item) => item,
+      ResourceItemLoading<PRFRequisition>(:final item?) => item,
+      ResourceItemError<PRFRequisition>(:final item?) => item,
+      ResourceMutating<PRFRequisition>(:final items) when items.isNotEmpty =>
+        items.first,
       _ => null,
     };
   }
@@ -73,6 +80,12 @@ class _RequisitionDetailsPageHandsetState
     );
   }
 
+  void _reloadItems() {
+    context.read<RequisitionItemResourceCubit>().loadForRequisition(
+      requisitionUlid: widget.requisitionUlid,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -81,6 +94,9 @@ class _RequisitionDetailsPageHandsetState
     return BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
       builder: (context, requisitionState) {
         final requisition = _currentRequisitionFromState(requisitionState);
+        final requisitionFailed =
+            requisition == null &&
+            requisitionState is ResourceItemError<PRFRequisition>;
         return Scaffold(
           body: Column(
             children: [
@@ -91,43 +107,15 @@ class _RequisitionDetailsPageHandsetState
                   onBack: context.router.maybePop,
                   actions: requisition != null
                       ? [
-                          Container(
-                            margin: const EdgeInsets.only(
+                          Padding(
+                            padding: const EdgeInsets.only(
                               right: PRFSpacingTokens.lg,
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.onPrimary.withValues(
-                                alpha: 0.14,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                PRFRadiusTokens.lg,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  requisition.approvalStatus.icon,
-                                  size: 14,
-                                  color: requisition.approvalStatus.color(
-                                    theme,
-                                  ),
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.xs),
-                                Text(
-                                  requisition.approvalStatus.name,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: requisition.approvalStatus.color(
-                                      theme,
-                                    ),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                            child: PRFStatusBadge(
+                              label: requisition.approvalStatus.label(l10n),
+                              color: requisition.approvalStatus
+                                  .statusSet(context)
+                                  .main,
                             ),
                           ),
                         ]
@@ -135,78 +123,90 @@ class _RequisitionDetailsPageHandsetState
                 ),
               ),
               Expanded(
-                child:
-                    BlocBuilder<
-                      RequisitionItemResourceCubit,
-                      ResourceState<PRFRequisitionItem>
-                    >(
-                      builder: (context, state) {
-                        return switch (state) {
-                          ResourceListLoaded<PRFRequisitionItem>(:final items)
-                              when items.isEmpty =>
-                            _buildEmptyState(context, l10n),
-                          ResourceListLoaded<PRFRequisitionItem>(
-                            :final items,
-                          ) =>
-                            _buildRequisitionItemsList(
-                              context,
-                              l10n,
-                              items,
-                              requisition,
-                            ),
-                          ResourceMutating<PRFRequisitionItem>(:final items)
-                              when items.isEmpty =>
-                            _buildEmptyState(context, l10n),
-                          ResourceMutating<PRFRequisitionItem>(:final items) =>
-                            _buildRequisitionItemsList(
-                              context,
-                              l10n,
-                              items,
-                              requisition,
-                            ),
-                          ResourceError<PRFRequisitionItem>(:final message) =>
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    size: 64,
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                  const SizedBox(height: PRFSpacingTokens.lg),
-                                  Text(
-                                    '${l10n.error}: $message',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: PRFSpacingTokens.lg),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      context
-                                          .read<RequisitionItemResourceCubit>()
-                                          .loadForRequisition(
-                                            requisitionUlid:
-                                                widget.requisitionUlid,
-                                          );
-                                    },
-                                    child: Text(l10n.retry),
-                                  ),
-                                ],
+                child: requisitionFailed
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                          child: PRFErrorView.inline(
+                            title: l10n.requisitionDetailLoadErrorTitle,
+                            message: l10n.requisitionDetailLoadErrorMessage,
+                            retryLabel: l10n.tryAgain,
+                            onRetry: () {
+                              context
+                                  .read<RequisitionItemResourceCubit>()
+                                  .invalidate();
+                              _reloadRequisition();
+                              _reloadItems();
+                            },
+                          ),
+                        ),
+                      )
+                    : BlocBuilder<
+                        RequisitionItemResourceCubit,
+                        ResourceState<PRFRequisitionItem>
+                      >(
+                        builder: (context, state) {
+                          return switch (state) {
+                            ResourceListLoaded<PRFRequisitionItem>(:final items)
+                                when items.isEmpty =>
+                              _buildEmptyState(context, l10n),
+                            ResourceListLoaded<PRFRequisitionItem>(
+                              :final items,
+                            ) =>
+                              _buildRequisitionItemsList(
+                                context,
+                                l10n,
+                                items,
+                                requisition,
+                              ),
+                            ResourceMutating<PRFRequisitionItem>(:final items)
+                                when items.isEmpty =>
+                              _buildEmptyState(context, l10n),
+                            ResourceMutating<PRFRequisitionItem>(
+                              :final items,
+                            ) =>
+                              _buildRequisitionItemsList(
+                                context,
+                                l10n,
+                                items,
+                                requisition,
+                              ),
+                            // A failed action (e.g. delete) keeps the list.
+                            ResourceError<PRFRequisitionItem>(:final items)
+                                when items.isNotEmpty =>
+                              _buildRequisitionItemsList(
+                                context,
+                                l10n,
+                                items,
+                                requisition,
+                              ),
+                            ResourceError<PRFRequisitionItem>() => Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(
+                                  PRFSpacingTokens.xl,
+                                ),
+                                child: PRFErrorView.inline(
+                                  title:
+                                      l10n.requisitionDetailItemsLoadErrorTitle,
+                                  message:
+                                      l10n.requisitionDetailLoadErrorMessage,
+                                  retryLabel: l10n.tryAgain,
+                                  onRetry: _reloadItems,
+                                ),
                               ),
                             ),
-                          _ => const Center(
-                            child: PRFCircularProgressIndicator(),
-                          ),
-                        };
-                      },
-                    ),
+                            _ => const Center(
+                              child: PRFCircularProgressIndicator(),
+                            ),
+                          };
+                        },
+                      ),
               ),
             ],
           ),
-          bottomNavigationBar: _buildBottomActionBar(context, l10n),
+          bottomNavigationBar: requisitionFailed
+              ? null
+              : _buildBottomActionBar(context, l10n),
         );
       },
     );
@@ -217,17 +217,11 @@ class _RequisitionDetailsPageHandsetState
     return BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
       builder: (context, requisitionState) {
         final requisition = _currentRequisitionFromState(requisitionState);
-        return requisition != null
-            ? _buildEmptyStateContent(
-                context,
-                theme,
-                requisition.approvalStatus,
-              )
-            : _buildEmptyStateContent(
-                context,
-                theme,
-                PRFApprovalStatus.pending,
-              );
+        return _buildEmptyStateContent(
+          context,
+          theme,
+          requisition?.approvalStatus ?? PRFApprovalStatus.pending,
+        );
       },
     );
   }
@@ -240,121 +234,114 @@ class _RequisitionDetailsPageHandsetState
     final l10n = context.l10n;
     final isEditable = status == PRFApprovalStatus.pending;
     final isUnderReview = status == PRFApprovalStatus.underReview;
+    final statusColors = status.statusSet(context);
 
-    IconData emptyStateIcon;
-    String title;
-    String subtitle;
-    Color iconColor;
+    final (
+      IconData emptyStateIcon,
+      String title,
+      String subtitle,
+    ) = switch (status) {
+      PRFApprovalStatus.pending => (
+        Icons.receipt_long_outlined,
+        l10n.noRequisitionItems,
+        l10n.noItemsAddedYet,
+      ),
+      PRFApprovalStatus.underReview => (
+        Icons.hourglass_empty,
+        l10n.underReview,
+        l10n.requisitionUnderReviewDesc,
+      ),
+      PRFApprovalStatus.approved => (
+        Icons.check_circle_outline,
+        l10n.requisitionApproved,
+        l10n.requisitionApprovedDesc,
+      ),
+      PRFApprovalStatus.rejected => (
+        Icons.cancel_outlined,
+        l10n.requisitionRejected,
+        l10n.requisitionRejectedDesc,
+      ),
+      PRFApprovalStatus.recalled => (
+        Icons.undo_outlined,
+        l10n.requisitionDetailRecalledTitle,
+        l10n.requisitionRecalledDesc,
+      ),
+      PRFApprovalStatus.ghost => (
+        Icons.help_outline,
+        l10n.zeroBasedRequisition,
+        l10n.zeroBasedRequisitionDesc,
+      ),
+    };
 
-    switch (status) {
-      case PRFApprovalStatus.pending:
-        emptyStateIcon = Icons.receipt_long_outlined;
-        title = l10n.noRequisitionItems;
-        subtitle = l10n.noItemsAddedYet;
-        iconColor = status.color(theme);
-      case PRFApprovalStatus.underReview:
-        emptyStateIcon = Icons.hourglass_empty;
-        title = l10n.underReview;
-        subtitle = l10n.requisitionUnderReviewDesc;
-        iconColor = status.color(theme);
-      case PRFApprovalStatus.approved:
-        emptyStateIcon = Icons.check_circle_outline;
-        title = l10n.requisitionApproved;
-        subtitle = l10n.requisitionApprovedDesc;
-        iconColor = status.color(theme);
-      case PRFApprovalStatus.rejected:
-        emptyStateIcon = Icons.cancel_outlined;
-        title = l10n.requisitionRejected;
-        subtitle = l10n.requisitionRejectedDesc;
-        iconColor = status.color(theme);
-      case PRFApprovalStatus.recalled:
-        emptyStateIcon = Icons.undo_outlined;
-        title = l10n.requisitionRecalled;
-        subtitle = l10n.requisitionRecalledDesc;
-        iconColor = status.color(theme);
-      case PRFApprovalStatus.ghost:
-        emptyStateIcon = Icons.help_outline;
-        title = l10n.zeroBasedRequisition;
-        subtitle = l10n.zeroBasedRequisitionDesc;
-        iconColor = status.color(theme);
-    }
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(emptyStateIcon, size: 64, color: iconColor),
-            const SizedBox(height: PRFSpacingTokens.lg),
-            Text(
-              title,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: iconColor,
-              ),
-            ),
-            const SizedBox(height: PRFSpacingTokens.sm),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: PRFSpacingTokens.xxl),
-            if (isEditable)
-              ElevatedButton.icon(
-                onPressed: Misc.userCan(PRFPermissions.createRequisitionItem)
-                    ? () => _showCreateRequisitionItemModal(context)
-                    : null,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.addItem),
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                ),
-              )
-            else if (isUnderReview)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: status.color(theme).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  border: Border.all(
-                    color: status.color(theme).withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<RequisitionItemResourceCubit>().invalidate();
+        _reloadRequisition();
+        _reloadItems();
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: status.color(theme),
-                      size: 16,
-                    ),
-                    const SizedBox(width: PRFSpacingTokens.sm),
-                    Text(
-                      l10n.reviewInProgress,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: status.color(theme),
-                        fontWeight: FontWeight.w600,
+                    ExcludeSemantics(
+                      child: Icon(
+                        emptyStateIcon,
+                        size: PRFSizeTokens.iconHero,
+                        color: statusColors.main,
                       ),
                     ),
+                    const SizedBox(height: PRFSpacingTokens.lg),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: PRFSpacingTokens.sm),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: PRFSpacingTokens.xxl),
+                    if (isEditable)
+                      PRFButton(
+                        onPressed: () =>
+                            _showCreateRequisitionItemModal(context),
+                        title: l10n.addItem,
+                        disabled: !Misc.userCan(
+                          PRFPermissions.createRequisitionItem,
+                        ),
+                      )
+                    else if (isUnderReview)
+                      requisitionStatusBanner(
+                        context,
+                        colors: statusColors,
+                        icon: Icons.info_outline,
+                        message: l10n.reviewInProgress,
+                      )
+                    else
+                      PRFButton(
+                        onPressed: () => context.router.pop(),
+                        title: l10n.createNewRequisition,
+                        variant: PRFButtonVariant.secondary,
+                      ),
                   ],
                 ),
-              )
-            else
-              OutlinedButton.icon(
-                onPressed: () => context.router.pop(),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.createNewRequisition),
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -395,7 +382,9 @@ class _RequisitionDetailsPageHandsetState
         ),
 
         // Bottom spacing for bottom action bar
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: PRFSpacingTokens.xxxl),
+        ),
       ],
     );
   }
@@ -408,9 +397,11 @@ class _RequisitionDetailsPageHandsetState
     PRFRequisition? requisition,
   ) {
     final l10n = context.l10n;
+    final scheme = theme.colorScheme;
     final isEditable = requisition?.approvalStatus == PRFApprovalStatus.pending;
     final isDeletable =
         isEditable && Misc.userCan(PRFPermissions.deleteRequisitionItem);
+    final cardRadius = BorderRadius.circular(PRFRadiusTokens.lg);
 
     return BlocListener<
           RequisitionItemResourceCubit,
@@ -423,22 +414,13 @@ class _RequisitionDetailsPageHandsetState
               itemLoaded: (item, items) {
                 setState(() => _deletingRequisitionItemUlid = null);
                 _reloadRequisition();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Item deleted successfully'),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                PRFSnackbar.success(context, l10n.requisitionDetailItemDeleted);
               },
-              error: (message, _) {
+              error: (_, _) {
                 setState(() => _deletingRequisitionItemUlid = null);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: theme.colorScheme.error,
-                    duration: const Duration(seconds: 3),
-                  ),
+                PRFSnackbar.error(
+                  context,
+                  l10n.requisitionDetailItemDeleteFailed,
                 );
               },
               orElse: () {},
@@ -446,402 +428,322 @@ class _RequisitionDetailsPageHandsetState
           },
           child: Container(
             margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primary.withValues(alpha: 0.12),
-                    theme.colorScheme.primary.withValues(alpha: 0.04),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Container(
-                margin: const EdgeInsets.all(1.2),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.12),
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Main content
-                    InkWell(
-                      onTap: isEditable
-                          ? () => _showEditRequisitionItemModal(context, item)
-                          : () => _showItemDetails(context, item),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          16,
-                          18,
-                          isDeletable ? 56 : 16,
-                          18,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Header with icon, name, category, and price
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Icon badge
-                                Container(
-                                  padding: const EdgeInsets.all(
-                                    PRFSpacingTokens.md,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(
-                                      alpha: 0.12,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Icon(
-                                    Icons.inventory_2_outlined,
-                                    size: 22,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(width: PRFSpacingTokens.md),
-                                // Name and category
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.itemName,
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 0.1,
-                                            ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: [
-                                          if (item.expenseCategory != null)
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 4,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: theme
-                                                    .colorScheme
-                                                    .secondary
-                                                    .withValues(alpha: 0.12),
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: Text(
-                                                item.expenseCategory!.name,
-                                                style: theme
-                                                    .textTheme
-                                                    .labelSmall
-                                                    ?.copyWith(
-                                                      color: theme
-                                                          .colorScheme
-                                                          .secondary,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                              ),
-                                            ),
-                                          if (item.expenseCategory != null)
-                                            const SizedBox(
-                                              width: PRFSpacingTokens.sm,
-                                            ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: theme
-                                                  .colorScheme
-                                                  .surfaceContainerHighest
-                                                  .withValues(alpha: 0.6),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.event_note,
-                                                  size: 14,
-                                                  color: theme
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                                ),
-                                                const SizedBox(
-                                                  width: PRFSpacingTokens.xs,
-                                                ),
-                                                Text(
-                                                  DateFormat.MMMd().format(
-                                                    item.createdAt,
-                                                  ),
-                                                  style: theme
-                                                      .textTheme
-                                                      .labelSmall
-                                                      ?.copyWith(
-                                                        color: theme
-                                                            .colorScheme
-                                                            .onSurfaceVariant,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                // Total price
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(
-                                          PRFRadiusTokens.md,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        NumberFormat.currency(
-                                          symbol: 'KES ',
-                                          decimalDigits: 0,
-                                        ).format(item.totalPrice),
-                                        style: theme.textTheme.labelLarge
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: theme.colorScheme.primary,
-                                            ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      'Total',
-                                      style: theme.textTheme.labelSmall
-                                          ?.copyWith(
-                                            color: theme
-                                                .colorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                            // Narration if available
-                            if (item.narration != null) ...[
-                              const SizedBox(height: 14),
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              borderRadius: cardRadius,
+              border: Border.all(color: scheme.outlineVariant),
+              boxShadow: PRFShadowTokens.card(scheme.shadow),
+            ),
+            child: Stack(
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: isEditable
+                        ? () => _showEditRequisitionItemModal(context, item)
+                        : () => _showItemDetails(context, item),
+                    borderRadius: cardRadius,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        PRFSpacingTokens.lg,
+                        PRFSpacingTokens.lg,
+                        isDeletable
+                            ? PRFSpacingTokens.sm + PRFSizeTokens.minTouchTarget
+                            : PRFSpacingTokens.lg,
+                        PRFSpacingTokens.lg,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Container(
-                                width: double.infinity,
                                 padding: const EdgeInsets.all(
                                   PRFSpacingTokens.md,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: theme
-                                      .colorScheme
-                                      .surfaceContainerHighest
-                                      .withValues(alpha: 0.35),
+                                  color: scheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(
-                                    PRFRadiusTokens.md,
-                                  ),
-                                  border: Border.all(
-                                    color: theme.colorScheme.outline.withValues(
-                                      alpha: 0.15,
-                                    ),
+                                    PRFRadiusTokens.smd,
                                   ),
                                 ),
-                                child: Row(
+                                child: Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: PRFSizeTokens.iconLg,
+                                  color: scheme.onPrimaryContainer,
+                                ),
+                              ),
+                              const SizedBox(width: PRFSpacingTokens.md),
+                              Expanded(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.notes,
-                                      size: 16,
-                                      color: theme.colorScheme.onSurfaceVariant,
+                                    Text(
+                                      item.itemName,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(width: PRFSpacingTokens.sm),
-                                    Expanded(
-                                      child: Text(
-                                        item.narration!,
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    const SizedBox(height: PRFSpacingTokens.xs),
+                                    Wrap(
+                                      spacing: PRFSpacingTokens.sm,
+                                      runSpacing: PRFSpacingTokens.xs,
+                                      children: [
+                                        if (item.expenseCategory != null)
+                                          _buildPill(
+                                            context,
+                                            label: item.expenseCategory!.name,
+                                            background:
+                                                scheme.secondaryContainer,
+                                            foreground:
+                                                scheme.onSecondaryContainer,
+                                          ),
+                                        _buildPill(
+                                          context,
+                                          label: DateFormat.MMMd().format(
+                                            item.createdAt,
+                                          ),
+                                          icon: Icons.event_note,
+                                          background:
+                                              scheme.surfaceContainerHighest,
+                                          foreground: scheme.onSurfaceVariant,
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                            ],
-
-                            // Details chips
-                            const SizedBox(height: 14),
-                            Row(
-                              children: [
-                                _buildDetailChip(
-                                  context,
-                                  '${item.quantity}',
-                                  Icons.numbers,
-                                  'Qty',
-                                ),
-                                const SizedBox(width: 10),
-                                _buildDetailChip(
-                                  context,
-                                  NumberFormat.currency(
-                                    symbol: 'KES ',
-                                    decimalDigits: 0,
-                                  ).format(item.unitPrice),
-                                  Icons.attach_money,
-                                  'Unit',
-                                ),
-                                const SizedBox(width: 10),
-                                _buildDetailChip(
-                                  context,
-                                  DateFormat.yMMMd().format(item.createdAt),
-                                  Icons.calendar_today,
-                                  'Date',
-                                ),
-                              ],
-                            ),
-
-                            if (isEditable) ...[
-                              const SizedBox(height: 10),
-                              Row(
+                              const SizedBox(width: PRFSpacingTokens.sm),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Icon(
-                                    Icons.edit_note,
-                                    size: 16,
-                                    color: theme.colorScheme.primary,
+                                  _buildPill(
+                                    context,
+                                    label: formatKes(item.totalPrice),
+                                    background: scheme.primaryContainer,
+                                    foreground: scheme.onPrimaryContainer,
+                                    emphasise: true,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(height: PRFSpacingTokens.xs),
                                   Text(
-                                    'Tap to edit item',
-                                    style: theme.textTheme.labelMedium
-                                        ?.copyWith(
-                                          color: theme.colorScheme.primary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                    l10n.total,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
-                          ],
-                        ),
-                      ),
-                    ),
+                          ),
 
-                    // Delete button (floating action on the card)
-                    if (isDeletable)
-                      Positioned(
-                        right: 10,
-                        top: 10,
-                        child:
-                            BlocBuilder<
-                              RequisitionItemResourceCubit,
-                              ResourceState<PRFRequisitionItem>
-                            >(
-                              builder: (context, state) {
-                                final isLoading =
-                                    _deletingRequisitionItemUlid == item.ulid &&
-                                    state.maybeWhen(
-                                      mutating: (_, operation) =>
-                                          operation == ResourceOperation.delete,
-                                      orElse: () => false,
-                                    );
-                                final canDelete =
-                                    !isLoading &&
-                                    _deletingRequisitionItemUlid == null;
-                                return Material(
-                                  color: Colors.transparent,
-                                  child: Tooltip(
-                                    message: 'Delete Item',
-                                    child: InkWell(
-                                      onTap: canDelete
-                                          ? () => _showDeleteConfirmationDialog(
-                                              context,
-                                              item,
-                                              theme,
-                                              l10n,
-                                            )
-                                          : null,
-                                      borderRadius: BorderRadius.circular(22),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: theme.colorScheme.error
-                                              .withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(
-                                            22,
+                          if (item.narration != null) ...[
+                            const SizedBox(height: PRFSpacingTokens.md),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(
+                                PRFSpacingTokens.md,
+                              ),
+                              decoration: BoxDecoration(
+                                color: scheme.surfaceContainerLow,
+                                borderRadius: BorderRadius.circular(
+                                  PRFRadiusTokens.md,
+                                ),
+                                border: Border.all(
+                                  color: scheme.outlineVariant,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.notes,
+                                    size: PRFSizeTokens.iconSm,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: PRFSpacingTokens.sm),
+                                  Expanded(
+                                    child: Text(
+                                      item.narration!,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: scheme.onSurfaceVariant,
+                                            fontStyle: FontStyle.italic,
                                           ),
-                                          border: Border.all(
-                                            color: theme.colorScheme.error
-                                                .withValues(alpha: 0.3),
-                                          ),
-                                        ),
-                                        child: isLoading
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child:
-                                                    // ignore: lines_longer_than_80_chars
-                                                    PRFCircularProgressIndicator(),
-                                              )
-                                            : Icon(
-                                                Icons.delete_outline,
-                                                size: 18,
-                                                color: theme.colorScheme.error,
-                                              ),
-                                      ),
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                );
-                              },
+                                ],
+                              ),
                             ),
+                          ],
+
+                          const SizedBox(height: PRFSpacingTokens.md),
+                          Row(
+                            children: [
+                              _buildDetailChip(
+                                context,
+                                '${item.quantity}',
+                                Icons.numbers,
+                                l10n.quantity,
+                              ),
+                              const SizedBox(width: PRFSpacingTokens.sm),
+                              _buildDetailChip(
+                                context,
+                                formatKes(item.unitPrice),
+                                Icons.attach_money,
+                                l10n.unitPrice,
+                              ),
+                              const SizedBox(width: PRFSpacingTokens.sm),
+                              _buildDetailChip(
+                                context,
+                                DateFormat.yMMMd().format(item.createdAt),
+                                Icons.calendar_today,
+                                l10n.date,
+                              ),
+                            ],
+                          ),
+
+                          if (isEditable) ...[
+                            const SizedBox(height: PRFSpacingTokens.sm),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_note,
+                                  size: PRFSizeTokens.iconSm,
+                                  color: scheme.primary,
+                                ),
+                                const SizedBox(width: PRFSpacingTokens.xs),
+                                Flexible(
+                                  child: Text(
+                                    l10n.requisitionDetailTapToEdit,
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: scheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
                       ),
-                  ],
+                    ),
+                  ),
                 ),
-              ),
+
+                if (isDeletable)
+                  Positioned(
+                    right: PRFSpacingTokens.xs,
+                    top: PRFSpacingTokens.xs,
+                    child:
+                        BlocBuilder<
+                          RequisitionItemResourceCubit,
+                          ResourceState<PRFRequisitionItem>
+                        >(
+                          builder: (context, state) {
+                            final isLoading =
+                                _deletingRequisitionItemUlid == item.ulid &&
+                                state.maybeWhen(
+                                  mutating: (_, operation) =>
+                                      operation == ResourceOperation.delete,
+                                  orElse: () => false,
+                                );
+                            final canDelete =
+                                !isLoading &&
+                                _deletingRequisitionItemUlid == null;
+                            return IconButton(
+                              tooltip: l10n.requisitionDetailDeleteItemTooltip(
+                                item.itemName,
+                              ),
+                              onPressed: canDelete
+                                  ? () => _showDeleteConfirmationDialog(
+                                      context,
+                                      item,
+                                      theme,
+                                      l10n,
+                                    )
+                                  : null,
+                              style: IconButton.styleFrom(
+                                minimumSize: const Size.square(
+                                  PRFSizeTokens.minTouchTarget,
+                                ),
+                                backgroundColor: scheme.errorContainer,
+                                foregroundColor: scheme.onErrorContainer,
+                              ),
+                              icon: isLoading
+                                  ? const PRFCircularProgressIndicator(
+                                      size: PRFSizeTokens.iconMd,
+                                    )
+                                  : const Icon(
+                                      Icons.delete_outline,
+                                      size: PRFSizeTokens.iconMd,
+                                    ),
+                            );
+                          },
+                        ),
+                  ),
+              ],
             ),
           ),
         )
-        .animate(delay: Duration(milliseconds: index * 100))
-        .slideY(begin: 0.25)
-        .fadeIn(duration: 380.ms);
+        .entrance(
+          context,
+          delay: PRFMotionTokens.stagger2 * math.min(index, 8),
+          slide: const Offset(0, 0.25),
+        );
+  }
+
+  Widget _buildPill(
+    BuildContext context, {
+    required String label,
+    required Color background,
+    required Color foreground,
+    IconData? icon,
+    bool emphasise = false,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: emphasise ? PRFSpacingTokens.md : PRFSpacingTokens.sm,
+        vertical: PRFSpacingTokens.xs,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: PRFSizeTokens.iconXs, color: foreground),
+            const SizedBox(width: PRFSpacingTokens.xs),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  (emphasise
+                          ? theme.textTheme.labelLarge
+                          : theme.textTheme.labelSmall)
+                      ?.copyWith(
+                        color: foreground,
+                        fontWeight: emphasise
+                            ? FontWeight.w700
+                            : FontWeight.w600,
+                      ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildDetailChip(
@@ -851,56 +753,47 @@ class _RequisitionDetailsPageHandsetState
     String label,
   ) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.md,
+          horizontal: PRFSpacingTokens.sm,
           vertical: PRFSpacingTokens.sm,
         ),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.35,
-          ),
+          color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.12),
-          ),
+          border: Border.all(color: scheme.outlineVariant),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 14,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                Icon(
+                  icon,
+                  size: PRFSizeTokens.iconSm,
+                  color: scheme.onSurfaceVariant,
                 ),
-                const SizedBox(width: PRFSpacingTokens.sm),
+                const SizedBox(width: PRFSpacingTokens.xs),
                 Expanded(
                   child: Text(
                     label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: scheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
-                      letterSpacing: 0.1,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: PRFSpacingTokens.xs),
             Text(
               value,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface,
+                color: scheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
               maxLines: 1,
@@ -937,10 +830,7 @@ class _RequisitionDetailsPageHandsetState
             _buildDetailRow(
               context,
               l10n.unitPrice,
-              NumberFormat.currency(
-                symbol: 'KES ',
-                decimalDigits: 0,
-              ).format(item.unitPrice),
+              formatKes(item.unitPrice),
               Icons.attach_money,
             ),
             const SizedBox(height: PRFSpacingTokens.md),
@@ -954,10 +844,7 @@ class _RequisitionDetailsPageHandsetState
             _buildDetailRow(
               context,
               l10n.totalPrice,
-              NumberFormat.currency(
-                symbol: 'KES ',
-                decimalDigits: 0,
-              ).format(item.totalPrice),
+              formatKes(item.totalPrice),
               Icons.calculate,
             ),
             const SizedBox(height: PRFSpacingTokens.md),
@@ -980,153 +867,66 @@ class _RequisitionDetailsPageHandsetState
     ThemeData theme,
     AppLocalizations l10n,
   ) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return BlocListener<
-          RequisitionItemResourceCubit,
-          ResourceState<PRFRequisitionItem>
-        >(
-          listener: (listenerContext, state) {
-            state.maybeWhen(
-              itemLoaded: (item, items) {
-                if (dialogContext.mounted) {
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-              error: (_, _) {
-                if (dialogContext.mounted) {
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-              orElse: () {},
-            );
-          },
-          child: PRFConfirmationDialog(
-            title: 'Delete Item',
-            isDestructive: true,
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Are you sure you want to delete this item?',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: PRFSpacingTokens.md),
-                Container(
-                  padding: const EdgeInsets.all(PRFSpacingTokens.md),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.5,
-                    ),
-                    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.itemName,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: PRFSpacingTokens.xs),
-                      Text(
-                        '${NumberFormat.currency(symbol: 'KES ', decimalDigits: 0).format(item.totalPrice)} • Qty: ${item.quantity}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: PRFSpacingTokens.md),
-                Text(
-                  'This action cannot be undone.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            customActions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-              ),
-              BlocBuilder<
-                RequisitionItemResourceCubit,
-                ResourceState<PRFRequisitionItem>
-              >(
-                builder: (consumerContext, state) {
-                  final isLoading =
-                      _deletingRequisitionItemUlid == item.ulid &&
-                      state.maybeWhen(
-                        mutating: (_, operation) =>
-                            operation == ResourceOperation.delete,
-                        orElse: () => false,
-                      );
-
-                  if (isLoading) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            theme.colorScheme.error,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return _buildDeleteActionButton(context, theme, item);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDeleteActionButton(
-    BuildContext context,
-    ThemeData theme,
-    PRFRequisitionItem item,
-  ) {
-    return ElevatedButton.icon(
-      onPressed: () {
+    final scheme = theme.colorScheme;
+    PRFConfirmationDialog.show(
+      context,
+      title: l10n.requisitionDetailDeleteItemTitle,
+      isDestructive: true,
+      confirmLabel: l10n.requisitionDetailDeleteItemConfirm,
+      cancelLabel: l10n.cancel,
+      onConfirm: () {
         setState(() => _deletingRequisitionItemUlid = item.ulid);
         context.read<RequisitionItemResourceCubit>().deleteRequisitionItem(
           requisitionItemUlid: item.ulid,
         );
       },
-      icon: const Icon(Icons.delete_outline, size: 18),
-      label: const Text('Delete'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: theme.colorScheme.error,
-        foregroundColor: theme.colorScheme.onError,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: PRFSpacingTokens.lg,
-          vertical: PRFSpacingTokens.sm,
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.requisitionDetailDeleteItemMessage,
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: PRFSpacingTokens.md),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(PRFSpacingTokens.md),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.itemName,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: PRFSpacingTokens.xs),
+                Text(
+                  l10n.requisitionDetailItemSummary(
+                    formatKes(item.totalPrice),
+                    '${item.quantity}',
+                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: PRFSpacingTokens.md),
+          Text(
+            l10n.requisitionDetailCannotUndo,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.error,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1140,7 +940,11 @@ class _RequisitionDetailsPageHandsetState
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+        Icon(
+          icon,
+          size: PRFSizeTokens.iconSm,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: PRFSpacingTokens.sm),
         Expanded(
           child: Text(
@@ -1150,10 +954,13 @@ class _RequisitionDetailsPageHandsetState
             ),
           ),
         ),
-        Text(
-          value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -1166,24 +973,22 @@ class _RequisitionDetailsPageHandsetState
     return BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
       builder: (context, requisitionState) {
         final requisition = _currentRequisitionFromState(requisitionState);
-        return Container(
+        return DecoratedBox(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.shadow.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
+            border: Border(
+              top: BorderSide(color: theme.colorScheme.outlineVariant),
+            ),
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: PRFSpacingTokens.lg,
+                vertical: PRFSpacingTokens.md,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Status-aware action rows
                   ...(requisition != null
                       ? _buildStatusAwareActions(
                           context,
@@ -1236,7 +1041,7 @@ class _RequisitionDetailsPageHandsetState
             child: _buildActionButton(
               context,
               icon: Icons.add,
-              label: l10n.create,
+              label: l10n.addItem,
               onPressed: () => _showCreateRequisitionItemModal(context),
               isPrimary: true,
               isDisabled: !Misc.userCan(PRFPermissions.createRequisitionItem),
@@ -1252,7 +1057,7 @@ class _RequisitionDetailsPageHandsetState
                   : Icons.payment,
               label: paymentInstruction != null
                   ? l10n.viewPayment
-                  : l10n.payment,
+                  : l10n.requisitionDetailAddPayment,
               onPressed: () => paymentInstruction != null
                   ? _showPaymentInstructionDetails(context, paymentInstruction)
                   : _showCreatePaymentInstructionModal(context),
@@ -1299,9 +1104,6 @@ class _RequisitionDetailsPageHandsetState
     AppLocalizations l10n,
     PRFPaymentInstruction? paymentInstruction,
   ) {
-    final theme = Theme.of(context);
-    final statusColor = PRFApprovalStatus.underReview.color(theme);
-
     return [
       BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
         builder: (context, requisitionState) {
@@ -1311,61 +1113,21 @@ class _RequisitionDetailsPageHandsetState
               loggedInMember.ulid == requisition.appointedApprover?.ulid;
 
           if (isAppointed) {
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(PRFSpacingTokens.md),
+            return requisitionStatusBanner(
+              context,
+              colors: context.statusColors.success,
+              icon: Icons.fact_check,
+              message: l10n.requisitionDetailAwaitingYourApproval,
               margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.fact_check, color: Colors.green, size: 20),
-                  const SizedBox(width: PRFSpacingTokens.sm),
-                  Expanded(
-                    child: Text(
-                      'This requisition is awaiting your approval.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             );
           }
 
-          return Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(PRFSpacingTokens.md),
+          return requisitionStatusBanner(
+            context,
+            colors: PRFApprovalStatus.underReview.statusSet(context),
+            icon: PRFApprovalStatus.underReview.icon,
+            message: l10n.requisitionUnderReviewBanner,
             margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-              border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  PRFApprovalStatus.underReview.icon,
-                  color: statusColor,
-                  size: 20,
-                ),
-                const SizedBox(width: PRFSpacingTokens.sm),
-                Expanded(
-                  child: Text(
-                    l10n.requisitionUnderReviewBanner,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: statusColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           );
         },
       ),
@@ -1383,7 +1145,7 @@ class _RequisitionDetailsPageHandsetState
                   child: _buildActionButton(
                     context,
                     icon: Icons.check_circle,
-                    label: 'Review & Approve',
+                    label: l10n.requisitionDetailReviewAndApprove,
                     onPressed: () => _showApprovalModal(context),
                     isPrimary: true,
                   ),
@@ -1445,7 +1207,7 @@ class _RequisitionDetailsPageHandsetState
                     child: _buildActionButton(
                       context,
                       icon: Icons.undo,
-                      label: 'Recall',
+                      label: l10n.recallRequisition,
                       onPressed: () => _showRecallRequisitionModal(context),
                       isOutlined: true,
                     ),
@@ -1493,35 +1255,13 @@ class _RequisitionDetailsPageHandsetState
     AppLocalizations l10n,
     PRFPaymentInstruction? paymentInstruction,
   ) {
-    final theme = Theme.of(context);
-    final statusColor = PRFApprovalStatus.approved.color(theme);
-
     return [
-      // Approved Banner
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(PRFSpacingTokens.md),
+      requisitionStatusBanner(
+        context,
+        colors: PRFApprovalStatus.approved.statusSet(context),
+        icon: PRFApprovalStatus.approved.icon,
+        message: l10n.requisitionApprovedBanner,
         margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-        decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(PRFApprovalStatus.approved.icon, color: statusColor, size: 20),
-            const SizedBox(width: PRFSpacingTokens.sm),
-            Expanded(
-              child: Text(
-                l10n.requisitionApprovedBanner,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
       // Approved Actions
       BlocBuilder<RequisitionDetailCubit, ResourceState<PRFRequisition>>(
@@ -1566,7 +1306,7 @@ class _RequisitionDetailsPageHandsetState
                     child: _buildActionButton(
                       context,
                       icon: Icons.undo,
-                      label: 'Recall',
+                      label: l10n.recallRequisition,
                       onPressed: () => _showRecallRequisitionModal(context),
                       isOutlined: true,
                     ),
@@ -1613,35 +1353,13 @@ class _RequisitionDetailsPageHandsetState
     BuildContext context,
     AppLocalizations l10n,
   ) {
-    final theme = Theme.of(context);
-    final statusColor = PRFApprovalStatus.rejected.color(theme);
-
     return [
-      // Rejected Banner
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(PRFSpacingTokens.md),
+      requisitionStatusBanner(
+        context,
+        colors: PRFApprovalStatus.rejected.statusSet(context),
+        icon: PRFApprovalStatus.rejected.icon,
+        message: l10n.requisitionRejectedBanner,
         margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
-        decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(PRFApprovalStatus.rejected.icon, color: statusColor, size: 20),
-            const SizedBox(width: PRFSpacingTokens.sm),
-            Expanded(
-              child: Text(
-                l10n.requisitionRejectedBanner,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
       // Rejected Actions
       Row(
@@ -1681,7 +1399,7 @@ class _RequisitionDetailsPageHandsetState
             child: _buildActionButton(
               context,
               icon: Icons.add,
-              label: l10n.create,
+              label: l10n.addItem,
               onPressed: () => _showCreateRequisitionItemModal(context),
               isPrimary: true,
               isDisabled: !Misc.userCan(PRFPermissions.createRequisitionItem),
@@ -1692,7 +1410,7 @@ class _RequisitionDetailsPageHandsetState
             child: _buildActionButton(
               context,
               icon: Icons.payment,
-              label: l10n.payment,
+              label: l10n.requisitionDetailAddPayment,
               onPressed: () => _showCreatePaymentInstructionModal(context),
             ),
           ),
@@ -1711,55 +1429,39 @@ class _RequisitionDetailsPageHandsetState
     bool isOutlined = false,
     bool isDisabled = false,
   }) {
-    final theme = Theme.of(context);
-
-    Color backgroundColor;
-    Color foregroundColor;
-    BorderSide? border;
-
-    if (isDisabled) {
-      backgroundColor = theme.colorScheme.surfaceContainerHighest;
-      foregroundColor = theme.colorScheme.onSurfaceVariant;
-      border = null;
-    } else if (isPrimary) {
-      backgroundColor = theme.colorScheme.primary;
-      foregroundColor = theme.colorScheme.onPrimary;
-      border = null;
-    } else if (isSecondary) {
-      backgroundColor = theme.colorScheme.tertiary;
-      foregroundColor = theme.colorScheme.onTertiary;
-      border = null;
-    } else if (isOutlined) {
-      backgroundColor = Colors.transparent;
-      foregroundColor = theme.colorScheme.primary;
-      border = BorderSide(color: theme.colorScheme.outline);
-    } else {
-      backgroundColor = theme.colorScheme.secondary;
-      foregroundColor = theme.colorScheme.onSecondary;
-      border = null;
+    if (!isOutlined) {
+      return PRFButton(
+        onPressed: onPressed,
+        title: label,
+        variant: isPrimary
+            ? PRFButtonVariant.primary
+            : PRFButtonVariant.secondary,
+        disabled: isDisabled,
+      );
     }
 
-    return ElevatedButton.icon(
+    // Lower-emphasis action. PRFButton has no outlined variant yet, so this
+    // stays a themed OutlinedButton with a full 48 dp target.
+    final theme = Theme.of(context);
+    return OutlinedButton.icon(
       onPressed: isDisabled ? null : onPressed,
-      icon: Icon(icon, size: 18),
+      icon: Icon(icon, size: PRFSizeTokens.iconMd),
       label: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: theme.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w600,
-          color: isDisabled
-              ? theme.colorScheme.onSurfaceVariant
-              : foregroundColor,
         ),
       ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: theme.colorScheme.primary,
+        minimumSize: const Size(double.infinity, PRFSizeTokens.minTouchTarget),
         padding: const EdgeInsets.symmetric(
           vertical: PRFSpacingTokens.md,
           horizontal: PRFSpacingTokens.lg,
         ),
-        side: border,
-        elevation: isOutlined ? 0 : 2,
+        side: BorderSide(color: theme.colorScheme.outline),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         ),
@@ -1825,25 +1527,26 @@ class _RequisitionDetailsPageHandsetState
           subtitle: l10n.callDesc(requisition.appointedApprover!.fullName),
           onTap: () async {
             Navigator.pop(context);
-            if (requisition.appointedApprover?.phoneNumber == null ||
-                requisition.appointedApprover!.phoneNumber!.trim().isEmpty) {
-              await _makePhoneCall(requisition.appointedApprover!.phoneNumber);
-            }
+            await _makePhoneCall(
+              requisition.appointedApprover!.phoneNumber,
+              requisition.appointedApprover!.fullName,
+            );
           },
         ),
 
-      if (loggedInMember.ulid == requisition.appointedApprover?.ulid)
+      if (loggedInMember.ulid == requisition.appointedApprover?.ulid &&
+          requisition.member != null)
         _buildBottomSheetAction(
           context,
           icon: Icons.call,
           title: l10n.callRequisitor,
-          subtitle: l10n.callDesc(requisition.appointedApprover!.fullName),
+          subtitle: l10n.callDesc(requisition.member!.fullName),
           onTap: () async {
             Navigator.pop(context);
-            if (requisition.appointedApprover?.phoneNumber == null ||
-                requisition.appointedApprover!.phoneNumber!.trim().isEmpty) {
-              await _makePhoneCall(requisition.appointedApprover!.phoneNumber);
-            }
+            await _makePhoneCall(
+              requisition.member!.phoneNumber,
+              requisition.member!.fullName,
+            );
           },
         ),
     ];
@@ -1871,8 +1574,8 @@ class _RequisitionDetailsPageHandsetState
             _buildBottomSheetAction(
               context,
               icon: Icons.undo,
-              title: 'Recall',
-              subtitle: 'Withdraw this requisition from review',
+              title: l10n.recallRequisition,
+              subtitle: l10n.recallRequisitionDesc,
               onTap: () {
                 Navigator.pop(context);
                 _showRecallRequisitionModal(context);
@@ -1919,6 +1622,7 @@ class _RequisitionDetailsPageHandsetState
                   context,
                   l10n.rejectionDetails,
                   requisition.approvalNotes!,
+                  isRejection: true,
                 );
               },
             ),
@@ -1954,10 +1658,14 @@ class _RequisitionDetailsPageHandsetState
       leading: Container(
         padding: const EdgeInsets.all(PRFSpacingTokens.sm),
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+          color: theme.colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
         ),
-        child: Icon(icon, color: theme.colorScheme.primary, size: 20),
+        child: Icon(
+          icon,
+          color: theme.colorScheme.onPrimaryContainer,
+          size: PRFSizeTokens.iconMd,
+        ),
       ),
       title: Text(
         title,
@@ -1998,15 +1706,16 @@ class _RequisitionDetailsPageHandsetState
   }
 
   void _showCreatePaymentInstructionModal(BuildContext context) {
-    PRFBottomSheet.show<void>(
+    PRFBottomSheet.show<bool>(
       context,
       title: context.l10n.paymentInstructions,
       child: CreatePaymentInstructionView(
         requisitionUlid: widget.requisitionUlid,
       ),
-    ).then((_) {
-      // Refresh requisition after creating payment instruction
-      if (context.mounted) {
+    ).then((saved) {
+      // The payment instruction lives in its own Hive box, so the requisition
+      // that embeds it has to be refetched, but only after a successful save.
+      if ((saved ?? false) && context.mounted) {
         _reloadRequisition();
       }
     });
@@ -2034,14 +1743,7 @@ class _RequisitionDetailsPageHandsetState
               width: double.infinity,
               padding: const EdgeInsets.all(PRFSpacingTokens.lg),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.8),
-                  ],
-                ),
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
               ),
               child: Column(
@@ -2049,7 +1751,7 @@ class _RequisitionDetailsPageHandsetState
                   Icon(
                     _getPaymentMethodIcon(paymentInstruction.paymentMethod),
                     color: Theme.of(context).colorScheme.onPrimary,
-                    size: 32,
+                    size: PRFSizeTokens.iconXl,
                   ),
                   const SizedBox(height: PRFSpacingTokens.sm),
                   Text(
@@ -2111,16 +1813,14 @@ class _RequisitionDetailsPageHandsetState
   }
 
   String _getPaymentMethodDisplayName(PRFPaymentMethod method) {
-    switch (method) {
-      case PRFPaymentMethod.mpesa:
-        return 'M-PESA';
-      case PRFPaymentMethod.bankTransfer:
-        return 'Bank Transfer';
-      case PRFPaymentMethod.paybill:
-        return 'Paybill';
-      case PRFPaymentMethod.tillNumber:
-        return 'Till Number';
-    }
+    final l10n = context.l10n;
+    return switch (method) {
+      PRFPaymentMethod.mpesa => l10n.requisitionDetailPaymentMpesa,
+      PRFPaymentMethod.bankTransfer =>
+        l10n.requisitionDetailPaymentBankTransfer,
+      PRFPaymentMethod.paybill => l10n.requisitionDetailPaymentPaybill,
+      PRFPaymentMethod.tillNumber => l10n.requisitionDetailPaymentTill,
+    };
   }
 
   List<Widget> _buildPaymentMethodSpecificDetails(
@@ -2230,15 +1930,17 @@ class _RequisitionDetailsPageHandsetState
     return Container(
       padding: const EdgeInsets.all(PRFSpacingTokens.md),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: theme.colorScheme.primary),
+          Icon(
+            icon,
+            size: PRFSizeTokens.iconMd,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(width: PRFSpacingTokens.md),
           Expanded(
             child: Text(
@@ -2250,7 +1952,7 @@ class _RequisitionDetailsPageHandsetState
             ),
           ),
           Flexible(
-            child: Text(
+            child: SelectableText(
               value,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
@@ -2269,44 +1971,37 @@ class _RequisitionDetailsPageHandsetState
   ) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final status = requisition.approvalStatus.statusSet(context);
+    final onStatus = status.onColor;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      margin: const EdgeInsets.fromLTRB(
+        PRFSpacingTokens.lg,
+        PRFSpacingTokens.lg,
+        PRFSpacingTokens.lg,
+        PRFSpacingTokens.sm,
+      ),
       padding: const EdgeInsets.all(PRFSpacingTokens.xl),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            requisition.approvalStatus.color(theme),
-            requisition.approvalStatus.color(theme).withValues(alpha: 0.8),
-          ],
-        ),
+        color: status.main,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        boxShadow: [
-          BoxShadow(
-            color: requisition.approvalStatus
-                .color(theme)
-                .withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(PRFSpacingTokens.sm),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                  color: onStatus.withValues(alpha: PRFOpacities.muted),
                   borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
                 ),
                 child: Icon(
                   requisition.approvalStatus.icon,
-                  color: requisition.approvalStatus.color(theme),
-                  size: 24,
+                  color: onStatus,
+                  size: PRFSizeTokens.iconLg,
                 ),
               ),
               const SizedBox(width: PRFSpacingTokens.md),
@@ -2317,7 +2012,7 @@ class _RequisitionDetailsPageHandsetState
                     Text(
                       l10n.requisitionDetails,
                       style: theme.textTheme.titleLarge?.copyWith(
-                        color: theme.colorScheme.surface,
+                        color: onStatus,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -2326,22 +2021,23 @@ class _RequisitionDetailsPageHandsetState
                         requisition.ulid.substring(0, 8).toUpperCase(),
                       ),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.8),
+                        color: onStatus,
                       ),
                     ),
                   ],
                 ),
               ),
-              _buildStatusChip(requisition.approvalStatus, theme),
+              const SizedBox(width: PRFSpacingTokens.sm),
+              _buildStatusChip(context, requisition.approvalStatus, status),
             ],
           ),
 
           const SizedBox(height: PRFSpacingTokens.xl),
 
-          // Details Grid
           Column(
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildDetailItem(
@@ -2349,7 +2045,7 @@ class _RequisitionDetailsPageHandsetState
                       l10n.desk,
                       requisition.responsibleDesk.name,
                       Icons.work_outline,
-                      theme,
+                      onStatus,
                     ),
                   ),
                   const SizedBox(width: PRFSpacingTokens.md),
@@ -2357,18 +2053,16 @@ class _RequisitionDetailsPageHandsetState
                     child: _buildDetailItem(
                       context,
                       l10n.totalAmount,
-                      NumberFormat.currency(
-                        symbol: 'KES ',
-                        decimalDigits: 0,
-                      ).format(requisition.totalAmount),
+                      formatKes(requisition.totalAmount),
                       Icons.attach_money,
-                      theme,
+                      onStatus,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: PRFSpacingTokens.md),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildDetailItem(
@@ -2376,7 +2070,7 @@ class _RequisitionDetailsPageHandsetState
                       l10n.created,
                       DateFormat.yMMMd().format(requisition.createdAt),
                       Icons.calendar_today,
-                      theme,
+                      onStatus,
                     ),
                   ),
                   const SizedBox(width: PRFSpacingTokens.md),
@@ -2386,7 +2080,7 @@ class _RequisitionDetailsPageHandsetState
                       l10n.requisitionDate,
                       DateFormat.yMMMd().format(requisition.requisitionDate),
                       Icons.event,
-                      theme,
+                      onStatus,
                     ),
                   ),
                 ],
@@ -2394,38 +2088,29 @@ class _RequisitionDetailsPageHandsetState
             ],
           ),
 
-          // Member Information
           if (requisition.member != null) ...[
             const SizedBox(height: PRFSpacingTokens.lg),
             Container(
               padding: const EdgeInsets.all(PRFSpacingTokens.md),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                border: Border.all(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.2),
-                ),
-              ),
+              decoration: _onStatusBoxDecoration(onStatus),
               child: Row(
                 children: [
                   Icon(
                     Icons.person,
-                    color: theme.colorScheme.surface,
-                    size: 16,
+                    color: onStatus,
+                    size: PRFSizeTokens.iconSm,
                   ),
                   const SizedBox(width: PRFSpacingTokens.sm),
                   Text(
                     l10n.requestedBy,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.surface.withValues(alpha: 0.8),
-                    ),
+                    style: theme.textTheme.bodySmall?.copyWith(color: onStatus),
                   ),
                   const SizedBox(width: PRFSpacingTokens.sm),
                   Expanded(
                     child: Text(
                       requisition.member!.fullName,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.surface,
+                        color: onStatus,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -2435,18 +2120,11 @@ class _RequisitionDetailsPageHandsetState
             ),
           ],
 
-          // Approval Information
           if (requisition.approvalStatus != PRFApprovalStatus.pending) ...[
             const SizedBox(height: PRFSpacingTokens.md),
             Container(
               padding: const EdgeInsets.all(PRFSpacingTokens.md),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-                border: Border.all(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.2),
-                ),
-              ),
+              decoration: _onStatusBoxDecoration(onStatus),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2454,48 +2132,52 @@ class _RequisitionDetailsPageHandsetState
                     children: [
                       Icon(
                         requisition.approvalStatus.icon,
-                        color: theme.colorScheme.surface,
-                        size: 16,
+                        color: onStatus,
+                        size: PRFSizeTokens.iconSm,
                       ),
                       const SizedBox(width: PRFSpacingTokens.sm),
                       Text(
-                        requisition.approvalStatus.name,
+                        requisition.approvalStatus.label(l10n),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.surface.withValues(
-                            alpha: 0.8,
-                          ),
+                          color: onStatus,
                         ),
                       ),
-                      if (requisition.approvedBy != null)
+                      if (requisition.approvedBy != null) ...[
+                        const SizedBox(width: PRFSpacingTokens.sm),
                         Expanded(
                           child: Text(
                             '${requisition.approvedBy!.firstName} '
                             '${requisition.approvedBy!.lastName}',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.surface,
+                              color: onStatus,
                               fontWeight: FontWeight.w600,
                             ),
                             textAlign: TextAlign.end,
                           ),
                         ),
+                      ],
                     ],
                   ),
                   if (requisition.approvalNotes != null) ...[
                     const SizedBox(height: PRFSpacingTokens.sm),
                     Text(
-                      '${l10n.notes}: ${requisition.approvalNotes}',
+                      l10n.requisitionDetailNotesValue(
+                        requisition.approvalNotes!,
+                      ),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                        color: onStatus,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
                   ],
                   const SizedBox(height: PRFSpacingTokens.xs),
                   Text(
-                    '${l10n.date}: ${DateFormat.yMMMd().add_Hm().format(requisition.approvedAt ?? requisition.createdAt)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.surface.withValues(alpha: 0.7),
+                    l10n.requisitionDetailDateValue(
+                      DateFormat.yMMMd().add_Hm().format(
+                        requisition.approvedAt ?? requisition.createdAt,
+                      ),
                     ),
+                    style: theme.textTheme.bodySmall?.copyWith(color: onStatus),
                   ),
                 ],
               ),
@@ -2503,40 +2185,39 @@ class _RequisitionDetailsPageHandsetState
           ],
         ],
       ),
-    ).animate().slideY(begin: -0.2).fadeIn(duration: 500.ms);
+    ).entrance(context, slide: const Offset(0, -0.2));
   }
+
+  BoxDecoration _onStatusBoxDecoration(Color onStatus) => BoxDecoration(
+    color: onStatus.withValues(alpha: PRFOpacities.subtle),
+    borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
+    border: Border.all(color: onStatus.withValues(alpha: PRFOpacities.muted)),
+  );
 
   Widget _buildDetailItem(
     BuildContext context,
     String label,
     String value,
     IconData icon,
-    ThemeData theme,
+    Color onStatus,
   ) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(PRFSpacingTokens.md),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(PRFRadiusTokens.sm),
-        border: Border.all(
-          color: theme.colorScheme.surface.withValues(alpha: 0.2),
-        ),
-      ),
+      decoration: _onStatusBoxDecoration(onStatus),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: theme.colorScheme.surface, size: 16),
-              const SizedBox(width: 6),
+              Icon(icon, color: onStatus, size: PRFSizeTokens.iconSm),
+              const SizedBox(width: PRFSpacingTokens.xs),
               Expanded(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.surface.withValues(alpha: 0.8),
-                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(color: onStatus),
                 ),
               ),
             ],
@@ -2545,7 +2226,7 @@ class _RequisitionDetailsPageHandsetState
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.surface,
+              color: onStatus,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -2554,25 +2235,32 @@ class _RequisitionDetailsPageHandsetState
     );
   }
 
-  Widget _buildStatusChip(PRFApprovalStatus status, ThemeData theme) {
+  /// Status label on the coloured details card. Drawn in the status set's
+  /// `onColor` (outlined) so it always contrasts with the card fill.
+  Widget _buildStatusChip(
+    BuildContext context,
+    PRFApprovalStatus status,
+    StatusColorSet colors,
+  ) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: PRFSpacingTokens.md,
-        vertical: 6,
+        vertical: PRFSpacingTokens.xs,
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
+        border: Border.all(color: colors.onColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(status.icon, size: 14, color: status.color(theme)),
-          const SizedBox(width: 6),
+          Icon(status.icon, size: PRFSizeTokens.iconSm, color: colors.onColor),
+          const SizedBox(width: PRFSpacingTokens.xs),
           Text(
-            status.name,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: status.color(theme),
+            status.label(context.l10n),
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -2584,21 +2272,24 @@ class _RequisitionDetailsPageHandsetState
   void _showApprovalNotesDialog(
     BuildContext context,
     String title,
-    String notes,
-  ) {
+    String notes, {
+    bool isRejection = false,
+  }) {
+    final l10n = context.l10n;
     PRFConfirmationDialog.show(
       context,
       title: title,
       message: notes,
-      confirmLabel: 'OK',
-      isDestructive: title.contains('Rejection'),
+      confirmLabel: l10n.okButtonText,
+      cancelLabel: l10n.cancel,
+      isDestructive: isRejection,
     );
   }
 
   void _showApprovalModal(BuildContext context) {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Review Requisition',
+      title: context.l10n.requisitionActionReviewTitle,
       child: ApproveRequisitionViewHandset(
         requisitionUlid: widget.requisitionUlid,
       ),
@@ -2618,14 +2309,17 @@ class _RequisitionDetailsPageHandsetState
   void _showRecallRequisitionModal(BuildContext context) {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Recall Requisition',
+      title: context.l10n.recallRequisition,
       child: RecallRequisitionView(requisitionUlid: widget.requisitionUlid),
     );
   }
 
-  /// Make a phone call using the phone number
-  Future<void> _makePhoneCall(String? phoneNumber) async {
+  /// Calls [phoneNumber], telling the user when there is no number saved or
+  /// the call can't be started.
+  Future<void> _makePhoneCall(String? phoneNumber, String name) async {
+    final l10n = context.l10n;
     if (phoneNumber == null || phoneNumber.trim().isEmpty) {
+      PRFSnackbar.info(context, l10n.requisitionDetailNoPhoneNumber(name));
       return;
     }
 
@@ -2634,12 +2328,7 @@ class _RequisitionDetailsPageHandsetState
 
     final success = await Misc.openUrl(phoneUri);
     if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Unable to make call'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      PRFSnackbar.error(context, l10n.requisitionDetailCallFailed);
     }
   }
 }

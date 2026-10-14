@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/departments/actions/department_form/_handset.dart';
 import 'package:leadership/features/departments/cubit/department_resource_cubit.dart';
-import 'package:leadership/features/departments/widgets/department_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_department.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -47,6 +48,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -60,13 +62,12 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
             ResourceListLoaded<PRFDepartment>(:final items)
                 when items.isEmpty =>
               PRFEmptyView(
-                label: 'No Departments Yet',
-                description:
-                    'Get started by adding your first department to the system',
+                label: l10n.departmentsEmptyTitle,
+                description: l10n.departmentsEmptyMessage,
                 icon: Icons.group_work_outlined,
-                navBarTitle: 'Departments',
+                navBarTitle: l10n.departmentsTitle,
                 onBackPressed: _goBackToHome,
-                actionLabel: 'Add Department',
+                actionLabel: l10n.departmentsAdd,
                 onActionPressed: () => _showForm(context, null),
               ),
             ResourceListLoaded<PRFDepartment>(:final items) => _buildBody(
@@ -79,14 +80,11 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
             ),
             ResourceError<PRFDepartment>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFDepartment>(:final message) => PRFEmptyView(
-              label: 'Error Loading Departments',
-              description: message,
-              icon: Icons.error_outline,
-              navBarTitle: 'Departments',
-              onBackPressed: _goBackToHome,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
+            ResourceError<PRFDepartment>() => PRFLeadershipErrorScreen(
+              navBarTitle: l10n.departmentsTitle,
+              title: l10n.departmentsLoadError,
+              onBack: _goBackToHome,
+              onRetry: _loadData,
             ),
             _ => const SizedBox.shrink(),
           };
@@ -124,7 +122,8 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No departments match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -140,11 +139,16 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filtered[index];
-                  return DepartmentCard(
-                    department: item,
-                    index: index,
+                  return PRFListItemCard(
+                    title: item.name,
+                    icon: Icons.group_work_outlined,
+                    isActive: item.isActive == PRFActiveStatus.active,
+                    activeLabel: context.l10n.commonActive,
+                    inactiveLabel: context.l10n.commonInactive,
+                    deleteLabel: context.l10n.delete,
                     onTap: () => _showForm(context, item),
                     onDelete: () => _confirmDelete(context, item),
+                    animationIndex: index,
                   );
                 }, childCount: filtered.length),
               ),
@@ -164,13 +168,14 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Departments',
+            title: context.l10n.departmentsTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showForm(context, null),
+                tooltip: context.l10n.departmentsAddTooltip,
+                onPressed: () => _showForm(context, null),
               ),
             ],
           ),
@@ -185,7 +190,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total',
+                    label: context.l10n.departmentsTotal,
                     value: '$totalCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -204,18 +209,14 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search departments...',
+        hintText: context.l10n.departmentsSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -241,7 +242,7 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -257,7 +258,9 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -276,7 +279,9 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
   void _showForm(BuildContext context, PRFDepartment? department) {
     PRFBottomSheet.show<void>(
       context,
-      title: department == null ? 'Add Department' : 'Edit Department',
+      title: department == null
+          ? context.l10n.departmentsAdd
+          : context.l10n.departmentsEdit,
       child: DepartmentFormViewHandset(
         department: department,
         onSaved: _loadData,
@@ -288,13 +293,13 @@ class _DepartmentsPageHandsetState extends State<DepartmentsPageHandset>
     BuildContext context,
     PRFDepartment department,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Department',
-      message:
-          'Are you sure you want to delete "${department.name}"? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.departmentsDeleteTitle,
+      message: l10n.lookupDeleteMessage(department.name),
+      confirmLabel: l10n.departmentsDeleteConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 

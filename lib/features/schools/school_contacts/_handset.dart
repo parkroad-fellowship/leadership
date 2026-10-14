@@ -2,13 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:leadership/features/schools/actions/contact_form/_handset.dart';
-import 'package:leadership/features/schools/cubit/contact_cubit.dart';
 import 'package:leadership/features/schools/cubit/contact_type_cubit.dart';
 import 'package:leadership/features/schools/cubit/school_cubit.dart';
 import 'package:leadership/features/schools/widgets/school_contact_row.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_contact.dart';
 import 'package:leadership/models/remote/prf_contact_type.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/models/remote/prf_school.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:prf_design/prf_design.dart';
@@ -24,11 +24,7 @@ class SchoolContactsPageHandset extends StatefulWidget {
 }
 
 class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
-  }
+  PRFSchool? _lastSchool;
 
   List<PRFContactType> get _contactTypes {
     final state = context.read<ContactTypeCubit>().state;
@@ -43,58 +39,60 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
       appBar: PRFBrandedNavBar(
-        title: 'Contacts',
+        title: l10n.schoolContactsTitle,
         onBack: () => context.router.maybePop(),
         actions: [
-          PRFHeaderActionButton(
-            label: 'New',
+          PRFNavBarAction(
+            label: l10n.commonNew,
             icon: Icons.add,
-            onTap: () => _showContactForm(null),
+            tooltip: l10n.schoolContactsAddTooltip,
+            onPressed: () => _showContactForm(null),
           ),
         ],
       ),
-      body: BlocConsumer<ContactCubit, ResourceState<PRFContact>>(
-        listener: (context, state) {
-          if (state case ResourceError<PRFContact>(:final message)) {
-            PRFSnackbar.error(context, message);
-          }
-        },
+      body: BlocBuilder<SchoolCubit, ResourceState<PRFSchool>>(
         builder: (context, state) {
-          return switch (state) {
-            ResourceListLoading<PRFContact>() => const Center(
-              child: PRFCircularProgressIndicator(),
-            ),
-            ResourceListLoaded<PRFContact>(:final items) when items.isEmpty =>
-              PRFEmptyView(
-                label: 'No Contacts',
-                description: 'Add a contact for this school',
-                icon: Icons.contacts_outlined,
-                actionLabel: 'Add Contact',
-                onActionPressed: () => _showContactForm(null),
-              ),
-            ResourceListLoaded<PRFContact>(:final items) => _buildList(
-              theme,
-              items,
-            ),
-            ResourceMutating<PRFContact>(:final items) => _buildList(
-              theme,
-              items,
-            ),
-            ResourceError<PRFContact>(:final items) when items.isNotEmpty =>
-              _buildList(theme, items),
-            ResourceError<PRFContact>(:final message) =>
-              PRFErrorView.fromMessage(
-                message: message,
-                onRetry: () => context.read<ContactCubit>().loadForSchool(
-                  widget.schoolUlid,
-                ),
-              ),
-            _ => const SizedBox.shrink(),
+          // Render the contacts embedded in the school: the contact Hive list
+          // is not school-keyed, so ContactCubit state can hold other schools.
+          final schools = switch (state) {
+            ResourceListLoaded<PRFSchool>(:final items) => items,
+            ResourceListLoading<PRFSchool>(:final items) => items,
+            ResourceMutating<PRFSchool>(:final items) => items,
+            ResourceError<PRFSchool>(:final items) => items,
+            _ => <PRFSchool>[],
           };
+          final found = schools.cast<PRFSchool?>().firstWhere(
+            (s) => s!.ulid == widget.schoolUlid,
+            orElse: () => null,
+          );
+          // A refresh can momentarily emit an empty list; keep the last one.
+          if (found != null) _lastSchool = found;
+          final school = found ?? (schools.isEmpty ? _lastSchool : null);
+          if (school == null) {
+            return state is ResourceError<PRFSchool>
+                ? PRFErrorView.fromMessage(
+                    title: l10n.schoolContactsLoadError,
+                    message: l10n.commonLoadErrorMessage,
+                    retryLabel: l10n.commonTryAgain,
+                    onRetry: () => context.read<SchoolCubit>().loadAll(),
+                  )
+                : const Center(child: PRFCircularProgressIndicator());
+          }
+          if (school.contacts.isEmpty) {
+            return PRFEmptyView(
+              label: l10n.schoolContactsEmptyTitle,
+              description: l10n.schoolContactsEmptyMessage,
+              icon: Icons.contacts_outlined,
+              actionLabel: l10n.schoolContactsAdd,
+              onActionPressed: () => _showContactForm(null),
+            );
+          }
+          return _buildList(theme, school.contacts);
         },
       ),
     );
@@ -149,22 +147,26 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.4),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
+          ),
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: PRFSizeTokens.iconXxl,
+            height: PRFSizeTokens.iconXxl,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.14),
+              color: theme.colorScheme.primary.withValues(
+                alpha: PRFOpacities.hairline,
+              ),
               borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
             ),
             child: Icon(
               Icons.contacts_rounded,
               color: theme.colorScheme.primary,
-              size: 20,
+              size: PRFSizeTokens.iconMd,
             ),
           ),
           const SizedBox(width: PRFSpacingTokens.md),
@@ -173,7 +175,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$count contacts',
+                  context.l10n.schoolsContactCount(count),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: theme.colorScheme.onSurface,
@@ -181,7 +183,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
                 ),
                 const SizedBox(height: PRFSpacingTokens.xs),
                 Text(
-                  'Tap a contact to edit details quickly',
+                  context.l10n.schoolContactsTapToEdit,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -201,24 +203,24 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
   void _showContactForm(PRFContact? contact) {
     final contactTypes = _contactTypes;
     if (contactTypes.isEmpty) {
-      PRFSnackbar.error(
-        context,
-        'Contact types are still loading. '
-        'Please retry in a moment.',
-      );
+      PRFSnackbar.error(context, context.l10n.schoolContactsTypesLoading);
       return;
     }
 
     PRFBottomSheet.show<void>(
       context,
-      title: contact == null ? 'Add Contact' : 'Edit Contact',
+      title: contact == null
+          ? context.l10n.schoolContactsAdd
+          : context.l10n.schoolContactsEdit,
       child: ContactFormViewHandset(
         contact: contact,
         schoolUlid: widget.schoolUlid,
         contactTypes: contactTypes,
+        // Refetch the school so its embedded contacts update.
         onSaved: () {
-          context.read<ContactCubit>().loadForSchool(widget.schoolUlid);
-          context.read<SchoolCubit>().loadAll();
+          context.read<SchoolCubit>()
+            ..invalidate()
+            ..loadAll();
         },
       ),
     );
@@ -228,7 +230,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
     final sanitized = phone.trim();
     if (sanitized.isEmpty) {
       if (!mounted) return;
-      PRFSnackbar.error(context, 'No phone number available');
+      PRFSnackbar.error(context, context.l10n.schoolContactsNoPhone);
       return;
     }
 
@@ -236,7 +238,7 @@ class _SchoolContactsPageHandsetState extends State<SchoolContactsPageHandset> {
     final didLaunch = await Misc.openUrl(callUri);
 
     if (!didLaunch && mounted) {
-      PRFSnackbar.error(context, 'Could not launch your phone dialer');
+      PRFSnackbar.error(context, context.l10n.schoolContactsCallFailed);
     }
   }
 }

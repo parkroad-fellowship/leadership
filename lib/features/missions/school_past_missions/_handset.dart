@@ -56,6 +56,10 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
 
           final isLoading =
               state is ResourceListLoading<PRFSchool> && schools.isEmpty;
+          final hasError = state.maybeWhen(
+            error: (_, _) => true,
+            orElse: () => false,
+          );
 
           if (school == null) {
             return Column(
@@ -68,9 +72,20 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
                   child: Center(
                     child: isLoading
                         ? const PRFCircularProgressIndicator()
+                        : hasError
+                        ? PRFErrorView(
+                            failure: PRFFailure(
+                              message: l10n.missionsLoadErrorMessage,
+                            ),
+                            title: l10n.missionsSchoolLoadErrorTitle,
+                            retryLabel: l10n.tryAgain,
+                            onRetry: () => context
+                                .read<PastMissionResourceCubit>()
+                                .loadAll(),
+                          )
                         : PRFEmptyView(
-                            label: l10n.noPastMissions,
-                            description: l10n.pleaseWait,
+                            label: l10n.missionsSchoolNotFound,
+                            description: l10n.missionsSchoolNotFoundDesc,
                           ),
                   ),
                 ),
@@ -94,8 +109,11 @@ class _SchoolPastMissionsHandsetState extends State<SchoolPastMissionsHandset> {
                         description: l10n.noPastMissions,
                       )
                     : RefreshIndicator(
-                        onRefresh: () =>
-                            context.read<PastMissionResourceCubit>().loadAll(),
+                        onRefresh: () {
+                          final cubit = context.read<PastMissionResourceCubit>()
+                            ..invalidate();
+                          return cubit.loadAll();
+                        },
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(

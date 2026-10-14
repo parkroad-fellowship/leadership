@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:leadership/features/missions/cubit/mission_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/mission_type_resource_cubit.dart';
 import 'package:leadership/features/missions/cubit/school_term_resource_cubit.dart';
+import 'package:leadership/features/missions/widgets/mission_selectable_chip.dart';
 import 'package:leadership/features/schools/cubit/school_cubit.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/mission/prf_mission.dart';
@@ -92,39 +93,39 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
     _clearErrors();
 
     if (_selectedSchoolTermUlid?.isEmpty ?? true) {
-      _schoolTermError = 'School term is required';
+      _schoolTermError = context.l10n.mfSchoolTermRequired;
     }
     if (_selectedMissionTypeUlid?.isEmpty ?? true) {
-      _missionTypeError = 'Mission type is required';
+      _missionTypeError = context.l10n.mfMissionTypeRequired;
     }
     if (_selectedSchoolUlid?.isEmpty ?? true) {
-      _schoolError = 'School is required';
+      _schoolError = context.l10n.mfSchoolRequired;
     }
     if (_startDate == null) {
-      _startDateError = 'Start date is required';
+      _startDateError = context.l10n.mfStartDateRequired;
     }
     if (_endDate == null) {
-      _endDateError = 'End date is required';
+      _endDateError = context.l10n.mfEndDateRequired;
     }
     if (_startDate != null &&
         _endDate != null &&
         _endDate!.isBefore(_startDate!)) {
-      _endDateError = 'End date cannot be before start date';
+      _endDateError = context.l10n.mfEndBeforeStart;
     }
     if (_startTimeController.text.trim().isEmpty) {
-      _startTimeError = 'Start time is required';
+      _startTimeError = context.l10n.mfStartTimeRequired;
     }
     if (_endTimeController.text.trim().isEmpty) {
-      _endTimeError = 'End time is required';
+      _endTimeError = context.l10n.mfEndTimeRequired;
     }
     if (_themeController.text.trim().isEmpty) {
-      _themeError = 'Theme is required';
+      _themeError = context.l10n.mfThemeRequired;
     }
     final capacity = int.tryParse(_capacityController.text.trim());
     if (_capacityController.text.trim().isEmpty) {
-      _capacityError = 'Capacity is required';
+      _capacityError = context.l10n.mfCapacityRequired;
     } else if (capacity == null || capacity < 1) {
-      _capacityError = 'Capacity must be at least 1';
+      _capacityError = context.l10n.mfCapacityMin;
     }
 
     setState(() {
@@ -172,11 +173,11 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
             setState(() => _isLoading = false);
             Gaimon.success();
             Navigator.of(context).pop(true);
-            PRFSnackbar.success(context, 'Mission created successfully');
-          case ResourceError<PRFMission>(:final message) when _isLoading:
+            PRFSnackbar.success(context, context.l10n.mfCreated);
+          case ResourceError<PRFMission>() when _isLoading:
             setState(() => _isLoading = false);
             Gaimon.error();
-            PRFSnackbar.error(context, message);
+            PRFSnackbar.error(context, context.l10n.mfSaveFailed);
           default:
             break;
         }
@@ -200,12 +201,23 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                   const SizedBox(height: PRFSpacingTokens.lg),
                   PRFButton(
                         onPressed: _submit,
-                        title: 'Create Mission',
+                        title: context.l10n.mfCreateButton,
                         disabled: !_isFormValid,
                         isLoading: _isLoading,
                       )
-                      .animate(delay: PRFMotionTokens.enterMedium)
-                      .slideY(begin: 0.3)
+                      .animate(
+                        delay: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.enterMedium,
+                        ),
+                      )
+                      .slideY(
+                        begin: 0.3,
+                        duration: PRFMotionTokens.resolve(
+                          context,
+                          PRFMotionTokens.slow,
+                        ),
+                      )
                       .fadeIn(),
                   const SizedBox(height: PRFSpacingTokens.lg),
                 ],
@@ -226,7 +238,9 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
             gradient: LinearGradient(
               colors: [
                 theme.colorScheme.primary,
-                theme.colorScheme.primary.withValues(alpha: 0.8),
+                theme.colorScheme.primary.withValues(
+                  alpha: PRFOpacities.stronger,
+                ),
               ],
             ),
             borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
@@ -235,12 +249,12 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
             children: [
               Icon(
                 Icons.flight_takeoff_rounded,
-                size: 32,
+                size: PRFSizeTokens.iconXl,
                 color: theme.colorScheme.onPrimary,
               ),
               const SizedBox(height: PRFSpacingTokens.sm),
               Text(
-                'Create Mission',
+                context.l10n.mfCreateButton,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   color: theme.colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
@@ -248,9 +262,11 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
               ),
               const SizedBox(height: PRFSpacingTokens.xs),
               Text(
-                'Fill required mission details to get started',
+                context.l10n.mfCreateSubtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+                  color: theme.colorScheme.onPrimary.withValues(
+                    alpha: PRFOpacities.nearOpaque,
+                  ),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -258,8 +274,14 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           ),
         )
         .animate()
-        .slideY(begin: -0.3)
-        .fadeIn(duration: PRFMotionTokens.enterShort);
+        .slideY(
+          begin: -0.3,
+          duration: PRFMotionTokens.resolve(
+            context,
+            PRFMotionTokens.enterShort,
+          ),
+        )
+        .fadeIn();
   }
 
   Widget _buildForm(BuildContext context, AppLocalizations l10n) {
@@ -283,17 +305,17 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildStartDateField() {
     return PRFFormSection(
       icon: Icons.event,
-      title: 'Start Date',
+      title: context.l10n.mfStartDate,
       isRequired: true,
-      subtitle: 'Select mission start date',
+      subtitle: context.l10n.mfTapToChoose,
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: Row(
         children: [
           Expanded(
             child: PRFTextField(
               hintText: 'YYYY-MM-DD',
-              labelText: 'Start Date *',
-              helperText: 'Select mission start date',
+              labelText: context.l10n.mfStartDate,
+              helperText: context.l10n.mfTapToChoose,
               errorText: _showValidation ? _startDateError : null,
               controller: _startDateController,
               enabled: false,
@@ -301,6 +323,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           ),
           const SizedBox(width: PRFSpacingTokens.sm),
           IconButton.outlined(
+            tooltip: context.l10n.mfChooseStartDate,
             onPressed: _isLoading ? null : _selectStartDate,
             icon: const Icon(Icons.event),
           ),
@@ -312,17 +335,17 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildStartTimeField() {
     return PRFFormSection(
       icon: Icons.schedule,
-      title: 'Start Time',
+      title: context.l10n.mfStartTime,
       isRequired: true,
-      subtitle: 'Mission start time',
+      subtitle: context.l10n.mfTapToChoose,
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: Row(
         children: [
           Expanded(
             child: PRFTextField(
               hintText: 'HH:mm',
-              labelText: 'Start Time *',
-              helperText: 'Mission start time',
+              labelText: context.l10n.mfStartTime,
+              helperText: context.l10n.mfTapToChoose,
               errorText: _showValidation ? _startTimeError : null,
               controller: _startTimeController,
               enabled: false,
@@ -330,6 +353,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           ),
           const SizedBox(width: PRFSpacingTokens.sm),
           IconButton.outlined(
+            tooltip: context.l10n.mfChooseStartTime,
             onPressed: _isLoading ? null : _selectStartTime,
             icon: const Icon(Icons.schedule),
           ),
@@ -341,17 +365,17 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildEndDateField() {
     return PRFFormSection(
       icon: Icons.event_available,
-      title: 'End Date',
+      title: context.l10n.mfEndDate,
       isRequired: true,
-      subtitle: 'Select mission end date',
+      subtitle: context.l10n.mfTapToChoose,
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: Row(
         children: [
           Expanded(
             child: PRFTextField(
               hintText: 'YYYY-MM-DD',
-              labelText: 'End Date *',
-              helperText: 'Select mission end date',
+              labelText: context.l10n.mfEndDate,
+              helperText: context.l10n.mfTapToChoose,
               errorText: _showValidation ? _endDateError : null,
               controller: _endDateController,
               enabled: false,
@@ -359,6 +383,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           ),
           const SizedBox(width: PRFSpacingTokens.sm),
           IconButton.outlined(
+            tooltip: context.l10n.mfChooseEndDate,
             onPressed: _isLoading ? null : _selectEndDate,
             icon: const Icon(Icons.event_available),
           ),
@@ -370,17 +395,17 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildEndTimeField() {
     return PRFFormSection(
       icon: Icons.schedule_send,
-      title: 'End Time',
+      title: context.l10n.mfEndTime,
       isRequired: true,
-      subtitle: 'Mission end time',
+      subtitle: context.l10n.mfTapToChoose,
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: Row(
         children: [
           Expanded(
             child: PRFTextField(
               hintText: 'HH:mm',
-              labelText: 'End Time *',
-              helperText: 'Mission end time',
+              labelText: context.l10n.mfEndTime,
+              helperText: context.l10n.mfTapToChoose,
               errorText: _showValidation ? _endTimeError : null,
               controller: _endTimeController,
               enabled: false,
@@ -388,6 +413,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           ),
           const SizedBox(width: PRFSpacingTokens.sm),
           IconButton.outlined(
+            tooltip: context.l10n.mfChooseEndTime,
             onPressed: _isLoading ? null : _selectEndTime,
             icon: const Icon(Icons.schedule_send),
           ),
@@ -401,12 +427,12 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
       icon: Icons.label_outline,
       title: l10n.theme,
       isRequired: true,
-      subtitle: 'Mission focus/theme',
+      subtitle: context.l10n.mfThemeHelp,
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: PRFTextField(
-        hintText: 'Mission theme',
-        labelText: '${l10n.theme} *',
-        helperText: 'Mission focus/theme',
+        hintText: context.l10n.mfThemeHint,
+        labelText: l10n.theme,
+        helperText: context.l10n.mfThemeHelp,
         errorText: _showValidation ? _themeError : null,
         controller: _themeController,
         enabled: !_isLoading,
@@ -417,14 +443,14 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildCapacityField() {
     return PRFFormSection(
       icon: Icons.groups_outlined,
-      title: 'Capacity',
+      title: context.l10n.mfCapacity,
       isRequired: true,
-      subtitle: 'Missionaries needed',
+      subtitle: context.l10n.mfCapacityHelp,
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: PRFTextField(
         hintText: '0',
-        labelText: 'Capacity *',
-        helperText: 'Missionaries needed',
+        labelText: context.l10n.mfCapacity,
+        helperText: context.l10n.mfCapacityHelp,
         errorText: _showValidation ? _capacityError : null,
         controller: _capacityController,
         type: PRFTextFieldType.number,
@@ -436,13 +462,13 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildWhatsAppField() {
     return PRFFormSection(
       icon: Icons.forum_outlined,
-      title: 'WhatsApp Link',
+      title: context.l10n.mfWhatsAppLink,
 
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: PRFTextField(
         hintText: 'https://...',
-        labelText: 'WhatsApp Link',
-        helperText: 'Optional',
+        labelText: context.l10n.mfWhatsAppLink,
+        helperText: context.l10n.mfOptional,
         controller: _whatsAppLinkController,
         enabled: !_isLoading,
       ),
@@ -452,13 +478,13 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
   Widget _buildPreparationNotesField() {
     return PRFFormSection(
       icon: Icons.notes_outlined,
-      title: 'Preparation Notes',
+      title: context.l10n.mfPrepNotes,
 
       margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
       child: PRFTextField(
-        hintText: 'Any mission preparation notes',
-        labelText: 'Preparation Notes',
-        helperText: 'Optional',
+        hintText: context.l10n.mfPrepNotesHint,
+        labelText: context.l10n.mfPrepNotes,
+        helperText: context.l10n.mfOptional,
         controller: _prepNotesController,
         type: PRFTextFieldType.textArea,
         enabled: !_isLoading,
@@ -477,21 +503,43 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           error: (message, items) => items,
           orElse: () => <PRFSchoolTerm>[],
         );
+        final hasError = state.maybeWhen(
+          error: (_, _) => true,
+          orElse: () => false,
+        );
 
         return PRFFormSection(
           icon: Icons.calendar_view_month,
-          title: 'School Term',
+          title: context.l10n.mfSchoolTerm,
           isRequired: true,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (terms.isEmpty && hasError)
+                PRFErrorView.inline(
+                  title: context.l10n.mfOptionsLoadError,
+                  message: context.l10n.missionsLoadErrorMessage,
+                  retryLabel: context.l10n.tryAgain,
+                  onRetry: () =>
+                      context.read<SchoolTermResourceCubit>().loadActive(),
+                )
+              else if (terms.isEmpty && state is! ResourceListLoading)
+                Text(
+                  context.l10n.mfNoTerms,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               Wrap(
                 spacing: PRFSpacingTokens.sm,
                 runSpacing: PRFSpacingTokens.sm,
                 children: terms.map((term) {
                   final isSelected = term.ulid == _selectedSchoolTermUlid;
-                  return GestureDetector(
+                  return MissionSelectableChip(
+                    label: term.name,
+                    selected: isSelected,
+                    maxWidth: MediaQuery.sizeOf(context).width * 0.7,
                     onTap: _isLoading
                         ? null
                         : () {
@@ -502,47 +550,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                               _validateForm();
                             }
                           },
-                    child: AnimatedContainer(
-                      duration: PRFMotionTokens.standard,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: PRFSpacingTokens.lg,
-                        vertical: PRFSpacingTokens.sm,
-                      ),
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                        border: Border.all(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.outline.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Text(
-                        term.name,
-                        maxLines: 2,
-                        softWrap: true,
-                        overflow: TextOverflow.visible,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context).colorScheme.onSurface,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ),
                   );
                 }).toList(),
               ),
@@ -572,21 +579,43 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
           error: (message, items) => items,
           orElse: () => <PRFMissionType>[],
         );
+        final hasError = state.maybeWhen(
+          error: (_, _) => true,
+          orElse: () => false,
+        );
 
         return PRFFormSection(
           icon: Icons.category_outlined,
-          title: 'Mission Type',
+          title: context.l10n.mfMissionType,
           isRequired: true,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (types.isEmpty && hasError)
+                PRFErrorView.inline(
+                  title: context.l10n.mfOptionsLoadError,
+                  message: context.l10n.missionsLoadErrorMessage,
+                  retryLabel: context.l10n.tryAgain,
+                  onRetry: () =>
+                      context.read<MissionTypeResourceCubit>().loadActive(),
+                )
+              else if (types.isEmpty && state is! ResourceListLoading)
+                Text(
+                  context.l10n.mfNoTypes,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               Wrap(
                 spacing: PRFSpacingTokens.sm,
                 runSpacing: PRFSpacingTokens.sm,
                 children: types.map((type) {
                   final isSelected = type.ulid == _selectedMissionTypeUlid;
-                  return GestureDetector(
+                  return MissionSelectableChip(
+                    label: type.name,
+                    selected: isSelected,
+                    maxWidth: MediaQuery.sizeOf(context).width * 0.7,
                     onTap: _isLoading
                         ? null
                         : () {
@@ -597,47 +626,6 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
                               _validateForm();
                             }
                           },
-                    child: AnimatedContainer(
-                      duration: PRFMotionTokens.standard,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: PRFSpacingTokens.lg,
-                        vertical: PRFSpacingTokens.sm,
-                      ),
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(PRFRadiusTokens.xl),
-                        border: Border.all(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.outline.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Text(
-                        type.name,
-                        maxLines: 2,
-                        softWrap: true,
-                        overflow: TextOverflow.visible,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context).colorScheme.onSurface,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ),
                   );
                 }).toList(),
               ),
@@ -670,7 +658,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
 
         return PRFFormSection(
           icon: Icons.school_outlined,
-          title: 'School',
+          title: context.l10n.mfSchool,
           isRequired: true,
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFSearchableList<String>(
@@ -691,8 +679,8 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
               }
             },
             selection: _selectedSchoolUlid,
-            hintText: 'Search school',
-            emptyText: 'No schools found',
+            hintText: context.l10n.mfSearchSchool,
+            emptyText: context.l10n.mfNoSchools,
           ),
         );
       },
@@ -776,7 +764,7 @@ class _CreateMissionViewHandsetState extends State<CreateMissionViewHandset> {
 
   Future<void> _submit() async {
     if (!_validateForm()) {
-      PRFSnackbar.error(context, 'Please fix highlighted fields first.');
+      PRFSnackbar.error(context, context.l10n.mfFixFields);
       return;
     }
 

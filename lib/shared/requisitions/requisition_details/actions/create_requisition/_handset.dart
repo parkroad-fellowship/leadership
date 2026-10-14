@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_accounting_event.dart';
 import 'package:leadership/models/remote/prf_requisition.dart';
 import 'package:leadership/shared/requisitions/cubit/requisition_resource_cubit.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
 
@@ -27,10 +27,6 @@ class _CreateRequisitionViewHandsetState
   final _remarksController = TextEditingController();
 
   bool _isLoading = false;
-
-  bool get _isFormValid {
-    return _remarksController.text.isNotEmpty;
-  }
 
   @override
   void initState() {
@@ -55,17 +51,8 @@ class _CreateRequisitionViewHandsetState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
-          ],
-        ),
-      ),
+    return DecoratedBox(
+      decoration: requisitionSheetBackground(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
         child: SingleChildScrollView(
@@ -73,91 +60,30 @@ class _CreateRequisitionViewHandsetState
           child: Column(
             children: [
               const SizedBox(height: PRFSpacingTokens.lg),
-              Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.add_circle_outline,
-                          size: 32,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        const SizedBox(height: PRFSpacingTokens.sm),
-                        Text(
-                          l10n.createNewRequisition,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate()
-                  .slideY(begin: -0.3)
-                  .fadeIn(duration: PRFMotionTokens.enterShort),
+              requisitionActionHeader(
+                context,
+                icon: Icons.add_circle_outline,
+                title: l10n.createNewRequisition,
+              ).entrance(context, slide: const Offset(0, -0.3)),
               const SizedBox(height: PRFSpacingTokens.xxl),
-              Container(
-                padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
+              requisitionFormCard(
+                context,
+                child: PRFFormSection(
+                  icon: Icons.notes_outlined,
+                  title: l10n.purpose,
+                  isRequired: true,
+                  child: PRFTextField(
+                    hintText: l10n.requisitionActionPurposeHint,
+                    controller: _remarksController,
+                    type: PRFTextFieldType.textArea,
+                    minLines: 3,
+                    maxLines: 6,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  children: [
-                    PRFFormSection(
-                          icon: Icons.notes_outlined,
-                          title: l10n.purpose,
-                          isRequired: true,
-                          child: PRFTextField(
-                            hintText: l10n.purpose,
-                            controller: _remarksController,
-                            type: PRFTextFieldType.textArea,
-                            minLines: 3,
-                            maxLines: 6,
-                          ),
-                        )
-                        .animate(delay: PRFMotionTokens.enterShort)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
-                  ],
-                ),
+              ).entrance(
+                context,
+                delay: PRFMotionTokens.stagger4,
+                slide: const Offset(-0.2, 0),
               ),
               const SizedBox(height: PRFSpacingTokens.xxl),
               BlocConsumer<
@@ -174,11 +100,18 @@ class _CreateRequisitionViewHandsetState
                           setState(() => _isLoading = false);
                           Gaimon.success();
                           Navigator.of(context).pop();
-                          PRFSnackbar.success(context, l10n.activityCreated);
-                        case ResourceError<PRFRequisition>(:final message):
+                          PRFSnackbar.success(
+                            context,
+                            l10n.requisitionActionCreated,
+                          );
+                        case ResourceError<PRFRequisition>():
                           setState(() => _isLoading = false);
                           Gaimon.error();
-                          PRFSnackbar.error(context, message);
+                          PRFSnackbar.error(
+                            context,
+                            l10n.requisitionActionCreateFailed,
+                            onRetry: _submitForm,
+                          );
                         default:
                           break;
                       }
@@ -186,15 +119,17 @@ class _CreateRequisitionViewHandsetState
                     builder: (context, state) {
                       return PRFButton(
                         onPressed: _submitForm,
-                        title: l10n.record,
-                        disabled: !_isFormValid,
+                        title: l10n.createRequisition,
+                        disabled: _isLoading,
                         isLoading: _isLoading,
                       );
                     },
                   )
-                  .animate(delay: PRFMotionTokens.enterMedium)
-                  .slideY(begin: 0.3)
-                  .fadeIn(),
+                  .entrance(
+                    context,
+                    delay: PRFMotionTokens.stagger5,
+                    slide: const Offset(0, 0.3),
+                  ),
               const SizedBox(height: PRFSpacingTokens.xxxl),
             ],
           ),
@@ -207,7 +142,7 @@ class _CreateRequisitionViewHandsetState
     final l10n = context.l10n;
 
     if (_remarksController.text.trim().isEmpty) {
-      PRFSnackbar.error(context, l10n.enterPurpose);
+      PRFSnackbar.warning(context, l10n.enterPurpose);
       Gaimon.warning();
       return;
     }

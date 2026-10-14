@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_media.dart';
+import 'package:prf_design/prf_design.dart';
 
+/// Full-screen receipt viewer.
+///
+/// Deliberately keeps fixed dark chrome (black backdrop, white text/icons —
+/// 21:1 contrast) so photos of receipts read clearly in either theme.
 class ReceiptPreviewPage extends StatefulWidget {
   const ReceiptPreviewPage({
     required this.receipts,
@@ -16,6 +22,10 @@ class ReceiptPreviewPage extends StatefulWidget {
 }
 
 class ReceiptPreviewPageState extends State<ReceiptPreviewPage> {
+  // Fixed media-viewer chrome; see class doc.
+  static const Color _chrome = Colors.black;
+  static const Color _onChrome = Colors.white;
+
   late PageController _pageController;
   late int _currentIndex;
 
@@ -35,15 +45,27 @@ class ReceiptPreviewPageState extends State<ReceiptPreviewPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: _chrome,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Text(
-          'Receipt ${_currentIndex + 1} of ${widget.receipts.length}',
-          style: const TextStyle(color: Colors.white),
+        backgroundColor: _chrome,
+        foregroundColor: _onChrome,
+        leading: IconButton(
+          tooltip: l10n.expenseCloseReceipts,
+          icon: const Icon(Icons.close, size: PRFSizeTokens.iconLg),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: Semantics(
+          liveRegion: true,
+          child: Text(
+            l10n.expenseReceiptCounter(
+              _currentIndex + 1,
+              widget.receipts.length,
+            ),
+            style: theme.textTheme.titleMedium?.copyWith(color: _onChrome),
+          ),
         ),
       ),
       body: PageView.builder(
@@ -61,26 +83,27 @@ class ReceiptPreviewPageState extends State<ReceiptPreviewPage> {
               child: Image.network(
                 receipt.temporaryURL,
                 fit: BoxFit.contain,
+                semanticLabel: l10n.expenseReceiptCounter(
+                  index + 1,
+                  widget.receipts.length,
+                ),
                 errorBuilder: (context, error, stackTrace) {
-                  return ColoredBox(
-                    color: theme.colorScheme.surfaceContainerHighest,
+                  return Padding(
+                    padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.image_not_supported,
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.4,
-                          ),
-                          size: 64,
+                        const Icon(
+                          Icons.image_not_supported_outlined,
+                          color: _onChrome,
+                          size: PRFSizeTokens.iconHero,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: PRFSpacingTokens.lg),
                         Text(
-                          'Failed to load image',
+                          l10n.expenseReceiptImageFailed,
+                          textAlign: TextAlign.center,
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.6,
-                            ),
+                            color: _onChrome,
                           ),
                         ),
                       ],
@@ -90,7 +113,9 @@ class ReceiptPreviewPageState extends State<ReceiptPreviewPage> {
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Center(
-                    child: CircularProgressIndicator(
+                    child: PRFCircularProgressIndicator(
+                      size: PRFSizeTokens.iconXxl,
+                      color: _onChrome,
                       value: loadingProgress.expectedTotalBytes != null
                           ? loadingProgress.cumulativeBytesLoaded /
                                 loadingProgress.expectedTotalBytes!

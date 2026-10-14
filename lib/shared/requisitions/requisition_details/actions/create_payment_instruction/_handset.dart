@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_payment_method.dart';
 import 'package:leadership/features/events/desk_activity_details/cubit/payment_instruction_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_payment_instruction.dart';
+import 'package:leadership/shared/requisitions/requisition_details/widgets/action_sheet_parts.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:prf_design/prf_design.dart';
@@ -115,44 +117,35 @@ class _CreatePaymentInstructionViewHandsetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            Theme.of(context).colorScheme.surface,
-          ],
-        ),
-      ),
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: requisitionSheetBackground(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Progress indicator
-          Container(
+          Padding(
             padding: const EdgeInsets.all(PRFSpacingTokens.lg),
             child: Row(
               children: [
-                _buildStepIndicator(0, 'Method'),
+                _buildStepIndicator(0, l10n.requisitionActionStepMethod),
                 Expanded(
                   child: Container(
-                    height: 2,
+                    height: PRFSizeTokens.progressBarHeight / 2,
                     color: _currentPage >= 1
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(
-                            context,
-                          ).colorScheme.outline.withValues(alpha: 0.3),
+                        ? scheme.primary
+                        : scheme.outlineVariant,
                   ),
                 ),
-                _buildStepIndicator(1, 'Details'),
+                _buildStepIndicator(1, l10n.details),
               ],
             ),
           ),
           Flexible(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.75,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.75,
               ),
               child: PageView(
                 controller: _pageController,
@@ -167,86 +160,35 @@ class _CreatePaymentInstructionViewHandsetState
     );
   }
 
+  String _methodName(PRFPaymentMethod method) {
+    final l10n = context.l10n;
+    return switch (method) {
+      PRFPaymentMethod.mpesa => l10n.requisitionDetailPaymentMpesa,
+      PRFPaymentMethod.bankTransfer =>
+        l10n.requisitionDetailPaymentBankTransfer,
+      PRFPaymentMethod.paybill => l10n.requisitionDetailPaymentPaybill,
+      PRFPaymentMethod.tillNumber => l10n.requisitionDetailPaymentTill,
+    };
+  }
+
+  IconData _methodIcon(PRFPaymentMethod method) => switch (method) {
+    PRFPaymentMethod.mpesa => Icons.phone_android,
+    PRFPaymentMethod.bankTransfer => Icons.account_balance,
+    PRFPaymentMethod.paybill => Icons.receipt,
+    PRFPaymentMethod.tillNumber => Icons.store,
+  };
+
   Widget _buildPaymentMethodSelector() {
-    final theme = Theme.of(context);
-    final paymentMethods = <Map<String, dynamic>>[
-      {
-        'method': PRFPaymentMethod.mpesa,
-        'name': 'M-PESA',
-        'icon': Icons.phone_android,
-      },
-      {
-        'method': PRFPaymentMethod.bankTransfer,
-        'name': 'Bank Transfer',
-        'icon': Icons.account_balance,
-      },
-      {
-        'method': PRFPaymentMethod.paybill,
-        'name': 'Paybill',
-        'icon': Icons.receipt,
-      },
-      {
-        'method': PRFPaymentMethod.tillNumber,
-        'name': 'Till Number',
-        'icon': Icons.store,
-      },
-    ];
-
     return Column(
-      children: paymentMethods.map((methodData) {
-        final method = methodData['method'] as PRFPaymentMethod;
-        final name = methodData['name'] as String;
-        final icon = methodData['icon'] as IconData;
-        final isSelected = selectedPaymentMethod == method;
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
-          child: GestureDetector(
+      children: PRFPaymentMethod.values.map((method) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: PRFSpacingTokens.sm),
+          child: RequisitionSelectableTile(
+            label: _methodName(method),
+            icon: _methodIcon(method),
+            selected: selectedPaymentMethod == method,
+            expand: true,
             onTap: () => setState(() => selectedPaymentMethod = method),
-            child: AnimatedContainer(
-              duration: PRFMotionTokens.standard,
-              padding: const EdgeInsets.all(PRFSpacingTokens.lg),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                    : theme.colorScheme.surfaceContainerHighest.withValues(
-                        alpha: 0.3,
-                      ),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
-                border: Border.all(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outline.withValues(alpha: 0.3),
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    icon,
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                  const SizedBox(width: PRFSpacingTokens.lg),
-                  Expanded(
-                    child: Text(
-                      name,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                  if (isSelected)
-                    Icon(Icons.check_circle, color: theme.colorScheme.primary),
-                ],
-              ),
-            ),
           ),
         );
       }).toList(),
@@ -271,10 +213,10 @@ class _CreatePaymentInstructionViewHandsetState
       children: [
         PRFFormSection(
           icon: Icons.phone,
-          title: 'M-PESA Phone Number',
+          title: context.l10n.requisitionActionMpesaPhone,
           isRequired: true,
           child: PRFPhoneInput(
-            hintText: 'Enter phone number (e.g., 254712345678)',
+            hintText: context.l10n.requisitionActionMpesaPhoneHint,
             controller: _mpesaPhoneController,
           ),
         ),
@@ -287,19 +229,19 @@ class _CreatePaymentInstructionViewHandsetState
       children: [
         PRFFormSection(
           icon: Icons.account_balance,
-          title: 'Bank Name',
+          title: context.l10n.bankName,
           isRequired: true,
           child: PRFTextField(
-            hintText: 'Enter bank name',
+            hintText: context.l10n.requisitionActionBankNameHint,
             controller: _bankNameController,
           ),
         ),
         PRFFormSection(
           icon: Icons.numbers,
-          title: 'Account Number',
+          title: context.l10n.accountNumber,
           isRequired: true,
           child: PRFTextField(
-            hintText: 'Account number',
+            hintText: context.l10n.accountNumber,
             controller: _bankAccountNumberController,
             type: PRFTextFieldType.number,
           ),
@@ -307,27 +249,27 @@ class _CreatePaymentInstructionViewHandsetState
 
         PRFFormSection(
           icon: Icons.person,
-          title: 'Account Name',
+          title: context.l10n.accountName,
           isRequired: true,
           child: PRFTextField(
-            hintText: 'Account name',
+            hintText: context.l10n.accountName,
             controller: _bankAccountNameController,
           ),
         ),
 
         PRFFormSection(
           icon: Icons.location_on,
-          title: 'Branch',
+          title: context.l10n.branch,
           child: PRFTextField(
-            hintText: 'Branch (optional)',
+            hintText: context.l10n.requisitionActionOptional,
             controller: _bankBranchController,
           ),
         ),
         PRFFormSection(
           icon: Icons.code,
-          title: 'SWIFT Code',
+          title: context.l10n.swiftCode,
           child: PRFTextField(
-            hintText: 'SWIFT code (optional)',
+            hintText: context.l10n.requisitionActionOptional,
             controller: _bankSwiftCodeController,
           ),
         ),
@@ -340,10 +282,10 @@ class _CreatePaymentInstructionViewHandsetState
       children: [
         PRFFormSection(
           icon: Icons.receipt,
-          title: 'Paybill Number',
+          title: context.l10n.paybillNumber,
           isRequired: true,
           child: PRFTextField(
-            hintText: 'Paybill number',
+            hintText: context.l10n.paybillNumber,
             controller: _paybillNumberController,
             type: PRFTextFieldType.number,
           ),
@@ -351,10 +293,10 @@ class _CreatePaymentInstructionViewHandsetState
 
         PRFFormSection(
           icon: Icons.account_box,
-          title: 'Account Number',
+          title: context.l10n.accountNumber,
           isRequired: true,
           child: PRFTextField(
-            hintText: 'Account number',
+            hintText: context.l10n.accountNumber,
             controller: _paybillAccountNumberController,
           ),
         ),
@@ -367,10 +309,10 @@ class _CreatePaymentInstructionViewHandsetState
       children: [
         PRFFormSection(
           icon: Icons.store,
-          title: 'Till Number',
+          title: context.l10n.tillNumber,
           isRequired: true,
           child: PRFTextField(
-            hintText: 'Enter till number',
+            hintText: context.l10n.tillNumber,
             controller: _tillNumberController,
             type: PRFTextFieldType.number,
           ),
@@ -380,7 +322,11 @@ class _CreatePaymentInstructionViewHandsetState
   }
 
   Future<void> _submitForm() async {
-    if (!_isFormValid) return;
+    if (!_isFormValid) {
+      PRFSnackbar.warning(context, context.l10n.expenseFixFields);
+      Gaimon.warning();
+      return;
+    }
 
     await context
         .read<PaymentInstructionResourceCubit>()
@@ -433,7 +379,7 @@ class _CreatePaymentInstructionViewHandsetState
     final isCompleted = _currentPage > step;
     final theme = Theme.of(context);
 
-    return Container(
+    return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: PRFSpacingTokens.lg,
         vertical: PRFSpacingTokens.sm,
@@ -442,26 +388,24 @@ class _CreatePaymentInstructionViewHandsetState
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 24,
-            height: 24,
+            width: PRFSizeTokens.iconLg,
+            height: PRFSizeTokens.iconLg,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isCompleted
+              color: isActive
                   ? theme.colorScheme.primary
-                  : isActive
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.outline.withValues(alpha: 0.3),
+                  : theme.colorScheme.surfaceContainerHighest,
             ),
             child: Center(
               child: isCompleted
                   ? Icon(
                       Icons.check,
-                      size: 16,
+                      size: PRFSizeTokens.iconSm,
                       color: theme.colorScheme.onPrimary,
                     )
                   : Text(
                       '${step + 1}',
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: theme.textTheme.labelMedium?.copyWith(
                         color: isActive
                             ? theme.colorScheme.onPrimary
                             : theme.colorScheme.onSurfaceVariant,
@@ -486,123 +430,49 @@ class _CreatePaymentInstructionViewHandsetState
   }
 
   Widget _buildStep1() {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
       child: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: PRFSpacingTokens.lg),
-
-            // Header Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.8),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.payment,
-                    size: 32,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.sm),
-                  Text(
-                    'Payment Method',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.xs),
-                  Text(
-                    'Choose payment method and recipient details',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onPrimary.withValues(alpha: 0.9),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+            requisitionActionHeader(
+              context,
+              icon: Icons.payment,
+              title: l10n.paymentMethod,
+              subtitle: l10n.requisitionActionPaymentStep1Subtitle,
             ),
-
             const SizedBox(height: PRFSpacingTokens.xxl),
-
-            // Form Card
-            Container(
-              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                border: Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.2),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+            requisitionFormCard(
+              context,
               child: Column(
                 children: [
-                  // Payment Method Selector
                   PRFFormSection(
                     icon: Icons.payment_outlined,
-                    title: 'Payment Method',
+                    title: l10n.paymentMethod,
                     isRequired: true,
                     child: _buildPaymentMethodSelector(),
                   ),
-
-                  // Recipient Name
                   PRFFormSection(
                     icon: Icons.person_outline,
-                    title: 'Recipient Name',
+                    title: l10n.recipientName,
                     isRequired: true,
                     child: PRFTextField(
-                      hintText: 'Enter recipient name',
+                      hintText: l10n.requisitionActionRecipientHint,
                       controller: _recipientNameController,
                     ),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: PRFSpacingTokens.xxl),
-
-            // Next Button
             PRFButton(
               onPressed: _goToStep2,
-              title: 'Next',
+              title: l10n.requisitionActionNext,
               disabled: !_isStep1Valid,
             ),
-
-            const SizedBox(height: 40),
+            const SizedBox(height: PRFSpacingTokens.xxxl),
           ],
         ),
       ),
@@ -610,121 +480,54 @@ class _CreatePaymentInstructionViewHandsetState
   }
 
   Widget _buildStep2() {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final method = selectedPaymentMethod;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: PRFSpacingTokens.lg),
       child: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: PRFSpacingTokens.lg),
-
-            // Header Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.secondary,
-                    Theme.of(
-                      context,
-                    ).colorScheme.secondary.withValues(alpha: 0.8),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.secondary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 32,
-                    color: Theme.of(context).colorScheme.onSecondary,
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.sm),
-                  Text(
-                    'Payment Details',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: PRFSpacingTokens.xs),
-                  Text(
-                    selectedPaymentMethod != null
-                        ? 'Enter specific details '
-                              'for ${_getPaymentMethodName()}'
-                        : 'Enter payment details',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSecondary.withValues(alpha: 0.9),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+            requisitionActionHeader(
+              context,
+              icon: Icons.info_outline,
+              title: l10n.paymentDetails,
+              subtitle: method != null
+                  ? l10n.requisitionActionPaymentStep2Subtitle(
+                      _methodName(method),
+                    )
+                  : null,
+              background: scheme.secondary,
+              foreground: scheme.onSecondary,
             ),
-
             const SizedBox(height: PRFSpacingTokens.xxl),
-
-            // Form Card
-            Container(
-              padding: const EdgeInsets.all(PRFSpacingTokens.xl),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-                border: Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.2),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+            requisitionFormCard(
+              context,
               child: Column(
                 children: [
-                  // Dynamic fields based on payment method
                   if (selectedPaymentMethod != null)
                     _buildPaymentMethodFields(),
-
-                  // Reference (Optional)
                   PRFFormSection(
                     icon: Icons.receipt_long_outlined,
-                    title: 'Reference',
+                    title: l10n.reference,
                     child: PRFTextField(
-                      hintText: 'Enter reference (optional)',
+                      hintText: l10n.requisitionActionOptional,
                       controller: _referenceController,
                     ),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: PRFSpacingTokens.xxl),
-
-            // Action Buttons
             Row(
               children: [
                 Expanded(
                   child: PRFButton(
                     onPressed: _goToStep1,
-                    title: 'Back',
+                    title: l10n.requisitionActionBack,
                     variant: PRFButtonVariant.secondary,
+                    disabled: _isLoading,
                   ),
                 ),
                 const SizedBox(width: PRFSpacingTokens.lg),
@@ -741,34 +544,27 @@ class _CreatePaymentInstructionViewHandsetState
                               if (operation != ResourceOperation.create) {
                                 return;
                               }
-                              setState(() {
-                                _isLoading = true;
-                              });
+                              setState(() => _isLoading = true);
                             },
                             listLoaded: (items, page, hasMore) {
                               if (!_isLoading) return;
-                              setState(() {
-                                _isLoading = false;
-                              });
+                              setState(() => _isLoading = false);
                               Gaimon.success();
-                              Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Payment instructions created successfully',
-                                  ),
-                                ),
+                              Navigator.of(context).pop(true);
+                              PRFSnackbar.success(
+                                context,
+                                l10n.requisitionActionPaymentSaved,
                               );
                             },
-                            error: (message, items) {
+                            error: (_, _) {
                               if (!_isLoading) return;
-                              setState(() {
-                                _isLoading = false;
-                              });
+                              setState(() => _isLoading = false);
                               Gaimon.error();
-                              ScaffoldMessenger.of(
+                              PRFSnackbar.error(
                                 context,
-                              ).showSnackBar(SnackBar(content: Text(message)));
+                                l10n.requisitionActionPaymentSaveFailed,
+                                onRetry: _submitForm,
+                              );
                             },
                             orElse: () {},
                           );
@@ -776,8 +572,8 @@ class _CreatePaymentInstructionViewHandsetState
                         builder: (context, state) {
                           return PRFButton(
                             onPressed: _submitForm,
-                            title: 'Create instruction',
-                            disabled: !_isFormValid,
+                            title: l10n.requisitionActionSavePaymentDetails,
+                            disabled: _isLoading,
                             isLoading: _isLoading,
                           );
                         },
@@ -785,8 +581,7 @@ class _CreatePaymentInstructionViewHandsetState
                 ),
               ],
             ),
-
-            const SizedBox(height: 40),
+            const SizedBox(height: PRFSpacingTokens.xxxl),
           ],
         ),
       ),
@@ -796,31 +591,16 @@ class _CreatePaymentInstructionViewHandsetState
   void _goToStep2() {
     if (_isStep1Valid) {
       _pageController.nextPage(
-        duration: PRFMotionTokens.slow,
-        curve: Curves.easeInOut,
+        duration: PRFMotionTokens.resolve(context, PRFMotionTokens.slow),
+        curve: PRFMotionTokens.standardCurve,
       );
     }
   }
 
   void _goToStep1() {
     _pageController.previousPage(
-      duration: PRFMotionTokens.slow,
-      curve: Curves.easeInOut,
+      duration: PRFMotionTokens.resolve(context, PRFMotionTokens.slow),
+      curve: PRFMotionTokens.standardCurve,
     );
-  }
-
-  String _getPaymentMethodName() {
-    if (selectedPaymentMethod == null) return '';
-
-    switch (selectedPaymentMethod!) {
-      case PRFPaymentMethod.mpesa:
-        return 'M-PESA';
-      case PRFPaymentMethod.bankTransfer:
-        return 'Bank Transfer';
-      case PRFPaymentMethod.paybill:
-        return 'Paybill';
-      case PRFPaymentMethod.tillNumber:
-        return 'Till Number';
-    }
   }
 }

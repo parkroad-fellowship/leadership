@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/missions/cubit/school_term_resource_cubit.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_school_term.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:prf_design/prf_design.dart';
@@ -81,14 +82,14 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
     final yearText = _yearController.text.trim();
 
     if (name.isEmpty) {
-      _nameError = 'Term name is required';
+      _nameError = context.l10n.schoolTermsNameRequired;
     }
 
     final year = int.tryParse(yearText);
     if (yearText.isEmpty) {
-      _yearError = 'Year is required';
+      _yearError = context.l10n.schoolTermsYearRequired;
     } else if (year == null || year < 1) {
-      _yearError = 'Enter a valid year';
+      _yearError = context.l10n.schoolTermsYearInvalid;
     }
 
     setState(() {
@@ -101,10 +102,7 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
   void _submitForm() {
     if (!_validateForm()) {
       Gaimon.warning();
-      PRFSnackbar.error(
-        context,
-        'Please fix the highlighted fields and try again.',
-      );
+      PRFSnackbar.error(context, context.l10n.commonFixHighlightedFields);
       return;
     }
 
@@ -139,13 +137,13 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
             PRFSnackbar.success(
               context,
               _isEditing
-                  ? 'School term updated successfully'
-                  : 'School term created successfully',
+                  ? context.l10n.schoolTermsUpdated
+                  : context.l10n.schoolTermsCreated,
             );
             widget.onSaved();
-          case ResourceError<PRFSchoolTerm>(:final message):
+          case ResourceError<PRFSchoolTerm>():
             Gaimon.error();
-            PRFSnackbar.error(context, message);
+            PRFSnackbar.error(context, context.l10n.commonSaveErrorMessage);
           default:
             break;
         }
@@ -155,6 +153,12 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
           curr is ResourceError<PRFSchoolTerm>,
       builder: (context, state) {
         final isLoading = state is ResourceMutating<PRFSchoolTerm>;
+        final l10n = context.l10n;
+        final theme = Theme.of(context);
+        final enter = PRFMotionTokens.resolve(
+          context,
+          PRFMotionTokens.enterShort,
+        );
 
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -164,8 +168,10 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                  Theme.of(context).colorScheme.surface,
+                  theme.colorScheme.primary.withValues(
+                    alpha: PRFOpacities.faint,
+                  ),
+                  theme.colorScheme.surface,
                 ],
               ),
             ),
@@ -180,31 +186,25 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
                     const SizedBox(height: PRFSpacingTokens.lg),
                     _buildHeaderCard(context)
                         .animate()
-                        .slideY(begin: -0.3)
-                        .fadeIn(duration: PRFMotionTokens.enterShort),
+                        .slideY(begin: -0.3, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(PRFSpacingTokens.xl),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               PRFRadiusTokens.lg,
                             ),
                             border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.shadow.withValues(alpha: 0.1),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                              color: theme.colorScheme.outline.withValues(
+                                alpha: PRFOpacities.muted,
                               ),
-                            ],
+                            ),
+                            boxShadow: PRFShadowTokens.card(
+                              theme.colorScheme.shadow,
+                            ),
                           ),
                           child: Column(
                             children: [
@@ -216,17 +216,22 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
                             ],
                           ),
                         )
-                        .animate(delay: PRFMotionTokens.stagger3)
-                        .slideX(begin: -0.2)
-                        .fadeIn(),
+                        .animate(
+                          delay: PRFMotionTokens.resolve(
+                            context,
+                            PRFMotionTokens.stagger3,
+                          ),
+                        )
+                        .slideX(begin: -0.2, duration: enter)
+                        .fadeIn(duration: enter),
                     const SizedBox(height: PRFSpacingTokens.xxl),
                     SizedBox(
                       width: double.infinity,
                       child: PRFButton(
                         onPressed: _submitForm,
                         title: _isEditing
-                            ? 'Update School Term'
-                            : 'Create School Term',
+                            ? l10n.schoolTermsSave
+                            : l10n.schoolTermsAdd,
                         disabled: isLoading || !_isFormValid,
                         isLoading: isLoading,
                       ),
@@ -253,28 +258,24 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.8),
+            theme.colorScheme.primary.withValues(alpha: PRFOpacities.stronger),
           ],
         ),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.lg),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: PRFShadowTokens.raised(theme.colorScheme.primary),
       ),
       child: Column(
         children: [
           Icon(
             isEditing ? Icons.edit_outlined : Icons.calendar_today_outlined,
-            size: 32,
+            size: PRFSizeTokens.iconXl,
             color: theme.colorScheme.onPrimary,
           ),
           const SizedBox(height: PRFSpacingTokens.sm),
           Text(
-            isEditing ? 'Edit School Term' : 'Create School Term',
+            isEditing
+                ? context.l10n.schoolTermsEdit
+                : context.l10n.schoolTermsAdd,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
@@ -283,10 +284,12 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
           const SizedBox(height: PRFSpacingTokens.xs),
           Text(
             isEditing
-                ? 'Update the school term details'
-                : 'Add a new school term with name and year',
+                ? context.l10n.schoolTermsFormEditSubtitle
+                : context.l10n.schoolTermsFormCreateSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
             textAlign: TextAlign.center,
           ),
@@ -296,18 +299,17 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
   }
 
   Widget _buildFormFields(bool isLoading) {
+    final l10n = context.l10n;
     return Column(
       children: [
         PRFFormSection(
           icon: Icons.calendar_today_outlined,
-          title: 'Term Name',
+          title: l10n.schoolTermsNameLabel,
           isRequired: true,
-
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'Term name',
-            labelText: 'Term Name *',
-            helperText: 'Required',
+            hintText: l10n.schoolTermsNameHint,
+            labelText: l10n.schoolTermsNameLabel,
             errorText: _showValidation ? _nameError : null,
             controller: _nameController,
             enabled: !isLoading,
@@ -320,14 +322,12 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
         ),
         PRFFormSection(
           icon: Icons.date_range_outlined,
-          title: 'Year',
+          title: l10n.schoolTermsYearLabel,
           isRequired: true,
-
           margin: const EdgeInsets.only(bottom: PRFSpacingTokens.md),
           child: PRFTextField(
-            hintText: 'e.g. ${DateTime.now().year}',
-            labelText: 'Year *',
-            helperText: 'Required',
+            hintText: l10n.schoolTermsYearExample('${DateTime.now().year}'),
+            labelText: l10n.schoolTermsYearLabel,
             errorText: _showValidation ? _yearError : null,
             controller: _yearController,
             type: PRFTextFieldType.number,
@@ -347,6 +347,10 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
   Widget _buildActiveToggle(bool isLoading) {
     final theme = Theme.of(context);
     final isActive = _activeStatus == PRFActiveStatus.active;
+    final success = context.statusColors.success;
+    final foreground = isActive
+        ? success.foreground
+        : theme.colorScheme.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -355,28 +359,31 @@ class _SchoolTermFormViewHandsetState extends State<SchoolTermFormViewHandset> {
       ),
       decoration: BoxDecoration(
         color: isActive
-            ? PRFColors.successLight.withValues(alpha: 0.5)
-            : PRFColors.gray100.withValues(alpha: 0.5),
+            ? success.background
+            : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
           color: isActive
-              ? PRFColors.success.withValues(alpha: 0.3)
-              : PRFColors.gray200,
+              ? success.main.withValues(alpha: PRFOpacities.glow)
+              : theme.colorScheme.outlineVariant,
         ),
       ),
       child: Row(
         children: [
           Icon(
             isActive ? Icons.check_circle_outline : Icons.cancel_outlined,
-            size: 20,
-            color: isActive ? PRFColors.successDark : PRFColors.gray500,
+            size: PRFSizeTokens.iconMd,
+            color: foreground,
           ),
           const SizedBox(width: PRFSpacingTokens.sm),
           Expanded(
             child: Text(
-              'Active Status',
+              isActive
+                  ? context.l10n.commonActive
+                  : context.l10n.commonInactive,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
+                color: foreground,
               ),
             ),
           ),

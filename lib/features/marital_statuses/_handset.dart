@@ -1,11 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leadership/enums/prf_active_status.dart';
 import 'package:leadership/features/marital_statuses/actions/marital_status_form/_handset.dart';
 import 'package:leadership/features/marital_statuses/cubit/marital_status_resource_cubit.dart';
-import 'package:leadership/features/marital_statuses/widgets/marital_status_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_marital_status.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/router/router.gr.dart';
 import 'package:prf_design/prf_design.dart';
@@ -48,6 +49,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -65,13 +67,12 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                 ResourceListLoaded<PRFMaritalStatus>(:final items)
                     when items.isEmpty =>
                   PRFEmptyView(
-                    label: 'No Marital Statuses Yet',
-                    description:
-                        'Get started by adding your first marital status to the system',
+                    label: l10n.maritalStatusesEmptyTitle,
+                    description: l10n.maritalStatusesEmptyMessage,
                     icon: Icons.favorite_outlined,
-                    navBarTitle: 'Marital Statuses',
+                    navBarTitle: l10n.maritalStatusesTitle,
                     onBackPressed: _goBackToHome,
-                    actionLabel: 'Add Marital Status',
+                    actionLabel: l10n.maritalStatusesAdd,
                     onActionPressed: () => _showForm(context, null),
                   ),
                 ResourceListLoaded<PRFMaritalStatus>(:final items) =>
@@ -83,14 +84,11 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                 ResourceError<PRFMaritalStatus>(:final items)
                     when items.isNotEmpty =>
                   _buildBody(theme, items),
-                ResourceError<PRFMaritalStatus>(:final message) => PRFEmptyView(
-                  label: 'Error Loading Marital Statuses',
-                  description: message,
-                  icon: Icons.error_outline,
-                  navBarTitle: 'Marital Statuses',
-                  onBackPressed: _goBackToHome,
-                  actionLabel: 'Retry',
-                  onActionPressed: _loadData,
+                ResourceError<PRFMaritalStatus>() => PRFLeadershipErrorScreen(
+                  navBarTitle: l10n.maritalStatusesTitle,
+                  title: l10n.maritalStatusesLoadError,
+                  onBack: _goBackToHome,
+                  onRetry: _loadData,
                 ),
                 _ => const SizedBox.shrink(),
               };
@@ -128,7 +126,8 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No marital statuses match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -144,11 +143,16 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filtered[index];
-                  return MaritalStatusCard(
-                    maritalStatus: item,
-                    index: index,
+                  return PRFListItemCard(
+                    title: item.name,
+                    icon: Icons.favorite_outlined,
+                    isActive: item.isActive == PRFActiveStatus.active,
+                    activeLabel: context.l10n.commonActive,
+                    inactiveLabel: context.l10n.commonInactive,
+                    deleteLabel: context.l10n.delete,
                     onTap: () => _showForm(context, item),
                     onDelete: () => _confirmDelete(context, item),
+                    animationIndex: index,
                   );
                 }, childCount: filtered.length),
               ),
@@ -168,13 +172,14 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Marital Statuses',
+            title: context.l10n.maritalStatusesTitle,
             onBack: _goBackToHome,
             actions: [
-              PRFHeaderActionButton(
-                label: 'New',
+              PRFNavBarAction(
+                label: context.l10n.commonNew,
                 icon: Icons.add,
-                onTap: () => _showForm(context, null),
+                tooltip: context.l10n.maritalStatusesAddTooltip,
+                onPressed: () => _showForm(context, null),
               ),
             ],
           ),
@@ -189,7 +194,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total',
+                    label: context.l10n.maritalStatusesTotal,
                     value: '$totalCount',
                     color: theme.colorScheme.secondary,
                   ),
@@ -208,18 +213,14 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search marital statuses...',
+        hintText: context.l10n.maritalStatusesSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -245,7 +246,7 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -261,7 +262,9 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -281,8 +284,8 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
     PRFBottomSheet.show<void>(
       context,
       title: maritalStatus == null
-          ? 'Add Marital Status'
-          : 'Edit Marital Status',
+          ? context.l10n.maritalStatusesAdd
+          : context.l10n.maritalStatusesEdit,
       child: MaritalStatusFormViewHandset(
         maritalStatus: maritalStatus,
         onSaved: _loadData,
@@ -294,13 +297,13 @@ class _MaritalStatusesPageHandsetState extends State<MaritalStatusesPageHandset>
     BuildContext context,
     PRFMaritalStatus maritalStatus,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await PRFConfirmationDialog.show(
       context,
-      title: 'Delete Marital Status',
-      message:
-          'Are you sure you want to delete "${maritalStatus.name}"? '
-          'This action cannot be undone.',
-      confirmLabel: 'Delete',
+      title: l10n.maritalStatusesDeleteTitle,
+      message: l10n.lookupDeleteMessage(maritalStatus.name),
+      confirmLabel: l10n.maritalStatusesDeleteConfirm,
+      cancelLabel: l10n.cancel,
       isDestructive: true,
     );
 

@@ -5,8 +5,9 @@ import 'package:leadership/enums/prf_permissions.dart';
 import 'package:leadership/features/members/actions/member_form/_handset.dart';
 import 'package:leadership/features/members/cubit/member_resource_cubit.dart';
 import 'package:leadership/features/members/widgets/member_card.dart';
+import 'package:leadership/l10n/l10n.dart';
 import 'package:leadership/models/remote/prf_member.dart';
-import 'package:leadership/shared_widgets/header_action_button.dart';
+import 'package:leadership/shared_widgets/error_screen.dart';
 import 'package:leadership/utils/crud/resource_state.dart';
 import 'package:leadership/utils/misc.dart';
 import 'package:leadership/utils/router/router.gr.dart';
@@ -49,6 +50,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -61,12 +63,17 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
             ),
             ResourceListLoaded<PRFMember>(:final items) when items.isEmpty =>
               PRFEmptyView(
-                navBarTitle: 'Members',
+                navBarTitle: l10n.membersTitle,
                 onBackPressed: _goBackToHome,
-                label: 'No Members Yet',
-                description:
-                    'There are no members registered in the system yet',
+                label: l10n.membersEmptyTitle,
+                description: l10n.membersEmptyMessage,
                 icon: Icons.people_outline,
+                actionLabel: Misc.userCan(PRFPermissions.createMember)
+                    ? l10n.membersAdd
+                    : null,
+                onActionPressed: Misc.userCan(PRFPermissions.createMember)
+                    ? _showCreateMemberForm
+                    : null,
               ),
             ResourceListLoaded<PRFMember>(:final items) => _buildBody(
               theme,
@@ -78,14 +85,11 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
             ),
             ResourceError<PRFMember>(:final items) when items.isNotEmpty =>
               _buildBody(theme, items),
-            ResourceError<PRFMember>(:final message) => PRFEmptyView(
-              label: 'Error Loading Members',
-              description: message,
-              icon: Icons.error_outline,
-              actionLabel: 'Retry',
-              onActionPressed: _loadData,
-              navBarTitle: 'Members',
-              onBackPressed: _goBackToHome,
+            ResourceError<PRFMember>() => PRFLeadershipErrorScreen(
+              navBarTitle: l10n.membersTitle,
+              title: l10n.membersLoadError,
+              onBack: _goBackToHome,
+              onRetry: _loadData,
             ),
             _ => const SizedBox.shrink(),
           };
@@ -126,7 +130,8 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
                 child: Padding(
                   padding: const EdgeInsets.all(PRFSpacingTokens.xxl),
                   child: Text(
-                    'No members match your search',
+                    context.l10n.commonNoSearchMatches,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -171,21 +176,26 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PRFBrandedNavBar(
-            title: 'Members',
+            title: context.l10n.membersTitle,
             onBack: _goBackToHome,
             actions: [
               if (Misc.userCan(PRFPermissions.createMember))
-                PRFHeaderActionButton(
-                  label: '+ New',
-                  onTap: _showCreateMemberForm,
+                PRFNavBarAction(
+                  label: context.l10n.commonNew,
+                  icon: Icons.add,
+                  tooltip: context.l10n.membersAddTooltip,
+                  onPressed: _showCreateMemberForm,
                 ),
               if (Misc.userCan(PRFPermissions.createMember))
                 const SizedBox(width: PRFSpacingTokens.sm),
               BlocBuilder<MemberResourceCubit, ResourceState<PRFMember>>(
                 builder: (context, state) => switch (state) {
-                  ResourceListLoading<PRFMember>() => const SizedBox.square(
-                    dimension: 24,
-                    child: PRFCircularProgressIndicator(),
+                  ResourceListLoading<PRFMember>() => Semantics(
+                    label: context.l10n.membersLoading,
+                    child: const SizedBox.square(
+                      dimension: PRFSizeTokens.iconLg,
+                      child: PRFCircularProgressIndicator(),
+                    ),
                   ),
                   _ => const SizedBox.shrink(),
                 },
@@ -204,7 +214,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
               children: [
                 Expanded(
                   child: _buildHeaderStat(
-                    label: 'Total Members',
+                    label: context.l10n.membersTotal,
                     value: _formatNumber(memberCount),
                     color: theme.colorScheme.secondary,
                   ),
@@ -227,18 +237,14 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: theme.colorScheme.outline.withValues(
+            alpha: PRFOpacities.accent,
           ),
-        ],
+        ),
+        boxShadow: PRFShadowTokens.card(theme.colorScheme.shadow),
       ),
       child: PRFTextField(
-        hintText: 'Search members...',
+        hintText: context.l10n.membersSearchHint,
         controller: _searchController,
         onChanged: (value) {
           _debouncer.run(() {
@@ -268,7 +274,7 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
         vertical: PRFSpacingTokens.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withValues(alpha: PRFOpacities.muted),
         borderRadius: BorderRadius.circular(PRFRadiusTokens.md),
       ),
       child: Column(
@@ -284,7 +290,9 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+              color: theme.colorScheme.onPrimary.withValues(
+                alpha: PRFOpacities.nearOpaque,
+              ),
             ),
           ),
         ],
@@ -302,8 +310,8 @@ class _MembersPageHandsetState extends State<MembersPageHandset>
   void _showCreateMemberForm() {
     PRFBottomSheet.show<void>(
       context,
-      title: 'Add Member',
-      child: MemberFormViewHandset(onSaved: _loadData),
+      title: context.l10n.membersAdd,
+      child: MemberFormViewHandset(onSaved: () {}),
     );
   }
 
